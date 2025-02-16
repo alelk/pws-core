@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="run all tests" type="GradleRunConfiguration" factoryName="Gradle">
+  <configuration default="false" name="run backup tests (jvm)" type="GradleRunConfiguration" factoryName="Gradle">
     <ExternalSystemSettings>
       <option name="executionName" />
       <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -10,12 +10,7 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value=":domain:jvmTest" />
-          <option value="domain:testDebugUnitTest" />
-          <option value=":database:jvmTest" />
-          <option value=":database:testRuDebugUnitTest" />
           <option value=":backup:jvmTest" />
-          <option value=":app:testRuDebugUnitTest" />
         </list>
       </option>
       <option name="vmOptions" />
