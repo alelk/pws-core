@@ -7,7 +7,7 @@ import io.ktor.http.isSuccess
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 
-suspend inline fun handleResponse(json: Json, block: () -> HttpResponse): Result<HttpResponse> {
+suspend inline fun handleResponse(json: Json, block: suspend () -> HttpResponse): Result<HttpResponse> {
   val response = try {
     block()
   } catch (t: Throwable) {

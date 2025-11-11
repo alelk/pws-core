@@ -12,14 +12,14 @@ import kotlinx.serialization.json.Json
 abstract class BaseResourceApi(protected val client: HttpClient) {
   protected val json: Json get() = JsonProvider.instance
 
-  protected suspend inline fun <reified T : Any> executeGet(block: () -> HttpResponse): Result<T?> =
+  protected suspend inline fun <reified T : Any> executeGet(block: suspend () -> HttpResponse): Result<T?> =
     handleResponse(json) { block() }
       .mapCatching { response ->
         if (response.status == HttpStatusCode.NotFound) null
         else execute<T> { response }.getOrThrow()
       }
 
-  protected suspend inline fun <reified T> execute(block: () -> HttpResponse): Result<T> =
+  protected suspend inline fun <reified T> execute(block: suspend () -> HttpResponse): Result<T> =
     handleResponse(json) { block() }
       .mapCatching {
         try {

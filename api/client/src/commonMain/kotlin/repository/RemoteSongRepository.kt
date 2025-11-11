@@ -22,6 +22,6 @@ class RemoteSongRepository(private val api: SongApi, private val bookApi: BookAp
 
   override suspend fun get(id: SongId): SongDetail? = api.get(id.toDto())?.toDomain()
 
-  override suspend fun delete(id: SongId) = throw NotImplementedError("RemoteSongRepository does not support delete")
+  override suspend fun delete(id: SongId) = throw UnsupportedOperationException("RemoteSongRepository does not support delete")
 }
 
