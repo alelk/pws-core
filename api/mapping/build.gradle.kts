@@ -19,6 +19,8 @@ kotlin {
     commonMain.dependencies {
       implementation(projects.api.contract)
       implementation(libs.pws.domain)
+
+      implementation(compose.runtime)
     }
   }
 }
