@@ -4,6 +4,7 @@ import io.github.alelk.pws.api.contract.book.*
 import io.github.alelk.pws.api.mapping.core.*
 import io.github.alelk.pws.domain.book.model.BookSummary
 import io.github.alelk.pws.domain.book.model.BookDetail
+import io.github.alelk.pws.domain.book.query.BookSort
 
 fun BookSummaryDto.toDomain(): BookSummary = BookSummary(
   id = id.toDomain(),
@@ -37,3 +38,11 @@ fun BookDetailDto.toDomain(): BookDetail = BookDetail(
   enabled = enabled,
   priority = priority
 )
+
+fun BookSortDto.toDomain(): BookSort =
+  when (this) {
+    BookSortDto.ByName -> BookSort.ByName
+    BookSortDto.ByNameDesc -> BookSort.ByNameDesc
+    BookSortDto.ByPriority -> BookSort.ByPriority
+    BookSortDto.ByPriorityDesc -> BookSort.ByPriorityDesc
+  }

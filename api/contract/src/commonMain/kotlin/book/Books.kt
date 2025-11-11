@@ -8,9 +8,14 @@ import io.ktor.resources.Resource
 class Books(
   val locale: LocaleDto? = null,
   val enabled: Boolean? = null,
-  val minPriority: Int? = null
+  val minPriority: Int? = null,
+  val sort: BookSortDto? = null
 ) {
 
   @Resource("{id}")
-  class ById(val parent: Books = Books(), val id: BookIdDto)
+  class ById(val parent: Books = Books(), val id: BookIdDto) {
+
+    @Resource("songs")
+    class Songs(val parent: ById)
+  }
 }

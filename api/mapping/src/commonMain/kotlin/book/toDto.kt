@@ -1,10 +1,12 @@
 package io.github.alelk.pws.api.mapping.book
 
 import io.github.alelk.pws.api.contract.book.BookDetailDto
+import io.github.alelk.pws.api.contract.book.BookSortDto
 import io.github.alelk.pws.api.contract.book.BookSummaryDto
 import io.github.alelk.pws.api.mapping.core.toDto
 import io.github.alelk.pws.domain.book.model.BookDetail
 import io.github.alelk.pws.domain.book.model.BookSummary
+import io.github.alelk.pws.domain.book.query.BookSort
 
 fun BookSummary.toDto(): BookSummaryDto = BookSummaryDto(
   id = id.toDto(),
@@ -38,3 +40,11 @@ fun BookDetail.toDto(): BookDetailDto = BookDetailDto(
   enabled = enabled,
   priority = priority
 )
+
+fun BookSort.toDto(): BookSortDto =
+  when (this) {
+    BookSort.ByName -> BookSortDto.ByName
+    BookSort.ByNameDesc -> BookSortDto.ByNameDesc
+    BookSort.ByPriority -> BookSortDto.ByPriority
+    BookSort.ByPriorityDesc -> BookSortDto.ByPriorityDesc
+  }
