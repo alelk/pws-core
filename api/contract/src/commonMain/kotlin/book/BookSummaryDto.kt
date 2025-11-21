@@ -15,7 +15,7 @@ data class BookSummaryDto(
   val displayShortName: String,
   val displayName: String,
   val countSongs: Int,
-  val firstSongNumberId: SongNumberIdDto,
+  val firstSongNumberId: SongNumberIdDto?,
   val enabled: Boolean,
   val priority: Int,
 )

@@ -5,16 +5,17 @@ import io.github.alelk.pws.api.mapping.core.*
 import io.github.alelk.pws.domain.book.model.BookSummary
 import io.github.alelk.pws.domain.book.model.BookDetail
 import io.github.alelk.pws.domain.book.query.BookSort
+import io.github.alelk.pws.domain.core.NonEmptyString
 
 fun BookSummaryDto.toDomain(): BookSummary = BookSummary(
   id = id.toDomain(),
   version = version.toDomain(),
   locale = locale.toDomain(),
-  name = name,
-  displayShortName = displayShortName,
-  displayName = displayName,
+  name = NonEmptyString(name),
+  displayShortName = NonEmptyString(displayShortName),
+  displayName = NonEmptyString(displayName),
   countSongs = countSongs,
-  firstSongNumberId = firstSongNumberId.toDomain(),
+  firstSongNumberId = firstSongNumberId?.toDomain(),
   enabled = enabled,
   priority = priority
 )
@@ -33,7 +34,7 @@ fun BookDetailDto.toDomain(): BookDetail = BookDetail(
   editors = editors?.map { it.toDomain() },
   description = description,
   preface = preface,
-  firstSongNumberId = firstSongNumberId.toDomain(),
+  firstSongNumberId = firstSongNumberId?.toDomain(),
   countSongs = countSongs,
   enabled = enabled,
   priority = priority

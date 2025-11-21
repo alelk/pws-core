@@ -23,7 +23,7 @@ data class BookDetailDto(
   val editors: List<PersonDto>? = null,
   val description: String? = null,
   val preface: String? = null,
-  val firstSongNumberId: SongNumberIdDto,
+  val firstSongNumberId: SongNumberIdDto?,
   val countSongs: Int,
   val enabled: Boolean = true,
   val priority: Int = 0,
