@@ -1,5 +1,6 @@
 package io.github.alelk.pws.api.client.api
 
+import io.github.alelk.pws.api.contract.book.BookCreateRequestDto
 import io.github.alelk.pws.api.contract.book.BookDetailDto
 import io.github.alelk.pws.api.contract.book.BookSortDto
 import io.github.alelk.pws.api.contract.book.BookSummaryDto
@@ -9,12 +10,16 @@ import io.github.alelk.pws.api.contract.core.ids.BookIdDto
 import io.github.alelk.pws.api.contract.song.SongSummaryDto
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.resources.get
+import io.ktor.client.plugins.resources.post
+import io.ktor.client.request.setBody
 
 interface BookApi {
   suspend fun get(id: BookIdDto): BookDetailDto?
   suspend fun list(locale: LocaleDto? = null, enabled: Boolean? = null, minPriority: Int? = null, sort: BookSortDto? = null): List<BookSummaryDto>
 
   suspend fun listBookSongs(id: BookIdDto): Map<Int, SongSummaryDto>?
+
+  suspend fun create(request: BookCreateRequestDto): BookDetailDto
 }
 
 class BookApiImpl(client: HttpClient) : BaseResourceApi(client), BookApi {
@@ -26,5 +31,7 @@ class BookApiImpl(client: HttpClient) : BaseResourceApi(client), BookApi {
 
   override suspend fun listBookSongs(id: BookIdDto): Map<Int, SongSummaryDto>? =
     executeGet<Map<Int, SongSummaryDto>> { client.get(Books.ById.Songs(parent = Books.ById(id = id))) }.getOrThrow()
-}
 
+  override suspend fun create(request: BookCreateRequestDto): BookDetailDto =
+    execute<BookDetailDto> { client.post(Books.Create()) { setBody(request) } }.getOrThrow()
+}

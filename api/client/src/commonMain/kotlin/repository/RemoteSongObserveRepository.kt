@@ -12,7 +12,7 @@ import io.github.alelk.pws.domain.song.repository.SongObserveRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-class RemoteSongRepository(private val api: SongApi, private val bookApi: BookApi) : SongObserveRepository {
+class RemoteSongObserveRepository(private val api: SongApi, private val bookApi: BookApi) : SongObserveRepository {
 
   override fun observe(id: SongId): Flow<SongDetail?> =
     flow { emit(api.get(id.toDto())?.toDomain()) }

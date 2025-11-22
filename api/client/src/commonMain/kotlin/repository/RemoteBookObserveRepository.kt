@@ -13,7 +13,7 @@ import io.github.alelk.pws.domain.core.ids.BookId
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-class RemoteBookRepository(private val api: BookApi) : BookObserveRepository {
+class RemoteBookObserveRepository(private val api: BookApi) : BookObserveRepository {
 
   override fun observe(id: BookId): Flow<BookDetail?> =
     flow { emit(api.get(id.toDto())?.toDomain()) }
