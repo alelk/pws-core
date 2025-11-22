@@ -17,6 +17,5 @@ fun YearDto.toDomain(): Year = Year(value)
 fun BookIdDto.toDomain(): BookId = BookId.parse(value)
 fun SongIdDto.toDomain(): SongId = SongId(value)
 fun SongNumberIdDto.toDomain(): SongNumberId = SongNumberId.parse(value)
-fun TonalityDto.toDomain(): Tonality = Tonality.fromIdentifier(value)
+fun TonalityDto.toDomain(): Tonality = Tonality.fromIdentifier(identifier)
 fun PersonDto.toDomain(): Person = Person(value)
-

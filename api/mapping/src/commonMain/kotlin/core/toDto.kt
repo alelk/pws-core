@@ -17,6 +17,5 @@ fun Year.toDto(): YearDto = YearDto(toString().toInt())
 fun BookId.toDto(): BookIdDto = BookIdDto(toString())
 fun SongId.toDto(): SongIdDto = SongIdDto(value)
 fun SongNumberId.toDto(): SongNumberIdDto = SongNumberIdDto(toString())
-fun Tonality.toDto(): TonalityDto = TonalityDto(identifier)
+fun Tonality.toDto(): TonalityDto = TonalityDto.fromIdentifier(identifier)
 fun Person.toDto(): PersonDto = PersonDto(toString())
-

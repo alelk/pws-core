@@ -4,9 +4,9 @@ import io.github.alelk.pws.api.contract.song.LyricDto
 import io.github.alelk.pws.api.contract.song.LyricPartDto
 import io.github.alelk.pws.api.contract.song.SongDetailDto
 import io.github.alelk.pws.api.contract.song.SongSummaryDto
-import io.github.alelk.pws.api.mapping.core.nonEmpty
-import io.github.alelk.pws.api.mapping.core.toDomain
+import io.github.alelk.pws.api.contract.song.SongNumberDto
 import io.github.alelk.pws.domain.core.BibleRef
+import io.github.alelk.pws.domain.core.SongNumber
 import io.github.alelk.pws.domain.song.lyric.Bridge
 import io.github.alelk.pws.domain.song.lyric.Chorus
 import io.github.alelk.pws.domain.song.lyric.Lyric
@@ -14,6 +14,8 @@ import io.github.alelk.pws.domain.song.lyric.LyricPart
 import io.github.alelk.pws.domain.song.lyric.Verse
 import io.github.alelk.pws.domain.song.model.SongDetail
 import io.github.alelk.pws.domain.song.model.SongSummary
+import io.github.alelk.pws.api.mapping.core.nonEmpty
+import io.github.alelk.pws.api.mapping.core.toDomain
 
 fun SongSummaryDto.toDomain(): SongSummary = SongSummary(
   id = id.toDomain(),
@@ -46,3 +48,4 @@ fun SongDetailDto.toDomain(): SongDetail = SongDetail(
   edited = edited
 )
 
+fun SongNumberDto.toDomain(): SongNumber = SongNumber(bookId.toDomain(), number)
