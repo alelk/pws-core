@@ -40,6 +40,7 @@ kotlin {
     jvmTest.dependencies {
       implementation(libs.kotest.runner)
       implementation(libs.kotest.assertions.core)
+      implementation(libs.kotest.property)
       implementation(libs.ktor.clientMockJvm)
       implementation(libs.pws.domainTestFixtures)
     }
