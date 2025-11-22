@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -75,9 +74,9 @@ private fun BookRow(book: BookSummary, onClick: () -> Unit) {
       .clickable(onClick = onClick)
   ) {
     Column(Modifier.padding(16.dp)) {
-      Text(book.displayName, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+      Text(book.displayName.value, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
       Spacer(Modifier.height(4.dp))
-      AssistChip(onClick = {}, label = { Text("${book.countSongs} песен") })
+      Text("${book.countSongs} песен", style = MaterialTheme.typography.bodySmall)
     }
   }
 }

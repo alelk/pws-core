@@ -24,7 +24,6 @@ kotlin {
       implementation(libs.ktor.client.contentNegotiation)
       implementation(libs.ktor.client.jsonSerialization)
       implementation(libs.ktor.client.resources)
-      implementation(libs.kotlinx.serialization.json)
       implementation(libs.ktor.client.logging)
 
       implementation(libs.koin.compose)

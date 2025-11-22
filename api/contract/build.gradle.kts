@@ -20,7 +20,7 @@ kotlin {
     commonMain.dependencies {
       implementation(libs.ktor.resources)
       implementation(libs.ktor.serialization.kotlinx.json)
-      implementation(libs.kotlinx.serialization.json)
+      api(libs.kotlinx.serialization.json)
 
       implementation(compose.runtime)
     }
