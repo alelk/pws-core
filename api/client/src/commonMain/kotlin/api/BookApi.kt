@@ -11,7 +11,12 @@ import io.github.alelk.pws.api.contract.song.SongSummaryDto
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.resources.get
 import io.ktor.client.plugins.resources.post
+import io.ktor.client.request.header
 import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.Headers
+import io.ktor.http.HttpHeaders
+import io.ktor.util.reflect.TypeInfo
 
 interface BookApi {
   suspend fun get(id: BookIdDto): BookDetailDto?
@@ -33,5 +38,10 @@ class BookApiImpl(client: HttpClient) : BaseResourceApi(client), BookApi {
     executeGet<Map<Int, SongSummaryDto>> { client.get(Books.ById.Songs(parent = Books.ById(id = id))) }.getOrThrow()
 
   override suspend fun create(request: BookCreateRequestDto): BookDetailDto =
-    execute<BookDetailDto> { client.post(Books.Create()) { setBody(request) } }.getOrThrow()
+    execute<BookDetailDto> {
+      client.post(Books.Create()) {
+        header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+        setBody(request)
+      }
+    }.getOrThrow()
 }

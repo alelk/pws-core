@@ -37,5 +37,15 @@ kotlin {
     jsMain.dependencies {
       implementation(libs.ktor.client.js)
     }
+    jvmTest.dependencies {
+      implementation(libs.kotest.runner)
+      implementation(libs.kotest.assertions.core)
+      implementation(libs.ktor.clientMockJvm)
+      implementation(libs.pws.domainTestFixtures)
+    }
   }
+}
+
+tasks.withType<Test> {
+  useJUnitPlatform()
 }
