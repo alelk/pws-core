@@ -9,7 +9,7 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpStatusCode
 import kotlinx.serialization.json.Json
 
-abstract class BaseResourceApi(protected val client: HttpClient) {
+internal abstract class BaseResourceApi(protected val client: HttpClient) {
   protected val json: Json get() = JsonProvider.instance
 
   protected suspend inline fun <reified T : Any> executeGet(block: suspend () -> HttpResponse): Result<T?> =

@@ -29,7 +29,7 @@ interface BookApi {
   suspend fun update(id: BookIdDto, request: BookUpdateRequestDto): BookDetailDto
 }
 
-class BookApiImpl(client: HttpClient) : BaseResourceApi(client), BookApi {
+internal class BookApiImpl(client: HttpClient) : BaseResourceApi(client), BookApi {
   override suspend fun get(id: BookIdDto): BookDetailDto? =
     executeGet<BookDetailDto> { client.get(Books.ById(id = id)) }.getOrThrow()
 

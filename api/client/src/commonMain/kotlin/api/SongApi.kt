@@ -17,7 +17,7 @@ interface SongApi {
   suspend fun create(request: SongCreateRequestDto): SongDetailDto
 }
 
-class SongApiImpl(client: HttpClient) : BaseResourceApi(client), SongApi {
+internal class SongApiImpl(client: HttpClient) : BaseResourceApi(client), SongApi {
   override suspend fun get(id: SongIdDto): SongDetailDto? =
     executeGet<SongDetailDto> { client.get(Songs.ById(id = id)) }.getOrThrow()
 
