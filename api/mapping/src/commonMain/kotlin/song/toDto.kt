@@ -6,6 +6,7 @@ import io.github.alelk.pws.domain.song.lyric.*
 import io.github.alelk.pws.domain.song.model.SongDetail
 import io.github.alelk.pws.domain.song.model.SongSummary
 import io.github.alelk.pws.domain.tonality.Tonality
+import io.github.alelk.pws.domain.song.command.CreateSongCommand
 
 fun SongSummary.toDto(): SongSummaryDto = SongSummaryDto(
   id = id.toDto(),
@@ -38,3 +39,18 @@ fun SongDetail.toDto(): SongDetailDto = SongDetailDto(
   edited = edited
 )
 
+// ---------- command -> dto ----------
+fun CreateSongCommand.toDto(): SongCreateRequestDto = SongCreateRequestDto(
+  id = id.toDto(),
+  locale = locale.toDto(),
+  name = name.value,
+  lyric = lyric.toDto(),
+  author = author?.toDto(),
+  translator = translator?.toDto(),
+  composer = composer?.toDto(),
+  tonalities = tonalities?.map { it.toDto() },
+  year = year?.toDto(),
+  bibleRef = bibleRef?.text,
+  edited = edited,
+  numbersInBook = null
+)

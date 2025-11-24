@@ -18,10 +18,16 @@ kotlin {
 
   sourceSets {
     commonMain.dependencies {
-      implementation(projects.api.contract)
-      implementation(libs.pws.domain)
+      api(projects.api.contract)
+      api(libs.pws.domain)
 
       implementation(compose.runtime)
     }
+  }
+}
+
+publishing {
+  publications.withType(MavenPublication::class.java).configureEach {
+    artifactId = "pws-api-mapping"
   }
 }
