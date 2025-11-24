@@ -14,7 +14,7 @@ kotlin {
 
   sourceSets {
     commonMain.dependencies {
-      implementation(projects.api.contract)
+      api(projects.api.contract)
       implementation(projects.api.mapping)
       api(libs.pws.domain)
 
