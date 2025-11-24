@@ -1,7 +1,5 @@
 plugins {
   alias(libs.plugins.kotlinMultiplatform)
-  alias(libs.plugins.composeMultiplatform)
-  alias(libs.plugins.composeCompiler)
   alias(libs.plugins.kotlinSerialization)
 }
 
@@ -20,9 +18,7 @@ kotlin {
     commonMain.dependencies {
       implementation(libs.ktor.resources)
       implementation(libs.ktor.serialization.kotlinx.json)
-      api(libs.kotlinx.serialization.json)
-
-      implementation(compose.runtime)
+      implementation(libs.kotlinx.serialization.json)
     }
   }
 }

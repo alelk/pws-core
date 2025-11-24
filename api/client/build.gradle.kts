@@ -1,7 +1,5 @@
 plugins {
   alias(libs.plugins.kotlinMultiplatform)
-  alias(libs.plugins.composeMultiplatform)
-  alias(libs.plugins.composeCompiler)
 }
 
 group = "io.github.alelk.pws.api"
@@ -20,15 +18,11 @@ kotlin {
       implementation(projects.api.mapping)
       api(libs.pws.domain)
 
-      implementation(libs.ktor.client.core)
+      api(libs.ktor.client.core)
       implementation(libs.ktor.client.contentNegotiation)
       implementation(libs.ktor.client.jsonSerialization)
       implementation(libs.ktor.client.resources)
       implementation(libs.ktor.client.logging)
-
-      implementation(libs.koin.compose)
-
-      implementation(compose.runtime)
     }
     jvmMain.dependencies {
       implementation(libs.ktor.client.cio)
