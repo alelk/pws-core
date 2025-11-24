@@ -26,9 +26,3 @@ kotlin {
     }
   }
 }
-
-publishing {
-  publications.withType(MavenPublication::class.java).configureEach {
-    artifactId = "pws-api-contract"
-  }
-}

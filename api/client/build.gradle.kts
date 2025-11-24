@@ -16,8 +16,8 @@ kotlin {
 
   sourceSets {
     commonMain.dependencies {
-      api(projects.api.contract)
-      api(projects.api.mapping)
+      implementation(projects.api.contract)
+      implementation(projects.api.mapping)
       api(libs.pws.domain)
 
       implementation(libs.ktor.client.core)
@@ -43,12 +43,6 @@ kotlin {
       implementation(libs.ktor.clientMockJvm)
       implementation(libs.pws.domainTestFixtures)
     }
-  }
-}
-
-publishing {
-  publications.withType(MavenPublication::class.java).configureEach {
-    artifactId = "pws-api-client"
   }
 }
 
