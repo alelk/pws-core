@@ -35,9 +35,9 @@ fun BookCreateRequestDto.toDomain(): CreateBookCommand = CreateBookCommand(
 fun BookUpdateRequestDto.toDomain(id: BookIdDto): UpdateBookCommand = UpdateBookCommand(
   id = BookId.parse(id.value),
   locale = locale?.toDomain(),
-  name = name?.let { NonEmptyString(it) },
-  displayShortName = displayShortName?.let { NonEmptyString(it.take(5)) },
-  displayName = displayName?.let { NonEmptyString(it) },
+  name = name?.let(::NonEmptyString),
+  displayShortName = displayShortName?.let(::NonEmptyString),
+  displayName = displayName?.let(::NonEmptyString),
   releaseDate = when (releaseDate) {
     null -> OptionalField.Unchanged
     else -> OptionalField.Set(releaseDate?.toDomain())

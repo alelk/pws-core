@@ -24,9 +24,9 @@ interface BookApi {
 
   suspend fun listBookSongs(id: BookIdDto): Map<Int, SongSummaryDto>?
 
-  suspend fun create(request: BookCreateRequestDto): BookDetailDto
+  suspend fun create(request: BookCreateRequestDto): ResourceCreateResult<BookIdDto>
 
-  suspend fun update(id: BookIdDto, request: BookUpdateRequestDto): BookDetailDto
+  suspend fun update(id: BookIdDto, request: BookUpdateRequestDto): ResourceUpdateResult<BookIdDto>
 }
 
 internal class BookApiImpl(client: HttpClient) : BaseResourceApi(client), BookApi {
@@ -39,16 +39,16 @@ internal class BookApiImpl(client: HttpClient) : BaseResourceApi(client), BookAp
   override suspend fun listBookSongs(id: BookIdDto): Map<Int, SongSummaryDto>? =
     executeGet<Map<Int, SongSummaryDto>> { client.get(Books.ById.Songs(parent = Books.ById(id = id))) }.getOrThrow()
 
-  override suspend fun create(request: BookCreateRequestDto): BookDetailDto =
-    execute<BookDetailDto> {
+  override suspend fun create(request: BookCreateRequestDto): ResourceCreateResult<BookIdDto> =
+    executeCreate<String, BookIdDto>(resourceId = request.id) {
       client.post(Books.Create()) {
         header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(request)
       }
     }.getOrThrow()
 
-  override suspend fun update(id: BookIdDto, request: BookUpdateRequestDto): BookDetailDto =
-    execute<BookDetailDto> {
+  override suspend fun update(id: BookIdDto, request: BookUpdateRequestDto): ResourceUpdateResult<BookIdDto> =
+    executeUpdate<String, BookIdDto>(resourceId = id) {
       client.put(Books.ById.Update(parent = Books.ById(id = id))) {
         header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(request)
