@@ -11,6 +11,9 @@ enum class ResourceTypeDto(val identifier: String) {
   @SerialName("song")
   SONG("song"),
 
+  @SerialName("song-number")
+  SONG_NUMBER("song-number"),
+
   @SerialName("tag")
   TAG("tag"),
 

@@ -90,6 +90,6 @@ class SongApiTest : FunSpec({
 
     val api = SongApiImpl(client)
     val got = api.create(createReq)
-    got shouldBe created
+    got shouldBe ResourceCreateResult.Success(created.id)
   }
 })

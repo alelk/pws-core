@@ -1,12 +1,18 @@
 package io.github.alelk.pws.api.mapping.song
 
-import io.github.alelk.pws.api.contract.song.*
-import io.github.alelk.pws.api.mapping.core.*
-import io.github.alelk.pws.domain.song.lyric.*
+import io.github.alelk.pws.api.contract.song.LyricDto
+import io.github.alelk.pws.api.contract.song.LyricPartDto
+import io.github.alelk.pws.api.contract.song.SongDetailDto
+import io.github.alelk.pws.api.contract.song.SongSummaryDto
+import io.github.alelk.pws.api.mapping.core.toDto
+import io.github.alelk.pws.domain.song.lyric.Bridge
+import io.github.alelk.pws.domain.song.lyric.Chorus
+import io.github.alelk.pws.domain.song.lyric.Lyric
+import io.github.alelk.pws.domain.song.lyric.LyricPart
+import io.github.alelk.pws.domain.song.lyric.Verse
 import io.github.alelk.pws.domain.song.model.SongDetail
 import io.github.alelk.pws.domain.song.model.SongSummary
 import io.github.alelk.pws.domain.tonality.Tonality
-import io.github.alelk.pws.domain.song.command.CreateSongCommand
 
 fun SongSummary.toDto(): SongSummaryDto = SongSummaryDto(
   id = id.toDto(),
@@ -37,20 +43,4 @@ fun SongDetail.toDto(): SongDetailDto = SongDetailDto(
   year = year?.toDto(),
   bibleRef = bibleRef?.text,
   edited = edited
-)
-
-// ---------- command -> dto ----------
-fun CreateSongCommand.toDto(): SongCreateRequestDto = SongCreateRequestDto(
-  id = id.toDto(),
-  locale = locale.toDto(),
-  name = name.value,
-  lyric = lyric.toDto(),
-  author = author?.toDto(),
-  translator = translator?.toDto(),
-  composer = composer?.toDto(),
-  tonalities = tonalities?.map { it.toDto() },
-  year = year?.toDto(),
-  bibleRef = bibleRef?.text,
-  edited = edited,
-  numbersInBook = null
 )

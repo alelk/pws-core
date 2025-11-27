@@ -13,6 +13,7 @@ import io.github.alelk.pws.domain.book.model.bookDetail
 import io.github.alelk.pws.domain.book.model.bookSummary
 import io.github.alelk.pws.domain.core.ids.BookId
 import io.github.alelk.pws.domain.core.ids.SongId
+import io.github.alelk.pws.domain.core.result.CreateResourceResult
 import io.github.alelk.pws.domain.song.model.songSummary
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -107,7 +108,7 @@ class BookApiTest : FunSpec({
 
     val api = BookApiImpl(client)
     val got = api.create(createReq)
-    got shouldBe created
+    got shouldBe ResourceCreateResult.Success(created.id)
   }
 
   test("listBookSongs() should return map of songs") {

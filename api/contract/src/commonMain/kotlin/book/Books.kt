@@ -19,7 +19,14 @@ class Books(
   class ById(val parent: Books = Books(), val id: BookIdDto) {
 
     @Resource("songs")
-    class Songs(val parent: ById)
+    class Songs(val parent: ById) {
+
+      @Resource("create")
+      class Create(val parent: Songs)
+
+      @Resource("update")
+      class Replace(val parent: Songs)
+    }
 
     @Resource("update")
     class Update(val parent: ById)

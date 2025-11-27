@@ -1,4 +1,3 @@
-// ...existing code...
 package io.github.alelk.pws.api.client.repository
 
 import io.github.alelk.pws.api.client.api.BookApi
@@ -20,15 +19,6 @@ class RemoteSongReadRepository(
   override suspend fun get(id: SongId): SongDetail? =
     api.get(id.toDto())?.toDomain()
 
-  override suspend fun getMany(query: SongQuery, sort: SongSort): List<SongSummary> {
-    query.bookId?.let { bookId ->
-      val map = bookApi.listBookSongs(bookId.toDto())
-      val items = map?.values?.map { it.toDomain() } ?: emptyList()
-      // Note: server sorts by number; we return as-is. If sort by number requested, client may need to re-order.
-      return items
-    }
-    // No generic songs list endpoint available in API
-    error("bookId parameter required")
-  }
+  override suspend fun getMany(query: SongQuery, sort: SongSort): List<SongSummary> = TODO("not implemented in api")
 }
 
