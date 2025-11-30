@@ -19,4 +19,10 @@ enum class ResourceTypeDto(val identifier: String) {
 
   @SerialName("song-reference")
   SONG_REFERENCE("song-reference");
+
+  companion object {
+    fun fromIdentifier(identifier: String) =
+      entries.firstOrNull { it.identifier == identifier }
+        ?: throw IllegalArgumentException("Unknown resource type identifier: $identifier")
+  }
 }

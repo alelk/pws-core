@@ -5,4 +5,6 @@ import kotlin.jvm.JvmInline
 
 @JvmInline
 @Serializable
-value class SongIdDto(val value: Long)
+value class SongIdDto(val value: Long) {
+  override fun toString(): String = value.toString()
+}

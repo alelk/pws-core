@@ -10,5 +10,5 @@ fun ErrorDto.Companion.resourceNotFound(
 ) = ErrorDto(
   code = ErrorCodes.RESOURCE_NOT_FOUND,
   message = message,
-  details = details
+  details = mapOf("resourceId" to resourceId.toString(), "resourceType" to resourceType.identifier) + (details ?: emptyMap())
 )

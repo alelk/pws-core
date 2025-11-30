@@ -4,6 +4,7 @@ import io.github.alelk.pws.api.client.error.ApiException
 import io.github.alelk.pws.api.client.error.handleResponse
 import io.github.alelk.pws.api.client.http.JsonProvider
 import io.github.alelk.pws.api.contract.core.error.ErrorCodes
+import io.github.alelk.pws.api.contract.core.error.asResourcesNotFound
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.statement.HttpResponse
@@ -20,7 +21,7 @@ internal abstract class BaseResourceApi(protected val client: HttpClient) {
         else execute<T> { response }.getOrThrow()
       }
 
-  protected suspend inline fun <reified T, ID> executeCreate(resourceId: ID, block: suspend () -> HttpResponse): Result<ResourceCreateResult<ID>> =
+  protected suspend inline fun <reified T, ID> executeCreate(resource: ID, block: suspend () -> HttpResponse): Result<ResourceCreateResult<ID>> =
     handleResponse(json) { block() }
       .mapCatching {
         try {
@@ -28,12 +29,40 @@ internal abstract class BaseResourceApi(protected val client: HttpClient) {
         } catch (se: Throwable) {
           throw ApiException.Serialization(se)
         }
-        ResourceCreateResult.Success(resourceId)
+        ResourceCreateResult.Success(resource)
       }.recoverCatching { exc ->
         if (exc is ApiException.Server) {
           when (exc.error?.code) {
-            ErrorCodes.ALREADY_EXISTS -> ResourceCreateResult.AlreadyExists(resourceId)
+            ErrorCodes.ALREADY_EXISTS -> ResourceCreateResult.AlreadyExists(resource)
             ErrorCodes.VALIDATION_ERROR -> ResourceCreateResult.ValidationError(exc.error.message)
+            else -> throw exc
+          }
+        } else throw exc
+      }
+
+  protected suspend inline fun <reified T, ID : Any> executeBatchCreate(
+    resources: List<ID>,
+    crossinline resourceIdParser: (resourceId: String) -> ID,
+    block: suspend () -> HttpResponse
+  ): Result<ResourceBatchCreateResult<ID>> =
+    handleResponse(json) { block() }
+      .mapCatching {
+        try {
+          it.body<T>()
+        } catch (se: Throwable) {
+          throw ApiException.Serialization(se)
+        }
+        ResourceBatchCreateResult.Success(resources)
+      }.recoverCatching { exc ->
+        if (exc is ApiException.Server) {
+          when (exc.error?.code) {
+            ErrorCodes.ALREADY_EXISTS -> {
+              val error = exc.error.asResourcesNotFound()
+              val resourceIds = error.resourceIds.map { resourceIdParser(it) }
+              ResourceBatchCreateResult.AlreadyExists(resourceIds)
+            }
+
+            ErrorCodes.VALIDATION_ERROR -> ResourceBatchCreateResult.ValidationError(exc.error.message)
             else -> throw exc
           }
         } else throw exc

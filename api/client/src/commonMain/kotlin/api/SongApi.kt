@@ -27,7 +27,7 @@ internal class SongApiImpl(client: HttpClient) : BaseResourceApi(client), SongAp
     executeGet<SongDetailDto> { client.get(Songs.ById(id = id)) }.getOrThrow()
 
   override suspend fun create(request: SongCreateRequestDto): ResourceCreateResult<SongIdDto> =
-    executeCreate<String, SongIdDto>(resourceId = request.id) {
+    executeCreate<String, SongIdDto>(resource = request.id) {
       client.post(Songs.Create()) {
         header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(request)

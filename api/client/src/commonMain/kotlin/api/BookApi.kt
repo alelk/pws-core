@@ -6,6 +6,7 @@ import io.github.alelk.pws.api.contract.book.BookSortDto
 import io.github.alelk.pws.api.contract.book.BookSummaryDto
 import io.github.alelk.pws.api.contract.book.BookUpdateRequestDto
 import io.github.alelk.pws.api.contract.book.Books
+import io.github.alelk.pws.api.contract.book.songnumber.SongNumberLinkDto
 import io.github.alelk.pws.api.contract.core.LocaleDto
 import io.github.alelk.pws.api.contract.core.ids.BookIdDto
 import io.github.alelk.pws.api.contract.song.SongSummaryDto
@@ -26,6 +27,8 @@ interface BookApi {
 
   suspend fun create(request: BookCreateRequestDto): ResourceCreateResult<BookIdDto>
 
+  suspend fun createBookSongs(id: BookIdDto, request: List<SongNumberLinkDto>): ResourceBatchCreateResult<SongNumberLinkDto>
+
   suspend fun update(id: BookIdDto, request: BookUpdateRequestDto): ResourceUpdateResult<BookIdDto>
 }
 
@@ -40,8 +43,19 @@ internal class BookApiImpl(client: HttpClient) : BaseResourceApi(client), BookAp
     executeGet<Map<Int, SongSummaryDto>> { client.get(Books.ById.Songs(parent = Books.ById(id = id))) }.getOrThrow()
 
   override suspend fun create(request: BookCreateRequestDto): ResourceCreateResult<BookIdDto> =
-    executeCreate<String, BookIdDto>(resourceId = request.id) {
+    executeCreate<String, BookIdDto>(resource = request.id) {
       client.post(Books.Create()) {
+        header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+        setBody(request)
+      }
+    }.getOrThrow()
+
+  override suspend fun createBookSongs(
+    id: BookIdDto,
+    request: List<SongNumberLinkDto>
+  ): ResourceBatchCreateResult<SongNumberLinkDto> =
+    executeBatchCreate<List<SongNumberLinkDto>, SongNumberLinkDto>(request, { SongNumberLinkDto.parse(it) }) {
+      client.post(Books.ById.Songs.Create(parent = Books.ById.Songs(Books.ById(id = id)))) {
         header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(request)
       }

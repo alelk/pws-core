@@ -2,6 +2,7 @@ package io.github.alelk.pws.api.contract.book
 
 import io.github.alelk.pws.api.contract.core.LocaleDto
 import io.github.alelk.pws.api.contract.core.ids.BookIdDto
+import io.github.alelk.pws.api.contract.core.ids.SongIdDto
 import io.ktor.resources.Resource
 
 @Resource("/v1/books")
@@ -26,6 +27,9 @@ class Books(
 
       @Resource("update")
       class Replace(val parent: Songs)
+
+      @Resource("{id}")
+      class SongById(val parent: Songs, val id: SongIdDto)
     }
 
     @Resource("update")

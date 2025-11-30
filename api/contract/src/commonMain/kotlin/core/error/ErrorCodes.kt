@@ -10,6 +10,7 @@ object ErrorCodes {
   // Resource conflicts
   const val ALREADY_EXISTS = "ALREADY_EXISTS"
   const val RESOURCE_NOT_FOUND = "RESOURCE_NOT_FOUND"
+  const val RESOURCES_NOT_FOUND = "RESOURCES_NOT_FOUND"
   const val CONFLICT = "CONFLICT"
 
   // Authentication/Authorization
