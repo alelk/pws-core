@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
@@ -22,11 +23,20 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import cafe.adriel.voyager.core.registry.rememberScreen
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
@@ -71,11 +81,45 @@ fun BookSongs(
       }
 
       is BookSongsUiState.Content -> {
-        LazyColumn(Modifier.padding(innerPadding).fillMaxSize()) {
-          val sortedSongs = state.book.songs.toList().sortedBy { (number, _) -> number }
-          items(items = sortedSongs) { (number, song) ->
+        val sortedSongs = remember(state.book) { state.book.songs.toList().sortedBy { (number, _) -> number } }
+
+        // Client-side incremental rendering to handle large lists gracefully
+        val listState = rememberLazyListState()
+        val visibleCountState = rememberSaveable(state.book.hashCode().toString()) { mutableStateOf(minOf(200, sortedSongs.size)) }
+        var visibleCount by visibleCountState
+
+        // Load next chunk when user scrolls near the end of currently displayed items
+        LaunchedEffect(sortedSongs.size) {
+          // reset visibleCount if dataset changed significantly (e.g., new book)
+          visibleCount = minOf(200, sortedSongs.size)
+        }
+
+        LaunchedEffect(listState, sortedSongs.size, visibleCount) {
+          snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
+            .filter { it != null }
+            .map { it!! }
+            .distinctUntilChanged()
+            .collect { lastVisibleIndex ->
+              val threshold = visibleCount - 10
+              if (lastVisibleIndex >= threshold && visibleCount < sortedSongs.size) {
+                // increase by chunk, but do not exceed total
+                visibleCount = minOf(visibleCount + 300, sortedSongs.size)
+              }
+            }
+        }
+
+        LazyColumn(Modifier.padding(innerPadding).fillMaxSize(), state = listState) {
+          val slice = sortedSongs.take(visibleCount)
+          items(items = slice, key = { it.first }) { (number, song) ->
             val songScreen = rememberScreen(SharedScreens.Song(SongNumberId(bookId, song.id)))
             SongRow(number = number, song = song, onClick = { navigator.push(songScreen) })
+          }
+          if (visibleCount < sortedSongs.size) {
+            item(key = "loading_more") {
+              Box(Modifier.fillMaxWidth().padding(16.dp)) {
+                CircularProgressIndicator(Modifier.align(androidx.compose.ui.Alignment.Center))
+              }
+            }
           }
         }
       }
