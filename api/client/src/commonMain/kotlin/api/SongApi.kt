@@ -8,7 +8,7 @@ import io.github.alelk.pws.api.contract.song.Songs
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.resources.get
 import io.ktor.client.plugins.resources.post
-import io.ktor.client.plugins.resources.put
+import io.ktor.client.plugins.resources.patch
 import io.ktor.client.request.header
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -28,7 +28,7 @@ internal class SongApiImpl(client: HttpClient) : BaseResourceApi(client), SongAp
 
   override suspend fun create(request: SongCreateRequestDto): ResourceCreateResult<SongIdDto> =
     executeCreate<String, SongIdDto>(resource = request.id) {
-      client.post(Songs.Create()) {
+      client.post(Songs()) {
         header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(request)
       }
@@ -36,7 +36,7 @@ internal class SongApiImpl(client: HttpClient) : BaseResourceApi(client), SongAp
 
   override suspend fun update(request: SongUpdateRequestDto): ResourceUpdateResult<SongIdDto> =
     executeUpdate<String, SongIdDto>(resourceId = request.id) {
-      client.put(Songs.ById.Update(parent = Songs.ById(id = request.id))) {
+      client.patch(Songs.ById(id = request.id)) {
         header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(request)
       }
