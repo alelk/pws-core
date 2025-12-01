@@ -5,23 +5,29 @@ import io.github.alelk.pws.api.client.error.handleResponse
 import io.github.alelk.pws.api.client.http.JsonProvider
 import io.github.alelk.pws.api.contract.core.error.ErrorCodes
 import io.github.alelk.pws.api.contract.core.error.asResourcesNotFound
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.statement.HttpResponse
-import io.ktor.http.HttpStatusCode
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.statement.*
 import kotlinx.serialization.json.Json
 
 internal abstract class BaseResourceApi(protected val client: HttpClient) {
   protected val json: Json get() = JsonProvider.instance
 
-  protected suspend inline fun <reified T : Any> executeGet(block: suspend () -> HttpResponse): Result<T?> =
-    handleResponse(json) { block() }
-      .mapCatching { response ->
-        if (response.status == HttpStatusCode.NotFound) null
-        else execute<T> { response }.getOrThrow()
-      }
+  protected suspend inline fun <reified T : Any> executeGet(crossinline block: suspend () -> HttpResponse): Result<T?> =
+    handleResponse(json) {
+      block()
+    }.recoverCatching { exc ->
+      if (exc is ApiException.Server) {
+        when (exc.error?.code) {
+          ErrorCodes.RESOURCE_NOT_FOUND -> null
+          else -> throw exc
+        }
+      } else throw exc
+    }.mapCatching { response ->
+      response?.let { execute<T> { it } }?.getOrThrow()
+    }
 
-  protected suspend inline fun <reified T, ID> executeCreate(resource: ID, block: suspend () -> HttpResponse): Result<ResourceCreateResult<ID>> =
+  protected suspend inline fun <reified T, ID> executeCreate(resource: ID, crossinline block: suspend () -> HttpResponse): Result<ResourceCreateResult<ID>> =
     handleResponse(json) { block() }
       .mapCatching {
         try {
@@ -43,7 +49,7 @@ internal abstract class BaseResourceApi(protected val client: HttpClient) {
   protected suspend inline fun <reified T, ID : Any> executeBatchCreate(
     resources: List<ID>,
     crossinline resourceIdParser: (resourceId: String) -> ID,
-    block: suspend () -> HttpResponse
+    crossinline block: suspend () -> HttpResponse
   ): Result<ResourceBatchCreateResult<ID>> =
     handleResponse(json) { block() }
       .mapCatching {
@@ -68,7 +74,7 @@ internal abstract class BaseResourceApi(protected val client: HttpClient) {
         } else throw exc
       }
 
-  protected suspend inline fun <reified T, ID> executeUpdate(resourceId: ID, block: suspend () -> HttpResponse): Result<ResourceUpdateResult<ID>> =
+  protected suspend inline fun <reified T, ID> executeUpdate(resourceId: ID, crossinline block: suspend () -> HttpResponse): Result<ResourceUpdateResult<ID>> =
     handleResponse(json) { block() }
       .mapCatching {
         try {
@@ -87,7 +93,7 @@ internal abstract class BaseResourceApi(protected val client: HttpClient) {
         } else throw exc
       }
 
-  protected suspend inline fun <reified T> execute(block: suspend () -> HttpResponse): Result<T> =
+  protected suspend inline fun <reified T> execute(crossinline block: suspend () -> HttpResponse): Result<T> =
     handleResponse(json) { block() }
       .mapCatching {
         try {

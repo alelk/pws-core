@@ -6,6 +6,7 @@ import io.github.alelk.pws.api.contract.book.BookSortDto
 import io.github.alelk.pws.api.contract.book.BookSummaryDto
 import io.github.alelk.pws.api.contract.book.BookUpdateRequestDto
 import io.github.alelk.pws.api.contract.book.Books
+import io.github.alelk.pws.api.contract.book.songnumber.ReplaceAllBookSongNumbersResult
 import io.github.alelk.pws.api.contract.book.songnumber.SongNumberLinkDto
 import io.github.alelk.pws.api.contract.core.LocaleDto
 import io.github.alelk.pws.api.contract.core.ids.BookIdDto
@@ -14,6 +15,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.plugins.resources.get
 import io.ktor.client.plugins.resources.post
 import io.ktor.client.plugins.resources.patch
+import io.ktor.client.plugins.resources.put
 import io.ktor.client.request.header
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -29,12 +31,15 @@ interface BookApi {
 
   suspend fun createBookSongs(id: BookIdDto, request: List<SongNumberLinkDto>): ResourceBatchCreateResult<SongNumberLinkDto>
 
+  // Replace all book-song links with the provided list
+  suspend fun replaceBookSongs(id: BookIdDto, request: List<SongNumberLinkDto>): ReplaceAllBookSongNumbersResult
+
   suspend fun update(id: BookIdDto, request: BookUpdateRequestDto): ResourceUpdateResult<BookIdDto>
 }
 
 internal class BookApiImpl(client: HttpClient) : BaseResourceApi(client), BookApi {
   override suspend fun get(id: BookIdDto): BookDetailDto? =
-    executeGet<BookDetailDto> { client.get(Books.ById(id = id)) }.getOrThrow()
+  executeGet<BookDetailDto> { client.get(Books.ById(id = id)) }.getOrThrow()
 
   override suspend fun list(locale: LocaleDto?, enabled: Boolean?, minPriority: Int?, sort: BookSortDto?): List<BookSummaryDto> =
     execute<List<BookSummaryDto>> { client.get(Books(locale = locale, enabled = enabled, minPriority = minPriority, sort = sort)) }.getOrThrow()
@@ -56,6 +61,17 @@ internal class BookApiImpl(client: HttpClient) : BaseResourceApi(client), BookAp
   ): ResourceBatchCreateResult<SongNumberLinkDto> =
     executeBatchCreate<List<SongNumberLinkDto>, SongNumberLinkDto>(request, { SongNumberLinkDto.parse(it) }) {
       client.post(Books.ById.Songs(parent = Books.ById(id = id))) {
+        header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+        setBody(request)
+      }
+    }.getOrThrow()
+
+  override suspend fun replaceBookSongs(
+    id: BookIdDto,
+    request: List<SongNumberLinkDto>
+  ): ReplaceAllBookSongNumbersResult =
+    execute<ReplaceAllBookSongNumbersResult> {
+      client.put(Books.ById.Songs(parent = Books.ById(id = id))) {
         header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(request)
       }
