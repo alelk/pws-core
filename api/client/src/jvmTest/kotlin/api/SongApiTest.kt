@@ -7,6 +7,9 @@ import io.github.alelk.pws.api.contract.core.VersionDto
 import io.github.alelk.pws.api.contract.core.error.ErrorDto
 import io.github.alelk.pws.api.contract.core.error.resourceNotFound
 import io.github.alelk.pws.api.contract.core.ids.SongIdDto
+import io.github.alelk.pws.api.contract.core.ids.BookIdDto
+import io.github.alelk.pws.api.contract.song.SongSortDto
+import io.github.alelk.pws.api.contract.song.SongSummaryDto
 import io.github.alelk.pws.api.contract.song.LyricDto
 import io.github.alelk.pws.api.contract.song.LyricPartDto
 import io.github.alelk.pws.api.contract.song.SongCreateRequestDto
@@ -14,6 +17,7 @@ import io.github.alelk.pws.api.contract.song.SongDetailDto
 import io.github.alelk.pws.api.mapping.song.toDto
 import io.github.alelk.pws.domain.core.ids.SongId
 import io.github.alelk.pws.domain.song.model.songDetail
+import io.github.alelk.pws.domain.song.model.songSummary
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.property.Arb
@@ -61,6 +65,43 @@ class SongApiTest : FunSpec({
     val api = SongApiImpl(client)
     val got = api.get(SongIdDto(1L))
     got shouldBe detail
+  }
+
+  test("list() should GET /v1/songs and return empty list") {
+    val client = httpClientWith { req: HttpRequestData ->
+      req.method shouldBe HttpMethod.Get
+      req.url.encodedPath shouldBe "/v1/songs"
+      respond(
+        json.encodeToString(emptyList<SongSummaryDto>()), status = HttpStatusCode.OK,
+        headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString()))
+      )
+    }
+    val api = SongApiImpl(client)
+    val list = api.list()
+    list shouldBe emptyList()
+  }
+
+  test("list() should send query params and parse list of summaries") {
+    val s1 = Arb.songSummary(id = Arb.constant(SongId(1L))).next().toDto()
+    val s2 = Arb.songSummary(id = Arb.constant(SongId(2L))).next().toDto()
+    val responseJson = json.encodeToString(listOf(s1, s2))
+
+    val client = httpClientWith { req: HttpRequestData ->
+      req.method shouldBe HttpMethod.Get
+      req.url.encodedPath shouldBe "/v1/songs"
+      // Query parameters
+      req.url.parameters["bookId"] shouldBe "book-1"
+      req.url.parameters["minNumber"] shouldBe "5"
+      req.url.parameters["maxNumber"] shouldBe "10"
+      req.url.parameters["sort"] shouldBe "number"
+      respond(
+        responseJson, status = HttpStatusCode.OK,
+        headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString()))
+      )
+    }
+    val api = SongApiImpl(client)
+    val got = api.list(bookId = BookIdDto.parse("book-1"), minNumber = 5, maxNumber = 10, sort = SongSortDto.ByNumber)
+    got shouldBe listOf(s1, s2)
   }
 
   test("get() should return null on 404") {

@@ -5,8 +5,10 @@ import io.github.alelk.pws.api.contract.song.LyricPartDto
 import io.github.alelk.pws.api.contract.song.SongDetailDto
 import io.github.alelk.pws.api.contract.song.SongSummaryDto
 import io.github.alelk.pws.api.contract.song.SongNumberDto
+import io.github.alelk.pws.api.contract.song.SongSortDto
 import io.github.alelk.pws.domain.core.BibleRef
 import io.github.alelk.pws.domain.core.SongNumber
+import io.github.alelk.pws.domain.song.query.SongSort
 import io.github.alelk.pws.domain.song.lyric.Bridge
 import io.github.alelk.pws.domain.song.lyric.Chorus
 import io.github.alelk.pws.domain.song.lyric.Lyric
@@ -49,3 +51,12 @@ fun SongDetailDto.toDomain(): SongDetail = SongDetail(
 )
 
 fun SongNumberDto.toDomain(): SongNumber = SongNumber(bookId.toDomain(), number)
+
+fun SongSortDto.toDomain(): SongSort = when (this) {
+  SongSortDto.ById -> SongSort.ById
+  SongSortDto.ByIdDesc -> SongSort.ByIdDesc
+  SongSortDto.ByName -> SongSort.ByName
+  SongSortDto.ByNameDesc -> SongSort.ByNameDesc
+  SongSortDto.ByNumber -> SongSort.ByNumber
+  SongSortDto.ByNumberDesc -> SongSort.ByNumberDesc
+}

@@ -3,8 +3,10 @@ package io.github.alelk.pws.api.mapping.song
 import io.github.alelk.pws.api.contract.song.LyricDto
 import io.github.alelk.pws.api.contract.song.LyricPartDto
 import io.github.alelk.pws.api.contract.song.SongDetailDto
+import io.github.alelk.pws.api.contract.song.SongSortDto
 import io.github.alelk.pws.api.contract.song.SongSummaryDto
 import io.github.alelk.pws.api.mapping.core.toDto
+import io.github.alelk.pws.domain.song.query.SongSort
 import io.github.alelk.pws.domain.song.lyric.Bridge
 import io.github.alelk.pws.domain.song.lyric.Chorus
 import io.github.alelk.pws.domain.song.lyric.Lyric
@@ -44,3 +46,12 @@ fun SongDetail.toDto(): SongDetailDto = SongDetailDto(
   bibleRef = bibleRef?.text,
   edited = edited
 )
+
+fun SongSort.toDto(): SongSortDto = when (this) {
+  SongSort.ById -> SongSortDto.ById
+  SongSort.ByIdDesc -> SongSortDto.ByIdDesc
+  SongSort.ByName -> SongSortDto.ByName
+  SongSort.ByNameDesc -> SongSortDto.ByNameDesc
+  SongSort.ByNumber -> SongSortDto.ByNumber
+  SongSort.ByNumberDesc -> SongSortDto.ByNumberDesc
+}
