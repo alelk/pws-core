@@ -39,3 +39,6 @@ fun apiClientKoinModule(baseUrl: Url): Module = module {
   single<BookWriteRepository> { RemoteBookWriteRepository(get()) }
 
 }
+
+// Convenience overload for callers that operate with plain String baseUrl (avoids requiring Url type on their side)
+fun apiClientKoinModule(baseUrl: String): Module = apiClientKoinModule(Url(baseUrl))
