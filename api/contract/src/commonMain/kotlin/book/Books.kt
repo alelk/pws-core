@@ -12,27 +12,14 @@ class Books(
   val minPriority: Int? = null,
   val sort: BookSortDto? = null
 ) {
-
-  @Resource("create")
-  class Create(val parent: Books = Books())
-
   @Resource("{id}")
   class ById(val parent: Books = Books(), val id: BookIdDto) {
 
     @Resource("songs")
     class Songs(val parent: ById) {
 
-      @Resource("create")
-      class Create(val parent: Songs)
-
-      @Resource("update")
-      class Replace(val parent: Songs)
-
       @Resource("{id}")
       class SongById(val parent: Songs, val id: SongIdDto)
     }
-
-    @Resource("update")
-    class Update(val parent: ById)
   }
 }

@@ -13,7 +13,7 @@ import io.github.alelk.pws.api.contract.song.SongSummaryDto
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.resources.get
 import io.ktor.client.plugins.resources.post
-import io.ktor.client.plugins.resources.put
+import io.ktor.client.plugins.resources.patch
 import io.ktor.client.request.header
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -44,7 +44,7 @@ internal class BookApiImpl(client: HttpClient) : BaseResourceApi(client), BookAp
 
   override suspend fun create(request: BookCreateRequestDto): ResourceCreateResult<BookIdDto> =
     executeCreate<String, BookIdDto>(resource = request.id) {
-      client.post(Books.Create()) {
+      client.post(Books()) {
         header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(request)
       }
@@ -55,7 +55,7 @@ internal class BookApiImpl(client: HttpClient) : BaseResourceApi(client), BookAp
     request: List<SongNumberLinkDto>
   ): ResourceBatchCreateResult<SongNumberLinkDto> =
     executeBatchCreate<List<SongNumberLinkDto>, SongNumberLinkDto>(request, { SongNumberLinkDto.parse(it) }) {
-      client.post(Books.ById.Songs.Create(parent = Books.ById.Songs(Books.ById(id = id)))) {
+      client.post(Books.ById.Songs(parent = Books.ById(id = id))) {
         header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(request)
       }
@@ -63,7 +63,7 @@ internal class BookApiImpl(client: HttpClient) : BaseResourceApi(client), BookAp
 
   override suspend fun update(id: BookIdDto, request: BookUpdateRequestDto): ResourceUpdateResult<BookIdDto> =
     executeUpdate<String, BookIdDto>(resourceId = id) {
-      client.put(Books.ById.Update(parent = Books.ById(id = id))) {
+      client.patch(Books.ById(id = id)) {
         header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(request)
       }
