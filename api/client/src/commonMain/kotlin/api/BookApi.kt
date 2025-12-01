@@ -31,7 +31,7 @@ interface BookApi {
 
   suspend fun createBookSongs(id: BookIdDto, request: List<SongNumberLinkDto>): ResourceBatchCreateResult<SongNumberLinkDto>
 
-  // Replace all book-song links with the provided list
+  /** Replace all book-song links with the provided list. */
   suspend fun replaceBookSongs(id: BookIdDto, request: List<SongNumberLinkDto>): ReplaceAllBookSongNumbersResult
 
   suspend fun update(id: BookIdDto, request: BookUpdateRequestDto): ResourceUpdateResult<BookIdDto>
@@ -39,7 +39,7 @@ interface BookApi {
 
 internal class BookApiImpl(client: HttpClient) : BaseResourceApi(client), BookApi {
   override suspend fun get(id: BookIdDto): BookDetailDto? =
-  executeGet<BookDetailDto> { client.get(Books.ById(id = id)) }.getOrThrow()
+    executeGet<BookDetailDto> { client.get(Books.ById(id = id)) }.getOrThrow()
 
   override suspend fun list(locale: LocaleDto?, enabled: Boolean?, minPriority: Int?, sort: BookSortDto?): List<BookSummaryDto> =
     execute<List<BookSummaryDto>> { client.get(Books(locale = locale, enabled = enabled, minPriority = minPriority, sort = sort)) }.getOrThrow()
