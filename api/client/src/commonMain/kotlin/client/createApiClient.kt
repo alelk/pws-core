@@ -34,7 +34,7 @@ fun createApiClient(
   val songApi: SongApi = SongApiImpl(client)
   val bookApi: BookApi = BookApiImpl(client)
 
-  val songReadRepo: SongReadRepository = RemoteSongReadRepository(songApi, bookApi)
+  val songReadRepo: SongReadRepository = RemoteSongReadRepository(songApi)
   val songWriteRepo: SongWriteRepository = RemoteSongWriteRepository(songApi)
   val bookReadRepo: BookReadRepository = RemoteBookReadRepository(bookApi)
   val bookWriteRepo: BookWriteRepository = RemoteBookWriteRepository(bookApi)

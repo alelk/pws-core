@@ -33,7 +33,7 @@ fun apiClientKoinModule(baseUrl: Url): Module = module {
   single<SongApi> { get<ApiClientContainer>().songApi }
   single<BookApi> { get<ApiClientContainer>().bookApi }
 
-  single<SongReadRepository> { RemoteSongReadRepository(get(), get()) }
+  single<SongReadRepository> { RemoteSongReadRepository(get()) }
   single<SongWriteRepository> { RemoteSongWriteRepository(get()) }
   single<BookReadRepository> { RemoteBookReadRepository(get()) }
   single<BookWriteRepository> { RemoteBookWriteRepository(get()) }
