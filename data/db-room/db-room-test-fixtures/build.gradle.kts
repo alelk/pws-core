@@ -2,6 +2,8 @@ plugins {
   id("org.jetbrains.kotlin.multiplatform")
 }
 
+group = "io.github.alelk.pws.data"
+
 kotlin {
   jvm()
   iosX64()

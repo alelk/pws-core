@@ -3,6 +3,8 @@ plugins {
   alias(libs.plugins.kotlinSerialization)
 }
 
+group = "io.github.alelk.pws.domain"
+
 kotlin {
   jvm()
   iosX64()

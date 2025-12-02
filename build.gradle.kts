@@ -23,7 +23,6 @@ val versionName by extra(
 )
 
 allprojects {
-  group = "io.github.alelk.pws"
   version = versionName
 }
 

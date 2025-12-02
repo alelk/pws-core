@@ -8,6 +8,8 @@ plugins {
   alias(libs.plugins.kotestMultiplatform)
 }
 
+group = "io.github.alelk.pws.data"
+
 kotlin {
   androidTarget()
   jvm()
