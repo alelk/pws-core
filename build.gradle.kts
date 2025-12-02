@@ -46,8 +46,8 @@ subprojects {
         name = "GitHubPackages"
         url = uri("https://maven.pkg.github.com/alelk/pws-core")
         credentials {
-          username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USER") ?: "alelk"
-          password = project.findProperty("gpr.token") as String? ?: System.getenv("GITHUB_TOKEN")
+          username = findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USER") ?: "alelk"
+          password = findProperty("gpr.token") as String? ?: System.getenv("GITHUB_TOKEN")
         }
       }
     }

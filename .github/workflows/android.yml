@@ -6,16 +6,19 @@ on:
   pull_request:
     branches: [ "master", "next" ]
 
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  packages: write
+  checks: write
+  pages: write
+  id-token: write
+
 jobs:
   build:
 
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      issues: write
-      pull-requests: write
-      packages: write
-      checks: write
 
     steps:
       - uses: actions/checkout@v3
@@ -35,7 +38,7 @@ jobs:
         uses: mikepenz/action-junit-report@v4
         if: success() || failure()
         with:
-          report_paths: '**/build/test-results/test/TEST-*.xml'
+          report_paths: '**/build/test-results/*/TEST-*.xml'
 
       - name: Set up Node 20
         uses: actions/setup-node@v4
