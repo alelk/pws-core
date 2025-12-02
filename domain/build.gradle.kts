@@ -1,7 +1,6 @@
 plugins {
-  id("org.jetbrains.kotlin.multiplatform")
-  id("com.android.library")
-  alias(libs.plugins.kotlin.serialization)
+  alias(libs.plugins.kotlinMultiplatform)
+  alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
@@ -9,11 +8,9 @@ kotlin {
   iosX64()
   iosArm64()
   iosSimulatorArm64()
-  androidTarget()
   js(IR) {
     outputModuleName = "pws-domain"
     browser()
-    nodejs()
     binaries.executable()
   }
 
@@ -22,10 +19,6 @@ kotlin {
       implementation(libs.kotlinx.serialization.core)
       implementation(libs.kotlinx.coroutines.core)
     }
-
-    jvmMain.dependencies {}
-    iosArm64Main.dependencies {}
-    androidMain.dependencies {}
 
     commonTest.dependencies {
       implementation(project(":domain:domain-test-fixtures"))
@@ -41,31 +34,5 @@ kotlin {
     jvmTest.dependencies {
       implementation(libs.kotest.runner.junit5)
     }
-
-    androidUnitTest.dependencies {
-      runtimeOnly(libs.kotest.runner.junit5)
-    }
   }
-}
-
-android {
-  namespace = "io.github.alelk.pws.domain"
-
-  compileSdk = rootProject.extra["sdkVersion"] as Int
-  defaultConfig {
-    minSdk = 21
-  }
-
-  lint {
-    targetSdk = rootProject.extra["sdkVersion"] as Int
-  }
-
-  compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
-  }
-}
-
-tasks.withType<Test> {
-  useJUnitPlatform()
 }

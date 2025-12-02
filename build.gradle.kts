@@ -1,47 +1,40 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import java.util.TimeZone
-
-val sdkVersion by extra(35)
-val versionCode by extra(36)
-val versionName by extra(checkNotNull(File("app.version").readText().lines().firstOrNull()?.trim()?.takeIf { it.isNotBlank() }) { "app.version empty" })
-val versionNameSuffix by extra(getDate().lowercase())
-val kotlinVersion = libs.versions.kotlin.get()
 
 plugins {
-  alias(libs.plugins.android.application) apply false
-  alias(libs.plugins.kotlin.android) apply false
-  alias(libs.plugins.hilt) apply false
   id("maven-publish")
+
+  alias(libs.plugins.kotlinMultiplatform) apply false
+  alias(libs.plugins.kotlinSerialization) apply false
+  alias(libs.plugins.androidLibrary) apply false
+  id("com.google.devtools.ksp") version "${libs.versions.kotlin.get()}-${libs.versions.ksp.get()}" apply false
 }
+
+val androidSdkVersion by extra(35)
+
+val versionName by extra(
+  runCatching {
+    checkNotNull(
+      File("app.version")
+        .readText()
+        .lines()
+        .firstOrNull()?.trim()
+        ?.takeIf { it.isNotBlank() }
+    ) { "app.version empty" }
+  }.getOrElse { "0.0.1-SNAPSHOT" }
+)
 
 allprojects {
   group = "io.github.alelk.pws"
   version = versionName
-
-  buildscript {
-    dependencies {
-      classpath("com.android.tools.build:gradle:8.12.0")
-      classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-    }
-  }
-  repositories {
-    google()
-    mavenCentral()
-  }
-
-  tasks.withType<KotlinCompile> {
-    compilerOptions {
-      jvmTarget.set(JvmTarget.JVM_21)
-    }
-  }
 }
 
 subprojects {
   apply(plugin = "maven-publish")
+
+  repositories {
+    google()
+    mavenCentral()
+    mavenLocal()
+  }
 
   publishing {
     repositories {
@@ -51,7 +44,7 @@ subprojects {
       }
       maven {
         name = "GitHubPackages"
-        url = uri("https://maven.pkg.github.com/alelk/pws-android")
+        url = uri("https://maven.pkg.github.com/alelk/pws-core")
         credentials {
           username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USER") ?: "alelk"
           password = project.findProperty("gpr.token") as String? ?: System.getenv("GITHUB_TOKEN")
@@ -59,10 +52,11 @@ subprojects {
       }
     }
   }
-}
 
-fun getDate(): String {
-  val df = SimpleDateFormat("MMM-d-yyyy", Locale.ENGLISH)
-  df.timeZone = TimeZone.getTimeZone("UTC")
-  return df.format(Date())
+  tasks.withType<Test> {
+    useJUnitPlatform()
+    reports {
+      junitXml.required.set(true)
+    }
+  }
 }

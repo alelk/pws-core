@@ -9,17 +9,15 @@ kotlin {
   iosSimulatorArm64()
 
   sourceSets {
-    val commonMain by getting {
-      dependencies {
-        api(project(":data:db-room"))
-        api(project(":domain"))
-        api(project(":domain:domain-test-fixtures"))
-        api(libs.kotest.property)
-        api(libs.room.runtime)
-        implementation(libs.kotlinx.datetime)
-        implementation(libs.kotlinx.coroutines.core)
-        implementation(libs.kotest.property.datetime)
-      }
+    commonMain.dependencies {
+      api(project(":data:db-room"))
+      api(project(":domain"))
+      api(project(":domain:domain-test-fixtures"))
+      api(libs.kotest.property)
+      api(libs.room.runtime)
+      implementation(libs.kotlinx.datetime)
+      implementation(libs.kotlinx.coroutines.core)
+      implementation(libs.kotest.property.datetime)
     }
   }
 }

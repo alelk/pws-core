@@ -22,20 +22,14 @@ local.properties
 
 # Android
 captures/
-output/
-app/*/release/
-data/db-android/test-db
 local-repo/
-
-# Assets (if not needed in VCS)
-app/src/ru/assets/
-app/src/uk/assets/
 
 # Yarn
 node_modules/
 yarn-error.log
 yarn-debug.log*
 
-# Misc
-*.log
-/data/db-android/test-db/
+# logs:
+
+**/logs/*.log
+**/logs/*.log.*.gz

@@ -10,13 +10,10 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value=":domain:jvmTest" />
-          <option value="domain:testDebugUnitTest" />
-          <option value=":data:db-android:testRuDebugUnitTest" />
-          <option value=":data:db-room:jvmTest" />
+          <option value="domain:jvmTest" />
           <option value=":backup:jvmTest" />
-          <option value=":app:testRuDebugUnitTest" />
-          <option value=":app:test" />
+          <option value=":data:db-room:testDebugUnitTest" />
+          <option value=":data:db-room:jvmTest" />
         </list>
       </option>
       <option name="vmOptions" />
