@@ -32,7 +32,7 @@ jobs:
 
       - name: Build and run tests
         run: |
-          ./gradlew assemble domain:jvmTest :backup:jvmTest :data:db-room:testDebugUnitTest :data:db-room:jvmTest
+          ./gradlew assemble domain:jvmTest :backup:jvmTest :data:db-room:testDebugUnitTest :data:db-room:jvmTest :api:client:jvmTest
 
       - name: Publish Test Results
         uses: mikepenz/action-junit-report@v4

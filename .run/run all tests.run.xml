@@ -14,6 +14,7 @@
           <option value=":backup:jvmTest" />
           <option value=":data:db-room:testDebugUnitTest" />
           <option value=":data:db-room:jvmTest" />
+          <option value=":api:client:jvmTest" />
         </list>
       </option>
       <option name="vmOptions" />

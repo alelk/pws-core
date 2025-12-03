@@ -21,6 +21,16 @@ include(
   ":domain",
   ":domain:domain-test-fixtures",
 
+  ":api:contract",
+  ":api:mapping",
+  ":api:client",
+  ":api:client:di",
+
+  ":core:navigation",
+  ":core:ui",
+
+  ":features",
+
   ":backup",
 
   ":data:db-room",
