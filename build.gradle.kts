@@ -37,7 +37,7 @@ subprojects {
 
   publishing {
     repositories {
-      mavenLocal {
+      maven {
         name = "TestLocal"
         url = rootProject.layout.projectDirectory.file("local-repo").asFile.toURI()
       }

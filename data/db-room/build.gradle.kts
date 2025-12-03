@@ -11,7 +11,9 @@ plugins {
 group = "io.github.alelk.pws.data"
 
 kotlin {
-  androidTarget()
+  androidTarget {
+    publishLibraryVariants("release", "debug")
+  }
   jvm()
 
   iosX64()
@@ -126,6 +128,7 @@ android {
   }
 
   publishing {
+
     singleVariant("release") {
       withSourcesJar()
       withJavadocJar()
