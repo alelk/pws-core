@@ -124,4 +124,16 @@ android {
   ksp {
     arg("room.generateKotlin", "true")
   }
+
+  publishing {
+    singleVariant("release") {
+      withSourcesJar()
+      withJavadocJar()
+    }
+
+    singleVariant("debug") {
+      withSourcesJar()
+      withJavadocJar()
+    }
+  }
 }
