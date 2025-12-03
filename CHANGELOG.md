@@ -1,5 +1,12 @@
 # PWS Android
 
+## [1.2.2](https://github.com/alelk/pws-core/compare/v1.2.1...v1.2.2) (2025-12-03)
+
+
+### Bug Fixes
+
+* fix domain test fixtures artifact package ([58548ad](https://github.com/alelk/pws-core/commit/58548adb9bf5c16d6a0e4b527bf56023459e01f7))
+
 ## [1.2.1](https://github.com/alelk/pws-core/compare/v1.2.0...v1.2.1) (2025-12-03)
 
 
