@@ -1,5 +1,41 @@
 # PWS Android
 
+# [1.1.0](https://github.com/alelk/pws-core/compare/v1.0.2...v1.1.0) (2025-12-03)
+
+
+### Bug Fixes
+
+* **api:** Fix person -> dto converter. ([97a3359](https://github.com/alelk/pws-core/commit/97a33592eafb868e2bfebbfe9c01047ccd7c4266))
+* **api:** fix publication issues ([cb90699](https://github.com/alelk/pws-core/commit/cb9069983581b5ae025457793ef23adf314e505f))
+* **api:** fix remote repositories issue ([cc5f991](https://github.com/alelk/pws-core/commit/cc5f991a05575df9b8faf5834f38b7724a2bd46d))
+* **api:** Fix web songs observe repository. ([4eca529](https://github.com/alelk/pws-core/commit/4eca5297fa60989c39525d1fff36490a5f066337))
+* **api:** Implement book/song/songnumber update endpoints ([b46af97](https://github.com/alelk/pws-core/commit/b46af975c8a81dc7b025e763aa4dc2fe845f7374))
+* **api:** Implement lazy song list display. ([7ee5ba2](https://github.com/alelk/pws-core/commit/7ee5ba2ac434a90422841d450107039d7641a421))
+* **api:** projects.api.contract is client's api ([2f6a6fa](https://github.com/alelk/pws-core/commit/2f6a6fa74f2f800eb396e1961f791cdfd7bef021))
+* configure domain module publication ([ffee400](https://github.com/alelk/pws-core/commit/ffee40020c86e916a5d309c724560d32d5079d9f))
+* fix build issues ([297c3f5](https://github.com/alelk/pws-core/commit/297c3f5c131da6e17de341c8fb5f260e77da2222))
+* **server:** Fix build issues ([33fa1cc](https://github.com/alelk/pws-core/commit/33fa1cc1c3145a9e415e656b971db802fa1976ae))
+* **server:** fix server app issues ([16f1dc6](https://github.com/alelk/pws-core/commit/16f1dc699cc349f1e7ad8f1d1c7faa781b3725fc))
+
+
+### Features
+
+* add modules api, features, core ([a9358b9](https://github.com/alelk/pws-core/commit/a9358b9cf3ed3d835c0a035ffc0d23b8a1cfdf2a))
+* Add test ui screens ([0700ad9](https://github.com/alelk/pws-core/commit/0700ad93ff0b2752722335146312a30771039f86))
+* **api-client:** add api client factory ([5b984ad](https://github.com/alelk/pws-core/commit/5b984ad95e0b801135d26ddb87ca0deebfb12820))
+* **api-client:** Add method to create books ([2807fed](https://github.com/alelk/pws-core/commit/2807feda637fbe15d3be371f5a293213454285f2))
+* **api-client:** implement book, song repositories in api client ([5309caa](https://github.com/alelk/pws-core/commit/5309caa4ad0add7d3ca33a8e618df9700a5da6f8))
+* **api, server:** Implement songs search api ([d2cd5cf](https://github.com/alelk/pws-core/commit/d2cd5cfcea185a2aae55d3bcda3dbe2d7b0edcac))
+* **api:** add api client di module ([f46d907](https://github.com/alelk/pws-core/commit/f46d907b29338b2641e4c607a336825e5977b4e4))
+* **api:** Add song numbers create api endpoint ([06e2a78](https://github.com/alelk/pws-core/commit/06e2a783ac2fbbc07493984af77769cea2a67973))
+* **api:** Fix songs api ([4d8a4ab](https://github.com/alelk/pws-core/commit/4d8a4abeb57ba1ec13b5e590e3bd256b28c6b969))
+* **api:** improve books api: book create, book update endpoints ([73ba5a2](https://github.com/alelk/pws-core/commit/73ba5a2e66866c5ad5bc780d9db8864d7c7003b9))
+* **app:** Add song / book observe repositories with caches ([a08f5bd](https://github.com/alelk/pws-core/commit/a08f5bd9a22b2382b7c8154b9f7ba2089524dfd1))
+* **server-transport:** Add book routes tests. ([ca20de3](https://github.com/alelk/pws-core/commit/ca20de3168bcc50eda8f7399d777f204ac3980dc))
+* **server:** Add create book endpoint ([97af29c](https://github.com/alelk/pws-core/commit/97af29c34fcc30f2c1f55d9461e4f8bdc67b380c))
+* **server:** implement simple server modules ([c04ea4b](https://github.com/alelk/pws-core/commit/c04ea4b09406a644d0154ea64f21e09a3b0a4118))
+* **server:** Implement song creation api ([7c46ad1](https://github.com/alelk/pws-core/commit/7c46ad125966a44b762dad8fae3055a8a3a49e3a))
+
 ## [1.0.2](https://github.com/alelk/pws-core/compare/v1.0.1...v1.0.2) (2025-12-02)
 
 
