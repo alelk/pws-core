@@ -9,7 +9,12 @@ if [[ $NEXT_RELEASE_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     :data:db-room:db-room-test-fixtures:publishAllPublicationsToGitHubPackagesRepository \
     :data:repo-room:publishAllPublicationsToGitHubPackagesRepository \
     :domain:publishAllPublicationsToGitHubPackagesRepository \
-    :domain:domain-test-fixtures:publishAllPublicationsToGitHubPackagesRepository
+    :domain:domain-test-fixtures:publishAllPublicationsToGitHubPackagesRepository \
+    :backup:publishAllPublicationsToGitHubPackagesRepository \
+    :api:client:publishAllPublicationsToGitHubPackagesRepository \
+    :api:client:di:publishAllPublicationsToGitHubPackagesRepository \
+    :api:contract:publishAllPublicationsToGitHubPackagesRepository \
+    :api:mapping:publishAllPublicationsToGitHubPackagesRepository
 elif [[ $NEXT_RELEASE_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+-rc.+$ ]]; then
   echo "Publishing $NEXT_RELEASE_VERSION as pre-release"
   echo "$NEXT_RELEASE_VERSION" > app.version
@@ -17,7 +22,12 @@ elif [[ $NEXT_RELEASE_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+-rc.+$ ]]; then
       :data:db-room:db-room-test-fixtures:publishAllPublicationsToGitHubPackagesRepository \
       :data:repo-room:publishAllPublicationsToGitHubPackagesRepository \
       :domain:publishAllPublicationsToGitHubPackagesRepository \
-      :domain:domain-test-fixtures:publishAllPublicationsToGitHubPackagesRepository
+      :domain:domain-test-fixtures:publishAllPublicationsToGitHubPackagesRepository \
+      :backup:publishAllPublicationsToGitHubPackagesRepository \
+      :api:client:publishAllPublicationsToGitHubPackagesRepository \
+      :api:client:di:publishAllPublicationsToGitHubPackagesRepository \
+      :api:contract:publishAllPublicationsToGitHubPackagesRepository \
+      :api:mapping:publishAllPublicationsToGitHubPackagesRepository
 elif [[ $NEXT_RELEASE_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+-.+$ ]]; then
   echo "Publishing $NEXT_RELEASE_VERSION as snapshot"
   echo "${NEXT_RELEASE_VERSION%-*}-SNAPSHOT" > app.version
@@ -25,7 +35,12 @@ elif [[ $NEXT_RELEASE_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+-.+$ ]]; then
       :data:db-room:db-room-test-fixtures:publishAllPublicationsToGitHubPackagesRepository \
       :data:repo-room:publishAllPublicationsToGitHubPackagesRepository \
       :domain:publishAllPublicationsToGitHubPackagesRepository \
-      :domain:domain-test-fixtures:publishAllPublicationsToGitHubPackagesRepository
+      :domain:domain-test-fixtures:publishAllPublicationsToGitHubPackagesRepository \
+      :backup:publishAllPublicationsToGitHubPackagesRepository \
+      :api:client:publishAllPublicationsToGitHubPackagesRepository \
+      :api:client:di:publishAllPublicationsToGitHubPackagesRepository \
+      :api:contract:publishAllPublicationsToGitHubPackagesRepository \
+      :api:mapping:publishAllPublicationsToGitHubPackagesRepository
 else
   echo "No release published"
 fi
