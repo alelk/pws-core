@@ -1,5 +1,12 @@
 # PWS Android
 
+## [1.2.1](https://github.com/alelk/pws-core/compare/v1.2.0...v1.2.1) (2025-12-03)
+
+
+### Bug Fixes
+
+* fix db-repo android publishing ([f0e8032](https://github.com/alelk/pws-core/commit/f0e803279c201d91bfd221b2e855dd16d016434a))
+
 # [1.2.0](https://github.com/alelk/pws-core/compare/v1.1.0...v1.2.0) (2025-12-03)
 
 
