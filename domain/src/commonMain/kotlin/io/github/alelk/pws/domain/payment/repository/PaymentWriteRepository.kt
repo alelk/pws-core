@@ -1,19 +1,14 @@
 package io.github.alelk.pws.domain.payment.repository
 
 import io.github.alelk.pws.domain.core.ids.PaymentId
-import io.github.alelk.pws.domain.core.ids.UserId
-import io.github.alelk.pws.domain.payment.model.Payment
-import io.github.alelk.pws.domain.payment.model.PaymentProvider
-import io.github.alelk.pws.domain.payment.model.PaymentTransactionStatus
+import io.github.alelk.pws.domain.core.result.CreateResourceResult
+import io.github.alelk.pws.domain.core.result.DeleteResourceResult
+import io.github.alelk.pws.domain.core.result.UpdateResourceResult
+import io.github.alelk.pws.domain.payment.command.CreatePaymentCommand
+import io.github.alelk.pws.domain.payment.command.UpdatePaymentCommand
 
 interface PaymentWriteRepository {
-  suspend fun create(
-      userId: UserId,
-      provider: PaymentProvider,
-      transactionId: String,
-      amount: String,
-      status: PaymentTransactionStatus = PaymentTransactionStatus.PENDING
-  ): Payment
-
-  suspend fun updateStatus(id: PaymentId, status: PaymentTransactionStatus): Payment?
+  suspend fun create(command: CreatePaymentCommand): CreateResourceResult<PaymentId>
+  suspend fun update(command: UpdatePaymentCommand): UpdateResourceResult<PaymentId>
+  suspend fun delete(id: PaymentId): DeleteResourceResult<PaymentId>
 }
