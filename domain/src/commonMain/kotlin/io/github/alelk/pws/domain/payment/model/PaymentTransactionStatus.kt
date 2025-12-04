@@ -1,4 +1,4 @@
-package io.github.alelk.pws.domain.auth.model
+package io.github.alelk.pws.domain.payment.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

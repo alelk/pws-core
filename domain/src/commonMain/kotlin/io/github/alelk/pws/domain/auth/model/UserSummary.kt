@@ -8,7 +8,7 @@ data class UserSummary(
   val id: UserId,
   val email: String,
   val username: String? = null,
-  val paymentStatus: PaymentStatus,
+  val accessPlan: AccessPlan,
   val role: UserRole
 )
 

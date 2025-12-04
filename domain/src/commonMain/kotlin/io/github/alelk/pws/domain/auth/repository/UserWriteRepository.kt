@@ -1,35 +1,18 @@
 package io.github.alelk.pws.domain.auth.repository
 
-import io.github.alelk.pws.domain.auth.model.AuthProvider
-import io.github.alelk.pws.domain.auth.model.PaymentStatus
-import io.github.alelk.pws.domain.auth.model.UserDetail
-import io.github.alelk.pws.domain.auth.model.UserRole
+import io.github.alelk.pws.domain.auth.command.CreateUserCommand
+import io.github.alelk.pws.domain.auth.command.UpdateUserCommand
 import io.github.alelk.pws.domain.core.ids.UserId
+import io.github.alelk.pws.domain.core.result.CreateResourceResult
+import io.github.alelk.pws.domain.core.result.DeleteResourceResult
+import io.github.alelk.pws.domain.core.result.UpdateResourceResult
 
 interface UserWriteRepository {
-  suspend fun create(
-    email: String,
-    hashedPassword: String? = null,
-    authProvider: AuthProvider,
-    providerId: String? = null,
-    username: String? = null,
-    role: UserRole = UserRole.USER,
-    paymentStatus: PaymentStatus = PaymentStatus.FREE,
-    profileJson: String? = null
-  ): UserDetail
+  suspend fun create(command: CreateUserCommand): CreateResourceResult<UserId>
+  suspend fun update(command: UpdateUserCommand): UpdateResourceResult<UserId>
+  suspend fun delete(id: UserId): DeleteResourceResult<UserId>
 
-  suspend fun update(
-    id: UserId,
-    email: String? = null,
-    hashedPassword: String? = null,
-    username: String? = null,
-    paymentStatus: PaymentStatus? = null,
-    role: UserRole? = null,
-    profileJson: String? = null
-  ): UserDetail?
-
-  suspend fun delete(id: UserId): Boolean
-
-  suspend fun linkTelegramAccount(userId: UserId, telegramProviderId: String): UserDetail?
+  // Specialized helper for common operation; consistent return type with update
+  suspend fun linkTelegramAccount(userId: UserId, telegramProviderId: String): UpdateResourceResult<UserId>
 }
 

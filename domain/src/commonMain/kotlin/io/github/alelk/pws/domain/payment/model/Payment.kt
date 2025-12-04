@@ -1,4 +1,4 @@
-package io.github.alelk.pws.domain.auth.model
+package io.github.alelk.pws.domain.payment.model
 
 import io.github.alelk.pws.domain.core.ids.PaymentId
 import io.github.alelk.pws.domain.core.ids.UserId
@@ -9,12 +9,11 @@ import kotlin.time.Instant
 @OptIn(ExperimentalTime::class)
 @Serializable
 data class Payment(
-  val id: PaymentId,
-  val userId: UserId,
-  val provider: PaymentProvider,
-  val transactionId: String,
-  val amount: String,
-  val status: PaymentTransactionStatus,
-  val timestamp: Instant
+    val id: PaymentId,
+    val userId: UserId,
+    val provider: PaymentProvider,
+    val transactionId: String,
+    val amount: String,
+    val status: PaymentTransactionStatus,
+    val timestamp: Instant
 )
-

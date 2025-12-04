@@ -11,7 +11,7 @@ fun UserDetail.toDto() = UserResponseDto(
   email = email,
   username = username,
   authProvider = authProvider.name,
-  paymentStatus = paymentStatus.name,
+  paymentStatus = accessPlan.name,
   role = role.name,
   createdAt = createdAt.toString(),
   updatedAt = updatedAt.toString()
@@ -23,5 +23,5 @@ fun UserDetail.toDto(token: String) = AuthResponseDto(
   email = email,
   username = username,
   role = role.name,
-  paymentStatus = paymentStatus.name
+  paymentStatus = accessPlan.name
 )

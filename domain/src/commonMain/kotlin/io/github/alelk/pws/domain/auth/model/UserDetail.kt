@@ -13,7 +13,7 @@ data class UserDetail(
   val username: String? = null,
   val authProvider: AuthProvider,
   val providerId: String? = null,
-  val paymentStatus: PaymentStatus = PaymentStatus.FREE,
+  val accessPlan: AccessPlan = AccessPlan.FREE,
   val role: UserRole = UserRole.USER,
   val profileJson: String? = null,
   val createdAt: Instant,
