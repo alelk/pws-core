@@ -1,5 +1,17 @@
 # PWS Android
 
+# [1.3.0](https://github.com/alelk/pws-core/compare/v1.2.3...v1.3.0) (2025-12-05)
+
+
+### Bug Fixes
+
+* temporary skip android unit tests running ([70009f0](https://github.com/alelk/pws-core/commit/70009f047c083b8cfc4db5bf7ca405c5c6b60afd))
+
+
+### Features
+
+* **auth:** Implement pws authentication ([722a8f5](https://github.com/alelk/pws-core/commit/722a8f57e0f17e84af10b5910e3e231f036fd603))
+
 ## [1.2.3](https://github.com/alelk/pws-core/compare/v1.2.2...v1.2.3) (2025-12-03)
 
 
