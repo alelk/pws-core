@@ -9,7 +9,7 @@ fun <A, K> Arb<A>.distinctBy(attempts: Int = 100, selector: (A) -> K) = object :
 
   private val seen = mutableSetOf<K>()
 
-  override fun edgecase(rs: RandomSource): A? = this@distinctBy.edgecase(rs)
+  override fun edgecase(rs: RandomSource) = this@distinctBy.edgecase(rs)
 
   override fun sample(rs: RandomSource): Sample<A> {
     var iterations = 0
