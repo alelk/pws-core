@@ -1,5 +1,12 @@
 # PWS Android
 
+## [1.3.1](https://github.com/alelk/pws-core/compare/v1.3.0...v1.3.1) (2025-12-05)
+
+
+### Bug Fixes
+
+* fix invalid package name issue ([4c6f803](https://github.com/alelk/pws-core/commit/4c6f8033e12ff17aa19e75e9e09fe7c0e08b844a))
+
 # [1.3.0](https://github.com/alelk/pws-core/compare/v1.2.3...v1.3.0) (2025-12-05)
 
 
