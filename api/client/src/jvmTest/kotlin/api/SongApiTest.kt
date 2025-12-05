@@ -1,6 +1,5 @@
 package io.github.alelk.pws.api.client.api
 
-import SongUpdateRequestDto
 import io.github.alelk.pws.api.contract.core.LocaleDto
 import io.github.alelk.pws.api.contract.core.PersonDto
 import io.github.alelk.pws.api.contract.core.VersionDto
@@ -9,6 +8,7 @@ import io.github.alelk.pws.api.contract.core.error.resourceNotFound
 import io.github.alelk.pws.api.contract.core.ids.SongIdDto
 import io.github.alelk.pws.api.contract.core.ids.BookIdDto
 import io.github.alelk.pws.api.contract.song.SongSortDto
+import io.github.alelk.pws.api.contract.song.SongUpdateRequestDto
 import io.github.alelk.pws.api.contract.song.SongSummaryDto
 import io.github.alelk.pws.api.contract.song.LyricDto
 import io.github.alelk.pws.api.contract.song.LyricPartDto

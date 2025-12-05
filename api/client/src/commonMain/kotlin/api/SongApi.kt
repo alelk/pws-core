@@ -1,9 +1,9 @@
 package io.github.alelk.pws.api.client.api
 
-import SongUpdateRequestDto
 import io.github.alelk.pws.api.contract.core.ids.BookIdDto
 import io.github.alelk.pws.api.contract.core.ids.SongIdDto
 import io.github.alelk.pws.api.contract.song.SongCreateRequestDto
+import io.github.alelk.pws.api.contract.song.SongUpdateRequestDto
 import io.github.alelk.pws.api.contract.song.SongDetailDto
 import io.github.alelk.pws.api.contract.song.SongSortDto
 import io.github.alelk.pws.api.contract.song.SongSummaryDto

@@ -1,3 +1,4 @@
+package io.github.alelk.pws.api.contract.song
 
 import io.github.alelk.pws.api.contract.core.LocaleDto
 import io.github.alelk.pws.api.contract.core.PersonDto
@@ -5,7 +6,6 @@ import io.github.alelk.pws.api.contract.core.TonalityDto
 import io.github.alelk.pws.api.contract.core.VersionDto
 import io.github.alelk.pws.api.contract.core.YearDto
 import io.github.alelk.pws.api.contract.core.ids.SongIdDto
-import io.github.alelk.pws.api.contract.song.LyricDto
 import kotlinx.serialization.Serializable
 
 @Serializable

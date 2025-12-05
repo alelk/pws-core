@@ -1,7 +1,7 @@
 package io.github.alelk.pws.api.mapping.song
 
-import SongUpdateRequestDto
 import io.github.alelk.pws.api.contract.song.SongCreateRequestDto
+import io.github.alelk.pws.api.contract.song.SongUpdateRequestDto
 import io.github.alelk.pws.api.mapping.core.nonEmpty
 import io.github.alelk.pws.api.mapping.core.toDomain
 import io.github.alelk.pws.domain.core.BibleRef
