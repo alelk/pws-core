@@ -88,7 +88,7 @@ ktor-clientMockJvm = { module = "io.ktor:ktor-client-mock-jvm", version.ref = "k
 
 androidx-test-core = { group = "androidx.test", name = "core", version = "1.7.0" } # https://mvnrepository.com/artifact/androidx.test/core
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" } # https://mvnrepository.com/artifact/org.robolectric/robolectric
-kotest-runner-android = { group = "br.com.colman", name = "kotest-runner-android", version.ref = "kotest-runner-android" }
+kotest-runner-android = { group = "br.com.colman", name = "kotest-runner-android", version.ref = "kotest-runner-android" } # https://search.maven.org/artifact/br.com.colman/kotest-runner-android
 kotest-extensions-android = { group = "br.com.colman", name = "kotest-extensions-android", version.ref = "kotest-extensions-android" } # https://search.maven.org/artifact/br.com.colman/kotest-extensions-android
 
 [plugins]
