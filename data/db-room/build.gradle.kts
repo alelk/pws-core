@@ -127,6 +127,15 @@ android {
     arg("room.generateKotlin", "true")
   }
 
+  testOptions {
+    unitTests {
+      isIncludeAndroidResources = true
+      all {
+        it.useJUnitPlatform()
+      }
+    }
+  }
+
   publishing {
 
     singleVariant("release") {

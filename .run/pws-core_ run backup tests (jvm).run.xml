@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="publish to maven local" type="GradleRunConfiguration" factoryName="Gradle">
+  <configuration default="false" name="pws-core: run backup tests (jvm)" type="GradleRunConfiguration" factoryName="Gradle">
     <ExternalSystemSettings>
       <option name="executionName" />
       <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -10,7 +10,7 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value="publishToMavenLocal" />
+          <option value=":backup:jvmTest" />
         </list>
       </option>
       <option name="vmOptions" />
