@@ -14,6 +14,7 @@ import io.github.alelk.pws.domain.book.repository.BookReadRepository
 import io.github.alelk.pws.domain.book.repository.BookWriteRepository
 import io.github.alelk.pws.domain.song.repository.SongReadRepository
 import io.github.alelk.pws.domain.song.repository.SongWriteRepository
+import io.github.alelk.pws.domain.auth.storage.TokenStorage
 import io.ktor.client.HttpClient
 import io.ktor.http.Url
 import org.koin.core.module.Module
@@ -27,8 +28,14 @@ import org.koin.dsl.module
 fun apiClientKoinModule(baseUrl: Url): Module = module {
 
   single { NetworkConfig(baseUrl = baseUrl) }
-  single<HttpClient> { createHttpClient(get()) }
-  single<ApiClientContainer> { createApiClient(get(), get()) }
+  single<HttpClient> {
+    val tokenStorage = getOrNull<TokenStorage>()
+    createHttpClient(network = get(), tokenStorage = tokenStorage)
+  }
+  single<ApiClientContainer> {
+    val tokenStorage = getOrNull<TokenStorage>()
+    createApiClient(network = get(), tokenStorage = tokenStorage, httpClient = get())
+  }
 
   single<SongApi> { get<ApiClientContainer>().songApi }
   single<BookApi> { get<ApiClientContainer>().bookApi }

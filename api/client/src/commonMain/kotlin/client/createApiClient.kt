@@ -6,6 +6,7 @@ import io.github.alelk.pws.api.client.api.SongApi
 import io.github.alelk.pws.api.client.api.SongApiImpl
 import io.github.alelk.pws.api.client.config.NetworkConfig
 import io.github.alelk.pws.api.client.http.createHttpClient
+import io.github.alelk.pws.domain.auth.storage.TokenStorage
 import io.github.alelk.pws.api.client.repository.RemoteBookReadRepository
 import io.github.alelk.pws.api.client.repository.RemoteBookWriteRepository
 import io.github.alelk.pws.api.client.repository.RemoteSongReadRepository
@@ -25,11 +26,12 @@ import io.ktor.client.HttpClient
  */
 fun createApiClient(
   network: NetworkConfig,
+  tokenStorage: TokenStorage?,
   httpClient: HttpClient? = null,
   engineBuilder: (io.ktor.client.HttpClientConfig<*>.() -> Unit)? = null
 ): ApiClientContainer {
   val owns = httpClient == null
-  val client = httpClient ?: createHttpClient(network, engineBuilder)
+  val client = httpClient ?: createHttpClient(network, tokenStorage, engineBuilder)
 
   val songApi: SongApi = SongApiImpl(client)
   val bookApi: BookApi = BookApiImpl(client)
