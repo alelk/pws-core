@@ -1,5 +1,12 @@
 # PWS Android
 
+# [1.4.0](https://github.com/alelk/pws-core/compare/v1.3.1...v1.4.0) (2025-12-05)
+
+
+### Features
+
+* **auth:** Implement client authentication ([576a526](https://github.com/alelk/pws-core/commit/576a52645be41dbc5ed97065f368dd1ee5d518cc))
+
 ## [1.3.1](https://github.com/alelk/pws-core/compare/v1.3.0...v1.3.1) (2025-12-05)
 
 
