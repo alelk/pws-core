@@ -4,14 +4,19 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class AccessPlan {
+enum class AccessPlan(val identifier: String) {
   @SerialName("free")
-  FREE,
+  FREE("free"),
 
   @SerialName("subscribed")
-  SUBSCRIBED,
+  SUBSCRIBED("subscribed"),
 
   @SerialName("full-version")
-  FULL_VERSION
+  FULL_VERSION("full-version");
+
+  companion object {
+    fun fromIdentifier(identifier: String) =
+      requireNotNull(entries.firstOrNull { it.identifier == identifier }) { "Unknown AccessPlan identifier: $identifier" }
+  }
 }
 

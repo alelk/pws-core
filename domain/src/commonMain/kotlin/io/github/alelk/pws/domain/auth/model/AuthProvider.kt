@@ -4,17 +4,22 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class AuthProvider {
+enum class AuthProvider(val identifier: String) {
   @SerialName("email")
-  EMAIL,
+  EMAIL("email"),
 
   @SerialName("google")
-  GOOGLE,
+  GOOGLE("google"),
 
   @SerialName("vk")
-  VK,
+  VK("vk"),
 
   @SerialName("telegram")
-  TELEGRAM
+  TELEGRAM("telegram");
+
+  companion object {
+    fun fromIdentifier(identifier: String) =
+      requireNotNull(entries.firstOrNull { it.identifier == identifier }) { "Unknown AuthProvider identifier: $identifier" }
+  }
 }
 

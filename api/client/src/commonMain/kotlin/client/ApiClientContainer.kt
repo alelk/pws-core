@@ -1,5 +1,6 @@
 package io.github.alelk.pws.api.client.client
 
+import io.github.alelk.pws.api.client.api.AuthApi
 import io.github.alelk.pws.api.client.api.BookApi
 import io.github.alelk.pws.api.client.api.SongApi
 import io.github.alelk.pws.domain.book.repository.BookReadRepository
@@ -13,14 +14,15 @@ import io.ktor.client.HttpClient
  * If [ownsClient] is true, [close] will close the underlying [io.ktor.client.HttpClient].
  */
 data class ApiClientContainer(
-    val httpClient: HttpClient,
-    val songApi: SongApi,
-    val bookApi: BookApi,
-    val songReadRepository: SongReadRepository,
-    val songWriteRepository: SongWriteRepository,
-    val bookReadRepository: BookReadRepository,
-    val bookWriteRepository: BookWriteRepository,
-    val ownsClient: Boolean
+  val httpClient: HttpClient,
+  val songApi: SongApi,
+  val bookApi: BookApi,
+  val authApi: AuthApi,
+  val songReadRepository: SongReadRepository,
+  val songWriteRepository: SongWriteRepository,
+  val bookReadRepository: BookReadRepository,
+  val bookWriteRepository: BookWriteRepository,
+  val ownsClient: Boolean
 ) : AutoCloseable {
   override fun close() {
     if (ownsClient) {

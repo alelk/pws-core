@@ -4,11 +4,15 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class UserRole {
+enum class UserRole(val identifier: String) {
   @SerialName("user")
-  USER,
+  USER("user"),
 
   @SerialName("admin")
-  ADMIN
-}
+  ADMIN("admin");
 
+  companion object {
+    fun fromIdentifier(identifier: String) =
+      requireNotNull(entries.firstOrNull { it.identifier == identifier }) { "Unknown UserRole identifier: $identifier" }
+  }
+}

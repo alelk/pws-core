@@ -1,5 +1,7 @@
 package io.github.alelk.pws.api.client.client
 
+import io.github.alelk.pws.api.client.api.AuthApi
+import io.github.alelk.pws.api.client.api.AuthApiImpl
 import io.github.alelk.pws.api.client.api.BookApi
 import io.github.alelk.pws.api.client.api.BookApiImpl
 import io.github.alelk.pws.api.client.api.SongApi
@@ -11,6 +13,7 @@ import io.github.alelk.pws.api.client.repository.RemoteBookReadRepository
 import io.github.alelk.pws.api.client.repository.RemoteBookWriteRepository
 import io.github.alelk.pws.api.client.repository.RemoteSongReadRepository
 import io.github.alelk.pws.api.client.repository.RemoteSongWriteRepository
+import io.github.alelk.pws.domain.auth.storage.InMemoryTokenStorage
 import io.github.alelk.pws.domain.book.repository.BookReadRepository
 import io.github.alelk.pws.domain.book.repository.BookWriteRepository
 import io.github.alelk.pws.domain.song.repository.SongReadRepository
@@ -26,7 +29,7 @@ import io.ktor.client.HttpClient
  */
 fun createApiClient(
   network: NetworkConfig,
-  tokenStorage: TokenStorage?,
+  tokenStorage: TokenStorage = InMemoryTokenStorage(),
   httpClient: HttpClient? = null,
   engineBuilder: (io.ktor.client.HttpClientConfig<*>.() -> Unit)? = null
 ): ApiClientContainer {
@@ -35,6 +38,7 @@ fun createApiClient(
 
   val songApi: SongApi = SongApiImpl(client)
   val bookApi: BookApi = BookApiImpl(client)
+  val authApi: AuthApi = AuthApiImpl(client, tokenStorage)
 
   val songReadRepo: SongReadRepository = RemoteSongReadRepository(songApi)
   val songWriteRepo: SongWriteRepository = RemoteSongWriteRepository(songApi)
@@ -45,6 +49,7 @@ fun createApiClient(
     httpClient = client,
     songApi = songApi,
     bookApi = bookApi,
+    authApi = authApi,
     songReadRepository = songReadRepo,
     songWriteRepository = songWriteRepo,
     bookReadRepository = bookReadRepo,
