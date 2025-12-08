@@ -1,5 +1,12 @@
 # PWS Android
 
+# [1.3.0-rc.1](https://github.com/alelk/pws-core/compare/v1.2.3-rc.1...v1.3.0-rc.1) (2025-12-08)
+
+
+### Features
+
+* **features:** Add ui components ([eda809e](https://github.com/alelk/pws-core/commit/eda809e767ce87d2cae9312e5d6579c5f090ee62))
+
 ## [1.2.3-rc.1](https://github.com/alelk/pws-core/compare/v1.2.2...v1.2.3-rc.1) (2025-12-03)
 
 
