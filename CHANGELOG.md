@@ -1,5 +1,17 @@
 # PWS Android
 
+# [1.6.0](https://github.com/alelk/pws-core/compare/v1.5.0...v1.6.0) (2025-12-08)
+
+
+### Bug Fixes
+
+* **api:** Fix api client di ([08cad13](https://github.com/alelk/pws-core/commit/08cad135054c5a3ff69d78c52d428942e0459a19))
+
+
+### Features
+
+* **auth:** Enhance AccessPlan and AuthProvider enums with identifiers and companion objects ([7b55258](https://github.com/alelk/pws-core/commit/7b55258f762b918174833c341b016678c07764e1))
+
 # [1.5.0](https://github.com/alelk/pws-core/compare/v1.4.0...v1.5.0) (2025-12-08)
 
 
