@@ -29,11 +29,11 @@ fun apiClientKoinModule(baseUrl: Url): Module = module {
 
   single { NetworkConfig(baseUrl = baseUrl) }
   single<HttpClient> {
-    val tokenStorage = getOrNull<TokenStorage>()
+    val tokenStorage = get<TokenStorage>()
     createHttpClient(network = get(), tokenStorage = tokenStorage)
   }
   single<ApiClientContainer> {
-    val tokenStorage = getOrNull<TokenStorage>()
+    val tokenStorage = get<TokenStorage>()
     createApiClient(network = get(), tokenStorage = tokenStorage, httpClient = get())
   }
 
