@@ -1,26 +1,22 @@
 package io.github.alelk.pws.api.client.http
 
+import io.github.alelk.pws.api.client.api.AuthApiImpl
 import io.github.alelk.pws.api.client.config.NetworkConfig
-import io.ktor.client.HttpClient
-import io.ktor.client.HttpClientConfig
-import io.ktor.client.plugins.auth.Auth
-import io.ktor.client.plugins.auth.providers.BearerTokens
-import io.ktor.client.plugins.auth.providers.bearer
-import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.defaultRequest
-import io.ktor.client.plugins.logging.DEFAULT
-import io.ktor.client.plugins.logging.LogLevel
-import io.ktor.client.plugins.logging.Logger
-import io.ktor.client.plugins.logging.Logging
-import io.ktor.client.plugins.resources.Resources
-import io.ktor.http.takeFrom
-import io.ktor.serialization.kotlinx.json.json
+import io.github.alelk.pws.api.contract.auth.RefreshRequestDto
 import io.github.alelk.pws.domain.auth.storage.TokenStorage
+import io.ktor.client.*
+import io.ktor.client.plugins.*
+import io.ktor.client.plugins.auth.*
+import io.ktor.client.plugins.auth.providers.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.logging.*
+import io.ktor.client.plugins.resources.*
+import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
 
 fun createHttpClient(
   network: NetworkConfig,
-  tokenStorage: TokenStorage?,
+  tokenStorage: TokenStorage? = null,
   engineBuilder: (HttpClientConfig<*>.() -> Unit)? = null
 ): HttpClient = HttpClient {
   install(Resources)
@@ -43,8 +39,25 @@ fun createHttpClient(
   if (tokenStorage != null) {
     install(Auth) {
       bearer {
+        // Attach current access token
         loadTokens {
-          tokenStorage.getToken()?.let { BearerTokens(it, null) }
+          val tokens = tokenStorage.get()
+          tokens?.let { (access, refresh) -> BearerTokens(access, refresh) }
+        }
+        // Attempt refresh on 401
+        refreshTokens {
+          val currentRefresh = tokenStorage.get()?.refreshToken
+          if (currentRefresh.isNullOrBlank()) {
+            null
+          } else {
+            val resp = try {
+              val authApi = AuthApiImpl(client, tokenStorage)
+              authApi.refresh(RefreshRequestDto(currentRefresh))
+            } catch (_: Throwable) {
+              null
+            }
+            resp?.let { BearerTokens(it.accessToken, it.refreshToken) }
+          }
         }
         sendWithoutRequest { true }
       }

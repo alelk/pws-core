@@ -2,6 +2,7 @@ package io.github.alelk.pws.api.mapping.auth
 
 import io.github.alelk.pws.api.contract.auth.AuthResponseDto
 import io.github.alelk.pws.api.contract.auth.UserResponseDto
+import io.github.alelk.pws.domain.auth.model.AuthTokens
 import io.github.alelk.pws.domain.auth.model.UserDetail
 import kotlin.time.ExperimentalTime
 
@@ -17,8 +18,9 @@ fun UserDetail.toDto() = UserResponseDto(
   updatedAt = updatedAt.toString()
 )
 
-fun UserDetail.toDto(token: String) = AuthResponseDto(
-  token = token,
+fun UserDetail.toDto(tokens: AuthTokens) = AuthResponseDto(
+  accessToken = tokens.accessToken,
+  refreshToken = tokens.refreshToken,
   userId = id.toString(),
   email = email,
   username = username,

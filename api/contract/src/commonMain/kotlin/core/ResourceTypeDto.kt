@@ -5,6 +5,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 enum class ResourceTypeDto(val identifier: String) {
+  @SerialName("user")
+  USER("user"),
+
   @SerialName("book")
   BOOK("book"),
 

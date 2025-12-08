@@ -12,7 +12,6 @@
         <list>
           <option value="domain:jvmTest" />
           <option value=":backup:jvmTest" />
-          <option value=":data:db-room:testDebugUnitTest" />
           <option value=":data:db-room:jvmTest" />
           <option value=":api:client:jvmTest" />
         </list>

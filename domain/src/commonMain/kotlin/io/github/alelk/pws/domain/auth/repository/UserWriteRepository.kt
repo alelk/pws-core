@@ -12,7 +12,6 @@ interface UserWriteRepository {
   suspend fun update(command: UpdateUserCommand): UpdateResourceResult<UserId>
   suspend fun delete(id: UserId): DeleteResourceResult<UserId>
 
-  // Specialized helper for common operation; consistent return type with update
   suspend fun linkTelegramAccount(userId: UserId, telegramProviderId: String): UpdateResourceResult<UserId>
 }
 

@@ -31,5 +31,11 @@ class Auth {
 
   @Resource("/link-telegram")
   class LinkTelegram(val parent: Auth = Auth())
+
+  @Resource("/refresh")
+  class Refresh(val parent: Auth = Auth())
+
+  @Resource("/logout")
+  class Logout(val parent: Auth = Auth())
 }
 
