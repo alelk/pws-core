@@ -1,5 +1,12 @@
 # PWS Android
 
+# [1.5.0](https://github.com/alelk/pws-core/compare/v1.4.0...v1.5.0) (2025-12-08)
+
+
+### Features
+
+* **auth:** Support refresh auth tokens ([247d7b2](https://github.com/alelk/pws-core/commit/247d7b29a19ae839501f6fc1d1e20de93e810f2e))
+
 # [1.4.0](https://github.com/alelk/pws-core/compare/v1.3.1...v1.4.0) (2025-12-05)
 
 
