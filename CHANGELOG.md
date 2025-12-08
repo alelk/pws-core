@@ -1,5 +1,12 @@
 # PWS Android
 
+# [1.3.0-rc.2](https://github.com/alelk/pws-core/compare/v1.3.0-rc.1...v1.3.0-rc.2) (2025-12-08)
+
+
+### Features
+
+* **domain:** Add models, repositories, use cases ([97162a5](https://github.com/alelk/pws-core/commit/97162a51bb58c2df1f9c8d78bd4061b0ee77e011))
+
 # [1.3.0-rc.1](https://github.com/alelk/pws-core/compare/v1.2.3-rc.1...v1.3.0-rc.1) (2025-12-08)
 
 
