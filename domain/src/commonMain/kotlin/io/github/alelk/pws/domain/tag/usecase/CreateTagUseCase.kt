@@ -1,0 +1,19 @@
+package io.github.alelk.pws.domain.tag.usecase
+
+import io.github.alelk.pws.domain.core.ids.TagId
+import io.github.alelk.pws.domain.core.result.CreateResourceResult
+import io.github.alelk.pws.domain.core.transaction.TransactionRunner
+import io.github.alelk.pws.domain.tag.command.CreateTagCommand
+import io.github.alelk.pws.domain.tag.repository.TagWriteRepository
+
+/**
+ * Use case: create a new tag.
+ */
+class CreateTagUseCase(
+  private val tagRepository: TagWriteRepository,
+  private val txRunner: TransactionRunner
+) {
+  suspend operator fun invoke(command: CreateTagCommand): CreateResourceResult<TagId> =
+    txRunner.inRwTransaction { tagRepository.create(command) }
+}
+

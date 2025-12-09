@@ -25,8 +25,12 @@ kotlin {
       implementation(compose.components.resources)
       implementation(compose.components.uiToolingPreview)
 
-      implementation(libs.voyager.core)
+      implementation(libs.kotlinx.coroutines.core)
+
+      implementation(libs.voyager.navigator)
       implementation(libs.voyager.koin)
+
+      implementation(libs.koin.core)
       implementation(libs.koin.compose)
 
       implementation(libs.androidx.lifecycle.viewmodelCompose)

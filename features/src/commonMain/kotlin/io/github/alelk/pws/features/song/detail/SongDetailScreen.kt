@@ -1,25 +1,72 @@
 package io.github.alelk.pws.features.song.detail
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.TextDecrease
+import androidx.compose.material.icons.filled.TextIncrease
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.github.alelk.pws.domain.core.ids.SongNumberId
+import io.github.alelk.pws.domain.song.lyric.Bridge
 import io.github.alelk.pws.domain.song.lyric.Chorus
+import io.github.alelk.pws.domain.song.lyric.LyricPart
+import io.github.alelk.pws.domain.song.lyric.Verse
 import io.github.alelk.pws.domain.song.model.SongDetail
+import io.github.alelk.pws.features.components.ErrorContent
+import io.github.alelk.pws.features.components.LoadingContent
+import io.github.alelk.pws.features.theme.spacing
 import org.koin.core.parameter.parametersOf
 
 class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
@@ -27,61 +74,346 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
   override fun Content() {
     val viewModel = koinScreenModel<SongDetailScreenModel>(parameters = { parametersOf(songNumberId) })
     val state by viewModel.state.collectAsState()
-    SongDetail(state = state)
+    SongDetailContent(state = state)
   }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SongDetail(state: SongDetailUiState) {
+fun SongDetailContent(state: SongDetailUiState) {
   val navigator = LocalNavigator.currentOrThrow
-  Scaffold(topBar = {
-    TopAppBar(
-      title = { Text(if (state is SongDetailUiState.Content) state.song.name.value else "Песня") },
-      navigationIcon = { IconButton(onClick = { navigator.pop() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад") } }
-    )
-  }) { innerPadding ->
-    when (state) {
-      SongDetailUiState.Loading -> Box(Modifier.padding(innerPadding).fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
-      is SongDetailUiState.Content -> SongDetailContent(state.song, Modifier.padding(innerPadding).fillMaxSize())
-      SongDetailUiState.Error -> Box(Modifier.padding(innerPadding).fillMaxSize(), contentAlignment = Alignment.Center) { Text("Не найдено") }
-    }
-  }
-}
+  var fontScale by remember { mutableFloatStateOf(1f) }
+  var isFavorite by remember { mutableFloatStateOf(0f) } // TODO: connect to actual state
 
-@Composable
-private fun SongDetailContent(song: SongDetail, modifier: Modifier = Modifier) {
-  val scroll = rememberScrollState()
-  Column(
-    modifier = modifier.verticalScroll(scroll).padding(16.dp),
-    verticalArrangement = Arrangement.spacedBy(16.dp)
-  ) {
-    SongMeta(song)
-    HorizontalDivider()
-    SongLyric(song)
-  }
-}
-
-@Composable
-private fun SongMeta(song: SongDetail) {
-  Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-    song.author?.let { Text("Автор: ${it.name}") }
-    song.composer?.let { Text("Композитор: ${it.name}") }
-    song.translator?.let { Text("Перевод: ${it.name}") }
-    song.tonalities?.takeIf { it.isNotEmpty() }?.let { list ->
-      Text("Тональности: ${list.joinToString { it.identifier }}")
-    }
-  }
-}
-
-@Composable
-private fun SongLyric(song: SongDetail) {
-  Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-    song.lyric.forEach { part ->
-      Text(
-        part.text.trim(),
-        fontWeight = if (part is Chorus) FontWeight.SemiBold else FontWeight.Normal
+  Scaffold(
+    topBar = {
+      TopAppBar(
+        title = { },
+        navigationIcon = {
+          IconButton(onClick = { navigator.pop() }) {
+            Icon(
+              Icons.AutoMirrored.Filled.ArrowBack,
+              contentDescription = "Назад"
+            )
+          }
+        },
+        actions = {
+          // Font size controls
+          IconButton(
+            onClick = { fontScale = (fontScale - 0.1f).coerceAtLeast(0.7f) }
+          ) {
+            Icon(
+              Icons.Default.TextDecrease,
+              contentDescription = "Уменьшить шрифт"
+            )
+          }
+          IconButton(
+            onClick = { fontScale = (fontScale + 0.1f).coerceAtMost(1.5f) }
+          ) {
+            Icon(
+              Icons.Default.TextIncrease,
+              contentDescription = "Увеличить шрифт"
+            )
+          }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+          containerColor = MaterialTheme.colorScheme.surface
+        )
       )
+    },
+    bottomBar = {
+      if (state is SongDetailUiState.Content) {
+        SongActionBar()
+      }
+    }
+  ) { innerPadding ->
+    when (state) {
+      SongDetailUiState.Loading -> {
+        LoadingContent(modifier = Modifier.padding(innerPadding))
+      }
+      is SongDetailUiState.Content -> {
+        SongContent(
+          song = state.song,
+          fontScale = fontScale,
+          modifier = Modifier.padding(innerPadding)
+        )
+      }
+      SongDetailUiState.Error -> {
+        ErrorContent(
+          modifier = Modifier.padding(innerPadding),
+          title = "Песня не найдена",
+          message = "Возможно, она была удалена или перемещена"
+        )
+      }
+    }
+  }
+}
+
+@Composable
+private fun SongContent(
+  song: SongDetail,
+  fontScale: Float,
+  modifier: Modifier = Modifier
+) {
+  val scrollState = rememberScrollState()
+
+  Column(
+    modifier = modifier
+      .fillMaxSize()
+      .verticalScroll(scrollState)
+      .padding(horizontal = MaterialTheme.spacing.screenHorizontal)
+  ) {
+    // Song header
+    SongHeader(song = song)
+
+    Spacer(Modifier.height(MaterialTheme.spacing.xl))
+
+    // Lyric content
+    LyricContent(
+      lyric = song.lyric,
+      fontScale = fontScale
+    )
+
+    // Metadata footer
+    if (song.author != null || song.composer != null || song.translator != null) {
+      Spacer(Modifier.height(MaterialTheme.spacing.xxl))
+      HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+      Spacer(Modifier.height(MaterialTheme.spacing.lg))
+      SongMetadata(song = song)
+    }
+
+    // Bottom padding for action bar
+    Spacer(Modifier.height(100.dp))
+  }
+}
+
+@Composable
+private fun SongHeader(song: SongDetail) {
+  Column {
+    Text(
+      text = song.name.value,
+      style = MaterialTheme.typography.headlineSmall.copy(
+        fontWeight = FontWeight.Bold
+      ),
+      color = MaterialTheme.colorScheme.onSurface
+    )
+
+    song.tonalities?.takeIf { it.isNotEmpty() }?.let { tonalities ->
+      Spacer(Modifier.height(MaterialTheme.spacing.sm))
+      Text(
+        text = tonalities.joinToString(" • ") { it.identifier },
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.primary
+      )
+    }
+  }
+}
+
+@Composable
+private fun LyricContent(
+  lyric: List<LyricPart>,
+  fontScale: Float
+) {
+  val baseTextSize = 18.sp * fontScale
+  val chorusTextSize = 17.sp * fontScale
+
+  Column(
+    verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.lg)
+  ) {
+    lyric.forEach { part ->
+      LyricPartView(
+        part = part,
+        baseTextSize = baseTextSize,
+        chorusTextSize = chorusTextSize
+      )
+    }
+  }
+}
+
+@Composable
+private fun LyricPartView(
+  part: LyricPart,
+  baseTextSize: androidx.compose.ui.unit.TextUnit,
+  chorusTextSize: androidx.compose.ui.unit.TextUnit
+) {
+  when (part) {
+    is Verse -> {
+      Column {
+        // Verse number
+        if (part.numbers.isNotEmpty()) {
+          Text(
+            text = part.numbers.joinToString(", "),
+            style = MaterialTheme.typography.labelMedium.copy(
+              fontWeight = FontWeight.Bold
+            ),
+            color = MaterialTheme.colorScheme.primary
+          )
+          Spacer(Modifier.height(MaterialTheme.spacing.xs))
+        }
+        Text(
+          text = part.text.trim(),
+          style = MaterialTheme.typography.bodyLarge.copy(
+            fontSize = baseTextSize,
+            lineHeight = baseTextSize * 1.5f
+          ),
+          color = MaterialTheme.colorScheme.onSurface
+        )
+      }
+    }
+
+    is Chorus -> {
+      Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+      ) {
+        Column(
+          modifier = Modifier.padding(MaterialTheme.spacing.md)
+        ) {
+          Row(
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            Box(
+              modifier = Modifier
+                .size(4.dp, 20.dp)
+                .clip(MaterialTheme.shapes.extraSmall)
+                .background(MaterialTheme.colorScheme.primary)
+            )
+            Spacer(Modifier.width(MaterialTheme.spacing.sm))
+            Text(
+              text = "Припев",
+              style = MaterialTheme.typography.labelMedium.copy(
+                fontWeight = FontWeight.SemiBold
+              ),
+              color = MaterialTheme.colorScheme.primary
+            )
+          }
+          Spacer(Modifier.height(MaterialTheme.spacing.sm))
+          Text(
+            text = part.text.trim(),
+            style = MaterialTheme.typography.bodyLarge.copy(
+              fontSize = chorusTextSize,
+              lineHeight = chorusTextSize * 1.5f,
+              fontStyle = FontStyle.Italic
+            ),
+            color = MaterialTheme.colorScheme.onSurface
+          )
+        }
+      }
+    }
+
+    is Bridge -> {
+      Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.3f)
+      ) {
+        Column(
+          modifier = Modifier.padding(MaterialTheme.spacing.md)
+        ) {
+          Text(
+            text = "Бридж",
+            style = MaterialTheme.typography.labelMedium.copy(
+              fontWeight = FontWeight.SemiBold
+            ),
+            color = MaterialTheme.colorScheme.tertiary
+          )
+          Spacer(Modifier.height(MaterialTheme.spacing.sm))
+          Text(
+            text = part.text.trim(),
+            style = MaterialTheme.typography.bodyLarge.copy(
+              fontSize = baseTextSize,
+              lineHeight = baseTextSize * 1.5f
+            ),
+            color = MaterialTheme.colorScheme.onSurface
+          )
+        }
+      }
+    }
+  }
+}
+
+@Composable
+private fun SongMetadata(song: SongDetail) {
+  Column(
+    verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sm)
+  ) {
+    song.author?.let { author ->
+      MetadataRow(label = "Автор", value = author.name)
+    }
+    song.composer?.let { composer ->
+      MetadataRow(label = "Композитор", value = composer.name)
+    }
+    song.translator?.let { translator ->
+      MetadataRow(label = "Перевод", value = translator.name)
+    }
+    song.year?.let { year ->
+      MetadataRow(label = "Год", value = year.toString())
+    }
+  }
+}
+
+@Composable
+private fun MetadataRow(label: String, value: String) {
+  Row {
+    Text(
+      text = "$label: ",
+      style = MaterialTheme.typography.bodySmall,
+      color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+    Text(
+      text = value,
+      style = MaterialTheme.typography.bodySmall.copy(
+        fontWeight = FontWeight.Medium
+      ),
+      color = MaterialTheme.colorScheme.onSurface
+    )
+  }
+}
+
+@Composable
+private fun SongActionBar() {
+  Surface(
+    modifier = Modifier.fillMaxWidth(),
+    color = MaterialTheme.colorScheme.surfaceContainer,
+    tonalElevation = 3.dp
+  ) {
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(MaterialTheme.spacing.md),
+      horizontalArrangement = Arrangement.SpaceEvenly,
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      // Favorite button
+      FilledTonalIconButton(
+        onClick = { /* TODO */ }
+      ) {
+        Icon(
+          imageVector = Icons.Outlined.FavoriteBorder,
+          contentDescription = "Добавить в избранное"
+        )
+      }
+
+      // Share button
+      FilledTonalIconButton(
+        onClick = { /* TODO */ }
+      ) {
+        Icon(
+          imageVector = Icons.Default.Share,
+          contentDescription = "Поделиться"
+        )
+      }
+
+      // Edit button
+      FilledTonalIconButton(
+        onClick = { /* TODO */ }
+      ) {
+        Icon(
+          imageVector = Icons.Default.Edit,
+          contentDescription = "Редактировать"
+        )
+      }
     }
   }
 }
