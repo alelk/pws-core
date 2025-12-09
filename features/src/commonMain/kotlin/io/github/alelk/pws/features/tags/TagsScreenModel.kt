@@ -14,6 +14,8 @@ import io.github.alelk.pws.domain.tag.usecase.UpdateTagUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import io.github.alelk.pws.domain.core.Color as DomainColor
 
 /**
@@ -113,6 +115,7 @@ class TagsScreenModel(
     }
   }
 
+  @OptIn(ExperimentalTime::class)
   private fun saveTag(name: String, color: Color) {
     val currentState = mutableState.value
     if (currentState !is TagsUiState.Content) return
@@ -133,7 +136,7 @@ class TagsScreenModel(
         } else {
           // Create new tag
           val tagIdBase = name.take(20).replace(Regex("[^\\p{L}\\d_-]"), "").ifEmpty { "tag" }
-          val tagId = TagId("$tagIdBase-${System.currentTimeMillis()}")
+          val tagId = TagId("$tagIdBase-${Clock.System.now().toEpochMilliseconds()}")
           val command = CreateTagCommand(
             id = tagId,
             name = name,
