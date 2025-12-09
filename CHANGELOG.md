@@ -1,5 +1,18 @@
 # PWS Android
 
+# [1.8.0](https://github.com/alelk/pws-core/compare/v1.7.0...v1.8.0) (2025-12-09)
+
+
+### Bug Fixes
+
+* Fix build issue ([d427414](https://github.com/alelk/pws-core/commit/d427414905214d03f1582302adf33e6f066b58ce))
+* fix features module publishing ([4c04862](https://github.com/alelk/pws-core/commit/4c048622f85b22082f45003a8b50be959a7bbfb3))
+
+
+### Features
+
+* **ui:** Implement more use cases in ui ([5f4f92a](https://github.com/alelk/pws-core/commit/5f4f92ae70b7b51a055bcdfc7f63528ab699a747))
+
 # [1.7.0](https://github.com/alelk/pws-core/compare/v1.6.0...v1.7.0) (2025-12-09)
 
 
