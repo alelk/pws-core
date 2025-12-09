@@ -1,5 +1,13 @@
 # PWS Android
 
+# [1.7.0](https://github.com/alelk/pws-core/compare/v1.6.0...v1.7.0) (2025-12-09)
+
+
+### Features
+
+* **domain:** Add models, repositories, use cases ([9f6d443](https://github.com/alelk/pws-core/commit/9f6d443a80898d27debed92c74543d9b31cfbf45))
+* **features:** Add ui components ([39906b6](https://github.com/alelk/pws-core/commit/39906b6e3f035f52bbd7b574ee1f87849e9b9469))
+
 # [1.7.0-rc.1](https://github.com/alelk/pws-core/compare/v1.6.0...v1.7.0-rc.1) (2025-12-09)
 
 
