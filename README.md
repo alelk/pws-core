@@ -1,5 +1,8 @@
 # PWS Core
 
+[![GitHub release](https://img.shields.io/github/v/release/alelk/pws-core?include_prereleases&label=version)](https://github.com/alelk/pws-core/releases)
+[![GitHub Packages](https://img.shields.io/badge/maven-GitHub%20Packages-blue)](https://github.com/alelk/pws-core/packages)
+
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
