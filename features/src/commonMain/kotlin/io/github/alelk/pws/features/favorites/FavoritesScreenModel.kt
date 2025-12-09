@@ -2,6 +2,9 @@ package io.github.alelk.pws.features.favorites
 
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import io.github.alelk.pws.domain.favorite.model.FavoriteWithSongInfo
+import io.github.alelk.pws.domain.favorite.usecase.ObserveFavoritesUseCase
+import io.github.alelk.pws.domain.favorite.usecase.RemoveFavoriteUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
@@ -10,9 +13,8 @@ import kotlinx.coroutines.launch
  * ScreenModel for favorites screen.
  */
 class FavoritesScreenModel(
-  // TODO: inject favorites repository/use case
-  // private val observeFavoritesUseCase: ObserveFavoritesUseCase,
-  // private val removeFavoriteUseCase: RemoveFavoriteUseCase
+  private val observeFavoritesUseCase: ObserveFavoritesUseCase,
+  private val removeFavoriteUseCase: RemoveFavoriteUseCase
 ) : StateScreenModel<FavoritesUiState>(FavoritesUiState.Loading) {
 
   sealed interface Effect {
@@ -44,17 +46,14 @@ class FavoritesScreenModel(
   private fun loadFavorites() {
     screenModelScope.launch {
       try {
-        // TODO: Replace with actual implementation
-        // observeFavoritesUseCase().collect { favorites ->
-        //   mutableState.value = if (favorites.isEmpty()) {
-        //     FavoritesUiState.Empty
-        //   } else {
-        //     FavoritesUiState.Content(favorites)
-        //   }
-        // }
-
-        // Placeholder
-        mutableState.value = FavoritesUiState.Empty
+        observeFavoritesUseCase().collect { favorites ->
+          val uiList = favorites.map { it.toUi() }
+          mutableState.value = if (uiList.isEmpty()) {
+            FavoritesUiState.Empty
+          } else {
+            FavoritesUiState.Content(uiList)
+          }
+        }
       } catch (e: Exception) {
         mutableState.value = FavoritesUiState.Error("Ошибка загрузки: ${e.message}")
       }
@@ -64,13 +63,20 @@ class FavoritesScreenModel(
   private fun removeFromFavorites(song: FavoriteSongUi) {
     screenModelScope.launch {
       try {
-        // TODO: Replace with actual implementation
-        // removeFavoriteUseCase(song.songNumberId)
+        removeFavoriteUseCase(song.songNumberId)
         _effects.emit(Effect.ShowUndoSnackbar(song))
       } catch (e: Exception) {
         // Handle error
       }
     }
   }
+
+  private fun FavoriteWithSongInfo.toUi() = FavoriteSongUi(
+    songNumberId = songNumberId,
+    songNumber = songNumber,
+    songName = songName,
+    bookDisplayName = bookDisplayName,
+    addedAt = addedAt
+  )
 }
 

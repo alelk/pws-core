@@ -2,6 +2,8 @@ package io.github.alelk.pws.features.search
 
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import io.github.alelk.pws.domain.search.model.SearchResult
+import io.github.alelk.pws.domain.search.usecase.SearchSongsUseCase
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -19,8 +21,7 @@ import kotlinx.coroutines.launch
  */
 @OptIn(FlowPreview::class)
 class SearchScreenModel(
-  // TODO: inject search use case
-  // private val searchSongsUseCase: SearchSongsUseCase
+  private val searchSongsUseCase: SearchSongsUseCase
 ) : StateScreenModel<SearchUiState>(SearchUiState.Idle) {
 
   private val queryFlow = MutableStateFlow("")
@@ -84,16 +85,19 @@ class SearchScreenModel(
     searchJob?.cancel()
     searchJob = screenModelScope.launch {
       try {
-        // TODO: Replace with actual search implementation
-        // val results = searchSongsUseCase(query)
-        // mutableState.value = SearchUiState.Suggestions(query, results)
-
-        // Placeholder for now
-        mutableState.value = SearchUiState.Suggestions(query, emptyList())
+        val results = searchSongsUseCase(query)
+        mutableState.value = SearchUiState.Suggestions(query, results.map { it.toUi() })
       } catch (e: Exception) {
         mutableState.value = SearchUiState.Error("Ошибка поиска: ${e.message}")
       }
     }
   }
+
+  private fun SearchResult.toUi() = SearchSuggestion(
+    songNumberId = songNumberId,
+    songNumber = songNumber,
+    songName = songName,
+    bookDisplayName = bookDisplayName
+  )
 }
 

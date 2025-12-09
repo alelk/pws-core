@@ -1,24 +1,31 @@
 package io.github.alelk.pws.features.song.edit
 
+import androidx.compose.ui.graphics.Color
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import io.github.alelk.pws.domain.core.NonEmptyString
 import io.github.alelk.pws.domain.core.ids.SongId
 import io.github.alelk.pws.domain.core.ids.TagId
+import io.github.alelk.pws.domain.song.command.UpdateSongCommand
+import io.github.alelk.pws.domain.song.usecase.GetSongDetailUseCase
+import io.github.alelk.pws.domain.song.usecase.UpdateSongUseCase
+import io.github.alelk.pws.domain.tag.usecase.ObserveTagsUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import io.github.alelk.pws.domain.core.Color as DomainColor
 
 /**
  * ScreenModel for song editing.
  */
 class SongEditScreenModel(
-  private val songId: SongId
-  // TODO: inject use cases
-  // private val getSongDetailUseCase: GetSongDetailUseCase,
-  // private val updateSongUseCase: UpdateSongUseCase,
-  // private val observeTagsUseCase: ObserveTagsUseCase
+  private val songId: SongId,
+  private val getSongDetailUseCase: GetSongDetailUseCase,
+  private val updateSongUseCase: UpdateSongUseCase,
+  private val observeTagsUseCase: ObserveTagsUseCase
 ) : StateScreenModel<SongEditUiState>(SongEditUiState.Loading) {
 
   sealed interface Effect {
@@ -33,9 +40,7 @@ class SongEditScreenModel(
   val showDiscardDialog = _showDiscardDialog.asStateFlow()
 
   private var originalTitle = ""
-  private var originalNumber = ""
   private var originalText = ""
-  private var originalSelectedTags = setOf<TagId>()
 
   init {
     loadSong()
@@ -44,7 +49,7 @@ class SongEditScreenModel(
   fun onEvent(event: SongEditEvent) {
     when (event) {
       is SongEditEvent.TitleChanged -> updateTitle(event.title)
-      is SongEditEvent.NumberChanged -> updateNumber(event.number)
+      is SongEditEvent.NumberChanged -> { /* Number is read-only from SongDetail */ }
       is SongEditEvent.TextChanged -> updateText(event.text)
       is SongEditEvent.TagToggled -> toggleTag(event.tagId)
       SongEditEvent.SaveClicked -> save()
@@ -57,17 +62,34 @@ class SongEditScreenModel(
   private fun loadSong() {
     screenModelScope.launch {
       try {
-        // TODO: Load actual song data
-        // val song = getSongDetailUseCase(songId)
-        // val tags = observeTagsUseCase().first()
+        val song = getSongDetailUseCase(songId)
+        if (song == null) {
+          mutableState.value = SongEditUiState.Error("Песня не найдена")
+          return@launch
+        }
 
-        // Placeholder
+        val allTags = observeTagsUseCase().first()
+
+        // Extract name and lyric text
+        val name = song.name.value
+        val lyricText = song.lyric.toString()
+
+        originalTitle = name
+        originalText = lyricText
+
         mutableState.value = SongEditUiState.Content(
           songId = songId,
-          title = "",
-          number = "",
-          text = "",
-          allTags = emptyList()
+          title = name,
+          number = "", // Song number comes from SongNumber, not SongDetail
+          text = lyricText,
+          allTags = allTags.map { tag ->
+            EditableTagUi(
+              id = tag.id,
+              name = tag.name,
+              color = tag.color.toCompose(),
+              isSelected = false // Tags for song are managed separately
+            )
+          }
         )
       } catch (e: Exception) {
         mutableState.value = SongEditUiState.Error("Ошибка загрузки: ${e.message}")
@@ -77,10 +99,6 @@ class SongEditScreenModel(
 
   private fun updateTitle(title: String) {
     updateContent { it.copy(title = title, hasUnsavedChanges = hasChanges(title = title)) }
-  }
-
-  private fun updateNumber(number: String) {
-    updateContent { it.copy(number = number, hasUnsavedChanges = hasChanges(number = number)) }
   }
 
   private fun updateText(text: String) {
@@ -98,20 +116,14 @@ class SongEditScreenModel(
 
   private fun hasChanges(
     title: String? = null,
-    number: String? = null,
     text: String? = null,
     tags: List<EditableTagUi>? = null
   ): Boolean {
     val currentState = mutableState.value as? SongEditUiState.Content ?: return false
     val t = title ?: currentState.title
-    val n = number ?: currentState.number
     val tx = text ?: currentState.text
-    val selectedTags = (tags ?: currentState.allTags).filter { it.isSelected }.map { it.id }.toSet()
 
-    return t != originalTitle ||
-           n != originalNumber ||
-           tx != originalText ||
-           selectedTags != originalSelectedTags
+    return t != originalTitle || tx != originalText
   }
 
   private fun save() {
@@ -130,8 +142,12 @@ class SongEditScreenModel(
     screenModelScope.launch {
       updateContent { it.copy(isSaving = true, validationError = null) }
       try {
-        // TODO: Save changes
-        // updateSongUseCase(...)
+        // TODO: add lyric parsing when parser is ready
+        val command = UpdateSongCommand(
+          id = songId,
+          name = NonEmptyString(currentState.title)
+        )
+        updateSongUseCase(command)
 
         _effects.emit(Effect.ShowSnackbar("Изменения сохранены"))
         _effects.emit(Effect.NavigateBack)
@@ -165,5 +181,6 @@ class SongEditScreenModel(
       mutableState.value = transform(current)
     }
   }
-}
 
+  private fun DomainColor.toCompose() = Color(r / 255f, g / 255f, b / 255f)
+}

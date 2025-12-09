@@ -3,19 +3,27 @@ package io.github.alelk.pws.features.tags
 import androidx.compose.ui.graphics.Color
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import io.github.alelk.pws.domain.core.ids.TagId
+import io.github.alelk.pws.domain.tag.command.CreateTagCommand
+import io.github.alelk.pws.domain.tag.command.UpdateTagCommand
+import io.github.alelk.pws.domain.tag.model.TagSummary
+import io.github.alelk.pws.domain.tag.usecase.CreateTagUseCase
+import io.github.alelk.pws.domain.tag.usecase.DeleteTagUseCase
+import io.github.alelk.pws.domain.tag.usecase.ObserveTagsUseCase
+import io.github.alelk.pws.domain.tag.usecase.UpdateTagUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import io.github.alelk.pws.domain.core.Color as DomainColor
 
 /**
  * ScreenModel for tags management screen.
  */
 class TagsScreenModel(
-  // TODO: inject tags repository/use cases
-  // private val observeTagsUseCase: ObserveTagsUseCase,
-  // private val createTagUseCase: CreateTagUseCase,
-  // private val updateTagUseCase: UpdateTagUseCase,
-  // private val deleteTagUseCase: DeleteTagUseCase
+  private val observeTagsUseCase: ObserveTagsUseCase,
+  private val createTagUseCase: CreateTagUseCase,
+  private val updateTagUseCase: UpdateTagUseCase,
+  private val deleteTagUseCase: DeleteTagUseCase
 ) : StateScreenModel<TagsUiState>(TagsUiState.Loading) {
 
   sealed interface Effect {
@@ -91,17 +99,14 @@ class TagsScreenModel(
   private fun loadTags() {
     screenModelScope.launch {
       try {
-        // TODO: Replace with actual implementation
-        // observeTagsUseCase().collect { tags ->
-        //   mutableState.value = if (tags.isEmpty()) {
-        //     TagsUiState.Empty
-        //   } else {
-        //     TagsUiState.Content(tags)
-        //   }
-        // }
-
-        // Placeholder
-        mutableState.value = TagsUiState.Empty
+        observeTagsUseCase().collect { tags ->
+          val uiTags = tags.map { it.toUi() }
+          mutableState.value = if (uiTags.isEmpty()) {
+            TagsUiState.Empty
+          } else {
+            TagsUiState.Content(uiTags)
+          }
+        }
       } catch (e: Exception) {
         mutableState.value = TagsUiState.Error("Ошибка загрузки: ${e.message}")
       }
@@ -115,13 +120,26 @@ class TagsScreenModel(
     screenModelScope.launch {
       try {
         val editingTag = currentState.editingTag
+        val domainColor = color.toDomain()
         if (editingTag != null) {
           // Update existing tag
-          // updateTagUseCase(editingTag.id, name, color)
+          val command = UpdateTagCommand(
+            id = editingTag.id,
+            name = name,
+            color = domainColor
+          )
+          updateTagUseCase(command)
           _effects.emit(Effect.ShowSnackbar("Тег обновлён"))
         } else {
           // Create new tag
-          // createTagUseCase(name, color)
+          val tagIdBase = name.take(20).replace(Regex("[^\\p{L}\\d_-]"), "").ifEmpty { "tag" }
+          val tagId = TagId("$tagIdBase-${System.currentTimeMillis()}")
+          val command = CreateTagCommand(
+            id = tagId,
+            name = name,
+            color = domainColor
+          )
+          createTagUseCase(command)
           _effects.emit(Effect.ShowSnackbar("Тег создан"))
         }
 
@@ -139,7 +157,7 @@ class TagsScreenModel(
   private fun deleteTag(tag: TagUi) {
     screenModelScope.launch {
       try {
-        // deleteTagUseCase(tag.id)
+        deleteTagUseCase(tag.id)
         updateState { state ->
           if (state is TagsUiState.Content) {
             state.copy(showDeleteConfirmation = null)
@@ -155,5 +173,21 @@ class TagsScreenModel(
   private inline fun updateState(transform: (TagsUiState) -> TagsUiState) {
     mutableState.value = transform(mutableState.value)
   }
+
+  private fun TagSummary.toUi() = TagUi(
+    id = id,
+    name = name,
+    color = color.toCompose(),
+    songCount = songCount,
+    isPredefined = predefined
+  )
+
+  private fun DomainColor.toCompose() = Color(r / 255f, g / 255f, b / 255f)
+
+  private fun Color.toDomain() = DomainColor(
+    r = (red * 255).toInt(),
+    g = (green * 255).toInt(),
+    b = (blue * 255).toInt()
+  )
 }
 

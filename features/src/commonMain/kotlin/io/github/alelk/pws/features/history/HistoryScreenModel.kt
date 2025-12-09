@@ -2,6 +2,10 @@ package io.github.alelk.pws.features.history
 
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import io.github.alelk.pws.domain.history.model.HistoryEntryWithSongInfo
+import io.github.alelk.pws.domain.history.usecase.ClearHistoryUseCase
+import io.github.alelk.pws.domain.history.usecase.ObserveHistoryUseCase
+import io.github.alelk.pws.domain.history.usecase.RemoveHistoryEntryUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -12,10 +16,9 @@ import kotlinx.coroutines.launch
  * ScreenModel for history screen.
  */
 class HistoryScreenModel(
-  // TODO: inject history repository/use case
-  // private val observeHistoryUseCase: ObserveHistoryUseCase,
-  // private val removeHistoryItemUseCase: RemoveHistoryItemUseCase,
-  // private val clearHistoryUseCase: ClearHistoryUseCase
+  private val observeHistoryUseCase: ObserveHistoryUseCase,
+  private val removeHistoryItemUseCase: RemoveHistoryEntryUseCase,
+  private val clearHistoryUseCase: ClearHistoryUseCase
 ) : StateScreenModel<HistoryUiState>(HistoryUiState.Loading) {
 
   sealed interface Effect {
@@ -62,17 +65,14 @@ class HistoryScreenModel(
   private fun loadHistory() {
     screenModelScope.launch {
       try {
-        // TODO: Replace with actual implementation
-        // observeHistoryUseCase().collect { items ->
-        //   mutableState.value = if (items.isEmpty()) {
-        //     HistoryUiState.Empty
-        //   } else {
-        //     HistoryUiState.Content(items)
-        //   }
-        // }
-
-        // Placeholder
-        mutableState.value = HistoryUiState.Empty
+        observeHistoryUseCase().collect { items ->
+          val uiItems = items.map { it.toUi() }
+          mutableState.value = if (uiItems.isEmpty()) {
+            HistoryUiState.Empty
+          } else {
+            HistoryUiState.Content(uiItems)
+          }
+        }
       } catch (e: Exception) {
         mutableState.value = HistoryUiState.Error("Ошибка загрузки: ${e.message}")
       }
@@ -82,8 +82,7 @@ class HistoryScreenModel(
   private fun removeItem(item: HistoryItemUi) {
     screenModelScope.launch {
       try {
-        // TODO: Replace with actual implementation
-        // removeHistoryItemUseCase(item.id)
+        removeHistoryItemUseCase(item.id)
       } catch (e: Exception) {
         // Handle error
       }
@@ -93,13 +92,21 @@ class HistoryScreenModel(
   private fun clearAll() {
     screenModelScope.launch {
       try {
-        // TODO: Replace with actual implementation
-        // clearHistoryUseCase()
+        clearHistoryUseCase()
         mutableState.value = HistoryUiState.Empty
       } catch (e: Exception) {
         // Handle error
       }
     }
   }
+
+  private fun HistoryEntryWithSongInfo.toUi() = HistoryItemUi(
+    id = id,
+    songNumberId = songNumberId,
+    songNumber = songNumber,
+    songName = songName,
+    bookDisplayName = bookDisplayName,
+    viewedAt = viewedAt
+  )
 }
 

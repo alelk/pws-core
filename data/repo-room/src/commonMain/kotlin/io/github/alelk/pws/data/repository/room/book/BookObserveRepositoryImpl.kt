@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
-class BookRepositoryImpl(
+class BookObserveRepositoryImpl(
   val bookDao: BookDao
 ) : BookObserveRepository, BookReadRepository {
   override fun observe(id: BookId): Flow<BookDetail?> =

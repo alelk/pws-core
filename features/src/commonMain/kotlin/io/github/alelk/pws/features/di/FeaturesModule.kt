@@ -29,21 +29,21 @@ val featuresModule = module {
   factory { (songNumberId: SongNumberId) -> SongDetailScreenModel(songNumberId, get()) }
 
   // Song Edit
-  factory { (songId: SongId) -> SongEditScreenModel(songId) }
+  factory { (songId: SongId) -> SongEditScreenModel(songId, get(), get(), get()) }
 
   // Search
-  factory { SearchScreenModel() }
+  factory { SearchScreenModel(get()) }
 
   // Favorites
-  factory { FavoritesScreenModel() }
+  factory { FavoritesScreenModel(get(), get()) }
 
   // History
-  factory { HistoryScreenModel() }
+  factory { HistoryScreenModel(get(), get(), get()) }
 
   // Tags
-  factory { TagsScreenModel() }
+  factory { TagsScreenModel(get(), get(), get(), get()) }
 
   // Tag Songs
-  factory { (tagId: TagId) -> TagSongsScreenModel(tagId) }
+  factory { (tagId: TagId) -> TagSongsScreenModel(tagId, get(), get()) }
 }
 
