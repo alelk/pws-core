@@ -4,6 +4,8 @@ plugins {
   alias(libs.plugins.composeCompiler)
 }
 
+group = "io.github.alelk.pws.features"
+
 kotlin {
   jvm()
   js(IR) {
