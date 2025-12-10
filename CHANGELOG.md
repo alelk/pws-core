@@ -1,5 +1,12 @@
 # PWS Android
 
+## [1.8.1](https://github.com/alelk/pws-core/compare/v1.8.0...v1.8.1) (2025-12-10)
+
+
+### Bug Fixes
+
+* Configure :core:navigation module publication ([7d31e34](https://github.com/alelk/pws-core/commit/7d31e34ab13b03546eeb44f71fde8614217a9635))
+
 # [1.8.0](https://github.com/alelk/pws-core/compare/v1.7.0...v1.8.0) (2025-12-09)
 
 
