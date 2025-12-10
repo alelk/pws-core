@@ -1,5 +1,12 @@
 # PWS Android
 
+## [1.8.2](https://github.com/alelk/pws-core/compare/v1.8.1...v1.8.2) (2025-12-10)
+
+
+### Bug Fixes
+
+* Configure :features module publication ([a6fe733](https://github.com/alelk/pws-core/commit/a6fe733e30a43ec682260bf44ee04d1cac2e1da3))
+
 ## [1.8.1](https://github.com/alelk/pws-core/compare/v1.8.0...v1.8.1) (2025-12-10)
 
 
