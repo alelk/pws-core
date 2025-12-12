@@ -16,7 +16,7 @@ interface HistoryWriteRepository {
   /**
    * Remove a single history entry.
    */
-  suspend fun remove(id: Long): Boolean
+  suspend fun remove(id:  SongNumberId): Boolean
 
   /**
    * Clear all history.
