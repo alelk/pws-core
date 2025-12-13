@@ -1,5 +1,19 @@
 # PWS Android
 
+# [1.9.0](https://github.com/alelk/pws-core/compare/v1.8.2...v1.9.0) (2025-12-13)
+
+
+### Bug Fixes
+
+* Fix build issues ([6300b5a](https://github.com/alelk/pws-core/commit/6300b5a3adf55be9b9d12c9b9b980f3d8735c811))
+
+
+### Features
+
+* **domain:** Add user book/song override commands/repositiries ([fe97cba](https://github.com/alelk/pws-core/commit/fe97cba2965511614d90780cc5a9f60ad0e93b31))
+* **history,favorites:** Update history/favirites domain model/repositories ([bcfcb83](https://github.com/alelk/pws-core/commit/bcfcb83a3454ba660c708e0c3868e250f770f202))
+* **tags:** Add interfaces to control user tags ([a121525](https://github.com/alelk/pws-core/commit/a12152537556a7d49241efafdd02ea1526a988c2))
+
 ## [1.8.2](https://github.com/alelk/pws-core/compare/v1.8.1...v1.8.2) (2025-12-10)
 
 
