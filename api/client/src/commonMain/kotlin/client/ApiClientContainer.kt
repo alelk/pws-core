@@ -1,8 +1,13 @@
 package io.github.alelk.pws.api.client.client
 
+import io.github.alelk.pws.api.client.api.AdminBookApi
+import io.github.alelk.pws.api.client.api.AdminSongApi
 import io.github.alelk.pws.api.client.api.AuthApi
 import io.github.alelk.pws.api.client.api.BookApi
 import io.github.alelk.pws.api.client.api.SongApi
+import io.github.alelk.pws.api.client.api.UserBookApi
+import io.github.alelk.pws.api.client.api.UserFavoriteApi
+import io.github.alelk.pws.api.client.api.UserHistoryApi
 import io.github.alelk.pws.domain.book.repository.BookReadRepository
 import io.github.alelk.pws.domain.book.repository.BookWriteRepository
 import io.github.alelk.pws.domain.song.repository.SongReadRepository
@@ -15,9 +20,19 @@ import io.ktor.client.HttpClient
  */
 data class ApiClientContainer(
   val httpClient: HttpClient,
+  // Public read-only APIs
   val songApi: SongApi,
   val bookApi: BookApi,
+  // Auth API
   val authApi: AuthApi,
+  // Admin APIs (require admin role)
+  val adminBookApi: AdminBookApi,
+  val adminSongApi: AdminSongApi,
+  // User APIs (require authentication)
+  val userBookApi: UserBookApi,
+  val userFavoriteApi: UserFavoriteApi,
+  val userHistoryApi: UserHistoryApi,
+  // Repositories (for domain layer integration)
   val songReadRepository: SongReadRepository,
   val songWriteRepository: SongWriteRepository,
   val bookReadRepository: BookReadRepository,

@@ -1,11 +1,21 @@
 package io.github.alelk.pws.api.client.client
 
+import io.github.alelk.pws.api.client.api.AdminBookApi
+import io.github.alelk.pws.api.client.api.AdminBookApiImpl
+import io.github.alelk.pws.api.client.api.AdminSongApi
+import io.github.alelk.pws.api.client.api.AdminSongApiImpl
 import io.github.alelk.pws.api.client.api.AuthApi
 import io.github.alelk.pws.api.client.api.AuthApiImpl
 import io.github.alelk.pws.api.client.api.BookApi
 import io.github.alelk.pws.api.client.api.BookApiImpl
 import io.github.alelk.pws.api.client.api.SongApi
 import io.github.alelk.pws.api.client.api.SongApiImpl
+import io.github.alelk.pws.api.client.api.UserBookApi
+import io.github.alelk.pws.api.client.api.UserBookApiImpl
+import io.github.alelk.pws.api.client.api.UserFavoriteApi
+import io.github.alelk.pws.api.client.api.UserFavoriteApiImpl
+import io.github.alelk.pws.api.client.api.UserHistoryApi
+import io.github.alelk.pws.api.client.api.UserHistoryApiImpl
 import io.github.alelk.pws.api.client.config.NetworkConfig
 import io.github.alelk.pws.api.client.http.createHttpClient
 import io.github.alelk.pws.domain.auth.storage.TokenStorage
@@ -36,20 +46,38 @@ fun createApiClient(
   val owns = httpClient == null
   val client = httpClient ?: createHttpClient(network, tokenStorage, engineBuilder)
 
+  // Public read-only APIs
   val songApi: SongApi = SongApiImpl(client)
   val bookApi: BookApi = BookApiImpl(client)
+
+  // Auth API
   val authApi: AuthApi = AuthApiImpl(client, tokenStorage)
 
+  // Admin APIs
+  val adminBookApi: AdminBookApi = AdminBookApiImpl(client)
+  val adminSongApi: AdminSongApi = AdminSongApiImpl(client)
+
+  // User APIs
+  val userBookApi: UserBookApi = UserBookApiImpl(client)
+  val userFavoriteApi: UserFavoriteApi = UserFavoriteApiImpl(client)
+  val userHistoryApi: UserHistoryApi = UserHistoryApiImpl(client)
+
+  // Repositories (using admin APIs for write operations)
   val songReadRepo: SongReadRepository = RemoteSongReadRepository(songApi)
-  val songWriteRepo: SongWriteRepository = RemoteSongWriteRepository(songApi)
+  val songWriteRepo: SongWriteRepository = RemoteSongWriteRepository(adminSongApi)
   val bookReadRepo: BookReadRepository = RemoteBookReadRepository(bookApi)
-  val bookWriteRepo: BookWriteRepository = RemoteBookWriteRepository(bookApi)
+  val bookWriteRepo: BookWriteRepository = RemoteBookWriteRepository(adminBookApi)
 
   return ApiClientContainer(
     httpClient = client,
     songApi = songApi,
     bookApi = bookApi,
     authApi = authApi,
+    adminBookApi = adminBookApi,
+    adminSongApi = adminSongApi,
+    userBookApi = userBookApi,
+    userFavoriteApi = userFavoriteApi,
+    userHistoryApi = userHistoryApi,
     songReadRepository = songReadRepo,
     songWriteRepository = songWriteRepo,
     bookReadRepository = bookReadRepo,

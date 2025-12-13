@@ -1,7 +1,8 @@
 package io.github.alelk.pws.api.client.repository
 
-import io.github.alelk.pws.api.client.api.BookApi
+import io.github.alelk.pws.api.client.api.AdminBookApi
 import io.github.alelk.pws.api.client.api.ResourceCreateResult
+import io.github.alelk.pws.api.client.api.ResourceDeleteResult
 import io.github.alelk.pws.api.client.api.ResourceUpdateResult
 import io.github.alelk.pws.api.mapping.book.toRequestDto
 import io.github.alelk.pws.api.mapping.core.toDto
@@ -13,7 +14,7 @@ import io.github.alelk.pws.domain.core.result.CreateResourceResult
 import io.github.alelk.pws.domain.core.result.DeleteResourceResult
 import io.github.alelk.pws.domain.core.result.UpdateResourceResult
 
-class RemoteBookWriteRepository(private val api: BookApi) : BookWriteRepository {
+class RemoteBookWriteRepository(private val api: AdminBookApi) : BookWriteRepository {
 
   override suspend fun create(bookCommand: CreateBookCommand): CreateResourceResult<BookId> =
     runCatching {
@@ -33,5 +34,12 @@ class RemoteBookWriteRepository(private val api: BookApi) : BookWriteRepository 
       }
     }.getOrElse { exc -> UpdateResourceResult.UnknownError(bookCommand.id, exc) }
 
-  override suspend fun delete(bookId: BookId): DeleteResourceResult<BookId> = TODO("not implemented in api")
+  override suspend fun delete(bookId: BookId): DeleteResourceResult<BookId> =
+    runCatching {
+      when (val result = api.delete(bookId.toDto())) {
+        is ResourceDeleteResult.Success<*> -> DeleteResourceResult.Success(bookId)
+        is ResourceDeleteResult.NotFound<*> -> DeleteResourceResult.NotFound(bookId)
+        is ResourceDeleteResult.ValidationError -> DeleteResourceResult.ValidationError(bookId, result.message)
+      }
+    }.getOrElse { exc -> DeleteResourceResult.UnknownError(bookId, exc) }
 }

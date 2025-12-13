@@ -93,6 +93,20 @@ internal abstract class BaseResourceApi(protected val client: HttpClient) {
         } else throw exc
       }
 
+  protected suspend inline fun <ID> executeDelete(resourceId: ID, crossinline block: suspend () -> HttpResponse): Result<ResourceDeleteResult<ID>> =
+    handleResponse(json) { block() }
+      .mapCatching {
+        ResourceDeleteResult.Success(resourceId)
+      }.recoverCatching { exc ->
+        if (exc is ApiException.Server) {
+          when (exc.error?.code) {
+            ErrorCodes.RESOURCE_NOT_FOUND -> ResourceDeleteResult.NotFound(resourceId)
+            ErrorCodes.VALIDATION_ERROR -> ResourceDeleteResult.ValidationError(exc.error.message)
+            else -> throw exc
+          }
+        } else throw exc
+      }
+
   protected suspend inline fun <reified T> execute(crossinline block: suspend () -> HttpResponse): Result<T> =
     handleResponse(json) { block() }
       .mapCatching {

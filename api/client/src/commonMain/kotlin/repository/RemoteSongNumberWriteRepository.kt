@@ -1,6 +1,6 @@
 package io.github.alelk.pws.api.client.repository
 
-import io.github.alelk.pws.api.client.api.BookApi
+import io.github.alelk.pws.api.client.api.AdminBookApi
 import io.github.alelk.pws.api.client.api.ResourceBatchCreateResult
 import io.github.alelk.pws.api.mapping.book.songnumber.toDto
 import io.github.alelk.pws.api.mapping.core.toDto
@@ -13,10 +13,10 @@ import io.github.alelk.pws.domain.core.result.UpdateResourceResult
 import io.github.alelk.pws.domain.songnumber.model.SongNumberLink
 import io.github.alelk.pws.domain.songnumber.repository.SongNumberWriteRepository
 
-class RemoteSongNumberWriteRepository(val bookApi: BookApi) : SongNumberWriteRepository {
+class RemoteSongNumberWriteRepository(val bookApi: AdminBookApi) : SongNumberWriteRepository {
   override suspend fun create(bookId: BookId, link: SongNumberLink): CreateResourceResult<SongNumberLink> =
     runCatching {
-      when (val result = bookApi.createBookSongs(bookId.toDto(), listOf(link.toDto()))) {
+      when (val result = bookApi.addSongs(bookId.toDto(), listOf(link.toDto()))) {
         is ResourceBatchCreateResult.AlreadyExists<*> -> CreateResourceResult.AlreadyExists(link)
         is ResourceBatchCreateResult.Success<*> -> CreateResourceResult.Success(link)
         is ResourceBatchCreateResult.ValidationError -> CreateResourceResult.ValidationError(link, message = result.message)
