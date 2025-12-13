@@ -1,5 +1,12 @@
 # PWS Android
 
+# [1.12.0](https://github.com/alelk/pws-core/compare/v1.11.0...v1.12.0) (2025-12-13)
+
+
+### Features
+
+* **api:** Implement User APIs for managing user history and favorites ([67f7283](https://github.com/alelk/pws-core/commit/67f7283baad99b66179ab973290ac03a59153799))
+
 # [1.11.0](https://github.com/alelk/pws-core/compare/v1.10.0...v1.11.0) (2025-12-13)
 
 
