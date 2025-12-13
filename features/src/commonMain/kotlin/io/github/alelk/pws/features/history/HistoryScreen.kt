@@ -38,6 +38,7 @@ import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
 import io.github.alelk.pws.features.components.SwipeableSongItem
 import io.github.alelk.pws.features.theme.spacing
+import kotlin.time.ExperimentalTime
 
 class HistoryScreen : Screen {
   @Composable
@@ -138,6 +139,7 @@ fun HistoryContent(
   }
 }
 
+@OptIn(ExperimentalTime::class)
 @Composable
 private fun HistoryList(
   items: List<HistoryItemUi>,
@@ -157,7 +159,7 @@ private fun HistoryList(
       SwipeableSongItem(
         number = item.songNumber,
         title = item.songName,
-        subtitle = "${item.bookDisplayName} • ${formatTime(item.viewedAt)}",
+        subtitle = "${item.bookDisplayName} • ${formatTime(item.viewedAt.toEpochMilliseconds())}",
         onClick = { navigator.push(songScreen) }
       )
 

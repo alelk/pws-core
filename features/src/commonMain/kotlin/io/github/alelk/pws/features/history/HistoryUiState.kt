@@ -2,7 +2,10 @@ package io.github.alelk.pws.features.history
 
 import androidx.compose.runtime.Immutable
 import io.github.alelk.pws.domain.core.ids.SongNumberId
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
+@OptIn(ExperimentalTime::class)
 @Immutable
 data class HistoryItemUi(
   val id: Long,
@@ -10,7 +13,7 @@ data class HistoryItemUi(
   val songNumber: Int,
   val songName: String,
   val bookDisplayName: String,
-  val viewedAt: Long // timestamp
+  val viewedAt: Instant
 )
 
 sealed interface HistoryUiState {

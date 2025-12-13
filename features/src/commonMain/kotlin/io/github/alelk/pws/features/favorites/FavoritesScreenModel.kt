@@ -8,6 +8,7 @@ import io.github.alelk.pws.domain.favorite.usecase.RemoveFavoriteUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import kotlin.time.ExperimentalTime
 
 /**
  * ScreenModel for favorites screen.
@@ -71,6 +72,7 @@ class FavoritesScreenModel(
     }
   }
 
+  @OptIn(ExperimentalTime::class)
   private fun FavoriteWithSongInfo.toUi() = FavoriteSongUi(
     songNumberId = songNumberId,
     songNumber = songNumber,

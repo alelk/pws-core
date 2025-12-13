@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlin.time.ExperimentalTime
 
 /**
  * ScreenModel for history screen.
@@ -82,7 +83,7 @@ class HistoryScreenModel(
   private fun removeItem(item: HistoryItemUi) {
     screenModelScope.launch {
       try {
-        removeHistoryItemUseCase(item.id)
+        removeHistoryItemUseCase(item.songNumberId)
       } catch (e: Exception) {
         // Handle error
       }
@@ -100,6 +101,7 @@ class HistoryScreenModel(
     }
   }
 
+  @OptIn(ExperimentalTime::class)
   private fun HistoryEntryWithSongInfo.toUi() = HistoryItemUi(
     id = id,
     songNumberId = songNumberId,

@@ -2,14 +2,17 @@ package io.github.alelk.pws.features.favorites
 
 import androidx.compose.runtime.Immutable
 import io.github.alelk.pws.domain.core.ids.SongNumberId
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
+@OptIn(ExperimentalTime::class)
 @Immutable
 data class FavoriteSongUi(
   val songNumberId: SongNumberId,
   val songNumber: Int,
   val songName: String,
   val bookDisplayName: String,
-  val addedAt: Long // timestamp
+  val addedAt: Instant // timestamp
 )
 
 sealed interface FavoritesUiState {
