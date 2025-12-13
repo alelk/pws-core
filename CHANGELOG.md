@@ -1,5 +1,12 @@
 # PWS Android
 
+# [1.11.0](https://github.com/alelk/pws-core/compare/v1.10.0...v1.11.0) (2025-12-13)
+
+
+### Features
+
+* **api:** Add resourcesAlreadyExists error factory method for api. ([ce74730](https://github.com/alelk/pws-core/commit/ce74730e6a4202e9e5359c93d323dcfb698364c1))
+
 # [1.10.0](https://github.com/alelk/pws-core/compare/v1.9.0...v1.10.0) (2025-12-13)
 
 
