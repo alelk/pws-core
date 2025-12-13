@@ -1,5 +1,12 @@
 # PWS Android
 
+# [1.10.0](https://github.com/alelk/pws-core/compare/v1.9.0...v1.10.0) (2025-12-13)
+
+
+### Features
+
+* **api:** Add new api endpoints: user history, favorites, tags, edied songs, books etc. ([df944ef](https://github.com/alelk/pws-core/commit/df944ef90fc5c03a15e997793c0a1729cc2d7264))
+
 # [1.9.0](https://github.com/alelk/pws-core/compare/v1.8.2...v1.9.0) (2025-12-13)
 
 
