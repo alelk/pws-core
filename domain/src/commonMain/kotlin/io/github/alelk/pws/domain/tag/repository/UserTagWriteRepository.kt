@@ -39,27 +39,27 @@ interface UserTagWriteRepository {
    * Hide a global tag for user.
    * The tag won't appear in user's tag list or song tags.
    */
-  suspend fun hideGlobalTag(userId: UserId, tagId: TagId): Boolean
+  suspend fun hideGlobalTag(userId: UserId, tagId: TagId): UpdateResourceResult<TagId>
 
   /**
    * Unhide a previously hidden global tag.
    */
-  suspend fun unhideGlobalTag(userId: UserId, tagId: TagId): Boolean
+  suspend fun unhideGlobalTag(userId: UserId, tagId: TagId): UpdateResourceResult<TagId>
 
   /**
    * Override color for a global tag (user-specific).
    */
-  suspend fun overrideGlobalTagColor(userId: UserId, tagId: TagId, color: Color): Boolean
+  suspend fun overrideGlobalTagColor(userId: UserId, tagId: TagId, color: Color): UpdateResourceResult<TagId>
 
   /**
    * Override priority for a global tag (user-specific).
    */
-  suspend fun overrideGlobalTagPriority(userId: UserId, tagId: TagId, priority: Int): Boolean
+  suspend fun overrideGlobalTagPriority(userId: UserId, tagId: TagId, priority: Int): UpdateResourceResult<TagId>
 
   /**
    * Reset all overrides for a global tag (restore to global defaults).
    */
-  suspend fun resetGlobalTagOverride(userId: UserId, tagId: TagId): Boolean
+  suspend fun resetGlobalTagOverride(userId: UserId, tagId: TagId): UpdateResourceResult<TagId>
 
   // ============ Song-tag association operations ============
 
@@ -69,27 +69,25 @@ interface UserTagWriteRepository {
    * For global tags: if association doesn't exist globally, creates user-specific association.
    * For custom tags: creates association in user_song_tags.
    * @param tagId Tag ID (can be global or custom tag).
-   * @return true if added, false if already exists.
    */
-  suspend fun addTagToSong(userId: UserId, songId: SongId, tagId: TagId): Boolean
+  suspend fun addTagToSong(userId: UserId, songId: SongId, tagId: TagId): CreateResourceResult<TagId>
 
   /**
    * Remove a tag from a song for user.
    * For global tags: hides the global association (doesn't delete it).
    * For custom tags: removes the association.
    * For user-added global tags: removes the user addition.
-   * @return true if removed/hidden, false if not found.
    */
-  suspend fun removeTagFromSong(userId: UserId, songId: SongId, tagId: TagId): Boolean
+  suspend fun removeTagFromSong(userId: UserId, songId: SongId, tagId: TagId): DeleteResourceResult<TagId>
 
   /**
    * Hide a global song-tag association for user.
    */
-  suspend fun hideGlobalSongTag(userId: UserId, songId: SongId, tagId: TagId): Boolean
+  suspend fun hideGlobalSongTag(userId: UserId, songId: SongId, tagId: TagId): UpdateResourceResult<TagId>
 
   /**
    * Unhide a previously hidden global song-tag association.
    */
-  suspend fun unhideGlobalSongTag(userId: UserId, songId: SongId, tagId: TagId): Boolean
+  suspend fun unhideGlobalSongTag(userId: UserId, songId: SongId, tagId: TagId): UpdateResourceResult<TagId>
 }
 
