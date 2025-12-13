@@ -1,5 +1,6 @@
 package io.github.alelk.pws.api.mapping.song
 
+import io.github.alelk.pws.api.contract.core.ids.SongIdDto
 import io.github.alelk.pws.api.contract.song.SongCreateRequestDto
 import io.github.alelk.pws.api.contract.song.SongUpdateRequestDto
 import io.github.alelk.pws.api.mapping.core.nonEmpty
@@ -36,3 +37,22 @@ fun SongUpdateRequestDto.toDomainCommand(): UpdateSongCommand = UpdateSongComman
   bibleRef = bibleRef?.let { OptionalField.Set(BibleRef(it)) } ?: OptionalField.Unchanged,
   expectVersion = expectedVersion?.toDomain()
 )
+
+/**
+ * Convert to UpdateSongCommand using the song ID from the URL path.
+ * This is useful for user book songs where the ID comes from the URL.
+ */
+fun SongUpdateRequestDto.toDomainCommand(songId: SongIdDto): UpdateSongCommand = UpdateSongCommand(
+  id = songId.toDomain(),
+  locale = locale?.toDomain(),
+  name = name?.let { nonEmpty(it, "SongUpdateRequestDto.name") },
+  lyric = lyric?.toDomain(),
+  author = OptionalField.fromNullable(author?.toDomain(), treatNullAsClear = false),
+  translator = OptionalField.fromNullable(translator?.toDomain(), treatNullAsClear = false),
+  composer = OptionalField.fromNullable(composer?.toDomain(), treatNullAsClear = false),
+  tonalities = tonalities?.map { it.toDomain() }?.let { OptionalField.Set(it) } ?: OptionalField.Unchanged,
+  year = OptionalField.fromNullable(year?.toDomain(), treatNullAsClear = false),
+  bibleRef = bibleRef?.let { OptionalField.Set(BibleRef(it)) } ?: OptionalField.Unchanged,
+  expectVersion = expectedVersion?.toDomain()
+)
+
