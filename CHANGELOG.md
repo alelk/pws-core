@@ -1,5 +1,13 @@
 # PWS Android
 
+## [1.12.1](https://github.com/alelk/pws-core/compare/v1.12.0...v1.12.1) (2025-12-14)
+
+
+### Bug Fixes
+
+* Fix book api test ([6c24eb7](https://github.com/alelk/pws-core/commit/6c24eb79f8fcbc40dc677f491d83f5e632b3c5ba))
+* Fix tests ([249d8d6](https://github.com/alelk/pws-core/commit/249d8d64040aea80e5051c1abf839c03c696f34b))
+
 # [1.12.0](https://github.com/alelk/pws-core/compare/v1.11.0...v1.12.0) (2025-12-13)
 
 
