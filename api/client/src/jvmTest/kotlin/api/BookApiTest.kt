@@ -1,7 +1,8 @@
 package io.github.alelk.pws.api.client.api
 
-import io.github.alelk.pws.api.contract.book.BookSummaryDto
+import io.github.alelk.pws.api.contract.book.BookSortDto
 import io.github.alelk.pws.api.contract.book.songnumber.SongNumberLinkDto
+import io.github.alelk.pws.api.contract.core.LocaleDto
 import io.github.alelk.pws.api.contract.core.ResourceTypeDto
 import io.github.alelk.pws.api.contract.core.error.ErrorDto
 import io.github.alelk.pws.api.contract.core.error.resourceNotFound
@@ -17,18 +18,12 @@ import io.kotest.matchers.shouldBe
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.constant
 import io.kotest.property.arbitrary.next
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.mock.MockEngine
-import io.ktor.client.engine.mock.MockRequestHandler
-import io.ktor.client.engine.mock.respond
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.resources.Resources
-import io.ktor.http.ContentType
-import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.headersOf
-import io.ktor.serialization.kotlinx.json.json
-import kotlinx.serialization.encodeToString
+import io.ktor.client.*
+import io.ktor.client.engine.mock.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.resources.*
+import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 
 /**
@@ -72,15 +67,15 @@ class BookApiTest : FunSpec({
       req.url.parameters["locale"] shouldBe "ru"
       req.url.parameters["enabled"] shouldBe "true"
       req.url.parameters["minPriority"] shouldBe "5"
-      req.url.parameters["sort"] shouldBe "NAME_ASC"
+      req.url.parameters["sort"] shouldBe "name"
       respond("[]", status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
     }
     val api = BookApiImpl(client)
     api.list(
-      locale = io.github.alelk.pws.api.contract.core.LocaleDto("ru"),
+      locale = LocaleDto("ru"),
       enabled = true,
       minPriority = 5,
-      sort = io.github.alelk.pws.api.contract.book.BookSortDto.NAME_ASC
+      sort = BookSortDto.ByName
     )
   }
 
