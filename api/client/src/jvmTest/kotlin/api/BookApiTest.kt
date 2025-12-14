@@ -72,7 +72,7 @@ class BookApiTest : FunSpec({
       req.url.parameters["locale"] shouldBe "ru"
       req.url.parameters["enabled"] shouldBe "true"
       req.url.parameters["minPriority"] shouldBe "5"
-      req.url.parameters["sort"] shouldBe "name"
+      req.url.parameters["sort"] shouldBe "NAME_ASC"
       respond("[]", status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
     }
     val api = BookApiImpl(client)
@@ -80,7 +80,7 @@ class BookApiTest : FunSpec({
       locale = io.github.alelk.pws.api.contract.core.LocaleDto("ru"),
       enabled = true,
       minPriority = 5,
-      sort = io.github.alelk.pws.api.contract.book.BookSortDto.ByName
+      sort = io.github.alelk.pws.api.contract.book.BookSortDto.NAME_ASC
     )
   }
 
