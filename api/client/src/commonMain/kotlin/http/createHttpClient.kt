@@ -39,14 +39,22 @@ fun createHttpClient(
   if (tokenStorage != null) {
     install(Auth) {
       bearer {
-        // Attach current access token
+        // Load tokens dynamically from storage on each request
         loadTokens {
           val tokens = tokenStorage.get()
-          tokens?.let { (access, refresh) -> BearerTokens(access, refresh) }
+          tokens?.let { BearerTokens(it.accessToken, it.refreshToken) }
         }
         // Attempt refresh on 401
         refreshTokens {
-          val currentRefresh = tokenStorage.get()?.refreshToken
+          // First check if we have new tokens in storage (e.g., after login)
+          val storedTokens = tokenStorage.get()
+          if (storedTokens != null && storedTokens.accessToken != oldTokens?.accessToken) {
+            // Tokens were updated externally (e.g., via loginWithTelegram), use them
+            return@refreshTokens BearerTokens(storedTokens.accessToken, storedTokens.refreshToken)
+          }
+
+          // Otherwise try to refresh using refresh token
+          val currentRefresh = storedTokens?.refreshToken
           if (currentRefresh.isNullOrBlank()) {
             null
           } else {
@@ -59,7 +67,10 @@ fun createHttpClient(
             resp?.let { BearerTokens(it.accessToken, it.refreshToken) }
           }
         }
-        sendWithoutRequest { true }
+        sendWithoutRequest { request ->
+          // Only send token if we have one in storage
+          tokenStorage.get() != null
+        }
       }
     }
   }
