@@ -1,5 +1,12 @@
 # PWS Android
 
+## [1.12.2](https://github.com/alelk/pws-core/compare/v1.12.1...v1.12.2) (2025-12-17)
+
+
+### Bug Fixes
+
+* **api:** Enhance token management in HTTP client for dynamic loading and refreshing ([a355fbb](https://github.com/alelk/pws-core/commit/a355fbb0fdfa3e2ded3e2a17aee142ecec6fa914))
+
 ## [1.12.1](https://github.com/alelk/pws-core/compare/v1.12.0...v1.12.1) (2025-12-14)
 
 
