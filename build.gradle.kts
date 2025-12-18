@@ -5,7 +5,7 @@ plugins {
   alias(libs.plugins.kotlinMultiplatform) apply false
   alias(libs.plugins.kotlinSerialization) apply false
   alias(libs.plugins.androidLibrary) apply false
-  id("com.google.devtools.ksp") version "${libs.versions.kotlin.get()}-${libs.versions.ksp.get()}" apply false
+  id("com.google.devtools.ksp") version "${libs.versions.ksp.get()}" apply false
 }
 
 val androidSdkVersion by extra(35)
