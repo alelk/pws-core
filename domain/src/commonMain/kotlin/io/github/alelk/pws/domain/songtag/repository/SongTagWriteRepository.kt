@@ -1,7 +1,11 @@
 package io.github.alelk.pws.domain.songtag.repository
 
-import io.github.alelk.pws.domain.core.ids.SongNumberId
+import io.github.alelk.pws.domain.core.ids.SongId
 import io.github.alelk.pws.domain.core.ids.TagId
+import io.github.alelk.pws.domain.core.result.CreateResourceResult
+import io.github.alelk.pws.domain.core.result.DeleteResourceResult
+import io.github.alelk.pws.domain.core.result.ReplaceAllResourcesResult
+import io.github.alelk.pws.domain.songtag.model.SongTagAssociation
 
 /**
  * Mutation operations for Song-Tag associations.
@@ -9,19 +13,18 @@ import io.github.alelk.pws.domain.core.ids.TagId
 interface SongTagWriteRepository {
   /**
    * Add a tag to a song.
-   * @return true if added, false if already exists.
    */
-  suspend fun addTagToSong(songNumberId: SongNumberId, tagId: TagId): Boolean
+  suspend fun addTagToSong(songId: SongId, tagId: TagId): CreateResourceResult<SongTagAssociation>
 
   /**
    * Remove a tag from a song.
-   * @return true if removed, false if not found.
    */
-  suspend fun removeTagFromSong(songNumberId: SongNumberId, tagId: TagId): Boolean
+  suspend fun removeTagFromSong(songId: SongId, tagId: TagId): DeleteResourceResult<SongTagAssociation>
 
   /**
    * Set all tags for a song (replaces existing).
+   * Returns details about created, unchanged and deleted associations.
    */
-  suspend fun setTagsForSong(songNumberId: SongNumberId, tagIds: Set<TagId>)
+  suspend fun setTagsForSong(songId: SongId, tagIds: Set<TagId>): ReplaceAllResourcesResult<SongTagAssociation>
 }
 
