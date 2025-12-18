@@ -2,12 +2,14 @@ package io.github.alelk.pws.api.mapping.core
 
 import io.github.alelk.pws.api.contract.core.*
 import io.github.alelk.pws.api.contract.core.ids.*
+import io.github.alelk.pws.domain.core.Color
 import io.github.alelk.pws.domain.core.Locale
 import io.github.alelk.pws.domain.core.Version
 import io.github.alelk.pws.domain.core.Year
 import io.github.alelk.pws.domain.core.ids.BookId
 import io.github.alelk.pws.domain.core.ids.SongId
 import io.github.alelk.pws.domain.core.ids.SongNumberId
+import io.github.alelk.pws.domain.core.ids.TagId
 import io.github.alelk.pws.domain.person.Person
 import io.github.alelk.pws.domain.tonality.Tonality
 
@@ -17,5 +19,7 @@ fun Year.toDto(): YearDto = YearDto(toString().toInt())
 fun BookId.toDto(): BookIdDto = BookIdDto(toString())
 fun SongId.toDto(): SongIdDto = SongIdDto(value)
 fun SongNumberId.toDto(): SongNumberIdDto = SongNumberIdDto(toString())
+fun TagId.toDto(): TagIdDto = TagIdDto(toString())
+fun Color.toDto(): ColorDto = ColorDto(toString())
 fun Tonality.toDto(): TonalityDto = TonalityDto.fromIdentifier(identifier)
 fun Person.toDto(): PersonDto = PersonDto(name)
