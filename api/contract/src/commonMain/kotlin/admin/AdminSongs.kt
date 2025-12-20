@@ -17,6 +17,10 @@ class AdminSongs(
   val sort: SongSortDto? = null
 ) {
   @Resource("{id}")
-  class ById(val parent: AdminSongs = AdminSongs(), val id: SongIdDto)
+  class ById(val parent: AdminSongs = AdminSongs(), val id: SongIdDto) {
+
+    @Resource("tags")
+    class Tags(val parent: ById)
+  }
 }
 
