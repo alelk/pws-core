@@ -7,11 +7,14 @@ import io.github.alelk.pws.api.contract.core.error.ErrorDto
 import io.github.alelk.pws.api.contract.core.error.resourceAlreadyExists
 import io.github.alelk.pws.api.contract.core.error.resourceNotFound
 import io.github.alelk.pws.api.contract.core.ids.SongIdDto
+import io.github.alelk.pws.api.contract.core.ids.TagIdDto
 import io.github.alelk.pws.api.contract.song.LyricDto
 import io.github.alelk.pws.api.contract.song.LyricPartDto
 import io.github.alelk.pws.api.contract.song.SongCreateRequestDto
 import io.github.alelk.pws.api.contract.song.SongSummaryDto
 import io.github.alelk.pws.api.contract.song.SongUpdateRequestDto
+import io.github.alelk.pws.api.contract.tag.songtag.ReplaceAllSongTagsResultDto
+import io.github.alelk.pws.api.contract.tag.songtag.SongTagAssociationDto
 import io.github.alelk.pws.api.mapping.song.toDto
 import io.github.alelk.pws.domain.core.ids.SongId
 import io.github.alelk.pws.domain.song.model.songDetail
@@ -212,6 +215,47 @@ class AdminSongApiTest : FunSpec({
     val api = AdminSongApiImpl(client)
     val got = api.delete(songId)
     got shouldBe ResourceDeleteResult.NotFound(songId)
+  }
+
+  // --- listTags ---
+
+  test("listTags() should GET /v1/admin/songs/{id}/tags and return tag IDs") {
+    val songId = SongIdDto(1L)
+    val tagIds = listOf(TagIdDto("worship"), TagIdDto("praise"))
+    val responseJson = json.encodeToString(tagIds)
+
+    val client = httpClientWith { req ->
+      req.method shouldBe HttpMethod.Get
+      req.url.encodedPath shouldBe "/v1/admin/songs/1/tags"
+      respond(responseJson, status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
+    }
+
+    val api = AdminSongApiImpl(client)
+    val res = api.listTags(songId)
+    res shouldBe tagIds
+  }
+
+  // --- replaceTags ---
+
+  test("replaceTags() should PUT /v1/admin/songs/{id}/tags and return result") {
+    val songId = SongIdDto(1L)
+    val tagIds = listOf(TagIdDto("worship"), TagIdDto("praise"))
+    val result = ReplaceAllSongTagsResultDto(
+      created = listOf(SongTagAssociationDto(songId, TagIdDto("praise"))),
+      unchanged = listOf(SongTagAssociationDto(songId, TagIdDto("worship"))),
+      deleted = listOf(SongTagAssociationDto(songId, TagIdDto("hymn")))
+    )
+    val responseJson = json.encodeToString(result)
+
+    val client = httpClientWith { req ->
+      req.method shouldBe HttpMethod.Put
+      req.url.encodedPath shouldBe "/v1/admin/songs/1/tags"
+      respond(responseJson, status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
+    }
+
+    val api = AdminSongApiImpl(client)
+    val res = api.replaceTags(songId, tagIds)
+    res shouldBe result
   }
 })
 
