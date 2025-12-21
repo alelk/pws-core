@@ -1,5 +1,12 @@
 # PWS Android
 
+# [1.17.0](https://github.com/alelk/pws-core/compare/v1.16.0...v1.17.0) (2025-12-21)
+
+
+### Features
+
+* **api:** Add AdminSongReferenceApi and integrate with ApiClientContainer and DI module ([310f25b](https://github.com/alelk/pws-core/commit/310f25bf08bfe42831b5ea9f0813992c5e82cbe2))
+
 # [1.16.0](https://github.com/alelk/pws-core/compare/v1.15.0...v1.16.0) (2025-12-21)
 
 
