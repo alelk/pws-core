@@ -1,5 +1,21 @@
 # PWS Android
 
+# [1.13.0](https://github.com/alelk/pws-core/compare/v1.12.2...v1.13.0) (2025-12-21)
+
+
+### Bug Fixes
+
+* Update dependencies ([49331a1](https://github.com/alelk/pws-core/commit/49331a10c61b48f65e34409aee9520bd9bc96260))
+
+
+### Features
+
+* **api:** Add GetSongTagsUseCase and song tags resource under AdminSongs API ([1f89116](https://github.com/alelk/pws-core/commit/1f89116acf887678babdf61bd6c87c03c478f18d))
+* **api:** Add Tag API clients and tests for global, user, and admin tag operations ([ef15ea9](https://github.com/alelk/pws-core/commit/ef15ea95aa6f58780f35a5f46d7aafe4ae0e0ae3))
+* **api:** Introduce SongTagAssociation model and update repository methods for song-tag management ([105fc6f](https://github.com/alelk/pws-core/commit/105fc6f08e8c7b51475ca61ecda1ca186b25eb31))
+* **domain:** Refactor song-tag management and add comprehensive test coverage ([939d6dc](https://github.com/alelk/pws-core/commit/939d6dc2976f91a0874a2fef3fc7e2ebf30e1ab9))
+* **tags:** Add tagging models, mappings, and use cases ([6fe4d72](https://github.com/alelk/pws-core/commit/6fe4d72b77df9093ae614a71d9a9f2294015836b))
+
 ## [1.12.2](https://github.com/alelk/pws-core/compare/v1.12.1...v1.12.2) (2025-12-17)
 
 
