@@ -2,6 +2,7 @@ package io.github.alelk.pws.api.client.client
 
 import io.github.alelk.pws.api.client.api.AdminBookApi
 import io.github.alelk.pws.api.client.api.AdminSongApi
+import io.github.alelk.pws.api.client.api.AdminSongReferenceApi
 import io.github.alelk.pws.api.client.api.AdminTagApi
 import io.github.alelk.pws.api.client.api.AuthApi
 import io.github.alelk.pws.api.client.api.BookApi
@@ -29,6 +30,7 @@ data class ApiClientContainer(
   // Admin APIs (require admin role)
   val adminBookApi: AdminBookApi,
   val adminSongApi: AdminSongApi,
+  val adminSongReferenceApi: AdminSongReferenceApi,
   val adminTagApi: AdminTagApi,
   // User APIs (require authentication)
   val userBookApi: UserBookApi,

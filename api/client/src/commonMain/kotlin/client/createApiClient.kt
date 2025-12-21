@@ -4,6 +4,8 @@ import io.github.alelk.pws.api.client.api.AdminBookApi
 import io.github.alelk.pws.api.client.api.AdminBookApiImpl
 import io.github.alelk.pws.api.client.api.AdminSongApi
 import io.github.alelk.pws.api.client.api.AdminSongApiImpl
+import io.github.alelk.pws.api.client.api.AdminSongReferenceApi
+import io.github.alelk.pws.api.client.api.AdminSongReferenceApiImpl
 import io.github.alelk.pws.api.client.api.AdminTagApi
 import io.github.alelk.pws.api.client.api.AdminTagApiImpl
 import io.github.alelk.pws.api.client.api.AuthApi
@@ -58,6 +60,7 @@ fun createApiClient(
   // Admin APIs
   val adminBookApi: AdminBookApi = AdminBookApiImpl(client)
   val adminSongApi: AdminSongApi = AdminSongApiImpl(client)
+  val adminSongReferenceApi: AdminSongReferenceApi = AdminSongReferenceApiImpl(client)
   val adminTagApi: AdminTagApi = AdminTagApiImpl(client)
 
   // User APIs
@@ -78,6 +81,7 @@ fun createApiClient(
     authApi = authApi,
     adminBookApi = adminBookApi,
     adminSongApi = adminSongApi,
+    adminSongReferenceApi = adminSongReferenceApi,
     adminTagApi = adminTagApi,
     userBookApi = userBookApi,
     userFavoriteApi = userFavoriteApi,

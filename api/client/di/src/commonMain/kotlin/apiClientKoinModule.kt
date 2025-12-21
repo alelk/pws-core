@@ -7,6 +7,7 @@ import io.github.alelk.pws.api.client.repository.RemoteBookReadRepository
 import io.github.alelk.pws.api.client.repository.RemoteBookWriteRepository
 import io.github.alelk.pws.api.client.repository.RemoteSongReadRepository
 import io.github.alelk.pws.api.client.repository.RemoteSongWriteRepository
+import io.github.alelk.pws.api.client.api.AdminSongReferenceApi
 import io.github.alelk.pws.api.client.api.BookApi
 import io.github.alelk.pws.api.client.api.SongApi
 import io.github.alelk.pws.api.client.client.ApiClientContainer
@@ -39,6 +40,7 @@ fun apiClientKoinModule(baseUrl: Url): Module = module {
 
   single<SongApi> { get<ApiClientContainer>().songApi }
   single<BookApi> { get<ApiClientContainer>().bookApi }
+  single<AdminSongReferenceApi> { get<ApiClientContainer>().adminSongReferenceApi }
 
   single<SongReadRepository> { RemoteSongReadRepository(get()) }
   single<SongWriteRepository> { RemoteSongWriteRepository(get()) }
