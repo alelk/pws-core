@@ -30,30 +30,15 @@ class ReplaceSongReferencesUseCase(
     txRunner.inRwTransaction {
       val existingRefs = readRepository.getReferencesForSong(songId).toSet()
       val targetRefSongIds = references.map { it.refSongId }.toSet()
-      val existingRefSongIds = existingRefs.map { it.refSongId }.toSet()
 
       val unchangedRefs = references intersect existingRefs
       val refsToDelete = existingRefs.filterNot { it.refSongId in targetRefSongIds }
-      val refsToCreate = references.filterNot { it.refSongId in existingRefSongIds }
-      val refsToUpdate = (references - refsToCreate.toSet() - unchangedRefs.toSet())
+      val refsToCreateOrUpdate = references.filterNot { it in unchangedRefs }
 
-      for (ref in refsToUpdate) {
-        val updateCommand = UpdateSongReferenceCommand(
-          songId = ref.songId,
-          refSongId = ref.refSongId,
-          reason = ref.reason,
-          volume = ref.volume,
-          priority = ref.priority
-        )
-        when (val result = writeRepository.update(updateCommand)) {
-          is UpdateResourceResult.Success<*> -> continue
-          is UpdateResourceResult.NotFound<*> -> error("illegal state: updating song reference not found: $songId -> ${ref.refSongId}")
-          is UpdateResourceResult.ValidationError<*> -> return@inRwTransaction ReplaceAllResourcesResult.ValidationError(ref, result.message)
-          is UpdateResourceResult.UnknownError<*> -> return@inRwTransaction ReplaceAllResourcesResult.UnknownError(ref, result.exception, result.message)
-        }
-      }
+      val created = mutableListOf<SongReference>()
+      val updated = mutableListOf<SongReference>()
 
-      for (ref in refsToCreate) {
+      for (ref in refsToCreateOrUpdate) {
         val createCommand = CreateSongReferenceCommand(
           songId = ref.songId,
           refSongId = ref.refSongId,
@@ -62,8 +47,22 @@ class ReplaceSongReferencesUseCase(
           priority = ref.priority
         )
         when (val result = writeRepository.create(createCommand)) {
-          is CreateResourceResult.Success<*> -> continue
-          is CreateResourceResult.AlreadyExists<*> -> error("illegal state: creating song reference already exists: $songId -> ${ref.refSongId}")
+          is CreateResourceResult.Success<*> -> created.add(ref)
+          is CreateResourceResult.AlreadyExists<*> -> {
+            val updateCommand = UpdateSongReferenceCommand(
+              songId = ref.songId,
+              refSongId = ref.refSongId,
+              reason = ref.reason,
+              volume = ref.volume,
+              priority = ref.priority
+            )
+            when (val updateResult = writeRepository.update(updateCommand)) {
+              is UpdateResourceResult.Success<*> -> updated.add(ref)
+              is UpdateResourceResult.NotFound<*> -> error("illegal state: updating song reference not found: $songId -> ${ref.refSongId}")
+              is UpdateResourceResult.ValidationError<*> -> return@inRwTransaction ReplaceAllResourcesResult.ValidationError(ref, updateResult.message)
+              is UpdateResourceResult.UnknownError<*> -> return@inRwTransaction ReplaceAllResourcesResult.UnknownError(ref, updateResult.exception, updateResult.message)
+            }
+          }
           is CreateResourceResult.ValidationError<*> -> return@inRwTransaction ReplaceAllResourcesResult.ValidationError(ref, result.message)
           is CreateResourceResult.UnknownError<*> -> return@inRwTransaction ReplaceAllResourcesResult.UnknownError(ref, result.exception, result.message)
         }
@@ -79,11 +78,10 @@ class ReplaceSongReferencesUseCase(
       }
 
       ReplaceAllResourcesResult.Success(
-        created = refsToCreate,
-        updated = refsToUpdate,
+        created = created,
+        updated = updated,
         unchanged = unchangedRefs.toList(),
         deleted = refsToDelete
       )
     }
 }
-
