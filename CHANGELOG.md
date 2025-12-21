@@ -1,5 +1,12 @@
 # PWS Android
 
+# [1.15.0](https://github.com/alelk/pws-core/compare/v1.14.0...v1.15.0) (2025-12-21)
+
+
+### Features
+
+* **domain:** Add song reference models, repositories, and use cases ([de51a34](https://github.com/alelk/pws-core/commit/de51a3469d34eb2204c0f5acef0a497e2b818b58))
+
 # [1.14.0](https://github.com/alelk/pws-core/compare/v1.13.0...v1.14.0) (2025-12-21)
 
 
