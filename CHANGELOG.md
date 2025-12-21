@@ -1,5 +1,12 @@
 # PWS Android
 
+# [1.18.0](https://github.com/alelk/pws-core/compare/v1.17.1...v1.18.0) (2025-12-21)
+
+
+### Features
+
+* **usecase:** Refactor ReplaceSongReferencesUseCase to streamline create and update logic ([20bf93e](https://github.com/alelk/pws-core/commit/20bf93e7e840f303c2bf2cf4522889307f6aba06))
+
 ## [1.17.1](https://github.com/alelk/pws-core/compare/v1.17.0...v1.17.1) (2025-12-21)
 
 
