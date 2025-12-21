@@ -1,5 +1,12 @@
 # PWS Android
 
+## [1.18.1](https://github.com/alelk/pws-core/compare/v1.18.0...v1.18.1) (2025-12-21)
+
+
+### Bug Fixes
+
+* **version:** Bump version to 1.18.1 ([58d8b19](https://github.com/alelk/pws-core/commit/58d8b19d2d0e3cd315ff59b31965c8e50aae000e))
+
 # [1.18.0](https://github.com/alelk/pws-core/compare/v1.17.1...v1.18.0) (2025-12-21)
 
 
