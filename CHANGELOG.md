@@ -1,5 +1,12 @@
 # PWS Android
 
+# [1.14.0](https://github.com/alelk/pws-core/compare/v1.13.0...v1.14.0) (2025-12-21)
+
+
+### Features
+
+* **api:** Add AdminTagApi and its implementation to ApiClientContainer ([79e0515](https://github.com/alelk/pws-core/commit/79e051534e553a24c04dde1ff244eca40012c99e))
+
 # [1.13.0](https://github.com/alelk/pws-core/compare/v1.12.2...v1.13.0) (2025-12-21)
 
 
