@@ -1,5 +1,12 @@
 # PWS Android
 
+# [1.16.0](https://github.com/alelk/pws-core/compare/v1.15.0...v1.16.0) (2025-12-21)
+
+
+### Features
+
+* **api:** Add AdminSongReferences and song reference DTOs with mappings ([1f4f103](https://github.com/alelk/pws-core/commit/1f4f1031317ad26a35444253a469d12c8973273d))
+
 # [1.15.0](https://github.com/alelk/pws-core/compare/v1.14.0...v1.15.0) (2025-12-21)
 
 
