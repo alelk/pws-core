@@ -5,8 +5,18 @@ import io.github.alelk.pws.api.contract.song.LyricPartDto
 import io.github.alelk.pws.api.contract.song.SongDetailDto
 import io.github.alelk.pws.api.contract.song.SongSortDto
 import io.github.alelk.pws.api.contract.song.SongSummaryDto
+import io.github.alelk.pws.api.contract.song.SearchTypeDto
+import io.github.alelk.pws.api.contract.song.MatchedFieldDto
+import io.github.alelk.pws.api.contract.song.SongSearchSuggestionDto
+import io.github.alelk.pws.api.contract.song.SongSearchResultDto
+import io.github.alelk.pws.api.contract.song.SongSearchResponseDto
 import io.github.alelk.pws.api.mapping.core.toDto
 import io.github.alelk.pws.domain.song.query.SongSort
+import io.github.alelk.pws.domain.song.query.SearchType
+import io.github.alelk.pws.domain.song.model.MatchedField
+import io.github.alelk.pws.domain.song.model.SongSearchSuggestion
+import io.github.alelk.pws.domain.song.model.SongSearchResult
+import io.github.alelk.pws.domain.song.model.SongSearchResponse
 import io.github.alelk.pws.domain.song.lyric.Bridge
 import io.github.alelk.pws.domain.song.lyric.Chorus
 import io.github.alelk.pws.domain.song.lyric.Lyric
@@ -55,3 +65,36 @@ fun SongSort.toDto(): SongSortDto = when (this) {
   SongSort.ByNumber -> SongSortDto.ByNumber
   SongSort.ByNumberDesc -> SongSortDto.ByNumberDesc
 }
+
+fun SearchType.toDto(): SearchTypeDto = when (this) {
+  SearchType.ALL -> SearchTypeDto.ALL
+  SearchType.NAME -> SearchTypeDto.NAME
+  SearchType.LYRIC -> SearchTypeDto.LYRIC
+  SearchType.NUMBER -> SearchTypeDto.NUMBER
+}
+
+fun MatchedField.toDto(): MatchedFieldDto = when (this) {
+  MatchedField.NAME -> MatchedFieldDto.NAME
+  MatchedField.LYRIC -> MatchedFieldDto.LYRIC
+}
+
+fun SongSearchSuggestion.toDto(): SongSearchSuggestionDto = SongSearchSuggestionDto(
+  id = id.toDto(),
+  name = name.value,
+  books = books,
+  snippet = snippet
+)
+
+fun SongSearchResult.toDto(): SongSearchResultDto = SongSearchResultDto(
+  song = song.toDto(),
+  snippet = snippet,
+  rank = rank,
+  matchedFields = matchedFields.map { it.toDto() }
+)
+
+fun SongSearchResponse.toDto(): SongSearchResponseDto = SongSearchResponseDto(
+  results = results.map { it.toDto() },
+  totalCount = totalCount,
+  hasMore = hasMore
+)
+

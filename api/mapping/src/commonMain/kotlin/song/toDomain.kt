@@ -6,9 +6,13 @@ import io.github.alelk.pws.api.contract.song.SongDetailDto
 import io.github.alelk.pws.api.contract.song.SongSummaryDto
 import io.github.alelk.pws.api.contract.song.SongNumberDto
 import io.github.alelk.pws.api.contract.song.SongSortDto
+import io.github.alelk.pws.api.contract.song.SearchTypeDto
+import io.github.alelk.pws.api.contract.song.MatchedFieldDto
 import io.github.alelk.pws.domain.core.BibleRef
 import io.github.alelk.pws.domain.core.SongNumber
 import io.github.alelk.pws.domain.song.query.SongSort
+import io.github.alelk.pws.domain.song.query.SearchType
+import io.github.alelk.pws.domain.song.model.MatchedField
 import io.github.alelk.pws.domain.song.lyric.Bridge
 import io.github.alelk.pws.domain.song.lyric.Chorus
 import io.github.alelk.pws.domain.song.lyric.Lyric
@@ -60,3 +64,16 @@ fun SongSortDto.toDomain(): SongSort = when (this) {
   SongSortDto.ByNumber -> SongSort.ByNumber
   SongSortDto.ByNumberDesc -> SongSort.ByNumberDesc
 }
+
+fun SearchTypeDto.toDomain(): SearchType = when (this) {
+  SearchTypeDto.ALL -> SearchType.ALL
+  SearchTypeDto.NAME -> SearchType.NAME
+  SearchTypeDto.LYRIC -> SearchType.LYRIC
+  SearchTypeDto.NUMBER -> SearchType.NUMBER
+}
+
+fun MatchedFieldDto.toDomain(): MatchedField = when (this) {
+  MatchedFieldDto.NAME -> MatchedField.NAME
+  MatchedFieldDto.LYRIC -> MatchedField.LYRIC
+}
+
