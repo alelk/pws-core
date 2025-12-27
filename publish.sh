@@ -10,6 +10,7 @@ if [[ $NEXT_RELEASE_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     :data:repo-room:publishAllPublicationsToGitHubPackagesRepository \
     :domain:publishAllPublicationsToGitHubPackagesRepository \
     :domain:domain-test-fixtures:publishAllPublicationsToGitHubPackagesRepository \
+    :domain:lyric-format:publishAllPublicationsToGitHubPackagesRepository \
     :backup:publishAllPublicationsToGitHubPackagesRepository \
     :api:client:publishAllPublicationsToGitHubPackagesRepository \
     :api:client:di:publishAllPublicationsToGitHubPackagesRepository \
@@ -25,6 +26,7 @@ elif [[ $NEXT_RELEASE_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+-rc.+$ ]]; then
       :data:repo-room:publishAllPublicationsToGitHubPackagesRepository \
       :domain:publishAllPublicationsToGitHubPackagesRepository \
       :domain:domain-test-fixtures:publishAllPublicationsToGitHubPackagesRepository \
+      :domain:lyric-format:publishAllPublicationsToGitHubPackagesRepository \
       :backup:publishAllPublicationsToGitHubPackagesRepository \
       :api:client:publishAllPublicationsToGitHubPackagesRepository \
       :api:client:di:publishAllPublicationsToGitHubPackagesRepository \
@@ -40,6 +42,7 @@ elif [[ $NEXT_RELEASE_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+-.+$ ]]; then
       :data:repo-room:publishAllPublicationsToGitHubPackagesRepository \
       :domain:publishAllPublicationsToGitHubPackagesRepository \
       :domain:domain-test-fixtures:publishAllPublicationsToGitHubPackagesRepository \
+      :domain:lyric-format:publishAllPublicationsToGitHubPackagesRepository \
       :backup:publishAllPublicationsToGitHubPackagesRepository \
       :api:client:publishAllPublicationsToGitHubPackagesRepository \
       :api:client:di:publishAllPublicationsToGitHubPackagesRepository \

@@ -20,6 +20,7 @@ dependencyResolutionManagement {
 include(
   ":domain",
   ":domain:domain-test-fixtures",
+  ":domain:lyric-format",
 
   ":api:contract",
   ":api:mapping",

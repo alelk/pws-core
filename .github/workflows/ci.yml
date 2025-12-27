@@ -32,7 +32,7 @@ jobs:
 
       - name: Build and run tests
         run: |
-          ./gradlew assemble domain:jvmTest :backup:jvmTest :data:db-room:jvmTest :api:client:jvmTest
+          ./gradlew assemble publishToMavenLocal -x test domain:jvmTest :backup:jvmTest :data:db-room:jvmTest :api:client:jvmTest
         # fixme: enable android tests
         #./gradlew assemble domain:jvmTest :backup:jvmTest :data:db-room:testDebugUnitTest :data:db-room:jvmTest :api:client:jvmTest
 

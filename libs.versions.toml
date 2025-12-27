@@ -27,6 +27,9 @@ kotest-property-datetime = "2.0.0"
 kotest-runner-android = "1.2.0"
 kotest-extensions-android = "0.1.7"
 kotest-multiplatform = "5.9.1"
+
+kudzu = "6.1.0"
+i18n4k = "0.11.1"
 robolectric = "4.16"
 sqlite-bundled = "2.6.2"
 
@@ -91,6 +94,12 @@ robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectr
 kotest-runner-android = { group = "br.com.colman", name = "kotest-runner-android", version.ref = "kotest-runner-android" } # https://search.maven.org/artifact/br.com.colman/kotest-runner-android
 kotest-extensions-android = { group = "br.com.colman", name = "kotest-extensions-android", version.ref = "kotest-extensions-android" } # https://search.maven.org/artifact/br.com.colman/kotest-extensions-android
 
+# Parser combinators
+kudzu-core = { module = "io.github.copper-leaf:kudzu-core", version.ref = "kudzu" } # https://search.maven.org/artifact/io.github.copper-leaf/kudzu-core
+
+# Internationalization
+i18n4k-core = { module = "de.comahe.i18n4k:i18n4k-core", version.ref = "i18n4k" } # https://mvnrepository.com/artifact/de.comahe.i18n4k/i18n4k-core
+
 [plugins]
 
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" } # https://plugins.gradle.org/plugin/org.jetbrains.compose/1.9.2
@@ -102,3 +111,4 @@ kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", versio
 androidLibrary = { id = "com.android.library", version.ref = "android" } # Use same AGP version as application
 
 kotestMultiplatform = { id = "io.kotest.multiplatform", version.ref = "kotest-multiplatform" }
+i18n4k = { id = "de.comahe.i18n4k", version.ref = "i18n4k" } # https://plugins.gradle.org/plugin/de.comahe.i18n4k
