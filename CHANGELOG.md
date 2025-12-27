@@ -1,5 +1,12 @@
 # PWS Android
 
+# [1.20.0](https://github.com/alelk/pws-core/compare/v1.19.0...v1.20.0) (2025-12-27)
+
+
+### Features
+
+* **lyric-format:** Implement lyric parsing and writing functionality with internationalization support ([844bc45](https://github.com/alelk/pws-core/commit/844bc458fe7e23f3fd5e465fc5e984d04508cf62))
+
 # [1.19.0](https://github.com/alelk/pws-core/compare/v1.18.1...v1.19.0) (2025-12-27)
 
 
