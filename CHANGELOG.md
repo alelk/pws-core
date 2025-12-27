@@ -1,5 +1,12 @@
 # PWS Android
 
+# [1.19.0](https://github.com/alelk/pws-core/compare/v1.18.1...v1.19.0) (2025-12-27)
+
+
+### Features
+
+* **search:** Add search functionality with query parameters and suggestions ([5ed3a9a](https://github.com/alelk/pws-core/commit/5ed3a9a261cb1a118b15d782537abb72b97d1591))
+
 ## [1.18.1](https://github.com/alelk/pws-core/compare/v1.18.0...v1.18.1) (2025-12-21)
 
 
