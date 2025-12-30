@@ -14,6 +14,8 @@ import io.github.alelk.pws.api.client.api.BookApi
 import io.github.alelk.pws.api.client.api.BookApiImpl
 import io.github.alelk.pws.api.client.api.SongApi
 import io.github.alelk.pws.api.client.api.SongApiImpl
+import io.github.alelk.pws.api.client.api.SongSearchApi
+import io.github.alelk.pws.api.client.api.SongSearchApiImpl
 import io.github.alelk.pws.api.client.api.UserBookApi
 import io.github.alelk.pws.api.client.api.UserBookApiImpl
 import io.github.alelk.pws.api.client.api.UserFavoriteApi
@@ -53,6 +55,7 @@ fun createApiClient(
   // Public read-only APIs
   val songApi: SongApi = SongApiImpl(client)
   val bookApi: BookApi = BookApiImpl(client)
+  val songSearchApi: SongSearchApi = SongSearchApiImpl(client)
 
   // Auth API
   val authApi: AuthApi = AuthApiImpl(client, tokenStorage)
@@ -78,6 +81,7 @@ fun createApiClient(
     httpClient = client,
     songApi = songApi,
     bookApi = bookApi,
+    songSearchApi = songSearchApi,
     authApi = authApi,
     adminBookApi = adminBookApi,
     adminSongApi = adminSongApi,

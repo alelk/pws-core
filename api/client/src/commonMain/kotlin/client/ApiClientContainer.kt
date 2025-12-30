@@ -7,6 +7,7 @@ import io.github.alelk.pws.api.client.api.AdminTagApi
 import io.github.alelk.pws.api.client.api.AuthApi
 import io.github.alelk.pws.api.client.api.BookApi
 import io.github.alelk.pws.api.client.api.SongApi
+import io.github.alelk.pws.api.client.api.SongSearchApi
 import io.github.alelk.pws.api.client.api.UserBookApi
 import io.github.alelk.pws.api.client.api.UserFavoriteApi
 import io.github.alelk.pws.api.client.api.UserHistoryApi
@@ -25,6 +26,7 @@ data class ApiClientContainer(
   // Public read-only APIs
   val songApi: SongApi,
   val bookApi: BookApi,
+  val songSearchApi: SongSearchApi,
   // Auth API
   val authApi: AuthApi,
   // Admin APIs (require admin role)
