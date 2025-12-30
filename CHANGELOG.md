@@ -1,5 +1,12 @@
 # PWS Android
 
+## [1.20.1](https://github.com/alelk/pws-core/compare/v1.20.0...v1.20.1) (2025-12-30)
+
+
+### Bug Fixes
+
+* Update Maven local publish configuration and bump PWS version to 1.20.0 ([0200670](https://github.com/alelk/pws-core/commit/0200670441b3fd63818e38f14ebaa456f6cdd9ed))
+
 # [1.20.0](https://github.com/alelk/pws-core/compare/v1.19.0...v1.20.0) (2025-12-27)
 
 
