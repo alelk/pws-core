@@ -1,5 +1,12 @@
 # PWS Android
 
+# [1.23.0](https://github.com/alelk/pws-core/compare/v1.22.0...v1.23.0) (2025-12-30)
+
+
+### Features
+
+* **search:** Add SongSearchApi for full-text song search and suggestions ([040e768](https://github.com/alelk/pws-core/commit/040e768755f57c1bae4584356d6bcd5f0f0021a6))
+
 # [1.22.0](https://github.com/alelk/pws-core/compare/v1.21.0...v1.22.0) (2025-12-30)
 
 
