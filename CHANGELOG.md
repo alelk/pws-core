@@ -1,5 +1,12 @@
 # PWS Android
 
+# [1.22.0](https://github.com/alelk/pws-core/compare/v1.21.0...v1.22.0) (2025-12-30)
+
+
+### Features
+
+* **search:** Add arbitrary generators for song search results and suggestions ([ee0a8f1](https://github.com/alelk/pws-core/commit/ee0a8f10832d48db1f2690134c5dadb0d0a65161))
+
 # [1.21.0](https://github.com/alelk/pws-core/compare/v1.20.1...v1.21.0) (2025-12-30)
 
 
