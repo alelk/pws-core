@@ -7,11 +7,13 @@ import io.github.alelk.pws.api.contract.song.SongSummaryDto
 import io.github.alelk.pws.api.contract.song.SongNumberDto
 import io.github.alelk.pws.api.contract.song.SongSortDto
 import io.github.alelk.pws.api.contract.song.SearchTypeDto
+import io.github.alelk.pws.api.contract.song.SearchScopeDto
 import io.github.alelk.pws.api.contract.song.MatchedFieldDto
 import io.github.alelk.pws.domain.core.BibleRef
 import io.github.alelk.pws.domain.core.SongNumber
 import io.github.alelk.pws.domain.song.query.SongSort
 import io.github.alelk.pws.domain.song.query.SearchType
+import io.github.alelk.pws.domain.song.query.SearchScope
 import io.github.alelk.pws.domain.song.model.MatchedField
 import io.github.alelk.pws.domain.song.lyric.Bridge
 import io.github.alelk.pws.domain.song.lyric.Chorus
@@ -70,6 +72,12 @@ fun SearchTypeDto.toDomain(): SearchType = when (this) {
   SearchTypeDto.NAME -> SearchType.NAME
   SearchTypeDto.LYRIC -> SearchType.LYRIC
   SearchTypeDto.NUMBER -> SearchType.NUMBER
+}
+
+fun SearchScopeDto.toDomain(): SearchScope = when (this) {
+  SearchScopeDto.ALL -> SearchScope.ALL
+  SearchScopeDto.GLOBAL -> SearchScope.GLOBAL
+  SearchScopeDto.USER_BOOKS -> SearchScope.USER_BOOKS
 }
 
 fun MatchedFieldDto.toDomain(): MatchedField = when (this) {

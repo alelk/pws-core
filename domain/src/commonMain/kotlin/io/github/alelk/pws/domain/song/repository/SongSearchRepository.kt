@@ -13,26 +13,36 @@ interface SongSearchRepository {
 
   /**
    * Get search suggestions for autocomplete.
-   * Fast search with minimal details.
+   *
+   * @param query Search text
+   * @param userId User ID for personalized results (null for anonymous)
+   * @param bookId Optional filter by specific book
+   * @param limit Maximum number of suggestions
+   * @return List of suggestions with unified ranking
    */
   suspend fun searchSuggestions(
     query: String,
+    userId: UserId? = null,
+    bookId: BookId? = null,
     limit: Int = 10
   ): List<SongSearchSuggestion>
 
   /**
    * Perform full-text search on songs.
+   *
+   * Search scope is determined by [SearchQuery.scope]:
+   * - ALL: searches both global and user's songs (if userId provided) with unified ranking
+   * - GLOBAL: searches only global songs catalog
+   * - USER_BOOKS: searches only user's songbooks (requires userId)
+   *
+   * @param searchQuery Search parameters including query, type, scope, pagination
+   * @param userId User ID for personalized search and USER_BOOKS scope (null for anonymous)
+   * @param bookId Optional filter by specific book
+   * @return Search response with results and pagination info
    */
   suspend fun search(
-    searchQuery: SearchQuery
-  ): SongSearchResponse
-
-  /**
-   * Search in user's book songs.
-   */
-  suspend fun searchInUserBooks(
-    userId: UserId,
     searchQuery: SearchQuery,
+    userId: UserId? = null,
     bookId: BookId? = null
   ): SongSearchResponse
 }
