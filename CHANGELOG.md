@@ -1,5 +1,12 @@
 # PWS Android
 
+# [1.21.0](https://github.com/alelk/pws-core/compare/v1.20.1...v1.21.0) (2025-12-30)
+
+
+### Features
+
+* **search:** Introduce search scope functionality for song searches ([65c9829](https://github.com/alelk/pws-core/commit/65c98291d2cc1f2b60c2c8bfbe43080783ca6914))
+
 ## [1.20.1](https://github.com/alelk/pws-core/compare/v1.20.0...v1.20.1) (2025-12-30)
 
 
