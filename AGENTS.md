@@ -23,16 +23,17 @@ PWS (Praise & Worship Songs) — мультиплатформенный хрис
 
 ## Документация
 
-| Файл                                               | Содержимое                |
-|----------------------------------------------------|---------------------------|
-| [docs/ai/CONTEXT.md](docs/ai/CONTEXT.md)           | Краткий контекст проекта  |
-| [docs/ai/CONTRIBUTING.md](docs/ai/CONTRIBUTING.md) | Инструкции для разработки |
-| [docs/GLOSSARY.md](docs/GLOSSARY.md)               | Глоссарий терминов        |
-| [docs/FEATURES.md](docs/FEATURES.md)               | Описание функционала      |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)       | Архитектура приложения    |
-| [docs/MODULES.md](docs/MODULES.md)                 | Описание модулей          |
-| [docs/DATA_FLOW.md](docs/DATA_FLOW.md)             | API и потоки данных       |
-| [docs/features/\*.md](docs/features/)              | Детальное описание фич    |
+| Файл                                               | Содержимое                  |
+|----------------------------------------------------|-----------------------------|
+| [docs/ai/CONTEXT.md](docs/ai/CONTEXT.md)           | Краткий контекст проекта    |
+| [docs/ai/CONTRIBUTING.md](docs/ai/CONTRIBUTING.md) | Инструкции для разработки   |
+| [docs/GLOSSARY.md](docs/GLOSSARY.md)               | Глоссарий терминов          |
+| [docs/FEATURES.md](docs/FEATURES.md)               | Описание функционала        |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)       | Архитектура приложения      |
+| [docs/MODULES.md](docs/MODULES.md)                 | Описание модулей            |
+| [docs/DATA_FLOW.md](docs/DATA_FLOW.md)             | API и потоки данных         |
+| [docs/SYNC.md](docs/SYNC.md)                       | Синхронизация данных (mobile) |
+| [docs/features/\*.md](docs/features/)              | Детальное описание фич      |
 
 ## Быстрая навигация по коду
 

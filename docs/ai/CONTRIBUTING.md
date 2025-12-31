@@ -12,18 +12,18 @@
 
 ### Где размещать код
 
-| Тип кода | Модуль | Пакет |
-|----------|--------|-------|
-| Domain модели | `:domain` | `io.github.alelk.pws.domain.{entity}.model` |
-| Repository interface | `:domain` | `io.github.alelk.pws.domain.{entity}.repository` |
-| Use Case | `:domain` | `io.github.alelk.pws.domain.{entity}.usecase` |
-| Парсинг лирики | `:domain:lyric-format` | `io.github.alelk.pws.domain.lyric.format` |
-| Remote Repository impl | `:api:client` | `repository` |
-| Local Repository impl | `:data:repo-room` | - |
-| UI Screen | `:features` | `io.github.alelk.pws.features.{feature}` |
-| ViewModel | `:features` | `io.github.alelk.pws.features.{feature}` |
-| Shared UI компонент | `:features` | `io.github.alelk.pws.features.components` |
-| Low-level UI компонент | `:core:ui` | `io.github.alelk.pws.core.ui` |
+| Тип кода               | Модуль                 | Пакет                                            |
+|------------------------|------------------------|--------------------------------------------------|
+| Domain модели          | `:domain`              | `io.github.alelk.pws.domain.{entity}.model`      |
+| Repository interface   | `:domain`              | `io.github.alelk.pws.domain.{entity}.repository` |
+| Use Case               | `:domain`              | `io.github.alelk.pws.domain.{entity}.usecase`    |
+| Парсинг лирики         | `:domain:lyric-format` | `io.github.alelk.pws.domain.lyric.format`        |
+| Remote Repository impl | `:api:client`          | `repository`                                     |
+| Local Repository impl  | `:data:repo-room`      | -                                                |
+| UI Screen              | `:features`            | `io.github.alelk.pws.features.{feature}`         |
+| ViewModel              | `:features`            | `io.github.alelk.pws.features.{feature}`         |
+| Shared UI компонент    | `:features`            | `io.github.alelk.pws.features.components`        |
+| Low-level UI компонент | `:core:ui`             | `io.github.alelk.pws.core.ui`                    |
 
 ### Naming Conventions
 

@@ -267,6 +267,43 @@ Room база данных для Android/iOS.
 
 ---
 
+## :sync
+
+Синхронизация данных между локальной БД и сервером.
+
+Подробнее см. [SYNC.md](SYNC.md)
+
+### Структура
+
+```
+sync/
+├── core/                    # Базовые интерфейсы и SyncManager
+│   ├── SyncManager.kt
+│   ├── ConflictResolver.kt
+│   ├── PendingChange.kt
+│   └── ConnectivityObserver.kt
+├── favorites/               # Синхронизация избранного
+├── history/                 # Синхронизация истории
+├── tags/                    # Синхронизация тегов
+├── overrides/               # Синхронизация user overrides
+└── di/                      # Koin модули
+```
+
+### Назначение
+
+- Offline-first архитектура для мобильных приложений
+- Очередь pending changes для работы без сети
+- Разрешение конфликтов при синхронизации
+- Background sync через WorkManager (Android)
+
+### Зависимости
+
+- `:domain` — интерфейсы репозиториев
+- `:data:repo-room` — локальные репозитории
+- `:api:client` — remote репозитории
+
+```
+
 ## Граф зависимостей
 
 ```mermaid
@@ -294,9 +331,17 @@ graph TD
         reporoom[":data:repo-room"]
     end
     
+    subgraph "Sync Layer"
+        sync[":sync"]
+    end
+    
     backup[":backup"]
     
     features --> domain
+    
+    sync --> domain
+    sync --> reporoom
+    sync --> client
     features --> lyricformat
     features --> navigation
     features --> coreui

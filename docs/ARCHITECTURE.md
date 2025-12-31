@@ -126,12 +126,12 @@ class SongScreen(private val songId: Long) : Screen {
 
 ### Flow для данных
 
-Репозитории возвращают `Flow` для реактивного обновления:
+Observe репозитории возвращают `Flow` для реактивного обновления:
 
 ```kotlin
-interface SongReadRepository {
-    fun observeSong(id: Long): Flow<SongDetail?>
-    suspend fun getSong(id: Long): SongDetail?
+interface SongObserveRepository {
+    fun observe(id: SongId): Flow<SongDetail?>
+    fun observeAllInBook(bookId: BookId): Flow<Map<Int, SongSummary>>
 }
 ```
 
@@ -220,3 +220,26 @@ val testSong = SongDetailBuilder()
     .build()
 ```
 
+---
+
+## Синхронизация данных
+
+Мобильные приложения работают в режиме **offline-first** с синхронизацией при появлении сети.
+
+Подробнее см. [SYNC.md](SYNC.md)
+
+### Ключевые компоненты
+
+- **SyncManager** — координирует синхронизацию всех сущностей
+- **PendingChanges** — очередь изменений, ожидающих отправки
+- **ConflictResolver** — разрешение конфликтов при merge
+- **ConnectivityObserver** — отслеживание состояния сети
+
+### Синхронизируемые сущности
+
+| Сущность | Стратегия конфликтов |
+|----------|---------------------|
+| Favorites | Last-Write-Wins |
+| History | Merge (append-only) |
+| User Tags | Last-Write-Wins + Merge |
+| User Overrides | Last-Write-Wins / Manual |
