@@ -1,18 +1,19 @@
-package io.github.alelk.pws.domain.favorite.model
+package io.github.alelk.pws.domain.history.model
 
 import io.github.alelk.pws.domain.core.ids.SongNumberId
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 /**
- * Favorite song with song and book details for display.
+ * History entry with song and book details for display.
  */
 @OptIn(ExperimentalTime::class)
-data class FavoriteWithSongInfo(
+data class SongHistorySummary(
+  val id: Long,
   val songNumberId: SongNumberId,
   val songNumber: Int,
   val songName: String,
   val bookDisplayName: String,
-  val addedAt: Instant
+  val viewedAt: Instant
 )
 

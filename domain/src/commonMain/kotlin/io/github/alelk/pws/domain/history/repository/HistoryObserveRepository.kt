@@ -1,6 +1,6 @@
 package io.github.alelk.pws.domain.history.repository
 
-import io.github.alelk.pws.domain.history.model.HistoryEntryWithSongInfo
+import io.github.alelk.pws.domain.history.model.SongHistorySummary
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -11,6 +11,6 @@ interface HistoryObserveRepository {
    * Observe all history entries ordered by viewedAt desc.
    * @param limit Maximum number of entries to return (null = no limit).
    */
-  fun observeAll(limit: Int? = null): Flow<List<HistoryEntryWithSongInfo>>
+  fun observeAll(limit: Int? = null): Flow<List<SongHistorySummary>>
 }
 

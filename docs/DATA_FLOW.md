@@ -65,14 +65,14 @@ PWS Core поддерживает два источника данных, выб
 ### Подписка на данные
 
 ```kotlin
-// Repository возвращает Flow
-interface SongReadRepository {
-    fun observeSong(id: Long): Flow<SongDetail?>
+// Observe репозиторий возвращает Flow
+interface SongObserveRepository {
+    fun observe(id: SongId): Flow<SongDetail?>
 }
 
 // ViewModel подписывается
-class SongViewModel(useCase: ObserveSongUseCase) : ViewModel() {
-    val song: StateFlow<SongDetail?> = useCase(songId)
+class SongViewModel(observeSong: ObserveSongUseCase) : ViewModel() {
+    val song: StateFlow<SongDetail?> = observeSong(songId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 }
 
@@ -109,24 +109,60 @@ User Action (Add Favorite)
 
 ## API Endpoints (Remote)
 
-PWS Server предоставляет REST API. Клиент использует Ktor с Resources.
+PWS Server предоставляет REST API с разделением на три категории. Клиент использует Ktor с Resources.
 
-### Основные endpoints
+### Глобальные endpoints (read-only)
+
+В целевой картине — публичные данные, доступные без авторизации или с опциональной авторизацией.
+Но в текущей версии, пока не реализовано приложение web, авторизация обязательна.
+
+| Метод  | Endpoint                      | Описание                                           |
+|--------|-------------------------------|----------------------------------------------------|
+| GET    | `/v1/books`                   | Список сборников (поиск по фильтрам с сортировкой) |
+| GET    | `/v1/books/{id}`              | Детали сборника                                    |
+| GET    | `/v1/books/{id}/songs`        | Песни сборника                                     |
+| GET    | `/v1/songs`                   | Список песен (поиск по фильтрам с сортировкой)     |
+| GET    | `/v1/songs/{id}`              | Детали песни                                       |
+| GET    | `/v1/tags`                    | Список тегов                                       |
+| GET    | `/v1/tags/{id}`               | Детали тега                                        |
+| GET    | `/v1/tags/{id}/songs`         | Песни по тегу                                      |
+
+### Пользовательские endpoints (read-write)
+
+Данные авторизованного пользователя, требуют Bearer токен:
+
+| Метод  | Endpoint                      | Описание                                                                                                                       |
+|--------|-------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
+| GET    | `/v1/user/books`              | Сборники (глобальные + пользовательские). Поддерживается поиск по фильтрам с сортировкой.                                      |
+| POST   | `/v1/user/books`              | Добавить пользовательский сборник.                                                                                             |
+| PUT    | `/v1/user/books/{id}`         | Изменить сборник. Доступно изменение только пользовательских сборников. Глобальный сборник редактировать нельзя.               |
+| GET    | `/v1/user/favorites`          | Избранное пользователя                                                                                                         |
+| PUT    | `/v1/user/favorites/{songId}` | Добавить в избранное                                                                                                           |
+| DELETE | `/v1/user/favorites/{songId}` | Удалить из избранного                                                                                                          |
+| GET    | `/v1/user/history`            | История просмотров                                                                                                             |
+| GET    | `/v1/user/tags`               | Теги (глобальные + пользовательские).                                                                                          |
+| POST   | `/v1/user/tags`               | Создать пользовательский тег                                                                                                   |
+| PUT    | `/v1/user/tags/{id}`          | Обновить тег. Если тег глобальный, то создается пользовательский override. Сам глобальный тег не меняется.                     |
+| DELETE | `/v1/user/tags/{id}`          | Удалить тег. Если тег глобальный, то создается пользовательский override (тег помечается удаленным для текущего пользователя). |
+
+### Административные endpoints (read-write)
+
+Управление глобальными данными, требуют роль администратора:
 
 | Метод  | Endpoint                      | Описание                        |
 |--------|-------------------------------|---------------------------------|
-| GET    | `/api/songs/{id}`             | Получить песню                  |
-| GET    | `/api/songs`                  | Список песен (пагинация)        |
-| GET    | `/api/songs/search?q={query}` | Поиск песен                     |
-| GET    | `/api/books`                  | Список сборников                |
-| GET    | `/api/books/{id}/songs`       | Песни сборника                  |
-| GET    | `/api/tags`                   | Список тегов                    |
-| GET    | `/api/tags/{id}/songs`        | Песни по тегу                   |
-| GET    | `/api/favorites`              | Избранное пользователя          |
-| POST   | `/api/favorites`              | Добавить в избранное            |
-| DELETE | `/api/favorites/{songId}`     | Удалить из избранного           |
-| GET    | `/api/history`                | История просмотров              |
-| POST   | `/api/history`                | Добавить в историю              |
+| GET    | `/v1/admin/books`             | Список всех сборников           |
+| POST   | `/v1/admin/books`             | Создать сборник                 |
+| PUT    | `/v1/admin/books/{id}`        | Обновить сборник                |
+| DELETE | `/v1/admin/books/{id}`        | Удалить сборник                 |
+| GET    | `/v1/admin/songs`             | Список всех песен               |
+| POST   | `/v1/admin/songs`             | Создать песню                   |
+| PUT    | `/v1/admin/songs/{id}`        | Обновить песню                  |
+| DELETE | `/v1/admin/songs/{id}`        | Удалить песню                   |
+| GET    | `/v1/admin/tags`              | Список всех тегов               |
+| POST   | `/v1/admin/tags`              | Создать тег                     |
+| PUT    | `/v1/admin/tags/{id}`         | Обновить тег                    |
+| DELETE | `/v1/admin/tags/{id}`         | Удалить тег                     |
 
 ### Авторизация (Web/TG Mini App)
 
@@ -239,33 +275,7 @@ val domainModule = module {
 
 ## Error Handling
 
-### Иерархия ошибок
-
-```kotlin
-sealed class DomainError : Exception() {
-    data class NotFound(val entityType: String, val id: Any) : DomainError()
-    data class NetworkError(val cause: Throwable) : DomainError()
-    data class ValidationError(val message: String) : DomainError()
-    object Unauthorized : DomainError()
-}
-```
-
-### Обработка в ViewModel
-
-```kotlin
-viewModelScope.launch {
-    try {
-        val result = useCase(params)
-        _uiState.value = UiState.Success(result)
-    } catch (e: DomainError.NotFound) {
-        _uiState.value = UiState.Error("Не найдено")
-    } catch (e: DomainError.NetworkError) {
-        _uiState.value = UiState.Error("Ошибка сети")
-    } catch (e: Exception) {
-        _uiState.value = UiState.Error("Неизвестная ошибка")
-    }
-}
-```
+// не реализовано
 
 ## Кеширование (Future)
 

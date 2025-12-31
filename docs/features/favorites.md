@@ -13,51 +13,50 @@
 
 ### Список избранного
 - Отдельный экран со списком избранных песен
-- Сортировка: новые сверху
+- Сортировка: по умолчанию новые сверху. Но возможна пользовательская сортировка (из меню), например по имени.
 - Действия: просмотр песни, удаление из избранного
 
 ## Платформенные различия
 
-| Платформа | Хранение | Синхронизация |
-|-----------|----------|---------------|
-| Android/iOS | Локальная Room DB | Нет |
-| Web/TG Mini App | Backend API | Да (привязано к аккаунту) |
+| Платформа       | Хранение          | Синхронизация                                                                |
+|-----------------|-------------------|------------------------------------------------------------------------------|
+| Android/iOS     | Локальная Room DB | Да, только если пользователь авторизован и есть интернет.                    |
+| Web/TG Mini App | Backend API       | Да (привязано к аккаунту). Без авторизации функционал избранного недоступен. |
 
 ## Use Cases
 
 ### AddFavoriteUseCase
 ```kotlin
-class AddFavoriteUseCase(
-    private val favoriteRepository: FavoriteWriteRepository
+class ToggleFavoriteUseCase(
+    private val favoriteRepository: FavoriteWriteRepository,
+    private val txRunner: TransactionRunner
 ) {
-    suspend operator fun invoke(songId: Long)
+    suspend operator fun invoke(songNumberId: SongNumberId): Boolean =
+        txRunner.inRwTransaction { favoriteRepository.toggle(songNumberId) }
 }
 ```
 
-### RemoveFavoriteUseCase
+В избранное добавляется песня с привязкой к сборнику (`SongNumberId`, а не просто `SongId`)
+
+### ObserveFavoritesUseCase
+
 ```kotlin
-class RemoveFavoriteUseCase(
-    private val favoriteRepository: FavoriteWriteRepository
+class ObserveFavoritesUseCase(
+    private val favoriteRepository: FavoriteObserveRepository
 ) {
-    suspend operator fun invoke(songId: Long)
+    operator fun invoke(): Flow<List<FavoriteWithSongInfo>> =
+        favoriteRepository.observeAll()
 }
 ```
 
-### GetFavoritesUseCase
-```kotlin
-class GetFavoritesUseCase(
-    private val favoriteRepository: FavoriteReadRepository
-) {
-    operator fun invoke(): Flow<List<FavoriteSong>>
-}
-```
+### ObserveFavoriteUseCase
 
-### CheckFavoriteUseCase
 ```kotlin
-class CheckFavoriteUseCase(
-    private val favoriteRepository: FavoriteReadRepository
+class ObserveIsFavoriteUseCase(
+  private val favoriteRepository: FavoriteObserveRepository
 ) {
-    operator fun invoke(songId: Long): Flow<Boolean>
+  operator fun invoke(songNumberId: SongNumberId): Flow<Boolean> =
+    favoriteRepository.observeIsFavorite(songNumberId)
 }
 ```
 
@@ -66,8 +65,7 @@ class CheckFavoriteUseCase(
 ### Favorite
 ```kotlin
 data class Favorite(
-    val id: Long,
-    val songId: Long,
+    val songNumberId: SongNumberId,
     val addedAt: Instant
 )
 ```
@@ -75,8 +73,11 @@ data class Favorite(
 ### FavoriteSong
 ```kotlin
 data class FavoriteSong(
-    val favorite: Favorite,
-    val song: SongSummary  // краткая информация о песне
+    val songNumberId: SongNumberId,
+    val songNumber: Int,
+    val songName: String,
+    val bookDisplayName: String,
+    val addedAt: Instant
 )
 ```
 
@@ -106,49 +107,32 @@ fun FavoritesList(
 
 ```
 ┌─────────────────────────────────────────────┐
-│            FavoritesScreen                   │
+│            FavoritesScreen                  │
 ├─────────────────────────────────────────────┤
 │  ← Избранное                                │
 ├─────────────────────────────────────────────┤
 │  ┌───────────────────────────────────────┐  │
-│  │ БП 45 - Благословен Господь       🗑️ │  │
-│  │ Добавлено: 30.12.2024                 │  │
+│  │ БП 45 - Благословен Господь           │  │
 │  └───────────────────────────────────────┘  │
 │  ┌───────────────────────────────────────┐  │
-│  │ ПП 12 - Благодать                  🗑️ │  │
-│  │ Добавлено: 29.12.2024                 │  │
+│  │ ПП 12 - Благодать                     │  │
 │  └───────────────────────────────────────┘  │
 │  ┌───────────────────────────────────────┐  │
-│  │ ИП 7 - Великий Бог                 🗑️ │  │
-│  │ Добавлено: 28.12.2024                 │  │
+│  │ ИП 7 - Великий Бог                    │  │
 │  └───────────────────────────────────────┘  │
 └─────────────────────────────────────────────┘
 ```
 
-## Интеграция с SongScreen
-
-```kotlin
-// В SongViewModel
-val isFavorite: StateFlow<Boolean> = checkFavoriteUseCase(songId)
-    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
-
-fun toggleFavorite() {
-    viewModelScope.launch {
-        if (isFavorite.value) {
-            removeFavoriteUseCase(songId)
-        } else {
-            addFavoriteUseCase(songId)
-        }
-    }
-}
-```
+- Удаление происходит из контекстного меню или смахиванием влево.
 
 ## Связанные файлы
 
 - `domain/favorite/model/Favorite.kt`
 - `domain/favorite/repository/FavoriteReadRepository.kt`
+- `domain/favorite/repository/FavoriteObserveRepository.kt`
 - `domain/favorite/repository/FavoriteWriteRepository.kt`
 - `domain/favorite/usecase/*.kt`
 - `features/favorites/FavoritesScreen.kt`
-- `features/favorites/FavoritesViewModel.kt`
+- `features/favorites/FavoritesScreenModel.kt`
+- `features/favorites/FavoritesUiState.kt`
 

@@ -13,33 +13,35 @@
 
 ## Use Cases
 
-### AddHistoryUseCase
+### RecordSongViewUseCase
 ```kotlin
-class AddHistoryUseCase(
-    private val historyRepository: HistoryWriteRepository
+class RecordSongViewUseCase(
+    private val historyRepository: HistoryWriteRepository,
+    private val txRunner: TransactionRunner
 ) {
-    suspend operator fun invoke(songId: Long)
+    suspend operator fun invoke(songNumberId: SongNumberId): Long =
+        txRunner.inRwTransaction { historyRepository.recordView(songNumberId) }
 }
 ```
 
-### GetHistoryUseCase
+### ObserveHistoryUseCase
 ```kotlin
-class GetHistoryUseCase(
-    private val historyRepository: HistoryReadRepository
+class ObserveHistoryUseCase(
+    private val historyRepository: HistoryObserveRepository
 ) {
-    operator fun invoke(
-        page: Int = 0,
-        size: Int = 50
-    ): Flow<List<HistoryEntry>>
+    operator fun invoke(limit: Int? = null): Flow<List<HistoryEntryWithSongInfo>> =
+        historyRepository.observeAll(limit)
 }
 ```
 
 ### ClearHistoryUseCase
 ```kotlin
 class ClearHistoryUseCase(
-    private val historyRepository: HistoryWriteRepository
+    private val historyRepository: HistoryWriteRepository,
+    private val txRunner: TransactionRunner
 ) {
-    suspend operator fun invoke()
+    suspend operator fun invoke(): Int =
+        txRunner.inRwTransaction { historyRepository.clearAll() }
 }
 ```
 
@@ -48,10 +50,8 @@ class ClearHistoryUseCase(
 ### HistoryEntry
 ```kotlin
 data class HistoryEntry(
-    val id: Long,
-    val songId: Long,
-    val viewedAt: Instant,
-    val song: SongSummary  // краткая информация
+    val songNumberId: SongNumberId,
+    val viewedAt: Instant
 )
 ```
 
@@ -59,7 +59,7 @@ data class HistoryEntry(
 
 ```kotlin
 class SongViewModel(
-    private val addHistoryUseCase: AddHistoryUseCase
+    private val recordSongView: RecordSongViewUseCase
 ) : ViewModel() {
     
     private var historyJob: Job? = null
@@ -71,7 +71,7 @@ class SongViewModel(
         // Запускаем новый таймер на 10 секунд
         historyJob = viewModelScope.launch {
             delay(10_000) // 10 секунд
-            addHistoryUseCase(songId)
+            recordSongView(songId)
         }
     }
     
@@ -107,9 +107,9 @@ fun SongScreen(songId: Long) {
 
 ```
 ┌─────────────────────────────────────────────┐
-│             HistoryScreen                    │
+│             HistoryScreen                   │
 ├─────────────────────────────────────────────┤
-│  ← История                          🗑️ Все  │
+│  ← История                                  │
 ├─────────────────────────────────────────────┤
 │  Сегодня                                    │
 │  ┌───────────────────────────────────────┐  │
@@ -129,41 +129,16 @@ fun SongScreen(songId: Long) {
 └─────────────────────────────────────────────┘
 ```
 
-## Группировка по дате
-
-```kotlin
-data class GroupedHistory(
-    val date: LocalDate,
-    val label: String,  // "Сегодня", "Вчера", "30 декабря"
-    val entries: List<HistoryEntry>
-)
-
-fun List<HistoryEntry>.groupByDate(): List<GroupedHistory> {
-    val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
-    val yesterday = today.minus(1, DateTimeUnit.DAY)
-    
-    return groupBy { entry ->
-        entry.viewedAt.toLocalDateTime(TimeZone.currentSystemDefault()).date
-    }.map { (date, entries) ->
-        GroupedHistory(
-            date = date,
-            label = when (date) {
-                today -> "Сегодня"
-                yesterday -> "Вчера"
-                else -> date.format(...)
-            },
-            entries = entries.sortedByDescending { it.viewedAt }
-        )
-    }.sortedByDescending { it.date }
-}
-```
+- Удаление происходит из контекстного меню или смахиванием влево.
+- Так же в меню должен быть пункт "Удалить все".
 
 ## Связанные файлы
 
 - `domain/history/model/HistoryEntry.kt`
-- `domain/history/repository/HistoryReadRepository.kt`
+- `domain/history/repository/HistoryObserveRepository.kt`
 - `domain/history/repository/HistoryWriteRepository.kt`
 - `domain/history/usecase/*.kt`
 - `features/history/HistoryScreen.kt`
-- `features/history/HistoryViewModel.kt`
+- `features/history/HistoryScreenModel.kt`
+- `features/history/HistoryUiState.kt`
 

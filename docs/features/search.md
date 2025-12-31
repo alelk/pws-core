@@ -16,7 +16,6 @@
 - Поиск по:
   - Названию песни
   - Тексту (lyric)
-  - Имени автора
 - Подсветка совпадений в результатах
 
 ## Use Cases
@@ -24,25 +23,38 @@
 ### SearchSongsUseCase
 ```kotlin
 class SearchSongsUseCase(
-    private val searchRepository: SearchRepository
+    private val searchRepository: SongSearchRepository,
+    private val txRunner: TransactionRunner
 ) {
     suspend operator fun invoke(
-        query: String,
-        page: Int = 0,
-        size: Int = 20
-    ): List<SongSearchResult>
+        searchQuery: SearchQuery,
+        userId: UserId? = null,
+        bookId: BookId? = null
+    ): SongSearchResponse = txRunner.inRoTransaction {
+        // If scope is USER_BOOKS but no userId, return empty result
+        if (searchQuery.scope == SearchScope.USER_BOOKS && userId == null)
+            SongSearchResponse(emptyList(), 0, false)
+        else
+            searchRepository.search(searchQuery, userId, bookId)
+    }
 }
 ```
 
 ### SearchSongSuggestionsUseCase
 ```kotlin
 class SearchSongSuggestionsUseCase(
-    private val searchRepository: SearchRepository
+    private val searchRepository: SongSearchRepository,
+    private val txRunner: TransactionRunner
 ) {
     suspend operator fun invoke(
         query: String,
-        limit: Int = 5
-    ): List<SongSearchSuggestion>
+        userId: UserId? = null,
+        bookId: BookId? = null,
+        limit: Int = 10
+    ): List<SongSearchSuggestion> =
+        txRunner.inRoTransaction {
+            searchRepository.searchSuggestions(query, userId, bookId, limit)
+        }
 }
 ```
 
@@ -51,31 +63,28 @@ class SearchSongSuggestionsUseCase(
 ### SongSearchResult
 ```kotlin
 data class SongSearchResult(
-    val songId: Long,
-    val title: String,
-    val bookCode: String,
-    val number: Int,
-    val matchedFields: List<MatchedField>,  // где нашлось совпадение
-    val snippet: String?,                    // фрагмент текста с подсветкой
-    val score: Float                         // релевантность
+    val song: SongSummary,
+    val snippet: String,
+    val rank: Float,
+    val matchedFields: List<MatchedField>
 )
 ```
 
 ### SongSearchSuggestion
 ```kotlin
 data class SongSearchSuggestion(
-    val text: String,        // предлагаемый текст
-    val type: SuggestionType // TITLE, NUMBER, AUTHOR
+    val id: SongId,
+    val name: NonEmptyString,
+    val books: List<String>,
+    val snippet: String? = null
 )
 ```
 
 ### MatchedField
 ```kotlin
 enum class MatchedField {
-    TITLE,
-    LYRIC,
-    AUTHOR,
-    NUMBER
+    NAME,
+    LYRIC
 }
 ```
 
@@ -83,7 +92,7 @@ enum class MatchedField {
 
 ```
 ┌─────────────────────────────────────────────┐
-│              SearchScreen                    │
+│              SearchScreen                   │
 ├─────────────────────────────────────────────┤
 │  ┌─────────────────────────────────────┐    │
 │  │  🔍 Поиск песен...                  │    │  ◀── TextField
@@ -116,43 +125,23 @@ enum class MatchedField {
 - Индексы по title, lyric
 - Быстрый поиск без интернета
 
-### Remote (Elasticsearch)
-- Backend использует Elasticsearch
-- Более умный поиск (fuzzy, synonyms)
+### Remote (Exposed)
+- Backend использует запросы Exposed в PostgreSQL
 - Требуется интернет
 
 ## Debounce
 
-При вводе текста используется debounce 300ms для:
-- Подсказок
-- Результатов поиска
-
-```kotlin
-// В ViewModel
-private val searchQuery = MutableStateFlow("")
-
-init {
-    searchQuery
-        .debounce(300)
-        .filter { it.isNotBlank() }
-        .distinctUntilChanged()
-        .flatMapLatest { query ->
-            searchSongsUseCase(query)
-        }
-        .onEach { results ->
-            _uiState.value = SearchUiState.Results(results)
-        }
-        .launchIn(viewModelScope)
-}
-```
+При вводе текста используется debounce 300ms для подсказок.
+При нажатии на подсказку, открывается выбранная песня.
+При нажатии Enter или кнопки поиска, происходит поиск песни и выдача результатов.
 
 ## Связанные файлы
 
-- `domain/search/usecase/SearchSongsUseCase.kt`
-- `domain/search/usecase/SearchSongSuggestionsUseCase.kt`
-- `domain/search/model/SongSearchResult.kt`
-- `domain/search/repository/SearchRepository.kt`
+- `domain/song/usecase/SearchSongsUseCase.kt`
+- `domain/song/usecase/SearchSongSuggestionsUseCase.kt`
+- `domain/song/model/SongSearchResult.kt`
+- `domain/song/repository/SearchRepository.kt`
 - `features/search/SearchScreen.kt`
-- `features/search/SearchViewModel.kt`
+- `features/search/SearchScreenModel.kt`
 
 

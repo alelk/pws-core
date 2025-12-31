@@ -19,11 +19,8 @@ domain/src/commonMain/kotlin/io/github/alelk/pws/domain/
 ├── history/        # История просмотров
 ├── search/         # Поиск
 ├── cross/          # Связи между песнями
-├── songreference/  # Ссылки на песни
+├── songreference/  # Ссылки на похожие песни
 ├── auth/           # Авторизация
-├── person/         # Авторы песен
-├── tonality/       # Тональности
-├── bookstatistic/  # Статистика по сборникам
 ├── payment/        # Платежи (future)
 └── core/           # Общие утилиты (Locale, etc.)
 ```
@@ -38,8 +35,7 @@ domain/src/commonMain/kotlin/io/github/alelk/pws/domain/
 ├── repository/     # Repository interfaces
 ├── usecase/        # Use cases
 ├── command/        # Command объекты для записи
-├── query/          # Query объекты для чтения
-└── {Entity}.kt     # Value objects (если есть)
+└── query/          # Query объекты для чтения
 ```
 
 ### Зависимости
@@ -55,7 +51,6 @@ domain/src/commonMain/kotlin/io/github/alelk/pws/domain/
 
 ### Содержимое
 
-- Builders для создания тестовых данных
 - Генераторы для property-based тестирования
 - Моки репозиториев
 
@@ -194,6 +189,23 @@ features/src/commonMain/kotlin/io/github/alelk/pws/features/
 - Koin
 - Lifecycle ViewModel
 
+### TODO
+
+1. Разбить на модули:
+
+```
+features/
+├── feature-books/          # :features:books
+├── feature-songs/          # :features:songs  
+├── feature-favorites/      # :features:favorites
+├── feature-search/         # :features:search
+├── feature-tags/           # :features:tags
+└── common/ 
+```
+
+2. Перенести theme/ в :core:ui
+3. Для каждого Screen добавить @Preview
+
 ---
 
 ## :core:navigation
@@ -301,8 +313,6 @@ sync/
 - `:domain` — интерфейсы репозиториев
 - `:data:repo-room` — локальные репозитории
 - `:api:client` — remote репозитории
-
-```
 
 ## Граф зависимостей
 

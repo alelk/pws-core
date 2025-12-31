@@ -22,8 +22,9 @@ class SearchSongSuggestionsUseCase(
     userId: UserId? = null,
     bookId: BookId? = null,
     limit: Int = 10
-  ): List<SongSearchSuggestion> = txRunner.inRoTransaction {
-    searchRepository.searchSuggestions(query, userId, bookId, limit)
-  }
+  ): List<SongSearchSuggestion> =
+    txRunner.inRoTransaction {
+      searchRepository.searchSuggestions(query, userId, bookId, limit)
+    }
 }
 

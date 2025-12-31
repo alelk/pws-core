@@ -162,14 +162,23 @@ class SongViewModel(
 pws-core/
 │
 ├── domain/                      # Ядро приложения
-│   ├── model/                   # Domain модели
-│   ├── repository/              # Repository interfaces
-│   ├── usecase/                 # Business logic
-│   ├── domain-test-fixtures/    # Тестовые данные
+│   │   ├── song/
+│   │   │   ├── model/           # SongDetail, SongSummary, etc.
+│   │   │   ├── repository/      # SongReadRepository, SongWriteRepository
+│   │   │   ├── usecase/         # GetSongDetailUseCase, SearchSongsUseCase, etc.
+│   │   │   ├── command/         # Commands для записи
+│   │   │   └── query/           # Queries для чтения
+│   │   ├── book/
+│   │   ├── tag/
+│   │   ├── favorite/
+│   │   ├── history/
+│   │   ├── search/
+│   │   └── ...
+│   ├── domain-test-fixtures/    # Генераторы тестовых данных и тестовые утилиты
 │   └── lyric-format/            # Парсинг текстов песен
 │
 ├── api/
-│   ├── contract/                # API DTO (Serializable)
+│   ├── contract/                # API DTO (Serializable), Api resources
 │   ├── client/                  # Ktor клиент
 │   │   └── repository/          # Remote репозитории
 │   └── mapping/                 # DTO ↔ Domain маппинг
@@ -210,14 +219,19 @@ pws-core/
 
 ### Тестовые фикстуры
 
-Модуль `domain-test-fixtures` содержит builders для тестовых данных:
+Модуль `domain-test-fixtures` содержит генераторы для тестовых данных:
 
 ```kotlin
-// Использование в тестах
-val testSong = SongDetailBuilder()
-    .withId(1L)
-    .withTitle("Test Song")
-    .build()
+fun Arb.Companion.songSummary(
+    id: Arb<SongId> = Arb.songId(),
+    version: Arb<Version> = Arb.version(),
+    locale: Arb<Locale> = Arb.locale(),
+    name: Arb<NonEmptyString> = Arb.nonEmptyString(1..40),
+    edited: Arb<Boolean> = Arb.boolean()
+): Arb<SongSummary> =
+    arbitrary {
+        SongSummary(id = id.bind(), version = version.bind(), locale = locale.bind(), name = name.bind(), edited = edited.bind())
+    }
 ```
 
 ---
@@ -237,9 +251,9 @@ val testSong = SongDetailBuilder()
 
 ### Синхронизируемые сущности
 
-| Сущность | Стратегия конфликтов |
-|----------|---------------------|
-| Favorites | Last-Write-Wins |
-| History | Merge (append-only) |
-| User Tags | Last-Write-Wins + Merge |
-| User Overrides | Last-Write-Wins / Manual |
+| Сущность       | Стратегия конфликтов    |
+|----------------|-------------------------|
+| Favorites      | Last-Write-Wins         |
+| History        | Merge (append-only)     |
+| User Tags      | Last-Write-Wins + Merge |
+| User Overrides | Last-Write-Wins         |

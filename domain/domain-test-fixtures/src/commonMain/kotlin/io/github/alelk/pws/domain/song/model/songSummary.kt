@@ -20,12 +20,6 @@ fun Arb.Companion.songSummary(
   edited: Arb<Boolean> = Arb.boolean()
 ): Arb<SongSummary> =
   arbitrary {
-    SongSummary(
-      id = id.bind(),
-      version = version.bind(),
-      locale = locale.bind(),
-      name = name.bind(),
-      edited = edited.bind()
-    )
+    SongSummary(id = id.bind(), version = version.bind(), locale = locale.bind(), name = name.bind(), edited = edited.bind())
   }
 

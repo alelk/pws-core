@@ -1,6 +1,6 @@
 package io.github.alelk.pws.domain.history.usecase
 
-import io.github.alelk.pws.domain.history.model.HistoryEntryWithSongInfo
+import io.github.alelk.pws.domain.history.model.SongHistorySummary
 import io.github.alelk.pws.domain.history.repository.HistoryObserveRepository
 import kotlinx.coroutines.flow.Flow
 
@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 class ObserveHistoryUseCase(
   private val historyRepository: HistoryObserveRepository
 ) {
-  operator fun invoke(limit: Int? = null): Flow<List<HistoryEntryWithSongInfo>> =
+  operator fun invoke(limit: Int? = null): Flow<List<SongHistorySummary>> =
     historyRepository.observeAll(limit)
 }
 

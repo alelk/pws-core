@@ -3,10 +3,10 @@
 ## Быстрый старт
 
 При работе с проектом:
-1. Сначала прочитай `docs/ai/CONTEXT.md`
-2. Для понимания функционала — `docs/FEATURES.md`
-3. Для понимания структуры — `docs/MODULES.md`
-4. Для понимания архитектуры — `docs/ARCHITECTURE.md`
+1. Сначала прочитай [CONTEXT.md](./CONTEXT.md)
+2. Для понимания функционала — [FEATURES.md](../FEATURES.md)
+3. Для понимания структуры — [MODULES.md](../MODULES.md)
+4. Для понимания архитектуры — [ARCHITECTURE.md](../ARCHITECTURE.md)
 
 ## Принципы разработки
 
@@ -22,7 +22,6 @@
 | Local Repository impl  | `:data:repo-room`      | -                                                |
 | UI Screen              | `:features`            | `io.github.alelk.pws.features.{feature}`         |
 | ViewModel              | `:features`            | `io.github.alelk.pws.features.{feature}`         |
-| Shared UI компонент    | `:features`            | `io.github.alelk.pws.features.components`        |
 | Low-level UI компонент | `:core:ui`             | `io.github.alelk.pws.core.ui`                    |
 
 ### Naming Conventions
@@ -41,6 +40,7 @@ class ObserveSongUseCase        // Observe = подписка на Flow
 
 // Repositories
 interface SongReadRepository    // Read = только чтение
+interface SongObserveRepository // Read = только чтение (Flow)
 interface SongWriteRepository   // Write = запись (CRUD)
 
 // Remote implementations
@@ -68,62 +68,55 @@ sealed interface SongUiState {
 
 ```kotlin
 class GetSongDetailUseCase(
-    private val songRepository: SongReadRepository
+    private val songRepository: SongReadRepository,
+    private val txRunner: TransactionRunner
 ) {
-    suspend operator fun invoke(songId: Long): SongDetail? {
-        return songRepository.getSong(songId)
-    }
+    suspend operator fun invoke(songId: Long): SongDetail? =
+        txRunner.inRoTransaction { readRepository.get(id) }
 }
 
 // Или с Flow
 class ObserveSongUseCase(
-    private val songRepository: SongReadRepository
+    private val songRepository: SongObserveRepository
 ) {
-    operator fun invoke(songId: Long): Flow<SongDetail?> {
-        return songRepository.observeSong(songId)
-    }
+    operator fun invoke(songId: Long): Flow<SongDetail?> = songRepository.observeSong(songId)
 }
 ```
+
+Транзакции на уровне use cases, а не репозиториев.
 
 ### Паттерн Repository
 
 ```kotlin
 // Interface в domain
 interface SongReadRepository {
-    suspend fun getSong(id: Long): SongDetail?
-    fun observeSong(id: Long): Flow<SongDetail?>
-    suspend fun getSongs(page: Int, size: Int): List<SongSummary>
+    suspend fun get(id: SongId): SongDetail?
+    suspend fun getMany(query: SongQuery = SongQuery.Empty, sort: SongSort = SongSort.ById): List<SongSummary>
+}
+
+interface SongObserveRepository {
+    fun observe(id: SongId): Flow<SongDetail?>
 }
 
 interface SongWriteRepository {
-    suspend fun createSong(command: CreateSongCommand): Song
-    suspend fun updateSong(command: UpdateSongCommand): Song
-    suspend fun deleteSong(id: Long)
+    suspend fun create(command: CreateSongCommand): CreateResourceResult<SongId>
+    suspend fun update(command: UpdateSongCommand): UpdateResourceResult<SongId>
+    suspend fun delete(id: SongId): DeleteResourceResult<SongId>
 }
 ```
 
 ### Паттерн ViewModel
 
 ```kotlin
-class SongViewModel(
-    private val getSongDetailUseCase: GetSongDetailUseCase,
-    private val addFavoriteUseCase: AddFavoriteUseCase
-) : ViewModel() {
-    
-    private val _uiState = MutableStateFlow<SongUiState>(SongUiState.Loading)
-    val uiState: StateFlow<SongUiState> = _uiState.asStateFlow()
-    
-    fun loadSong(songId: Long) {
-        viewModelScope.launch {
-            try {
-                val song = getSongDetailUseCase(songId)
-                _uiState.value = if (song != null) {
-                    SongUiState.Success(song)
-                } else {
-                    SongUiState.Error("Песня не найдена")
-                }
-            } catch (e: Exception) {
-                _uiState.value = SongUiState.Error(e.message ?: "Ошибка")
+class SongDetailScreenModel(
+    val songNumberId: SongNumberId,
+    private val observeSong: ObserveSongUseCase
+) : StateScreenModel<SongDetailUiState>(SongDetailUiState.Loading) {
+
+    init {
+        screenModelScope.launch(context = CoroutineExceptionHandler { _, _ -> mutableState.value = SongDetailUiState.Error }) {
+            observeSong(songNumberId.songId).collectLatest { detail: SongDetail? ->
+                mutableState.value = detail?.let { SongDetailUiState.Content(it) } ?: SongDetailUiState.Error
             }
         }
     }
@@ -133,22 +126,12 @@ class SongViewModel(
 ### Паттерн Screen (Voyager)
 
 ```kotlin
-data class SongScreen(private val songId: Long) : Screen {
-    
+class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
     @Composable
     override fun Content() {
-        val viewModel = koinViewModel<SongViewModel>()
-        val uiState by viewModel.uiState.collectAsState()
-        
-        LaunchedEffect(songId) {
-            viewModel.loadSong(songId)
-        }
-        
-        when (val state = uiState) {
-            is SongUiState.Loading -> LoadingIndicator()
-            is SongUiState.Success -> SongContent(state.song)
-            is SongUiState.Error -> ErrorMessage(state.message)
-        }
+        val viewModel = koinScreenModel<SongDetailScreenModel>(parameters = { parametersOf(songNumberId) })
+        val state by viewModel.state.collectAsState()
+        SongDetailContent(state = state)
     }
 }
 ```
@@ -160,19 +143,16 @@ data class SongScreen(private val songId: Long) : Screen {
 ```kotlin
 // Kotest Spec
 class GetSongDetailUseCaseTest : FunSpec({
-    
+
     val mockRepository = mockk<SongReadRepository>()
     val useCase = GetSongDetailUseCase(mockRepository)
-    
+
     test("should return song when exists") {
-        // given
         val song = SongDetailBuilder().build()
         coEvery { mockRepository.getSong(1L) } returns song
-        
-        // when
+
         val result = useCase(1L)
-        
-        // then
+
         result shouldBe song
     }
 })

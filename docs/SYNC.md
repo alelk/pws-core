@@ -1,5 +1,7 @@
 # Синхронизация данных
 
+Данный функционал еще не реализован.
+
 ## Обзор
 
 Мобильные приложения (Android/iOS) работают в режиме **offline-first**:
@@ -9,41 +11,41 @@
 
 ## Типы данных по синхронизации
 
-| Тип | Данные | Направление | Приоритет |
-|-----|--------|-------------|-----------|
-| **Read-only** | Песни, Сборники, Глобальные теги | Server → Client | Низкий |
-| **User data** | Избранное, История, Пользовательские теги | Bidirectional | Высокий |
-| **User overrides** | Переопределения песен | Bidirectional | Высокий |
+| Тип                | Данные                                    | Направление     | Приоритет |
+|--------------------|-------------------------------------------|-----------------|-----------|
+| **Read-only**      | Песни, Сборники, Глобальные теги          | Server → Client | Низкий    |
+| **User data**      | Избранное, История, Пользовательские теги | Bidirectional   | Высокий   |
+| **User overrides** | Переопределения глобальных песен и тегов  | Bidirectional   | Высокий   |
 
 ## Архитектура синхронизации
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        Mobile App                                │
+│                        Mobile App                               │
 ├─────────────────────────────────────────────────────────────────┤
 │  ┌─────────────┐    ┌─────────────┐    ┌─────────────────────┐  │
 │  │  UI Layer   │───▶│  Use Cases  │───▶│ Local Repository    │  │
 │  └─────────────┘    └─────────────┘    │ (Room)              │  │
-│                                         └──────────┬──────────┘  │
-│                                                    │             │
-│                                         ┌──────────▼──────────┐  │
-│  ┌─────────────────────────────────────▶│   Sync Manager      │  │
-│  │ Network State                        │                     │  │
-│  │ Observer                             │ - Pending Changes   │  │
-│  │                                      │ - Conflict Resolver │  │
-│  └──────────────────────────────────────│ - Sync Queue        │  │
-│                                         └──────────┬──────────┘  │
-│                                                    │             │
-│                                         ┌──────────▼──────────┐  │
-│                                         │  Remote Repository  │  │
-│                                         │  (API Client)       │  │
-│                                         └──────────┬──────────┘  │
-└────────────────────────────────────────────────────┼─────────────┘
-                                                     │
-                                                     ▼
-                                          ┌─────────────────────┐
-                                          │   Backend Server    │
-                                          └─────────────────────┘
+│                                        └──────────┬──────────┘  │
+│                                                   │             │
+│                                        ┌──────────▼──────────┐  │
+│  ┌────────────────────────────────────▶│   Sync Manager      │  │
+│  │ Network State                       │                     │  │
+│  │ Observer                            │ - Pending Changes   │  │
+│  │                                     │ - Conflict Resolver │  │
+│  └─────────────────────────────────────│ - Sync Queue        │  │
+│                                        └──────────┬──────────┘  │
+│                                                   │             │
+│                                        ┌──────────▼──────────┐  │
+│                                        │  Remote Repository  │  │
+│                                        │  (API Client)       │  │
+│                                        └──────────┬──────────┘  │
+└───────────────────────────────────────────────────┼─────────────┘
+                                                    │
+                                                    ▼
+                                         ┌─────────────────────┐
+                                         │   Backend Server    │
+                                         └─────────────────────┘
 ```
 
 ## Sync Manager
@@ -113,33 +115,33 @@ enum class ChangeOperation {
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    Offline Change Flow                           │
+│                    Offline Change Flow                          │
 ├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  1. User Action (offline)                                        │
-│     │                                                            │
-│     ▼                                                            │
-│  2. Save to Local DB                                             │
-│     │                                                            │
-│     ▼                                                            │
-│  3. Create PendingChange record ──────────────────┐              │
-│     │                                             │              │
-│     ▼                                             │              │
-│  4. UI updated immediately                        │              │
-│                                                   │              │
-│  ═══════════════════════════════════════════════════════════════ │
-│                    Network becomes available                     │
-│  ═══════════════════════════════════════════════════════════════ │
-│                                                   │              │
-│  5. SyncManager detects connectivity ◀────────────┘              │
-│     │                                                            │
-│     ▼                                                            │
-│  6. Process PendingChanges queue                                 │
-│     │                                                            │
-│     ├──▶ Success: Delete PendingChange                           │
-│     │                                                            │
-│     └──▶ Conflict: Resolve (see Conflict Resolution)             │
-│                                                                  │
+│                                                                 │
+│  1. User Action (offline)                                       │
+│     │                                                           │
+│     ▼                                                           │
+│  2. Save to Local DB                                            │
+│     │                                                           │
+│     ▼                                                           │
+│  3. Create PendingChange record ──────────────────┐             │
+│     │                                             │             │
+│     ▼                                             │             │
+│  4. UI updated immediately                        │             │
+│                                                   │             │
+│  ══════════════════════════════════════════════════════════════ │
+│                    Network becomes available                    │
+│  ══════════════════════════════════════════════════════════════ │
+│                                                   │             │
+│  5. SyncManager detects connectivity ◀────────────┘             │
+│     │                                                           │
+│     ▼                                                           │
+│  6. Process PendingChanges queue                                │
+│     │                                                           │
+│     ├──▶ Success: Delete PendingChange                          │
+│     │                                                           │
+│     └──▶ Conflict: Resolve (see Conflict Resolution)            │
+│                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -147,12 +149,12 @@ enum class ChangeOperation {
 
 ### Стратегии разрешения конфликтов
 
-| Сущность | Стратегия | Описание |
-|----------|-----------|----------|
-| Favorites | Last-Write-Wins | Последнее изменение побеждает |
-| History | Merge | Объединяем записи, дедупликация по songId |
-| User Tags | Last-Write-Wins + Merge | Новые теги добавляются, изменённые — LWW |
-| User Overrides | Manual / Last-Write-Wins | Опционально спросить пользователя |
+| Сущность       | Стратегия               | Описание                                  |
+|----------------|-------------------------|-------------------------------------------|
+| Favorites      | Last-Write-Wins         | Последнее изменение побеждает             |
+| History        | Merge                   | Объединяем записи, дедупликация по songId |
+| User Tags      | Last-Write-Wins + Merge | Новые теги добавляются, изменённые — LWW  |
+| User Overrides | Last-Write-Wins         | Последнее изменение побеждает             |
 
 ### Реализация
 
@@ -169,7 +171,6 @@ sealed class ConflictResolution<T> {
     data class UseLocal<T>(val data: T) : ConflictResolution<T>()
     data class UseRemote<T>(val data: T) : ConflictResolution<T>()
     data class Merge<T>(val data: T) : ConflictResolution<T>()
-    data class AskUser<T>(val local: T, val remote: T) : ConflictResolution<T>()
 }
 ```
 
@@ -269,11 +270,11 @@ class AndroidConnectivityObserver(
 
 ### Автоматические триггеры
 
-| Триггер | Действие |
-|---------|----------|
-| Сеть появилась | `pushPendingChanges()` |
-| App foreground | `syncAll()` если прошло > 5 мин |
-| Pull-to-refresh | `syncAll()` |
+| Триггер               | Действие                                |
+|-----------------------|-----------------------------------------|
+| Сеть появилась        | `pushPendingChanges()`                  |
+| App foreground        | `syncAll()` если прошло > 5 мин         |
+| Pull-to-refresh       | `syncAll()`                             |
 | Background (periodic) | `syncAll()` каждые 15 мин (WorkManager) |
 
 ### Реализация Auto-Sync

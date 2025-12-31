@@ -7,11 +7,11 @@
 
 ### Связанные репозитории
 
-| Репозиторий | Описание | Технологии |
-|-------------|----------|------------|
+| Репозиторий         | Описание                       | Технологии                    |
+|---------------------|--------------------------------|-------------------------------|
 | **pws-core** (этот) | Мультиплатформенная библиотека | Kotlin Multiplatform, Compose |
-| **pws-server** | Backend API сервер | Ktor, PostgreSQL, Elasticsearch |
-| **pws-android** | Android приложение | Android, pws-core |
+| **pws-server**      | Backend API сервер             | Ktor, PostgreSQL, Exposed     |
+| **pws-android**     | Android приложение             | Android                       |
 
 > **Важно**: Модули `:api:contract` и `:api:mapping` должны соответствовать API контракту pws-server.
 
@@ -19,7 +19,7 @@
 
 | Платформа             | Источник данных   | Авторизация | Оффлайн |
 |-----------------------|-------------------|-------------|---------|
-| Android/iOS           | Локальная Room DB | Нет         | Да      |
+| Android/iOS           | Локальная Room DB | Опционально | Да      |
 | Web/Telegram Mini App | Remote API        | Да          | Нет     |
 
 ## Архитектурный паттерн
@@ -68,18 +68,18 @@ pws-core/
 
 ## Ключевые сущности (Domain)
 
-| Сущность                  | Описание                                    |
-|---------------------------|---------------------------------------------|
-| `Song`                    | Песня с текстом и метаданными               |
-| `SongDetail`              | Полные данные песни с тегами и ссылками     |
-| `SongSummary`             | Краткая информация о песне для списков      |
-| `Book`                    | Сборник песен                               |
-| `SongNumber`              | Связь песни со сборником (номер в сборнике) |
-| `Tag`                     | Категория/тег песни                         |
-| `SongTag`                 | Связь песни с тегом                         |
-| `Favorite`                | Избранная песня пользователя                |
-| `History`                 | Запись истории просмотра                    |
-| `Cross` / `SongReference` | Ссылки на похожие песни                     |
+| Сущность        | Описание                                    |
+|-----------------|---------------------------------------------|
+| `Song`          | Песня с текстом и метаданными               |
+| `SongDetail`    | Полные данные песни с тегами и ссылками     |
+| `SongSummary`   | Краткая информация о песне для списков      |
+| `Book`          | Сборник песен                               |
+| `SongNumber`    | Связь песни со сборником (номер в сборнике) |
+| `Tag`           | Категория/тег песни                         |
+| `SongTag`       | Связь песни с тегом                         |
+| `Favorite`      | Избранная песня пользователя                |
+| `History`       | Запись истории просмотра                    |
+| `SongReference` | Ссылки на похожие песни                     |
 
 ## Организация Domain модуля
 
@@ -103,13 +103,13 @@ domain/src/commonMain/kotlin/io/github/alelk/pws/domain/
 
 ## Naming Conventions
 
-| Тип               | Паттерн                                | Пример                     |
-|-------------------|----------------------------------------|----------------------------|
-| Use Case          | `{Action}{Entity}UseCase`              | `GetSongDetailUseCase`     |
-| Repository        | `{Entity}{Read/Write}Repository`       | `SongReadRepository`       |
-| ViewModel         | `{Feature}ViewModel`                   | `SongViewModel`            |
-| Screen            | `{Feature}Screen`                      | `SongScreen`               |
-| Remote Repository | `Remote{Entity}{Read/Write}Repository` | `RemoteSongReadRepository` |
+| Тип               | Паттерн                                  | Пример                     |
+|-------------------|------------------------------------------|----------------------------|
+| Use Case          | `{Action}{Entity}UseCase`                | `GetSongDetailUseCase`     |
+| Repository        | `{Entity}{Read/Write/Observe}Repository` | `SongReadRepository`       |
+| ViewModel         | `{Feature}ViewModel`                     | `SongViewModel`            |
+| Screen            | `{Feature}Screen`                        | `SongScreen`               |
+| Remote Repository | `Remote{Entity}{Read/Write}Repository`   | `RemoteSongReadRepository` |
 
 ## Пакетные имена
 
@@ -141,7 +141,7 @@ graph TD
 2. **Platform-agnostic**: Domain модуль не зависит от платформы
 3. **Repository Pattern**: Use cases работают через interfaces, не зная о реализации
 4. **Reactive**: Используем Flow для реактивных данных
-5. **Offline-first**: Мобильные приложения работают без сети, синхронизация при появлении
+5. **Offline-first**: Мобильные приложения работают без сети, синхронизация при появлении. Авторизация опционально. Если пользователь не авторизован, то синхронизации не происходит.
 
 ## Синхронизация (Mobile)
 
