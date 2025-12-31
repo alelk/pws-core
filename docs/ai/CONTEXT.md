@@ -5,6 +5,16 @@
 **PWS (Praise & Worship Songs)** — мультиплатформенное приложение "Христианский песенник".
 Позволяет искать, просматривать и управлять песнями из различных сборников.
 
+### Связанные репозитории
+
+| Репозиторий | Описание | Технологии |
+|-------------|----------|------------|
+| **pws-core** (этот) | Мультиплатформенная библиотека | Kotlin Multiplatform, Compose |
+| **pws-server** | Backend API сервер | Ktor, PostgreSQL, Elasticsearch |
+| **pws-android** | Android приложение | Android, pws-core |
+
+> **Важно**: Модули `:api:contract` и `:api:mapping` должны соответствовать API контракту pws-server.
+
 ## Платформы
 
 | Платформа             | Источник данных   | Авторизация | Оффлайн |
@@ -40,13 +50,16 @@ UI (Compose) → ViewModel → UseCase → Repository Interface
 ```
 pws-core/
 ├── domain/              # Модели, Use Cases, Repository interfaces
+│   ├── lyric-format/    # Парсинг текстов песен
+│   └── test-fixtures/   # Тестовые данные
 ├── api/
 │   ├── contract/        # DTO для API
 │   ├── client/          # Ktor клиент, Remote репозитории
 │   └── mapping/         # Маппинг DTO ↔ Domain models
 ├── features/            # UI компоненты (Compose + Voyager)
 ├── core/
-│   └── navigation/      # Навигация (SharedScreens)
+│   ├── navigation/      # Навигация (SharedScreens)
+│   └── ui/              # Общие UI компоненты
 ├── data/
 │   ├── db-room/         # Room база данных
 │   └── repo-room/       # Local репозитории на Room

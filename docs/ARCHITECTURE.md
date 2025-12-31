@@ -165,7 +165,8 @@ pws-core/
 │   ├── model/                   # Domain модели
 │   ├── repository/              # Repository interfaces
 │   ├── usecase/                 # Business logic
-│   └── domain-test-fixtures/    # Тестовые данные
+│   ├── domain-test-fixtures/    # Тестовые данные
+│   └── lyric-format/            # Парсинг текстов песен
 │
 ├── api/
 │   ├── contract/                # API DTO (Serializable)
@@ -186,7 +187,8 @@ pws-core/
 │   └── di/                      # Koin модули
 │
 ├── core/
-│   └── navigation/              # Навигационные экраны
+│   ├── navigation/              # Навигационные экраны
+│   └── ui/                      # Общие UI компоненты
 │
 ├── data/
 │   ├── db-room/                 # Room Database

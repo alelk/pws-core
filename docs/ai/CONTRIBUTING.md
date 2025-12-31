@@ -17,11 +17,13 @@
 | Domain модели | `:domain` | `io.github.alelk.pws.domain.{entity}.model` |
 | Repository interface | `:domain` | `io.github.alelk.pws.domain.{entity}.repository` |
 | Use Case | `:domain` | `io.github.alelk.pws.domain.{entity}.usecase` |
+| Парсинг лирики | `:domain:lyric-format` | `io.github.alelk.pws.domain.lyric.format` |
 | Remote Repository impl | `:api:client` | `repository` |
 | Local Repository impl | `:data:repo-room` | - |
 | UI Screen | `:features` | `io.github.alelk.pws.features.{feature}` |
 | ViewModel | `:features` | `io.github.alelk.pws.features.{feature}` |
 | Shared UI компонент | `:features` | `io.github.alelk.pws.features.components` |
+| Low-level UI компонент | `:core:ui` | `io.github.alelk.pws.core.ui` |
 
 ### Naming Conventions
 
@@ -182,8 +184,17 @@ class GetSongDetailUseCaseTest : FunSpec({
 # Domain tests
 ./gradlew :domain:jvmTest
 
+# Lyric format tests
+./gradlew :domain:lyric-format:jvmTest
+
 # API client tests
 ./gradlew :api:client:jvmTest
+
+# Backup tests
+./gradlew :backup:jvmTest
+
+# Room database tests
+./gradlew :data:db-room:testDebugUnitTest :data:db-room:jvmTest
 
 # All tests
 ./gradlew test

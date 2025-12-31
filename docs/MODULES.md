@@ -25,7 +25,7 @@ domain/src/commonMain/kotlin/io/github/alelk/pws/domain/
 ├── tonality/       # Тональности
 ├── bookstatistic/  # Статистика по сборникам
 ├── payment/        # Платежи (future)
-└── core/           # Общие утилиты
+└── core/           # Общие утилиты (Locale, etc.)
 ```
 
 ### Организация пакета сущности
@@ -58,6 +58,34 @@ domain/src/commonMain/kotlin/io/github/alelk/pws/domain/
 - Builders для создания тестовых данных
 - Генераторы для property-based тестирования
 - Моки репозиториев
+
+---
+
+## :domain:lyric-format
+
+**Группа**: `io.github.alelk.pws.domain`
+
+Парсинг и форматирование текстов песен (лирики).
+
+### Назначение
+
+- Парсинг структурированного текста песни (куплеты, припевы, бриджи)
+- Форматирование лирики для отображения
+- Интернационализация (i18n4k) — поддержка EN, UK, RU
+
+### Содержимое
+
+```
+lyric-format/src/commonMain/kotlin/io/github/alelk/pws/domain/lyric/format/
+├── LyricParser.kt    # Парсер текста (Kudzu parser combinators)
+└── LyricWriter.kt    # Форматирование для вывода
+```
+
+### Зависимости
+
+- `:domain`
+- Kudzu (parser combinators)
+- i18n4k (internationalization)
 
 ---
 
@@ -189,6 +217,18 @@ Features модуль создает реализации Screen для кажд
 
 ---
 
+## :core:ui
+
+Общие UI компоненты и утилиты.
+
+### Назначение
+
+- Переиспользуемые Compose компоненты низкого уровня
+- UI утилиты и extensions
+- Общие модификаторы
+
+---
+
 ## :data:db-room
 
 Room база данных для Android/iOS.
@@ -234,10 +274,12 @@ graph TD
     subgraph "UI Layer"
         features[":features"]
         navigation[":core:navigation"]
+        coreui[":core:ui"]
     end
     
     subgraph "Domain Layer"
         domain[":domain"]
+        lyricformat[":domain:lyric-format"]
         fixtures[":domain:domain-test-fixtures"]
     end
     
@@ -255,7 +297,11 @@ graph TD
     backup[":backup"]
     
     features --> domain
+    features --> lyricformat
     features --> navigation
+    features --> coreui
+    
+    lyricformat --> domain
     
     client --> domain
     client --> contract
