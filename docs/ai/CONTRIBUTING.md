@@ -1,47 +1,47 @@
-# Инструкции для AI-агентов
+# Instructions for AI Agents
 
-## Быстрый старт
+## Quick Start
 
-При работе с проектом:
-1. Сначала прочитай [CONTEXT.md](./CONTEXT.md)
-2. Для понимания функционала — [FEATURES.md](../FEATURES.md)
-3. Для понимания структуры — [MODULES.md](../MODULES.md)
-4. Для понимания архитектуры — [ARCHITECTURE.md](../ARCHITECTURE.md)
+When working with the project:
+1. First read [CONTEXT.md](./CONTEXT.md)
+2. For understanding functionality — [FEATURES.md](../FEATURES.md)
+3. For understanding structure — [MODULES.md](../MODULES.md)
+4. For understanding architecture — [ARCHITECTURE.md](../ARCHITECTURE.md)
 
-## Принципы разработки
+## Development Principles
 
-### Где размещать код
+### Where to Place Code
 
-| Тип кода               | Модуль                 | Пакет                                            |
+| Code Type              | Module                 | Package                                          |
 |------------------------|------------------------|--------------------------------------------------|
-| Domain модели          | `:domain`              | `io.github.alelk.pws.domain.{entity}.model`      |
+| Domain models          | `:domain`              | `io.github.alelk.pws.domain.{entity}.model`      |
 | Repository interface   | `:domain`              | `io.github.alelk.pws.domain.{entity}.repository` |
 | Use Case               | `:domain`              | `io.github.alelk.pws.domain.{entity}.usecase`    |
-| Парсинг лирики         | `:domain:lyric-format` | `io.github.alelk.pws.domain.lyric.format`        |
+| Lyrics parsing         | `:domain:lyric-format` | `io.github.alelk.pws.domain.lyric.format`        |
 | Remote Repository impl | `:api:client`          | `repository`                                     |
 | Local Repository impl  | `:data:repo-room`      | -                                                |
 | UI Screen              | `:features`            | `io.github.alelk.pws.features.{feature}`         |
 | ViewModel              | `:features`            | `io.github.alelk.pws.features.{feature}`         |
-| Low-level UI компонент | `:core:ui`             | `io.github.alelk.pws.core.ui`                    |
+| Low-level UI component | `:core:ui`             | `io.github.alelk.pws.core.ui`                    |
 
 ### Naming Conventions
 
 ```kotlin
 // Use Cases
-class GetSongDetailUseCase      // Get = получить одну запись
-class GetSongsUseCase           // множественное число = список
-class SearchSongsUseCase        // Search = поиск
-class CreateSongUseCase         // Create = создание
-class UpdateSongUseCase         // Update = обновление
-class DeleteSongUseCase         // Delete = удаление
-class AddFavoriteUseCase        // Add = добавить связь
-class RemoveFavoriteUseCase     // Remove = удалить связь
-class ObserveSongUseCase        // Observe = подписка на Flow
+class GetSongDetailUseCase      // Get = get single record
+class GetSongsUseCase           // plural = list
+class SearchSongsUseCase        // Search = search
+class CreateSongUseCase         // Create = creation
+class UpdateSongUseCase         // Update = update
+class DeleteSongUseCase         // Delete = deletion
+class AddFavoriteUseCase        // Add = add relation
+class RemoveFavoriteUseCase     // Remove = remove relation
+class ObserveSongUseCase        // Observe = Flow subscription
 
 // Repositories
-interface SongReadRepository    // Read = только чтение
-interface SongObserveRepository // Read = только чтение (Flow)
-interface SongWriteRepository   // Write = запись (CRUD)
+interface SongReadRepository    // Read = read only
+interface SongObserveRepository // Read = read only (Flow)
+interface SongWriteRepository   // Write = write (CRUD)
 
 // Remote implementations
 class RemoteSongReadRepository
@@ -64,7 +64,7 @@ sealed interface SongUiState {
 }
 ```
 
-### Паттерн Use Case
+### Use Case Pattern
 
 ```kotlin
 class GetSongDetailUseCase(
@@ -75,7 +75,7 @@ class GetSongDetailUseCase(
         txRunner.inRoTransaction { readRepository.get(id) }
 }
 
-// Или с Flow
+// Or with Flow
 class ObserveSongUseCase(
     private val songRepository: SongObserveRepository
 ) {
@@ -83,12 +83,12 @@ class ObserveSongUseCase(
 }
 ```
 
-Транзакции на уровне use cases, а не репозиториев.
+Transactions at use case level, not repository level.
 
-### Паттерн Repository
+### Repository Pattern
 
 ```kotlin
-// Interface в domain
+// Interface in domain
 interface SongReadRepository {
     suspend fun get(id: SongId): SongDetail?
     suspend fun getMany(query: SongQuery = SongQuery.Empty, sort: SongSort = SongSort.ById): List<SongSummary>
@@ -105,7 +105,7 @@ interface SongWriteRepository {
 }
 ```
 
-### Паттерн ViewModel
+### ViewModel Pattern
 
 ```kotlin
 class SongDetailScreenModel(
@@ -123,7 +123,7 @@ class SongDetailScreenModel(
 }
 ```
 
-### Паттерн Screen (Voyager)
+### Screen Pattern (Voyager)
 
 ```kotlin
 class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
@@ -136,9 +136,9 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
 }
 ```
 
-## Тестирование
+## Testing
 
-### Структура тестов
+### Test Structure
 
 ```kotlin
 // Kotest Spec
@@ -158,7 +158,7 @@ class GetSongDetailUseCaseTest : FunSpec({
 })
 ```
 
-### Запуск тестов
+### Running Tests
 
 ```bash
 # Domain tests
@@ -180,33 +180,32 @@ class GetSongDetailUseCaseTest : FunSpec({
 ./gradlew test
 ```
 
-## Частые задачи
+## Common Tasks
 
-### Добавить новый Use Case
+### Add New Use Case
 
-1. Создай класс в `domain/.../usecase/`
-2. Добавь в Koin модуль в `:features` или `:api:client:di`
-3. Напиши тесты в `domain/.../commonTest/`
+1. Create class in `domain/.../usecase/`
+2. Add to Koin module in `:features` or `:api:client:di`
+3. Write tests in `domain/.../commonTest/`
 
-### Добавить новый экран
+### Add New Screen
 
-1. Создай `{Feature}Screen.kt` в `features/.../`
-2. Создай `{Feature}ViewModel.kt`
-3. Создай `{Feature}UiState.kt`
-4. Добавь ViewModel в Koin модуль
-5. Добавь navigation в `SharedScreens.kt` если нужно
+1. Create `{Feature}Screen.kt` in `features/.../`
+2. Create `{Feature}ViewModel.kt`
+3. Create `{Feature}UiState.kt`
+4. Add ViewModel to Koin module
+5. Add navigation to `SharedScreens.kt` if needed
 
-### Добавить новую модель
+### Add New Model
 
-1. Создай data class в `domain/.../model/`
-2. Если нужен API — создай DTO в `api/contract/`
-3. Добавь маппинг в `api/mapping/`
+1. Create data class in `domain/.../model/`
+2. If API needed — create DTO in `api/contract/`
+3. Add mapping in `api/mapping/`
 
-## Не делай
+## Don't Do
 
-- ❌ Не добавляй platform-specific код в `:domain`
-- ❌ Не создавай прямых зависимостей между features
-- ❌ Не используй Android/iOS imports в common модулях
-- ❌ Не храни UI state в Domain моделях
-- ❌ Не вызывай репозитории напрямую из UI — используй Use Cases
-
+- ❌ Don't add platform-specific code to `:domain`
+- ❌ Don't create direct dependencies between features
+- ❌ Don't use Android/iOS imports in common modules
+- ❌ Don't store UI state in Domain models
+- ❌ Don't call repositories directly from UI — use Use Cases

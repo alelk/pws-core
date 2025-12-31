@@ -1,43 +1,43 @@
-# PWS Core — Руководство для AI-агентов
+# PWS Core — Guide for AI Agents
 
-> **Быстрый старт**: Читай [docs/ai/CONTEXT.md](docs/ai/CONTEXT.md) для понимания проекта.
+> **Quick start**: Read [docs/ai/CONTEXT.md](docs/ai/CONTEXT.md) to understand the project.
 
-## О проекте
+## About the Project
 
-PWS (Praise & Worship Songs) — мультиплатформенный христианский песенник.
+PWS (Praise & Worship Songs) — a multiplatform Christian songbook.
 
-| Платформа             | Источник данных   | Оффлайн |
+| Platform              | Data Source       | Offline |
 |-----------------------|-------------------|---------|
-| Android/iOS           | Локальная Room DB | ✅       |
+| Android/iOS           | Local Room DB     | ✅       |
 | Web/Telegram Mini App | Remote API        | ❌       |
 
-### Связанные репозитории
+### Related Repositories
 
-| Репозиторий | Назначение |
-|-------------|------------|
-| **pws-core** (этот) | Мультиплатформенная библиотека: domain, UI, API client |
-| **pws-server** | Backend сервер (Ktor): REST API, Elasticsearch, PostgreSQL |
-| **pws-android** | Android приложение (использует pws-core) |
+| Repository | Purpose |
+|------------|---------|
+| **pws-core** (this) | Multiplatform library: domain, UI, API client |
+| **pws-server** | Backend server (Ktor): REST API, Elasticsearch, PostgreSQL |
+| **pws-android** | Android application (uses pws-core) |
 
-> ⚠️ При работе с pws-core учитывай, что API контракты (:api:contract) должны соответствовать pws-server.
+> ⚠️ When working with pws-core, keep in mind that API contracts (:api:contract) must match pws-server.
 
-## Документация
+## Documentation
 
-| Файл                                               | Содержимое                  |
+| File                                               | Contents                    |
 |----------------------------------------------------|-----------------------------|
-| [docs/ai/CONTEXT.md](docs/ai/CONTEXT.md)           | Краткий контекст проекта    |
-| [docs/ai/CONTRIBUTING.md](docs/ai/CONTRIBUTING.md) | Инструкции для разработки   |
-| [docs/GLOSSARY.md](docs/GLOSSARY.md)               | Глоссарий терминов          |
-| [docs/FEATURES.md](docs/FEATURES.md)               | Описание функционала        |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)       | Архитектура приложения      |
-| [docs/MODULES.md](docs/MODULES.md)                 | Описание модулей            |
-| [docs/DATA_FLOW.md](docs/DATA_FLOW.md)             | API и потоки данных         |
-| [docs/SYNC.md](docs/SYNC.md)                       | Синхронизация данных (mobile) |
-| [docs/features/\*.md](docs/features/)              | Детальное описание фич      |
+| [docs/ai/CONTEXT.md](docs/ai/CONTEXT.md)           | Brief project context       |
+| [docs/ai/CONTRIBUTING.md](docs/ai/CONTRIBUTING.md) | Development guidelines      |
+| [docs/GLOSSARY.md](docs/GLOSSARY.md)               | Glossary of terms           |
+| [docs/FEATURES.md](docs/FEATURES.md)               | Feature descriptions        |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)       | Application architecture    |
+| [docs/MODULES.md](docs/MODULES.md)                 | Module descriptions         |
+| [docs/DATA_FLOW.md](docs/DATA_FLOW.md)             | API and data flows          |
+| [docs/SYNC.md](docs/SYNC.md)                       | Data synchronization (mobile) |
+| [docs/features/\*.md](docs/features/)              | Detailed feature documentation |
 
-## Быстрая навигация по коду
+## Quick Code Navigation
 
-### Domain модели
+### Domain Models
 
 ```
 domain/src/commonMain/kotlin/io/github/alelk/pws/domain/{entity}/model/
@@ -61,7 +61,7 @@ features/src/commonMain/kotlin/io/github/alelk/pws/features/{feature}/
 api/client/src/commonMain/kotlin/repository/
 ```
 
-## Ключевые паттерны
+## Key Patterns
 
 ```kotlin
 // Use Case
@@ -82,13 +82,12 @@ class SongViewModel(private val useCase: GetSongDetailUseCase) : ViewModel() {
 }
 ```
 
-## Технологии
+## Technologies
 
 - **Kotlin Multiplatform**
 - **Compose Multiplatform** (UI)
-- **Voyager** (навигация)
+- **Voyager** (navigation)
 - **Koin** (DI)
 - **Ktor** (HTTP)
-- **Room** (локальная БД)
-- **Kotest** (тесты)
-
+- **Room** (local DB)
+- **Kotest** (testing)

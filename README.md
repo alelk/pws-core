@@ -7,72 +7,72 @@
 [![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
-## О проекте
+## About
 
-**PWS Core** — мультиплатформенная библиотека для приложения "Христианский песенник" (Praise & Worship Songs).
+**PWS Core** is a multiplatform library for the "Christian Songbook" application (Praise & Worship Songs).
 
-Предоставляет:
-- 📱 **Domain логику** — модели, use cases, repository interfaces
-- 🎨 **UI компоненты** — Compose Multiplatform screens и components
-- 🌐 **API клиент** — HTTP клиент для работы с [pws-server](https://github.com/alelk/pws-server)
-- 💾 **Локальное хранение** — Room database для оффлайн работы
+Provides:
+- 📱 **Domain logic** — models, use cases, repository interfaces
+- 🎨 **UI components** — Compose Multiplatform screens and components
+- 🌐 **API client** — HTTP client for [pws-server](https://github.com/alelk/pws-server)
+- 💾 **Local storage** — Room database for offline support
 
-### Поддерживаемые платформы
+### Supported Platforms
 
-| Платформа | UI | Data Source | Оффлайн |
-|-----------|---|-------------|---------|
+| Platform | UI | Data Source | Offline |
+|----------|---|-------------|---------|
 | Android | ✅ | Room DB | ✅ |
 | iOS | ✅ | Room DB | ✅ |
 | Web (JS) | ✅ | Remote API | ❌ |
 | Telegram Mini App | ✅ | Remote API | ❌ |
 
-## Документация
+## Documentation
 
-> **Для AI-агентов**: начните с [AGENTS.md](AGENTS.md)
+> **For AI agents**: start with [AGENTS.md](AGENTS.md)
 
-| Документ | Описание |
-|----------|----------|
-| [AGENTS.md](AGENTS.md) | Быстрый старт для AI-агентов |
-| [docs/ai/CONTEXT.md](docs/ai/CONTEXT.md) | Контекст проекта |
-| [docs/ai/CONTRIBUTING.md](docs/ai/CONTRIBUTING.md) | Инструкции для разработки |
-| [docs/GLOSSARY.md](docs/GLOSSARY.md) | Глоссарий терминов |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Архитектура приложения |
-| [docs/MODULES.md](docs/MODULES.md) | Описание модулей |
-| [docs/DATA_FLOW.md](docs/DATA_FLOW.md) | Потоки данных и API |
-| [docs/FEATURES.md](docs/FEATURES.md) | Описание функционала |
-| [docs/features/](docs/features/) | Детальное описание фич |
+| Document | Description |
+|----------|-------------|
+| [AGENTS.md](AGENTS.md) | Quick start for AI agents |
+| [docs/ai/CONTEXT.md](docs/ai/CONTEXT.md) | Project context |
+| [docs/ai/CONTRIBUTING.md](docs/ai/CONTRIBUTING.md) | Development guidelines |
+| [docs/GLOSSARY.md](docs/GLOSSARY.md) | Glossary of terms |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Application architecture |
+| [docs/MODULES.md](docs/MODULES.md) | Module descriptions |
+| [docs/DATA_FLOW.md](docs/DATA_FLOW.md) | Data flows and API |
+| [docs/FEATURES.md](docs/FEATURES.md) | Feature descriptions |
+| [docs/features/](docs/features/) | Detailed feature documentation |
 
-## Структура модулей
+## Module Structure
 
 ```
 pws-core/
-├── domain/              # 🎯 Ядро: модели, use cases
-│   ├── lyric-format/    #    Парсинг текстов песен
-│   └── test-fixtures/   #    Тестовые данные
+├── domain/              # 🎯 Core: models, use cases
+│   ├── lyric-format/    #    Song lyrics parsing
+│   └── test-fixtures/   #    Test data
 ├── api/
-│   ├── contract/        # 📝 DTO для API
-│   ├── client/          # 🌐 Ktor HTTP клиент
-│   └── mapping/         # 🔄 DTO ↔ Domain маппинг
-├── features/            # 🎨 UI экраны (Compose)
+│   ├── contract/        # 📝 API DTOs
+│   ├── client/          # 🌐 Ktor HTTP client
+│   └── mapping/         # 🔄 DTO ↔ Domain mapping
+├── features/            # 🎨 UI screens (Compose)
 ├── core/
-│   ├── navigation/      # 🧭 Навигация (Voyager)
-│   └── ui/              # 🎨 Общие UI компоненты
+│   ├── navigation/      # 🧭 Navigation (Voyager)
+│   └── ui/              # 🎨 Shared UI components
 ├── data/
 │   ├── db-room/         # 💾 Room Database
-│   └── repo-room/       # 💾 Локальные репозитории
-└── backup/              # 📦 Бэкап/восстановление
+│   └── repo-room/       # 💾 Local repositories
+└── backup/              # 📦 Backup/restore
 ```
 
-## Технологии
+## Technologies
 
 - **Kotlin Multiplatform** 2.x
 - **Compose Multiplatform** (UI)
-- **Voyager** (навигация)
+- **Voyager** (navigation)
 - **Koin** (DI)
 - **Ktor** (HTTP)
-- **Room** (локальная БД)
-- **kotlinx.serialization** (сериализация)
-- **Kotest** (тесты)
+- **Room** (local DB)
+- **kotlinx.serialization** (serialization)
+- **Kotest** (testing)
 
 ## Development
 

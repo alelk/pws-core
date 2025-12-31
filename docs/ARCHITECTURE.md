@@ -1,8 +1,8 @@
-# Архитектура PWS Core
+# PWS Core Architecture
 
-## Обзор
+## Overview
 
-PWS Core использует **Clean Architecture** с четким разделением на слои:
+PWS Core uses **Clean Architecture** with clear layer separation:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -40,25 +40,25 @@ PWS Core использует **Clean Architecture** с четким разде�
 
 ## Dependency Injection (Koin)
 
-Приложение использует Koin для DI. Репозитории подключаются в зависимости от платформы:
+The application uses Koin for DI. Repositories are connected depending on the platform:
 
 ```kotlin
-// Для Android/iOS (локальная БД)
+// For Android/iOS (local DB)
 val localModule = module {
     single<SongReadRepository> { RoomSongReadRepository(get()) }
 }
 
-// Для Web/TG Mini App (remote API)
+// For Web/TG Mini App (remote API)
 val remoteModule = module {
     single<SongReadRepository> { RemoteSongReadRepository(get()) }
 }
 ```
 
-Use Cases получают репозитории через DI и не знают о реализации.
+Use Cases receive repositories through DI and are unaware of the implementation.
 
-## Потоки данных
+## Data Flows
 
-### Чтение данных (Query)
+### Reading Data (Query)
 
 ```
 User Action
@@ -72,7 +72,7 @@ User Action
     └──────────────────┴──────────── Flow<Data> ─────────────┘
 ```
 
-### Запись данных (Command)
+### Writing Data (Command)
 
 ```
 User Action
@@ -88,13 +88,13 @@ User Action
                  └───────────┘                       └──────────┘
 ```
 
-## Навигация (Voyager)
+## Navigation (Voyager)
 
-Используется Voyager для multiplatform навигации.
+Voyager is used for multiplatform navigation.
 
 ### SharedScreens
 
-Определены в `core/navigation`:
+Defined in `core/navigation`:
 
 ```kotlin
 // SharedScreens.kt
@@ -110,7 +110,7 @@ sealed interface SharedScreen {
 
 ### Screen Implementation
 
-Каждый screen в `features` модуле:
+Each screen in the `features` module:
 
 ```kotlin
 class SongScreen(private val songId: Long) : Screen {
@@ -122,11 +122,11 @@ class SongScreen(private val songId: Long) : Screen {
 }
 ```
 
-## Реактивность
+## Reactivity
 
-### Flow для данных
+### Flow for Data
 
-Observe репозитории возвращают `Flow` для реактивного обновления:
+Observe repositories return `Flow` for reactive updates:
 
 ```kotlin
 interface SongObserveRepository {
@@ -135,7 +135,7 @@ interface SongObserveRepository {
 }
 ```
 
-### StateFlow в ViewModel
+### StateFlow in ViewModel
 
 ```kotlin
 class SongViewModel(
@@ -156,70 +156,70 @@ class SongViewModel(
 }
 ```
 
-## Модульная структура
+## Module Structure
 
 ```
 pws-core/
 │
-├── domain/                      # Ядро приложения
+├── domain/                      # Application core
 │   │   ├── song/
 │   │   │   ├── model/           # SongDetail, SongSummary, etc.
 │   │   │   ├── repository/      # SongReadRepository, SongWriteRepository
 │   │   │   ├── usecase/         # GetSongDetailUseCase, SearchSongsUseCase, etc.
-│   │   │   ├── command/         # Commands для записи
-│   │   │   └── query/           # Queries для чтения
+│   │   │   ├── command/         # Commands for writing
+│   │   │   └── query/           # Queries for reading
 │   │   ├── book/
 │   │   ├── tag/
 │   │   ├── favorite/
 │   │   ├── history/
 │   │   ├── search/
 │   │   └── ...
-│   ├── domain-test-fixtures/    # Генераторы тестовых данных и тестовые утилиты
-│   └── lyric-format/            # Парсинг текстов песен
+│   ├── domain-test-fixtures/    # Test data generators and test utilities
+│   └── lyric-format/            # Song lyrics parsing
 │
 ├── api/
-│   ├── contract/                # API DTO (Serializable), Api resources
-│   ├── client/                  # Ktor клиент
-│   │   └── repository/          # Remote репозитории
-│   └── mapping/                 # DTO ↔ Domain маппинг
+│   ├── contract/                # API DTOs (Serializable), Api resources
+│   ├── client/                  # Ktor client
+│   │   └── repository/          # Remote repositories
+│   └── mapping/                 # DTO ↔ Domain mapping
 │
 ├── features/                    # UI Layer
-│   ├── app/                     # App-wide компоненты
-│   ├── search/                  # Поиск
-│   ├── song/                    # Экран песни
-│   ├── book/books/              # Сборники
-│   ├── favorites/               # Избранное
-│   ├── history/                 # История
-│   ├── tags/                    # Теги
-│   ├── components/              # Переиспользуемые компоненты
-│   ├── theme/                   # Тема и стили
-│   └── di/                      # Koin модули
+│   ├── app/                     # App-wide components
+│   ├── search/                  # Search
+│   ├── song/                    # Song screen
+│   ├── book/books/              # Songbooks
+│   ├── favorites/               # Favorites
+│   ├── history/                 # History
+│   ├── tags/                    # Tags
+│   ├── components/              # Reusable components
+│   ├── theme/                   # Theme and styles
+│   └── di/                      # Koin modules
 │
 ├── core/
-│   ├── navigation/              # Навигационные экраны
-│   └── ui/                      # Общие UI компоненты
+│   ├── navigation/              # Navigation screens
+│   └── ui/                      # Shared UI components
 │
 ├── data/
 │   ├── db-room/                 # Room Database
-│   └── repo-room/               # Local репозитории
+│   └── repo-room/               # Local repositories
 │
 └── backup/                      # Backup/Restore
 ```
 
-## Тестирование
+## Testing
 
-### Уровни тестирования
+### Testing Levels
 
-| Модуль     | Тип тестов  | Инструменты              |
+| Module     | Test Type   | Tools                    |
 |------------|-------------|--------------------------|
 | domain     | Unit tests  | Kotest                   |
 | api/client | Integration | Kotest + Ktor MockEngine |
 | features   | UI tests    | Compose Test             |
 | db-room    | Unit tests  | Robolectric              |
 
-### Тестовые фикстуры
+### Test Fixtures
 
-Модуль `domain-test-fixtures` содержит генераторы для тестовых данных:
+The `domain-test-fixtures` module contains generators for test data:
 
 ```kotlin
 fun Arb.Companion.songSummary(
@@ -236,22 +236,22 @@ fun Arb.Companion.songSummary(
 
 ---
 
-## Синхронизация данных
+## Data Synchronization
 
-Мобильные приложения работают в режиме **offline-first** с синхронизацией при появлении сети.
+Mobile applications operate in **offline-first** mode with synchronization when network becomes available.
 
-Подробнее см. [SYNC.md](SYNC.md)
+See [SYNC.md](SYNC.md) for details.
 
-### Ключевые компоненты
+### Key Components
 
-- **SyncManager** — координирует синхронизацию всех сущностей
-- **PendingChanges** — очередь изменений, ожидающих отправки
-- **ConflictResolver** — разрешение конфликтов при merge
-- **ConnectivityObserver** — отслеживание состояния сети
+- **SyncManager** — coordinates synchronization of all entities
+- **PendingChanges** — queue of changes waiting to be sent
+- **ConflictResolver** — conflict resolution during merge
+- **ConnectivityObserver** — network state monitoring
 
-### Синхронизируемые сущности
+### Synchronized Entities
 
-| Сущность       | Стратегия конфликтов    |
+| Entity         | Conflict Strategy       |
 |----------------|-------------------------|
 | Favorites      | Last-Write-Wins         |
 | History        | Merge (append-only)     |

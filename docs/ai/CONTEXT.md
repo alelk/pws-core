@@ -1,30 +1,30 @@
-# PWS Core - Контекст для AI
+# PWS Core - Context for AI
 
-## О проекте
+## About the Project
 
-**PWS (Praise & Worship Songs)** — мультиплатформенное приложение "Христианский песенник".
-Позволяет искать, просматривать и управлять песнями из различных сборников.
+**PWS (Praise & Worship Songs)** — a multiplatform "Christian Songbook" application.
+Allows searching, viewing, and managing songs from various songbooks.
 
-### Связанные репозитории
+### Related Repositories
 
-| Репозиторий         | Описание                       | Технологии                    |
+| Repository          | Description                    | Technologies                  |
 |---------------------|--------------------------------|-------------------------------|
-| **pws-core** (этот) | Мультиплатформенная библиотека | Kotlin Multiplatform, Compose |
-| **pws-server**      | Backend API сервер             | Ktor, PostgreSQL, Exposed     |
-| **pws-android**     | Android приложение             | Android                       |
+| **pws-core** (this) | Multiplatform library          | Kotlin Multiplatform, Compose |
+| **pws-server**      | Backend API server             | Ktor, PostgreSQL, Exposed     |
+| **pws-android**     | Android application            | Android                       |
 
-> **Важно**: Модули `:api:contract` и `:api:mapping` должны соответствовать API контракту pws-server.
+> **Important**: Modules `:api:contract` and `:api:mapping` must match the pws-server API contract.
 
-## Платформы
+## Platforms
 
-| Платформа             | Источник данных   | Авторизация | Оффлайн |
-|-----------------------|-------------------|-------------|---------|
-| Android/iOS           | Локальная Room DB | Опционально | Да      |
-| Web/Telegram Mini App | Remote API        | Да          | Нет     |
+| Platform              | Data Source       | Authorization | Offline |
+|-----------------------|-------------------|---------------|---------|
+| Android/iOS           | Local Room DB     | Optional      | Yes     |
+| Web/Telegram Mini App | Remote API        | Yes           | No      |
 
-## Архитектурный паттерн
+## Architectural Pattern
 
-**Clean Architecture** с Use Cases, которые абстрагируют источник данных.
+**Clean Architecture** with Use Cases that abstract the data source.
 
 ```
 UI (Compose) → ViewModel → UseCase → Repository Interface
@@ -32,58 +32,58 @@ UI (Compose) → ViewModel → UseCase → Repository Interface
                               LocalRepository OR RemoteRepository
 ```
 
-## Технологический стек
+## Technology Stack
 
-| Категория    | Технология            |
+| Category     | Technology            |
 |--------------|-----------------------|
-| Язык         | Kotlin Multiplatform  |
+| Language     | Kotlin Multiplatform  |
 | UI           | Compose Multiplatform |
-| Навигация    | Voyager               |
+| Navigation   | Voyager               |
 | DI           | Koin                  |
-| HTTP клиент  | Ktor                  |
-| Сериализация | kotlinx.serialization |
-| Тестирование | Kotest                |
-| Локальная БД | Room (Android/iOS)    |
+| HTTP client  | Ktor                  |
+| Serialization| kotlinx.serialization |
+| Testing      | Kotest                |
+| Local DB     | Room (Android/iOS)    |
 
-## Структура модулей
+## Module Structure
 
 ```
 pws-core/
-├── domain/              # Модели, Use Cases, Repository interfaces
-│   ├── lyric-format/    # Парсинг текстов песен
-│   └── test-fixtures/   # Тестовые данные
+├── domain/              # Models, Use Cases, Repository interfaces
+│   ├── lyric-format/    # Song lyrics parsing
+│   └── test-fixtures/   # Test data
 ├── api/
-│   ├── contract/        # DTO для API
-│   ├── client/          # Ktor клиент, Remote репозитории
-│   └── mapping/         # Маппинг DTO ↔ Domain models
-├── features/            # UI компоненты (Compose + Voyager)
+│   ├── contract/        # API DTOs
+│   ├── client/          # Ktor client, Remote repositories
+│   └── mapping/         # DTO ↔ Domain models mapping
+├── features/            # UI components (Compose + Voyager)
 ├── core/
-│   ├── navigation/      # Навигация (SharedScreens)
-│   └── ui/              # Общие UI компоненты
+│   ├── navigation/      # Navigation (SharedScreens)
+│   └── ui/              # Shared UI components
 ├── data/
-│   ├── db-room/         # Room база данных
-│   └── repo-room/       # Local репозитории на Room
-└── backup/              # Бэкап/восстановление данных
+│   ├── db-room/         # Room database
+│   └── repo-room/       # Local repositories on Room
+└── backup/              # Backup/restore data
 ```
 
-## Ключевые сущности (Domain)
+## Key Entities (Domain)
 
-| Сущность        | Описание                                    |
+| Entity          | Description                                 |
 |-----------------|---------------------------------------------|
-| `Song`          | Песня с текстом и метаданными               |
-| `SongDetail`    | Полные данные песни с тегами и ссылками     |
-| `SongSummary`   | Краткая информация о песне для списков      |
-| `Book`          | Сборник песен                               |
-| `SongNumber`    | Связь песни со сборником (номер в сборнике) |
-| `Tag`           | Категория/тег песни                         |
-| `SongTag`       | Связь песни с тегом                         |
-| `Favorite`      | Избранная песня пользователя                |
-| `History`       | Запись истории просмотра                    |
-| `SongReference` | Ссылки на похожие песни                     |
+| `Song`          | Song with lyrics and metadata               |
+| `SongDetail`    | Full song data with tags and references     |
+| `SongSummary`   | Brief song info for lists                   |
+| `Book`          | Songbook                                    |
+| `SongNumber`    | Song-to-songbook link (number in songbook)  |
+| `Tag`           | Song category/tag                           |
+| `SongTag`       | Song-to-tag link                            |
+| `Favorite`      | User's favorite song                        |
+| `History`       | View history record                         |
+| `SongReference` | Links to similar songs                      |
 
-## Организация Domain модуля
+## Domain Module Organization
 
-Каждая сущность организована в отдельный пакет:
+Each entity is organized in a separate package:
 
 ```
 domain/src/commonMain/kotlin/io/github/alelk/pws/domain/
@@ -91,8 +91,8 @@ domain/src/commonMain/kotlin/io/github/alelk/pws/domain/
 │   ├── model/           # SongDetail, SongSummary, etc.
 │   ├── repository/      # SongReadRepository, SongWriteRepository
 │   ├── usecase/         # GetSongDetailUseCase, SearchSongsUseCase, etc.
-│   ├── command/         # Commands для записи
-│   └── query/           # Queries для чтения
+│   ├── command/         # Commands for writing
+│   └── query/           # Queries for reading
 ├── book/
 ├── tag/
 ├── favorite/
@@ -103,7 +103,7 @@ domain/src/commonMain/kotlin/io/github/alelk/pws/domain/
 
 ## Naming Conventions
 
-| Тип               | Паттерн                                  | Пример                     |
+| Type              | Pattern                                  | Example                    |
 |-------------------|------------------------------------------|----------------------------|
 | Use Case          | `{Action}{Entity}UseCase`                | `GetSongDetailUseCase`     |
 | Repository        | `{Entity}{Read/Write/Observe}Repository` | `SongReadRepository`       |
@@ -111,14 +111,14 @@ domain/src/commonMain/kotlin/io/github/alelk/pws/domain/
 | Screen            | `{Feature}Screen`                        | `SongScreen`               |
 | Remote Repository | `Remote{Entity}{Read/Write}Repository`   | `RemoteSongReadRepository` |
 
-## Пакетные имена
+## Package Names
 
 - Domain: `io.github.alelk.pws.domain`
 - Features: `io.github.alelk.pws.features`
 - API Client: `io.github.alelk.pws.api`
 - Navigation: `io.github.alelk.pws.core.navigation`
 
-## Зависимости между модулями
+## Module Dependencies
 
 ```mermaid
 graph TD
@@ -135,21 +135,20 @@ graph TD
 
 ```
 
-## Принципы разработки
+## Development Principles
 
-1. **Domain-first**: Сначала определяем модели и use cases в domain
-2. **Platform-agnostic**: Domain модуль не зависит от платформы
-3. **Repository Pattern**: Use cases работают через interfaces, не зная о реализации
-4. **Reactive**: Используем Flow для реактивных данных
-5. **Offline-first**: Мобильные приложения работают без сети, синхронизация при появлении. Авторизация опционально. Если пользователь не авторизован, то синхронизации не происходит.
+1. **Domain-first**: First define models and use cases in domain
+2. **Platform-agnostic**: Domain module doesn't depend on platform
+3. **Repository Pattern**: Use cases work through interfaces, unaware of implementation
+4. **Reactive**: Use Flow for reactive data
+5. **Offline-first**: Mobile apps work without network, sync when available. Authorization is optional. If user is not authorized, no synchronization occurs.
 
-## Синхронизация (Mobile)
+## Synchronization (Mobile)
 
-Мобильные приложения используют **offline-first** подход:
+Mobile applications use **offline-first** approach:
 
-- Все изменения сначала сохраняются локально
-- При появлении сети — синхронизация с сервером
-- Конфликты разрешаются автоматически (Last-Write-Wins или Merge)
+- All changes are first saved locally
+- When network appears — synchronization with server
+- Conflicts are resolved automatically (Last-Write-Wins or Merge)
 
-Подробнее: [SYNC.md](../SYNC.md)
-
+Details: [SYNC.md](../SYNC.md)

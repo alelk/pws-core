@@ -1,27 +1,27 @@
-# Избранное
+# Favorites
 
-## Описание
+## Description
 
-Пользователь может добавлять песни в избранное для быстрого доступа.
+User can add songs to favorites for quick access.
 
-## Поведение
+## Behavior
 
-### Добавление в избранное
-- Кнопка ❤️ на экране песни
-- Toggle: повторное нажатие убирает из избранного
-- Сохраняется timestamp добавления
+### Adding to Favorites
+- ❤️ button on song screen
+- Toggle: tapping again removes from favorites
+- Addition timestamp is saved
 
-### Список избранного
-- Отдельный экран со списком избранных песен
-- Сортировка: по умолчанию новые сверху. Но возможна пользовательская сортировка (из меню), например по имени.
-- Действия: просмотр песни, удаление из избранного
+### Favorites List
+- Separate screen with list of favorite songs
+- Sorting: newest first by default. But custom sorting is possible (from menu), e.g., by name.
+- Actions: view song, remove from favorites
 
-## Платформенные различия
+## Platform Differences
 
-| Платформа       | Хранение          | Синхронизация                                                                |
+| Platform        | Storage           | Synchronization                                                              |
 |-----------------|-------------------|------------------------------------------------------------------------------|
-| Android/iOS     | Локальная Room DB | Да, только если пользователь авторизован и есть интернет.                    |
-| Web/TG Mini App | Backend API       | Да (привязано к аккаунту). Без авторизации функционал избранного недоступен. |
+| Android/iOS     | Local Room DB     | Yes, only if user is authorized and has internet.                            |
+| Web/TG Mini App | Backend API       | Yes (tied to account). Without authorization, favorites feature is unavailable. |
 
 ## Use Cases
 
@@ -36,7 +36,7 @@ class ToggleFavoriteUseCase(
 }
 ```
 
-В избранное добавляется песня с привязкой к сборнику (`SongNumberId`, а не просто `SongId`)
+Song is added to favorites with songbook binding (`SongNumberId`, not just `SongId`)
 
 ### ObserveFavoritesUseCase
 
@@ -60,7 +60,7 @@ class ObserveIsFavoriteUseCase(
 }
 ```
 
-## Модели
+## Models
 
 ### Favorite
 ```kotlin
@@ -109,23 +109,23 @@ fun FavoritesList(
 ┌─────────────────────────────────────────────┐
 │            FavoritesScreen                  │
 ├─────────────────────────────────────────────┤
-│  ← Избранное                                │
+│  ← Favorites                                │
 ├─────────────────────────────────────────────┤
 │  ┌───────────────────────────────────────┐  │
-│  │ БП 45 - Благословен Господь           │  │
+│  │ GS 45 - Blessed Be the Lord           │  │
 │  └───────────────────────────────────────┘  │
 │  ┌───────────────────────────────────────┐  │
-│  │ ПП 12 - Благодать                     │  │
+│  │ SV 12 - Grace                         │  │
 │  └───────────────────────────────────────┘  │
 │  ┌───────────────────────────────────────┐  │
-│  │ ИП 7 - Великий Бог                    │  │
+│  │ HP 7 - Great God                      │  │
 │  └───────────────────────────────────────┘  │
 └─────────────────────────────────────────────┘
 ```
 
-- Удаление происходит из контекстного меню или смахиванием влево.
+- Deletion is done via context menu or swipe left.
 
-## Связанные файлы
+## Related Files
 
 - `domain/favorite/model/Favorite.kt`
 - `domain/favorite/repository/FavoriteReadRepository.kt`
@@ -135,4 +135,3 @@ fun FavoritesList(
 - `features/favorites/FavoritesScreen.kt`
 - `features/favorites/FavoritesScreenModel.kt`
 - `features/favorites/FavoritesUiState.kt`
-

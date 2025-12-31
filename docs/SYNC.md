@@ -1,23 +1,23 @@
-# Синхронизация данных
+# Data Synchronization
 
-Данный функционал еще не реализован.
+This functionality is not yet implemented.
 
-## Обзор
+## Overview
 
-Мобильные приложения (Android/iOS) работают в режиме **offline-first**:
-- Основной источник данных — локальная Room DB
-- Синхронизация с backend происходит при наличии сети
-- Пользователь может работать без интернета
+Mobile applications (Android/iOS) operate in **offline-first** mode:
+- Primary data source — local Room DB
+- Synchronization with backend occurs when network is available
+- User can work without internet
 
-## Типы данных по синхронизации
+## Data Types by Synchronization
 
-| Тип                | Данные                                    | Направление     | Приоритет |
-|--------------------|-------------------------------------------|-----------------|-----------|
-| **Read-only**      | Песни, Сборники, Глобальные теги          | Server → Client | Низкий    |
-| **User data**      | Избранное, История, Пользовательские теги | Bidirectional   | Высокий   |
-| **User overrides** | Переопределения глобальных песен и тегов  | Bidirectional   | Высокий   |
+| Type               | Data                                      | Direction       | Priority |
+|--------------------|-------------------------------------------|-----------------|----------|
+| **Read-only**      | Songs, Songbooks, Global tags             | Server → Client | Low      |
+| **User data**      | Favorites, History, User tags             | Bidirectional   | High     |
+| **User overrides** | Overrides for global songs and tags       | Bidirectional   | High     |
 
-## Архитектура синхронизации
+## Synchronization Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -50,23 +50,23 @@
 
 ## Sync Manager
 
-Центральный компонент синхронизации:
+Central synchronization component:
 
 ```kotlin
 interface SyncManager {
-    // Состояние синхронизации
+    // Synchronization state
     val syncState: StateFlow<SyncState>
     
-    // Запуск полной синхронизации
+    // Start full synchronization
     suspend fun syncAll(): SyncResult
     
-    // Синхронизация конкретной сущности
+    // Synchronize specific entity
     suspend fun sync(entity: SyncableEntity): SyncResult
     
-    // Отслеживание pending changes
+    // Track pending changes
     val pendingChangesCount: StateFlow<Int>
     
-    // Принудительная отправка pending changes
+    // Force push pending changes
     suspend fun pushPendingChanges(): SyncResult
 }
 
@@ -86,9 +86,9 @@ enum class SyncableEntity {
 }
 ```
 
-## Pending Changes (Очередь изменений)
+## Pending Changes (Change Queue)
 
-### Структура
+### Structure
 
 ```kotlin
 @Entity(tableName = "pending_changes")
@@ -147,23 +147,23 @@ enum class ChangeOperation {
 
 ## Conflict Resolution
 
-### Стратегии разрешения конфликтов
+### Conflict Resolution Strategies
 
-| Сущность       | Стратегия               | Описание                                  |
-|----------------|-------------------------|-------------------------------------------|
-| Favorites      | Last-Write-Wins         | Последнее изменение побеждает             |
-| History        | Merge                   | Объединяем записи, дедупликация по songId |
-| User Tags      | Last-Write-Wins + Merge | Новые теги добавляются, изменённые — LWW  |
-| User Overrides | Last-Write-Wins         | Последнее изменение побеждает             |
+| Entity         | Strategy                | Description                                   |
+|----------------|-------------------------|-----------------------------------------------|
+| Favorites      | Last-Write-Wins         | Last change wins                              |
+| History        | Merge                   | Merge records, deduplicate by songId          |
+| User Tags      | Last-Write-Wins + Merge | New tags are added, modified ones — LWW       |
+| User Overrides | Last-Write-Wins         | Last change wins                              |
 
-### Реализация
+### Implementation
 
 ```kotlin
 interface ConflictResolver<T> {
     suspend fun resolve(
         local: T,
         remote: T,
-        base: T?  // последняя синхронизированная версия
+        base: T?  // last synchronized version
     ): ConflictResolution<T>
 }
 
@@ -174,7 +174,7 @@ sealed class ConflictResolution<T> {
 }
 ```
 
-### Пример: Favorites Conflict Resolver
+### Example: Favorites Conflict Resolver
 
 ```kotlin
 class FavoritesConflictResolver : ConflictResolver<List<Favorite>> {
@@ -183,12 +183,12 @@ class FavoritesConflictResolver : ConflictResolver<List<Favorite>> {
         remote: List<Favorite>,
         base: List<Favorite>?
     ): ConflictResolution<List<Favorite>> {
-        // Находим добавленные локально (есть в local, нет в base)
+        // Find locally added (in local, not in base)
         val localAdded = local.filter { fav -> 
             base?.none { it.songId == fav.songId } ?: true 
         }
         
-        // Находим удалённые локально (есть в base, нет в local)
+        // Find locally removed (in base, not in local)
         val localRemoved = base?.filter { baseFav ->
             local.none { it.songId == baseFav.songId }
         } ?: emptyList()
@@ -205,7 +205,7 @@ class FavoritesConflictResolver : ConflictResolver<List<Favorite>> {
 
 ## Sync Timestamps
 
-Каждая синхронизируемая сущность имеет метаданные:
+Each synchronizable entity has metadata:
 
 ```kotlin
 @Entity(tableName = "sync_metadata")
@@ -213,7 +213,7 @@ data class SyncMetadata(
     @PrimaryKey
     val entityType: SyncableEntity,
     val lastSyncedAt: Instant?,
-    val lastServerVersion: Long?,  // для optimistic locking
+    val lastServerVersion: Long?,  // for optimistic locking
     val syncStatus: SyncStatus
 )
 
@@ -240,7 +240,7 @@ enum class ConnectionType {
     UNKNOWN
 }
 
-// Реализация для Android
+// Android implementation
 class AndroidConnectivityObserver(
     private val context: Context
 ) : ConnectivityObserver {
@@ -266,18 +266,18 @@ class AndroidConnectivityObserver(
 }
 ```
 
-## Trigger синхронизации
+## Sync Triggers
 
-### Автоматические триггеры
+### Automatic Triggers
 
-| Триггер               | Действие                                |
+| Trigger               | Action                                  |
 |-----------------------|-----------------------------------------|
-| Сеть появилась        | `pushPendingChanges()`                  |
-| App foreground        | `syncAll()` если прошло > 5 мин         |
+| Network available     | `pushPendingChanges()`                  |
+| App foreground        | `syncAll()` if > 5 min passed           |
 | Pull-to-refresh       | `syncAll()`                             |
-| Background (periodic) | `syncAll()` каждые 15 мин (WorkManager) |
+| Background (periodic) | `syncAll()` every 15 min (WorkManager)  |
 
-### Реализация Auto-Sync
+### Auto-Sync Implementation
 
 ```kotlin
 class AutoSyncManager(
@@ -297,7 +297,7 @@ class AutoSyncManager(
 }
 ```
 
-## Sync для конкретных сущностей
+## Sync for Specific Entities
 
 ### Favorites Sync
 
@@ -371,9 +371,9 @@ class HistorySyncService(
 }
 ```
 
-## UI индикация
+## UI Indication
 
-### Sync Status в UI
+### Sync Status in UI
 
 ```kotlin
 @Composable
@@ -385,16 +385,16 @@ fun SyncStatusIndicator(
         when (syncState) {
             is SyncState.Syncing -> {
                 CircularProgressIndicator(modifier = Modifier.size(16.dp))
-                Text("Синхронизация...")
+                Text("Syncing...")
             }
             is SyncState.Error -> {
                 Icon(Icons.Default.CloudOff, tint = Color.Red)
-                Text("Ошибка синхронизации")
+                Text("Sync error")
             }
             is SyncState.Idle -> {
                 if (pendingCount > 0) {
                     Icon(Icons.Default.CloudUpload)
-                    Text("$pendingCount изменений ожидают отправки")
+                    Text("$pendingCount changes pending upload")
                 }
             }
             is SyncState.Success -> {
@@ -416,7 +416,7 @@ fun OfflineBanner(isConnected: Boolean) {
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = "Нет подключения к сети. Изменения сохранены локально.",
+                text = "No network connection. Changes saved locally.",
                 modifier = Modifier.padding(8.dp)
             )
         }
@@ -424,7 +424,7 @@ fun OfflineBanner(isConnected: Boolean) {
 }
 ```
 
-## Модули и зависимости
+## Modules and Dependencies
 
 ```
 :sync/
@@ -435,7 +435,7 @@ fun OfflineBanner(isConnected: Boolean) {
 └── di/                      # Koin modules
 ```
 
-### Граф зависимостей
+### Dependency Graph
 
 ```mermaid
 graph TD
@@ -490,7 +490,7 @@ class SyncWorker(
 }
 ```
 
-## Связанные файлы
+## Related Files
 
 - `sync/core/SyncManager.kt`
 - `sync/core/ConflictResolver.kt`
@@ -499,4 +499,3 @@ class SyncWorker(
 - `sync/history/HistorySyncService.kt`
 - `data/db-room/dao/PendingChangesDao.kt`
 - `data/db-room/dao/SyncMetadataDao.kt`
-

@@ -1,15 +1,15 @@
-# История просмотров
+# View History
 
-## Описание
+## Description
 
-Автоматическое отслеживание просмотренных песен.
+Automatic tracking of viewed songs.
 
-## Правила добавления
+## Addition Rules
 
-1. Песня открыта на экране
-2. Прошло **10 секунд** просмотра
-3. Песня добавляется в историю
-4. При повторном открытии — обновляется timestamp
+1. Song is opened on screen
+2. **10 seconds** of viewing passed
+3. Song is added to history
+4. On reopening — timestamp is updated
 
 ## Use Cases
 
@@ -45,7 +45,7 @@ class ClearHistoryUseCase(
 }
 ```
 
-## Модели
+## Models
 
 ### HistoryEntry
 ```kotlin
@@ -55,7 +55,7 @@ data class HistoryEntry(
 )
 ```
 
-## Реализация таймера в ViewModel
+## Timer Implementation in ViewModel
 
 ```kotlin
 class SongViewModel(
@@ -65,12 +65,12 @@ class SongViewModel(
     private var historyJob: Job? = null
     
     fun onSongOpened(songId: Long) {
-        // Отменяем предыдущий таймер
+        // Cancel previous timer
         historyJob?.cancel()
         
-        // Запускаем новый таймер на 10 секунд
+        // Start new 10 second timer
         historyJob = viewModelScope.launch {
-            delay(10_000) // 10 секунд
+            delay(10_000) // 10 seconds
             recordSongView(songId)
         }
     }
@@ -86,20 +86,20 @@ class SongViewModel(
 }
 ```
 
-## Альтернатива: LaunchedEffect
+## Alternative: LaunchedEffect
 
 ```kotlin
 @Composable
 fun SongScreen(songId: Long) {
     val viewModel = koinViewModel<SongViewModel>()
     
-    // Таймер истории
+    // History timer
     LaunchedEffect(songId) {
         delay(10_000)
         viewModel.addToHistory(songId)
     }
     
-    // ... остальной UI
+    // ... rest of UI
 }
 ```
 
@@ -109,30 +109,30 @@ fun SongScreen(songId: Long) {
 ┌─────────────────────────────────────────────┐
 │             HistoryScreen                   │
 ├─────────────────────────────────────────────┤
-│  ← История                                  │
+│  ← History                                  │
 ├─────────────────────────────────────────────┤
-│  Сегодня                                    │
+│  Today                                      │
 │  ┌───────────────────────────────────────┐  │
-│  │ БП 45 - Благословен Господь           │  │
+│  │ GS 45 - Blessed Be the Lord           │  │
 │  │ 14:30                                 │  │
 │  └───────────────────────────────────────┘  │
 │  ┌───────────────────────────────────────┐  │
-│  │ ПП 12 - Благодать                     │  │
+│  │ SV 12 - Grace                         │  │
 │  │ 14:15                                 │  │
 │  └───────────────────────────────────────┘  │
 │                                             │
-│  Вчера                                      │
+│  Yesterday                                  │
 │  ┌───────────────────────────────────────┐  │
-│  │ ИП 7 - Великий Бог                    │  │
+│  │ HP 7 - Great God                      │  │
 │  │ 20:45                                 │  │
 │  └───────────────────────────────────────┘  │
 └─────────────────────────────────────────────┘
 ```
 
-- Удаление происходит из контекстного меню или смахиванием влево.
-- Так же в меню должен быть пункт "Удалить все".
+- Deletion is done via context menu or swipe left.
+- Menu should also have "Delete all" option.
 
-## Связанные файлы
+## Related Files
 
 - `domain/history/model/HistoryEntry.kt`
 - `domain/history/repository/HistoryObserveRepository.kt`
@@ -141,4 +141,3 @@ fun SongScreen(songId: Long) {
 - `features/history/HistoryScreen.kt`
 - `features/history/HistoryScreenModel.kt`
 - `features/history/HistoryUiState.kt`
-

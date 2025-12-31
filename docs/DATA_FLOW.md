@@ -1,15 +1,15 @@
-# Потоки данных и API
+# Data Flows and API
 
-## Обзор
+## Overview
 
-PWS Core поддерживает два источника данных, выбираемых на уровне DI:
+PWS Core supports two data sources, selected at the DI level:
 
-| Платформа         | Data Source     | Модуль           |
-|-------------------|-----------------|------------------|
+| Platform          | Data Source     | Module            |
+|-------------------|-----------------|-------------------|
 | Android/iOS       | Room Database   | `:data:repo-room` |
 | Web/TG Mini App   | Remote API      | `:api:client`     |
 
-## Архитектура потоков данных
+## Data Flow Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -60,30 +60,30 @@ PWS Core поддерживает два источника данных, выб
 └─────────────────────────┘   └───────────────────────────────┘
 ```
 
-## Реактивный поток данных (Flow)
+## Reactive Data Flow (Flow)
 
-### Подписка на данные
+### Data Subscription
 
 ```kotlin
-// Observe репозиторий возвращает Flow
+// Observe repository returns Flow
 interface SongObserveRepository {
     fun observe(id: SongId): Flow<SongDetail?>
 }
 
-// ViewModel подписывается
+// ViewModel subscribes
 class SongViewModel(observeSong: ObserveSongUseCase) : ViewModel() {
     val song: StateFlow<SongDetail?> = observeSong(songId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 }
 
-// UI подписывается на StateFlow
+// UI subscribes to StateFlow
 @Composable
 fun SongScreen() {
     val song by viewModel.song.collectAsState()
 }
 ```
 
-### Обновление данных
+### Data Updates
 
 ```
 User Action (Add Favorite)
@@ -109,62 +109,62 @@ User Action (Add Favorite)
 
 ## API Endpoints (Remote)
 
-PWS Server предоставляет REST API с разделением на три категории. Клиент использует Ktor с Resources.
+PWS Server provides REST API divided into three categories. The client uses Ktor with Resources.
 
-### Глобальные endpoints (read-only)
+### Global Endpoints (read-only)
 
-В целевой картине — публичные данные, доступные без авторизации или с опциональной авторизацией.
-Но в текущей версии, пока не реализовано приложение web, авторизация обязательна.
+In the target architecture — public data available without authorization or with optional authorization.
+However, in the current version, until the web application is implemented, authorization is required.
 
-| Метод  | Endpoint                      | Описание                                           |
+| Method | Endpoint                      | Description                                        |
 |--------|-------------------------------|----------------------------------------------------|
-| GET    | `/v1/books`                   | Список сборников (поиск по фильтрам с сортировкой) |
-| GET    | `/v1/books/{id}`              | Детали сборника                                    |
-| GET    | `/v1/books/{id}/songs`        | Песни сборника                                     |
-| GET    | `/v1/songs`                   | Список песен (поиск по фильтрам с сортировкой)     |
-| GET    | `/v1/songs/{id}`              | Детали песни                                       |
-| GET    | `/v1/tags`                    | Список тегов                                       |
-| GET    | `/v1/tags/{id}`               | Детали тега                                        |
-| GET    | `/v1/tags/{id}/songs`         | Песни по тегу                                      |
+| GET    | `/v1/books`                   | List of songbooks (search with filters and sorting)|
+| GET    | `/v1/books/{id}`              | Songbook details                                   |
+| GET    | `/v1/books/{id}/songs`        | Songs in songbook                                  |
+| GET    | `/v1/songs`                   | List of songs (search with filters and sorting)    |
+| GET    | `/v1/songs/{id}`              | Song details                                       |
+| GET    | `/v1/tags`                    | List of tags                                       |
+| GET    | `/v1/tags/{id}`               | Tag details                                        |
+| GET    | `/v1/tags/{id}/songs`         | Songs by tag                                       |
 
-### Пользовательские endpoints (read-write)
+### User Endpoints (read-write)
 
-Данные авторизованного пользователя, требуют Bearer токен:
+Authenticated user data, requires Bearer token:
 
-| Метод  | Endpoint                      | Описание                                                                                                                       |
+| Method | Endpoint                      | Description                                                                                                                    |
 |--------|-------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
-| GET    | `/v1/user/books`              | Сборники (глобальные + пользовательские). Поддерживается поиск по фильтрам с сортировкой.                                      |
-| POST   | `/v1/user/books`              | Добавить пользовательский сборник.                                                                                             |
-| PUT    | `/v1/user/books/{id}`         | Изменить сборник. Доступно изменение только пользовательских сборников. Глобальный сборник редактировать нельзя.               |
-| GET    | `/v1/user/favorites`          | Избранное пользователя                                                                                                         |
-| PUT    | `/v1/user/favorites/{songId}` | Добавить в избранное                                                                                                           |
-| DELETE | `/v1/user/favorites/{songId}` | Удалить из избранного                                                                                                          |
-| GET    | `/v1/user/history`            | История просмотров                                                                                                             |
-| GET    | `/v1/user/tags`               | Теги (глобальные + пользовательские).                                                                                          |
-| POST   | `/v1/user/tags`               | Создать пользовательский тег                                                                                                   |
-| PUT    | `/v1/user/tags/{id}`          | Обновить тег. Если тег глобальный, то создается пользовательский override. Сам глобальный тег не меняется.                     |
-| DELETE | `/v1/user/tags/{id}`          | Удалить тег. Если тег глобальный, то создается пользовательский override (тег помечается удаленным для текущего пользователя). |
+| GET    | `/v1/user/books`              | Songbooks (global + user). Supports search with filters and sorting.                                                           |
+| POST   | `/v1/user/books`              | Add user songbook.                                                                                                             |
+| PUT    | `/v1/user/books/{id}`         | Edit songbook. Only user songbooks can be edited. Global songbooks cannot be modified.                                         |
+| GET    | `/v1/user/favorites`          | User's favorites                                                                                                               |
+| PUT    | `/v1/user/favorites/{songId}` | Add to favorites                                                                                                               |
+| DELETE | `/v1/user/favorites/{songId}` | Remove from favorites                                                                                                          |
+| GET    | `/v1/user/history`            | View history                                                                                                                   |
+| GET    | `/v1/user/tags`               | Tags (global + user).                                                                                                          |
+| POST   | `/v1/user/tags`               | Create user tag                                                                                                                |
+| PUT    | `/v1/user/tags/{id}`          | Update tag. If tag is global, a user override is created. The global tag itself is not changed.                                |
+| DELETE | `/v1/user/tags/{id}`          | Delete tag. If tag is global, a user override is created (tag is marked as deleted for the current user).                      |
 
-### Административные endpoints (read-write)
+### Administrative Endpoints (read-write)
 
-Управление глобальными данными, требуют роль администратора:
+Global data management, requires administrator role:
 
-| Метод  | Endpoint                      | Описание                        |
-|--------|-------------------------------|---------------------------------|
-| GET    | `/v1/admin/books`             | Список всех сборников           |
-| POST   | `/v1/admin/books`             | Создать сборник                 |
-| PUT    | `/v1/admin/books/{id}`        | Обновить сборник                |
-| DELETE | `/v1/admin/books/{id}`        | Удалить сборник                 |
-| GET    | `/v1/admin/songs`             | Список всех песен               |
-| POST   | `/v1/admin/songs`             | Создать песню                   |
-| PUT    | `/v1/admin/songs/{id}`        | Обновить песню                  |
-| DELETE | `/v1/admin/songs/{id}`        | Удалить песню                   |
-| GET    | `/v1/admin/tags`              | Список всех тегов               |
-| POST   | `/v1/admin/tags`              | Создать тег                     |
-| PUT    | `/v1/admin/tags/{id}`         | Обновить тег                    |
-| DELETE | `/v1/admin/tags/{id}`         | Удалить тег                     |
+| Method | Endpoint                      | Description              |
+|--------|-------------------------------|--------------------------|
+| GET    | `/v1/admin/books`             | List all songbooks       |
+| POST   | `/v1/admin/books`             | Create songbook          |
+| PUT    | `/v1/admin/books/{id}`        | Update songbook          |
+| DELETE | `/v1/admin/books/{id}`        | Delete songbook          |
+| GET    | `/v1/admin/songs`             | List all songs           |
+| POST   | `/v1/admin/songs`             | Create song              |
+| PUT    | `/v1/admin/songs/{id}`        | Update song              |
+| DELETE | `/v1/admin/songs/{id}`        | Delete song              |
+| GET    | `/v1/admin/tags`              | List all tags            |
+| POST   | `/v1/admin/tags`              | Create tag               |
+| PUT    | `/v1/admin/tags/{id}`         | Update tag               |
+| DELETE | `/v1/admin/tags/{id}`         | Delete tag               |
 
-### Авторизация (Web/TG Mini App)
+### Authorization (Web/TG Mini App)
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -185,7 +185,7 @@ PWS Server предоставляет REST API с разделением на т
 └─────────────────────────────────────────────────────────┘
 ```
 
-## Маппинг данных
+## Data Mapping
 
 ### DTO ↔ Domain
 
@@ -205,7 +205,7 @@ PWS Server предоставляет REST API с разделением на т
               toDto() / toDomain()
 ```
 
-### Пример маппинга
+### Mapping Example
 
 ```kotlin
 // api/mapping/.../SongMapping.kt
@@ -224,7 +224,7 @@ fun SongDetail.toDto(): SongDto = SongDto(
 )
 ```
 
-## Локальное хранение (Room)
+## Local Storage (Room)
 
 ### Entity ↔ Domain
 
@@ -241,17 +241,17 @@ fun SongDetail.toDto(): SongDto = SongDto(
           │                          │
           └──────────────────────────┘
                :data:repo-room
-              (внутренний маппинг)
+              (internal mapping)
 ```
 
 ## Dependency Injection (Koin)
 
-### Конфигурация по платформе
+### Platform Configuration
 
 ```kotlin
-// Android/iOS приложение
+// Android/iOS application
 val appModule = module {
-    // Локальные репозитории
+    // Local repositories
     single<SongReadRepository> { RoomSongReadRepository(get()) }
     single<FavoriteWriteRepository> { RoomFavoriteWriteRepository(get()) }
     // ...
@@ -259,13 +259,13 @@ val appModule = module {
 
 // Web/TG Mini App
 val appModule = module {
-    // Remote репозитории
+    // Remote repositories
     single<SongReadRepository> { RemoteSongReadRepository(get()) }
     single<FavoriteWriteRepository> { RemoteFavoriteWriteRepository(get()) }
     // ...
 }
 
-// Use Cases — одинаковые для всех платформ
+// Use Cases — same for all platforms
 val domainModule = module {
     factory { GetSongDetailUseCase(get()) }
     factory { AddFavoriteUseCase(get()) }
@@ -275,11 +275,11 @@ val domainModule = module {
 
 ## Error Handling
 
-// не реализовано
+// not implemented
 
-## Кеширование (Future)
+## Caching (Future)
 
-Для Web/TG Mini App планируется кеширование:
+Caching is planned for Web/TG Mini App:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -298,4 +298,3 @@ val domainModule = module {
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
-
