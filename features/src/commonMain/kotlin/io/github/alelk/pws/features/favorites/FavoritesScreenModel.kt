@@ -2,7 +2,7 @@ package io.github.alelk.pws.features.favorites
 
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import io.github.alelk.pws.domain.favorite.model.FavoriteWithSongInfo
+import io.github.alelk.pws.domain.favorite.model.FavoriteSong
 import io.github.alelk.pws.domain.favorite.usecase.ObserveFavoritesUseCase
 import io.github.alelk.pws.domain.favorite.usecase.RemoveFavoriteUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -73,7 +73,7 @@ class FavoritesScreenModel(
   }
 
   @OptIn(ExperimentalTime::class)
-  private fun FavoriteWithSongInfo.toUi() = FavoriteSongUi(
+  private fun FavoriteSong.toUi() = FavoriteSongUi(
     songNumberId = songNumberId,
     songNumber = songNumber,
     songName = songName,

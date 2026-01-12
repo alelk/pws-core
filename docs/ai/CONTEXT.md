@@ -1,0 +1,154 @@
+# PWS Core - Context for AI
+
+## About the Project
+
+**PWS (Praise & Worship Songs)** — a multiplatform "Christian Songbook" application.
+Allows searching, viewing, and managing songs from various songbooks.
+
+### Related Repositories
+
+| Repository          | Description                    | Technologies                  |
+|---------------------|--------------------------------|-------------------------------|
+| **pws-core** (this) | Multiplatform library          | Kotlin Multiplatform, Compose |
+| **pws-server**      | Backend API server             | Ktor, PostgreSQL, Exposed     |
+| **pws-android**     | Android application            | Android                       |
+
+> **Important**: Modules `:api:contract` and `:api:mapping` must match the pws-server API contract.
+
+## Platforms
+
+| Platform              | Data Source       | Authorization | Offline |
+|-----------------------|-------------------|---------------|---------|
+| Android/iOS           | Local Room DB     | Optional      | Yes     |
+| Web/Telegram Mini App | Remote API        | Yes           | No      |
+
+## Architectural Pattern
+
+**Clean Architecture** with Use Cases that abstract the data source.
+
+```
+UI (Compose) → ViewModel → UseCase → Repository Interface
+                                            ↓
+                              LocalRepository OR RemoteRepository
+```
+
+## Technology Stack
+
+| Category     | Technology            |
+|--------------|-----------------------|
+| Language     | Kotlin Multiplatform  |
+| UI           | Compose Multiplatform |
+| Navigation   | Voyager               |
+| DI           | Koin                  |
+| HTTP client  | Ktor                  |
+| Serialization| kotlinx.serialization |
+| Testing      | Kotest                |
+| Local DB     | Room (Android/iOS)    |
+
+## Module Structure
+
+```
+pws-core/
+├── domain/              # Models, Use Cases, Repository interfaces
+│   ├── lyric-format/    # Song lyrics parsing
+│   └── test-fixtures/   # Test data
+├── api/
+│   ├── contract/        # API DTOs
+│   ├── client/          # Ktor client, Remote repositories
+│   └── mapping/         # DTO ↔ Domain models mapping
+├── features/            # UI components (Compose + Voyager)
+├── core/
+│   ├── navigation/      # Navigation (SharedScreens)
+│   └── ui/              # Shared UI components
+├── data/
+│   ├── db-room/         # Room database
+│   └── repo-room/       # Local repositories on Room
+└── backup/              # Backup/restore data
+```
+
+## Key Entities (Domain)
+
+| Entity          | Description                                 |
+|-----------------|---------------------------------------------|
+| `Song`          | Song with lyrics and metadata               |
+| `SongDetail`    | Full song data with tags and references     |
+| `SongSummary`   | Brief song info for lists                   |
+| `Book`          | Songbook                                    |
+| `SongNumber`    | Song-to-songbook link (number in songbook)  |
+| `Tag`           | Song category/tag                           |
+| `SongTag`       | Song-to-tag link                            |
+| `Favorite`      | User's favorite song                        |
+| `History`       | View history record                         |
+| `SongReference` | Links to similar songs                      |
+
+## Domain Module Organization
+
+Each entity is organized in a separate package:
+
+```
+domain/src/commonMain/kotlin/io/github/alelk/pws/domain/
+├── song/
+│   ├── model/           # SongDetail, SongSummary, etc.
+│   ├── repository/      # SongReadRepository, SongWriteRepository
+│   ├── usecase/         # GetSongDetailUseCase, SearchSongsUseCase, etc.
+│   ├── command/         # Commands for writing
+│   └── query/           # Queries for reading
+├── book/
+├── tag/
+├── favorite/
+├── history/
+├── search/
+└── ...
+```
+
+## Naming Conventions
+
+| Type              | Pattern                                  | Example                    |
+|-------------------|------------------------------------------|----------------------------|
+| Use Case          | `{Action}{Entity}UseCase`                | `GetSongDetailUseCase`     |
+| Repository        | `{Entity}{Read/Write/Observe}Repository` | `SongReadRepository`       |
+| ViewModel         | `{Feature}ViewModel`                     | `SongViewModel`            |
+| Screen            | `{Feature}Screen`                        | `SongScreen`               |
+| Remote Repository | `Remote{Entity}{Read/Write}Repository`   | `RemoteSongReadRepository` |
+
+## Package Names
+
+- Domain: `io.github.alelk.pws.domain`
+- Features: `io.github.alelk.pws.features`
+- API Client: `io.github.alelk.pws.api`
+- Navigation: `io.github.alelk.pws.core.navigation`
+
+## Module Dependencies
+
+```mermaid
+graph TD
+    features --> domain
+    features --> navigation
+    api-client --> domain
+    api-client --> api-contract
+    api-mapping --> api-contract
+    api-mapping --> domain
+    api-client --> api-mapping
+    db-room --> domain
+    repo-room --> domain
+    repo-room --> db-room
+
+```
+
+## Development Principles
+
+1. **Domain-first**: First define models and use cases in domain
+2. **Platform-agnostic**: Domain module doesn't depend on platform
+3. **Repository Pattern**: Use cases work through interfaces, unaware of implementation
+4. **Reactive**: Use Flow for reactive data
+5. **Offline-first**: Mobile apps work without network, sync when available. Authorization is optional. If user is not authorized, no synchronization occurs.
+
+## Synchronization (Mobile)
+
+Mobile applications use **offline-first** approach:
+
+- All changes are first saved locally
+- When network appears — synchronization with server
+- Conflicts are resolved automatically (Last-Write-Wins or Merge)
+
+Details: [SYNC.md](../SYNC.md)

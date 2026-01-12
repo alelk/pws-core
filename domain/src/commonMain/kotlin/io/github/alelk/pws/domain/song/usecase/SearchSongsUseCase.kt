@@ -28,10 +28,10 @@ class SearchSongsUseCase(
     bookId: BookId? = null
   ): SongSearchResponse = txRunner.inRoTransaction {
     // If scope is USER_BOOKS but no userId, return empty result
-    if (searchQuery.scope == SearchScope.USER_BOOKS && userId == null) {
-      return@inRoTransaction SongSearchResponse(emptyList(), 0, false)
-    }
-    searchRepository.search(searchQuery, userId, bookId)
+    if (searchQuery.scope == SearchScope.USER_BOOKS && userId == null)
+      SongSearchResponse(emptyList(), 0, false)
+    else
+      searchRepository.search(searchQuery, userId, bookId)
   }
 }
 
