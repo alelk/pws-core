@@ -13,9 +13,9 @@ PWS Core supports two data sources, selected at the DI level:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     UI Layer                                 │
+│                     UI Layer                                │
 │  ┌─────────────────────────────────────────────────────┐    │
-│  │                    ViewModel                         │    │
+│  │                    ViewModel                        │    │
 │  │  ┌───────────┐  ┌────────────┐  ┌────────────────┐  │    │
 │  │  │ StateFlow │  │ User Input │  │ LaunchedEffect │  │    │
 │  │  └─────┬─────┘  └─────┬──────┘  └───────┬────────┘  │    │
@@ -25,9 +25,9 @@ PWS Core supports two data sources, selected at the DI level:
             │              │                 │
             ▼              ▼                 ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                   Domain Layer                               │
+│                   Domain Layer                              │
 │  ┌─────────────────────────────────────────────────────┐    │
-│  │                    Use Cases                         │    │
+│  │                    Use Cases                        │    │
 │  │  ┌─────────────┐  ┌───────────┐  ┌────────────────┐ │    │
 │  │  │ GetSongUC   │  │ SearchUC  │  │ AddFavoriteUC  │ │    │
 │  │  └──────┬──────┘  └─────┬─────┘  └───────┬────────┘ │    │
@@ -37,7 +37,7 @@ PWS Core supports two data sources, selected at the DI level:
              │               │                │
              ▼               ▼                ▼
 ┌─────────────────────────────────────────────────────────────┐
-│               Repository Interfaces                          │
+│               Repository Interfaces                         │
 │  ┌─────────────────────────────────────────────────────┐    │
 │  │  SongReadRepository  │  SearchRepository  │  ...    │    │
 │  └─────────────────────────────────────────────────────┘    │
