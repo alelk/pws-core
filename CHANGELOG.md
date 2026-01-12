@@ -1,5 +1,12 @@
 # PWS Android
 
+# [1.25.0](https://github.com/alelk/pws-core/compare/v1.24.0...v1.25.0) (2026-01-12)
+
+
+### Features
+
+* add UserSong API for managing user song overrides ([#4](https://github.com/alelk/pws-core/issues/4)) ([c876df0](https://github.com/alelk/pws-core/commit/c876df00835f4ec5aaf46dc7b68adbffa1e7a4d8))
+
 # [1.24.0](https://github.com/alelk/pws-core/compare/v1.23.0...v1.24.0) (2026-01-12)
 
 
