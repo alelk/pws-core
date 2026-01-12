@@ -22,6 +22,8 @@ import io.github.alelk.pws.api.client.api.UserFavoriteApi
 import io.github.alelk.pws.api.client.api.UserFavoriteApiImpl
 import io.github.alelk.pws.api.client.api.UserHistoryApi
 import io.github.alelk.pws.api.client.api.UserHistoryApiImpl
+import io.github.alelk.pws.api.client.api.UserSongApi
+import io.github.alelk.pws.api.client.api.UserSongApiImpl
 import io.github.alelk.pws.api.client.config.NetworkConfig
 import io.github.alelk.pws.api.client.http.createHttpClient
 import io.github.alelk.pws.domain.auth.storage.TokenStorage
@@ -70,6 +72,7 @@ fun createApiClient(
   val userBookApi: UserBookApi = UserBookApiImpl(client)
   val userFavoriteApi: UserFavoriteApi = UserFavoriteApiImpl(client)
   val userHistoryApi: UserHistoryApi = UserHistoryApiImpl(client)
+  val userSongApi: UserSongApi = UserSongApiImpl(client)
 
   // Repositories (using admin APIs for write operations)
   val songReadRepo: SongReadRepository = RemoteSongReadRepository(songApi)
@@ -90,6 +93,7 @@ fun createApiClient(
     userBookApi = userBookApi,
     userFavoriteApi = userFavoriteApi,
     userHistoryApi = userHistoryApi,
+    userSongApi = userSongApi,
     songReadRepository = songReadRepo,
     songWriteRepository = songWriteRepo,
     bookReadRepository = bookReadRepo,
