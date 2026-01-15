@@ -7,7 +7,6 @@ import io.github.alelk.pws.api.client.api.AdminTagApi
 import io.github.alelk.pws.api.client.api.AuthApi
 import io.github.alelk.pws.api.client.api.BookApi
 import io.github.alelk.pws.api.client.api.SongApi
-import io.github.alelk.pws.api.client.api.SongSearchApi
 import io.github.alelk.pws.api.client.api.UserBookApi
 import io.github.alelk.pws.api.client.api.UserFavoriteApi
 import io.github.alelk.pws.api.client.api.UserHistoryApi
@@ -24,10 +23,9 @@ import io.ktor.client.HttpClient
  */
 data class ApiClientContainer(
   val httpClient: HttpClient,
-  // Public read-only APIs
+  // Public read-only APIs (SongApi includes search methods)
   val songApi: SongApi,
   val bookApi: BookApi,
-  val songSearchApi: SongSearchApi,
   // Auth API
   val authApi: AuthApi,
   // Admin APIs (require admin role)

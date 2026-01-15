@@ -1,6 +1,8 @@
 package io.github.alelk.pws.api.contract.usersong
 
+import io.github.alelk.pws.api.contract.core.ids.BookIdDto
 import io.github.alelk.pws.api.contract.core.ids.SongIdDto
+import io.github.alelk.pws.api.contract.song.SearchTypeDto
 import io.github.alelk.pws.api.contract.song.SongSortDto
 import io.ktor.resources.Resource
 
@@ -27,5 +29,37 @@ class UserSongs(
     @Resource("override")
     class Override(val parent: ById)
   }
+
+  /**
+   * Full-text search on user's songs (merged: global + user's songs).
+   *
+   * Searches both global songs catalog and user's custom songbooks
+   * with unified ranking. Results include user's overrides applied.
+   * Requires authentication.
+   */
+  @Resource("search")
+  class Search(
+    val parent: UserSongs = UserSongs(),
+    val query: String,
+    val type: SearchTypeDto? = null,
+    val bookId: BookIdDto? = null,
+    val limit: Int? = null,
+    val offset: Int? = null,
+    val highlight: Boolean? = null
+  )
+
+  /**
+   * Get search suggestions for autocomplete (merged: global + user's songs).
+   *
+   * Searches both global songs and user's songbooks.
+   * Requires authentication.
+   */
+  @Resource("search/suggestions")
+  class SearchSuggestions(
+    val parent: UserSongs = UserSongs(),
+    val query: String,
+    val bookId: BookIdDto? = null,
+    val limit: Int? = null
+  )
 }
 
