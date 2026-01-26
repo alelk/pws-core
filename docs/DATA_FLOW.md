@@ -116,34 +116,46 @@ PWS Server provides REST API divided into three categories. The client uses Ktor
 In the target architecture — public data available without authorization or with optional authorization.
 However, in the current version, until the web application is implemented, authorization is required.
 
-| Method | Endpoint                      | Description                                        |
-|--------|-------------------------------|----------------------------------------------------|
-| GET    | `/v1/books`                   | List of songbooks (search with filters and sorting)|
-| GET    | `/v1/books/{id}`              | Songbook details                                   |
-| GET    | `/v1/books/{id}/songs`        | Songs in songbook                                  |
-| GET    | `/v1/songs`                   | List of songs (search with filters and sorting)    |
-| GET    | `/v1/songs/{id}`              | Song details                                       |
-| GET    | `/v1/tags`                    | List of tags                                       |
-| GET    | `/v1/tags/{id}`               | Tag details                                        |
-| GET    | `/v1/tags/{id}/songs`         | Songs by tag                                       |
+| Method | Endpoint                        | Description                                        |
+|--------|---------------------------------|----------------------------------------------------|
+| GET    | `/v1/books`                     | List of songbooks (search with filters and sorting)|
+| GET    | `/v1/books/{id}`                | Songbook details                                   |
+| GET    | `/v1/books/{id}/songs`          | Songs in songbook                                  |
+| GET    | `/v1/songs`                     | List of songs (search with filters and sorting)    |
+| GET    | `/v1/songs/{id}`                | Song details                                       |
+| GET    | `/v1/songs/search`              | Full-text search on global songs                   |
+| GET    | `/v1/songs/search/suggestions`  | Search suggestions for autocomplete                |
+
+> **Note:** Search endpoints `/v1/songs/search` and `/v1/user/songs/search` have **identical interfaces** 
+> (same parameters and response format). Client can use a common adapter to switch between them.
+> Response includes `bookReferences` for navigation to song in book context.
+| GET    | `/v1/tags`                      | List of tags                                       |
+| GET    | `/v1/tags/{id}`                 | Tag details                                        |
+| GET    | `/v1/tags/{id}/songs`           | Songs by tag                                       |
 
 ### User Endpoints (read-write)
 
 Authenticated user data, requires Bearer token:
 
-| Method | Endpoint                      | Description                                                                                                                    |
-|--------|-------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
-| GET    | `/v1/user/books`              | Songbooks (global + user). Supports search with filters and sorting.                                                           |
-| POST   | `/v1/user/books`              | Add user songbook.                                                                                                             |
-| PUT    | `/v1/user/books/{id}`         | Edit songbook. Only user songbooks can be edited. Global songbooks cannot be modified.                                         |
-| GET    | `/v1/user/favorites`          | User's favorites                                                                                                               |
-| PUT    | `/v1/user/favorites/{songId}` | Add to favorites                                                                                                               |
-| DELETE | `/v1/user/favorites/{songId}` | Remove from favorites                                                                                                          |
-| GET    | `/v1/user/history`            | View history                                                                                                                   |
-| GET    | `/v1/user/tags`               | Tags (global + user).                                                                                                          |
-| POST   | `/v1/user/tags`               | Create user tag                                                                                                                |
-| PUT    | `/v1/user/tags/{id}`          | Update tag. If tag is global, a user override is created. The global tag itself is not changed.                                |
-| DELETE | `/v1/user/tags/{id}`          | Delete tag. If tag is global, a user override is created (tag is marked as deleted for the current user).                      |
+| Method | Endpoint                              | Description                                                                                                                    |
+|--------|---------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
+| GET    | `/v1/user/books`                      | Songbooks (global + user). Supports search with filters and sorting.                                                           |
+| POST   | `/v1/user/books`                      | Add user songbook.                                                                                                             |
+| PUT    | `/v1/user/books/{id}`                 | Edit songbook. Only user songbooks can be edited. Global songbooks cannot be modified.                                         |
+| GET    | `/v1/user/songs/{id}`                 | Get song with user's overrides applied (merged view).                                                                          |
+| PATCH  | `/v1/user/songs/{id}`                 | Apply override to global song. Creates or updates user's override.                                                             |
+| DELETE | `/v1/user/songs/{id}/override`        | Reset user's overrides for a song (restore to global version).                                                                 |
+| GET    | `/v1/user/songs?overriddenOnly=true`  | Get list of song IDs with user overrides.                                                                                      |
+| GET    | `/v1/user/songs/search`               | Full-text search (merged: global + user's songs).                                                                              |
+| GET    | `/v1/user/songs/search/suggestions`   | Search suggestions (merged: global + user's songs).                                                                            |
+| GET    | `/v1/user/favorites`                  | User's favorites                                                                                                               |
+| PUT    | `/v1/user/favorites/{songId}`         | Add to favorites                                                                                                               |
+| DELETE | `/v1/user/favorites/{songId}`         | Remove from favorites                                                                                                          |
+| GET    | `/v1/user/history`                    | View history                                                                                                                   |
+| GET    | `/v1/user/tags`                       | Tags (global + user).                                                                                                          |
+| POST   | `/v1/user/tags`                       | Create user tag                                                                                                                |
+| PUT    | `/v1/user/tags/{id}`                  | Update tag. If tag is global, a user override is created. The global tag itself is not changed.                                |
+| DELETE | `/v1/user/tags/{id}`                  | Delete tag. If tag is global, a user override is created (tag is marked as deleted for the current user).                      |
 
 ### Administrative Endpoints (read-write)
 

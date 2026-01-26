@@ -143,6 +143,30 @@ graph TD
 4. **Reactive**: Use Flow for reactive data
 5. **Offline-first**: Mobile apps work without network, sync when available. Authorization is optional. If user is not authorized, no synchronization occurs.
 
+## Key Features
+
+### Song Search
+
+Full-text search with PostgreSQL FTS on server, Room FTS5 on mobile.
+
+**API Endpoints (uniform interface):**
+- `GET /v1/songs/search` - global songs (public)
+- `GET /v1/user/songs/search` - global + user songs (auth required)
+
+**Response includes:**
+- `bookReferences` - list of books containing the song with `bookId`, `displayShortName`, `songNumber`
+- Used for navigation to song in book context
+
+See: [features/search.md](../features/search.md)
+
+### User Overrides
+
+Users can customize global songs without modifying originals.
+
+**Pattern:** Global song + User override → Merged view
+
+See: [features/user-overrides.md](../features/user-overrides.md)
+
 ## Synchronization (Mobile)
 
 Mobile applications use **offline-first** approach:

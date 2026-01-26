@@ -5,12 +5,25 @@
 ### Full-text Search
 - **Input**: songbook number OR arbitrary text
 - **Behavior**: search by numbers, titles, song lyrics
-- **Result**: `List<SongSearchResult>` with relevance and match highlighting
+- **Result**: `List<SongSearchResult>` with relevance, match highlighting, and book references
 - **Use Cases**: `SearchSongsUseCase`, `SearchSongSuggestionsUseCase`
+- **API**: 
+  - `GET /v1/songs/search` (public)
+  - `GET /v1/user/songs/search` (auth, includes user's songs)
 
 ### Search Suggestions
-- Displayed as user types
-- Returns `SongSearchSuggestion` with suggested text
+- Displayed as user types (300ms debounce)
+- Returns `SongSearchSuggestion` with:
+  - `name` - song title
+  - `bookReferences` - list of {bookId, displayShortName, songNumber}
+  - `snippet` - highlighted text match (optional)
+- **API**:
+  - `GET /v1/songs/search/suggestions`
+  - `GET /v1/user/songs/search/suggestions`
+
+### Navigation on Click
+- If `bookReferences` not empty → navigate with `SongNumberId(bookId, songId)` using first book
+- If `bookReferences` empty → navigate with `SongId` only
 
 ## Songbook Browsing
 

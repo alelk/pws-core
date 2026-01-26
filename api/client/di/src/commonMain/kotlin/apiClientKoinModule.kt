@@ -10,7 +10,6 @@ import io.github.alelk.pws.api.client.repository.RemoteSongWriteRepository
 import io.github.alelk.pws.api.client.api.AdminSongReferenceApi
 import io.github.alelk.pws.api.client.api.BookApi
 import io.github.alelk.pws.api.client.api.SongApi
-import io.github.alelk.pws.api.client.api.SongSearchApi
 import io.github.alelk.pws.api.client.client.ApiClientContainer
 import io.github.alelk.pws.domain.book.repository.BookReadRepository
 import io.github.alelk.pws.domain.book.repository.BookWriteRepository
@@ -39,9 +38,9 @@ fun apiClientKoinModule(baseUrl: Url): Module = module {
     createApiClient(network = get(), tokenStorage = tokenStorage, httpClient = get())
   }
 
+  // SongApi now includes search methods (search, suggestions)
   single<SongApi> { get<ApiClientContainer>().songApi }
   single<BookApi> { get<ApiClientContainer>().bookApi }
-  single<SongSearchApi> { get<ApiClientContainer>().songSearchApi }
   single<AdminSongReferenceApi> { get<ApiClientContainer>().adminSongReferenceApi }
 
   single<SongReadRepository> { RemoteSongReadRepository(get()) }

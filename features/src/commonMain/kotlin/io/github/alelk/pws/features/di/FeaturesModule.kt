@@ -6,6 +6,7 @@ import io.github.alelk.pws.features.favorites.FavoritesScreenModel
 import io.github.alelk.pws.features.history.HistoryScreenModel
 import io.github.alelk.pws.features.search.SearchScreenModel
 import io.github.alelk.pws.features.song.detail.SongDetailScreenModel
+import io.github.alelk.pws.features.song.detail.SongDetailBySongIdScreenModel
 import io.github.alelk.pws.features.song.edit.SongEditScreenModel
 import io.github.alelk.pws.features.tags.TagsScreenModel
 import io.github.alelk.pws.features.tags.songs.TagSongsScreenModel
@@ -27,6 +28,9 @@ val featuresModule = module {
 
   // Song Detail
   factory { (songNumberId: SongNumberId) -> SongDetailScreenModel(songNumberId, get()) }
+
+  // Song Detail by SongId (for search results navigation)
+  factory { (songId: SongId) -> SongDetailBySongIdScreenModel(songId, get()) }
 
   // Song Edit
   factory { (songId: SongId) -> SongEditScreenModel(songId, get(), get(), get()) }

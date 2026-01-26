@@ -22,6 +22,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Keyboard
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.TextDecrease
 import androidx.compose.material.icons.filled.TextIncrease
@@ -72,15 +74,30 @@ import org.koin.core.parameter.parametersOf
 class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
   @Composable
   override fun Content() {
+    val navigator = LocalNavigator.currentOrThrow
     val viewModel = koinScreenModel<SongDetailScreenModel>(parameters = { parametersOf(songNumberId) })
     val state by viewModel.state.collectAsState()
-    SongDetailContent(state = state)
+    val searchScreen = cafe.adriel.voyager.core.registry.rememberScreen(io.github.alelk.pws.core.navigation.SharedScreens.Search)
+
+    SongDetailContent(
+      state = state,
+      onSearchClick = {
+        navigator.push(searchScreen)
+      },
+      onNumberInputClick = {
+        // TODO: Show number input modal in context of current book
+      }
+    )
   }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SongDetailContent(state: SongDetailUiState) {
+fun SongDetailContent(
+  state: SongDetailUiState,
+  onSearchClick: () -> Unit = {},
+  onNumberInputClick: () -> Unit = {}
+) {
   val navigator = LocalNavigator.currentOrThrow
   var fontScale by remember { mutableFloatStateOf(1f) }
   var isFavorite by remember { mutableFloatStateOf(0f) } // TODO: connect to actual state
@@ -98,6 +115,20 @@ fun SongDetailContent(state: SongDetailUiState) {
           }
         },
         actions = {
+          // Search button
+          IconButton(onClick = onSearchClick) {
+            Icon(
+              Icons.Default.Search,
+              contentDescription = "Поиск"
+            )
+          }
+          // Number input button (keyboard)
+          IconButton(onClick = onNumberInputClick) {
+            Icon(
+              Icons.Default.Keyboard,
+              contentDescription = "Перейти по номеру"
+            )
+          }
           // Font size controls
           IconButton(
             onClick = { fontScale = (fontScale - 0.1f).coerceAtLeast(0.7f) }

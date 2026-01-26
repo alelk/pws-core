@@ -8,6 +8,7 @@ import io.github.alelk.pws.features.favorites.FavoritesScreen
 import io.github.alelk.pws.features.history.HistoryScreen
 import io.github.alelk.pws.features.search.SearchScreen
 import io.github.alelk.pws.features.song.detail.SongDetailScreen
+import io.github.alelk.pws.features.song.detail.SongDetailBySongIdScreen
 import io.github.alelk.pws.features.song.edit.SongEditScreen
 import io.github.alelk.pws.features.tags.TagsScreen
 import io.github.alelk.pws.features.tags.songs.TagSongsScreen
@@ -31,6 +32,10 @@ val appScreenModule = screenModule {
   // Song screens
   register<SharedScreens.Song> { provider ->
     SongDetailScreen(provider.songNumberId)
+  }
+
+  register<SharedScreens.SongById> { provider ->
+    SongDetailBySongIdScreen(provider.songId)
   }
 
   register<SharedScreens.SongEdit> { provider ->

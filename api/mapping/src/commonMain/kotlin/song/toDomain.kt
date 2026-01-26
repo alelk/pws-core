@@ -2,7 +2,11 @@ package io.github.alelk.pws.api.mapping.song
 
 import io.github.alelk.pws.api.contract.song.LyricDto
 import io.github.alelk.pws.api.contract.song.LyricPartDto
+import io.github.alelk.pws.api.contract.song.SongBookReferenceDto
 import io.github.alelk.pws.api.contract.song.SongDetailDto
+import io.github.alelk.pws.api.contract.song.SongSearchResponseDto
+import io.github.alelk.pws.api.contract.song.SongSearchResultDto
+import io.github.alelk.pws.api.contract.song.SongSearchSuggestionDto
 import io.github.alelk.pws.api.contract.song.SongSummaryDto
 import io.github.alelk.pws.api.contract.song.SongNumberDto
 import io.github.alelk.pws.api.contract.song.SongSortDto
@@ -15,6 +19,10 @@ import io.github.alelk.pws.domain.song.query.SongSort
 import io.github.alelk.pws.domain.song.query.SearchType
 import io.github.alelk.pws.domain.song.query.SearchScope
 import io.github.alelk.pws.domain.song.model.MatchedField
+import io.github.alelk.pws.domain.song.model.SongBookReference
+import io.github.alelk.pws.domain.song.model.SongSearchResponse
+import io.github.alelk.pws.domain.song.model.SongSearchResult
+import io.github.alelk.pws.domain.song.model.SongSearchSuggestion
 import io.github.alelk.pws.domain.song.lyric.Bridge
 import io.github.alelk.pws.domain.song.lyric.Chorus
 import io.github.alelk.pws.domain.song.lyric.Lyric
@@ -84,4 +92,31 @@ fun MatchedFieldDto.toDomain(): MatchedField = when (this) {
   MatchedFieldDto.NAME -> MatchedField.NAME
   MatchedFieldDto.LYRIC -> MatchedField.LYRIC
 }
+
+fun SongBookReferenceDto.toDomain(): SongBookReference = SongBookReference(
+  bookId = bookId.toDomain(),
+  displayShortName = nonEmpty(displayShortName, "SongBookReferenceDto.displayShortName"),
+  songNumber = songNumber
+)
+
+fun SongSearchSuggestionDto.toDomain(): SongSearchSuggestion = SongSearchSuggestion(
+  id = id.toDomain(),
+  name = nonEmpty(name, "SongSearchSuggestionDto.name"),
+  bookReferences = bookReferences.map { it.toDomain() },
+  snippet = snippet
+)
+
+fun SongSearchResultDto.toDomain(): SongSearchResult = SongSearchResult(
+  song = song.toDomain(),
+  snippet = snippet,
+  rank = rank,
+  matchedFields = matchedFields.map { it.toDomain() },
+  bookReferences = bookReferences.map { it.toDomain() }
+)
+
+fun SongSearchResponseDto.toDomain(): SongSearchResponse = SongSearchResponse(
+  results = results.map { it.toDomain() },
+  totalCount = totalCount,
+  hasMore = hasMore
+)
 

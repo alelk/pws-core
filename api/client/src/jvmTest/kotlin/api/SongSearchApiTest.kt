@@ -5,8 +5,8 @@ import io.github.alelk.pws.api.contract.core.VersionDto
 import io.github.alelk.pws.api.contract.core.ids.BookIdDto
 import io.github.alelk.pws.api.contract.core.ids.SongIdDto
 import io.github.alelk.pws.api.contract.song.MatchedFieldDto
-import io.github.alelk.pws.api.contract.song.SearchScopeDto
 import io.github.alelk.pws.api.contract.song.SearchTypeDto
+import io.github.alelk.pws.api.contract.song.SongBookReferenceDto
 import io.github.alelk.pws.api.contract.song.SongSearchResponseDto
 import io.github.alelk.pws.api.contract.song.SongSearchResultDto
 import io.github.alelk.pws.api.contract.song.SongSearchSuggestionDto
@@ -22,7 +22,7 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 
 /**
- * Tests for SongSearchApi client.
+ * Tests for SongApi search methods (search, suggestions).
  */
 class SongSearchApiTest : FunSpec({
 
@@ -38,7 +38,10 @@ class SongSearchApiTest : FunSpec({
   fun testSuggestion(id: Long = 1, name: String = "Test Song") = SongSearchSuggestionDto(
     id = SongIdDto(id),
     name = name,
-    books = listOf("HYM", "PSA"),
+    bookReferences = listOf(
+      SongBookReferenceDto(BookIdDto("hymnal"), "HYM", 101),
+      SongBookReferenceDto(BookIdDto("psalms"), "PSA", 42)
+    ),
     snippet = "Test snippet with <mark>match</mark>"
   )
 
@@ -75,7 +78,7 @@ class SongSearchApiTest : FunSpec({
         )
       }
 
-      val api = SongSearchApiImpl(client)
+      val api = SongApiImpl(client)
       val res = api.suggestions("grace")
       res shouldBe listOf(suggestion1, suggestion2)
     }
@@ -85,7 +88,7 @@ class SongSearchApiTest : FunSpec({
         req.url.parameters["query"] shouldBe "amazing grace"
         respond("[]", status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
       }
-      val api = SongSearchApiImpl(client)
+      val api = SongApiImpl(client)
       api.suggestions("amazing grace")
     }
 
@@ -95,7 +98,7 @@ class SongSearchApiTest : FunSpec({
         req.url.parameters["bookId"] shouldBe "hymnal-1"
         respond("[]", status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
       }
-      val api = SongSearchApiImpl(client)
+      val api = SongApiImpl(client)
       api.suggestions("test", bookId = BookIdDto("hymnal-1"))
     }
 
@@ -105,7 +108,7 @@ class SongSearchApiTest : FunSpec({
         req.url.parameters["limit"] shouldBe "25"
         respond("[]", status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
       }
-      val api = SongSearchApiImpl(client)
+      val api = SongApiImpl(client)
       api.suggestions("test", limit = 25)
     }
 
@@ -116,7 +119,7 @@ class SongSearchApiTest : FunSpec({
         req.url.parameters.contains("limit") shouldBe false
         respond("[]", status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
       }
-      val api = SongSearchApiImpl(client)
+      val api = SongApiImpl(client)
       api.suggestions("test")
     }
 
@@ -124,7 +127,7 @@ class SongSearchApiTest : FunSpec({
       val client = httpClientWith { req ->
         respond("[]", status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
       }
-      val api = SongSearchApiImpl(client)
+      val api = SongApiImpl(client)
       val res = api.suggestions("nonexistent")
       res shouldBe emptyList()
     }
@@ -155,7 +158,7 @@ class SongSearchApiTest : FunSpec({
         )
       }
 
-      val api = SongSearchApiImpl(client)
+      val api = SongApiImpl(client)
       val res = api.search("grace")
       res shouldBe response
     }
@@ -168,19 +171,17 @@ class SongSearchApiTest : FunSpec({
         req.url.parameters["query"] shouldBe "test"
         req.url.parameters["type"] shouldBe "NAME"
         req.url.parameters["bookId"] shouldBe "hymnal-1"
-        req.url.parameters["scope"] shouldBe "GLOBAL"
         req.url.parameters["limit"] shouldBe "50"
         req.url.parameters["offset"] shouldBe "20"
         req.url.parameters["highlight"] shouldBe "false"
         respond(responseJson, status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
       }
 
-      val api = SongSearchApiImpl(client)
+      val api = SongApiImpl(client)
       api.search(
         query = "test",
         type = SearchTypeDto.NAME,
         bookId = BookIdDto("hymnal-1"),
-        scope = SearchScopeDto.GLOBAL,
         limit = 50,
         offset = 20,
         highlight = false
@@ -196,21 +197,8 @@ class SongSearchApiTest : FunSpec({
         respond(responseJson, status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
       }
 
-      val api = SongSearchApiImpl(client)
+      val api = SongApiImpl(client)
       api.search("test", type = SearchTypeDto.LYRIC)
-    }
-
-    test("should pass SearchScope.USER_BOOKS") {
-      val response = SongSearchResponseDto(emptyList(), 0, false)
-      val responseJson = json.encodeToString(response)
-
-      val client = httpClientWith { req ->
-        req.url.parameters["scope"] shouldBe "USER_BOOKS"
-        respond(responseJson, status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
-      }
-
-      val api = SongSearchApiImpl(client)
-      api.search("test", scope = SearchScopeDto.USER_BOOKS)
     }
 
     test("should not include optional params when null") {
@@ -221,14 +209,13 @@ class SongSearchApiTest : FunSpec({
         req.url.parameters["query"] shouldBe "test"
         req.url.parameters.contains("type") shouldBe false
         req.url.parameters.contains("bookId") shouldBe false
-        req.url.parameters.contains("scope") shouldBe false
         req.url.parameters.contains("limit") shouldBe false
         req.url.parameters.contains("offset") shouldBe false
         req.url.parameters.contains("highlight") shouldBe false
         respond(responseJson, status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
       }
 
-      val api = SongSearchApiImpl(client)
+      val api = SongApiImpl(client)
       api.search("test")
     }
 
@@ -245,7 +232,7 @@ class SongSearchApiTest : FunSpec({
         respond(responseJson, status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
       }
 
-      val api = SongSearchApiImpl(client)
+      val api = SongApiImpl(client)
       val res = api.search("test", limit = 1)
       res.hasMore shouldBe true
       res.totalCount shouldBe 100
@@ -259,7 +246,7 @@ class SongSearchApiTest : FunSpec({
         respond(responseJson, status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
       }
 
-      val api = SongSearchApiImpl(client)
+      val api = SongApiImpl(client)
       val res = api.search("nonexistent")
       res.results shouldBe emptyList()
       res.totalCount shouldBe 0
@@ -267,4 +254,3 @@ class SongSearchApiTest : FunSpec({
     }
   }
 })
-

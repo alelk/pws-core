@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -19,6 +20,7 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -28,6 +30,11 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
@@ -38,21 +45,53 @@ import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.github.alelk.pws.core.navigation.SharedScreens
+import io.github.alelk.pws.domain.core.ids.SongNumberId
 import io.github.alelk.pws.features.components.EmptyContent
 import io.github.alelk.pws.features.components.ErrorContent
+import io.github.alelk.pws.features.components.HighlightedText
 import io.github.alelk.pws.features.components.LoadingContent
-import io.github.alelk.pws.features.components.NumberBadge
 import io.github.alelk.pws.features.components.SearchEmptyContent
 import io.github.alelk.pws.features.components.SearchField
 import io.github.alelk.pws.features.theme.spacing
 
+/**
+ * Search screen without initial query.
+ */
 class SearchScreen : Screen {
   @Composable
   override fun Content() {
     val viewModel = koinScreenModel<SearchScreenModel>()
     val state by viewModel.state.collectAsState()
+    val query by viewModel.query.collectAsState()
 
     SearchContent(
+      query = query,
+      state = state,
+      onQueryChange = { viewModel.onEvent(SearchEvent.QueryChanged(it)) },
+      onSearch = { viewModel.onEvent(SearchEvent.SearchSubmitted) }
+    )
+  }
+}
+
+/**
+ * Search screen with initial query - navigated from HomeScreen.
+ * Immediately starts search with the provided query.
+ */
+class SearchResultsScreen(private val initialQuery: String) : Screen {
+  @Composable
+  override fun Content() {
+    val viewModel = koinScreenModel<SearchScreenModel>()
+    val state by viewModel.state.collectAsState()
+    val query by viewModel.query.collectAsState()
+
+    // Set initial query on first composition
+    LaunchedEffect(Unit) {
+      viewModel.onEvent(SearchEvent.QueryChanged(initialQuery))
+      viewModel.onEvent(SearchEvent.SearchSubmitted)
+    }
+
+    SearchContent(
+      query = query,
       state = state,
       onQueryChange = { viewModel.onEvent(SearchEvent.QueryChanged(it)) },
       onSearch = { viewModel.onEvent(SearchEvent.SearchSubmitted) }
@@ -63,13 +102,30 @@ class SearchScreen : Screen {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchContent(
+  query: String,
   state: SearchUiState,
   onQueryChange: (String) -> Unit,
   onSearch: () -> Unit
 ) {
+  val navigator = LocalNavigator.currentOrThrow
+  val focusRequester = remember { FocusRequester() }
+
+  // Auto-focus search field when screen opens
+  LaunchedEffect(Unit) {
+    focusRequester.requestFocus()
+  }
+
   Scaffold(
     topBar = {
       TopAppBar(
+        navigationIcon = {
+          IconButton(onClick = { navigator.pop() }) {
+            Icon(
+              imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+              contentDescription = "Назад"
+            )
+          }
+        },
         title = {
           Text(
             text = "Поиск",
@@ -87,19 +143,16 @@ fun SearchContent(
         .fillMaxSize()
         .padding(innerPadding)
     ) {
-      // Search field
+      // Search field - uses query directly for responsive input
       SearchField(
-        query = when (state) {
-          is SearchUiState.Suggestions -> state.query
-          is SearchUiState.Results -> state.query
-          else -> ""
-        },
+        query = query,
         onQueryChange = onQueryChange,
         onSearch = onSearch,
         modifier = Modifier
           .fillMaxWidth()
           .padding(horizontal = MaterialTheme.spacing.screenHorizontal)
-          .padding(bottom = MaterialTheme.spacing.md),
+          .padding(bottom = MaterialTheme.spacing.md)
+          .focusRequester(focusRequester),
         placeholder = "Поиск песен..."
       )
 
@@ -115,7 +168,7 @@ fun SearchContent(
 
         is SearchUiState.Suggestions -> {
           if (state.items.isEmpty()) {
-            SearchEmptyContent(query = state.query)
+            SearchEmptyContent(query = query)
           } else {
             SearchSuggestionsList(suggestions = state.items)
           }
@@ -123,7 +176,7 @@ fun SearchContent(
 
         is SearchUiState.Results -> {
           if (state.items.isEmpty() && !state.isLoading) {
-            SearchEmptyContent(query = state.query)
+            SearchEmptyContent(query = query)
           } else {
             SearchResultsList(
               results = state.items,
@@ -163,9 +216,13 @@ private fun SearchSuggestionsList(
   ) {
     items(
       items = suggestions,
-      key = { "${it.songNumberId.bookId}-${it.songNumberId.songId}" }
+      key = { it.songId.value }
     ) { suggestion ->
-      val songScreen = rememberScreen(SharedScreens.Song(suggestion.songNumberId))
+      // Navigate to song in book context if available, otherwise by id
+      val songScreen = suggestion.bookReferences.firstOrNull()?.let { ref ->
+        rememberScreen(SharedScreens.Song(SongNumberId(ref.bookId, suggestion.songId)))
+      } ?: rememberScreen(SharedScreens.SongById(suggestion.songId))
+
       SearchSuggestionItem(
         suggestion = suggestion,
         onClick = { navigator.push(songScreen) }
@@ -183,6 +240,8 @@ private fun SearchSuggestionItem(
   suggestion: SearchSuggestion,
   onClick: () -> Unit
 ) {
+  val booksByNumber = suggestion.booksByNumber
+
   Surface(
     modifier = Modifier
       .fillMaxWidth()
@@ -196,13 +255,29 @@ private fun SearchSuggestionItem(
           horizontal = MaterialTheme.spacing.listItemHorizontal,
           vertical = MaterialTheme.spacing.listItemVertical
         ),
-      verticalAlignment = Alignment.CenterVertically
+      verticalAlignment = Alignment.Top
     ) {
-      NumberBadge(number = suggestion.songNumber)
-
-      Spacer(Modifier.width(MaterialTheme.spacing.md))
+      // Song number badge (from first book reference)
+      suggestion.primarySongNumber?.let { number ->
+        Text(
+          text = number.toString(),
+          style = MaterialTheme.typography.titleLarge,
+          color = MaterialTheme.colorScheme.primary,
+          modifier = Modifier.widthIn(min = 40.dp).padding(end = MaterialTheme.spacing.md)
+        )
+      } ?: run {
+        // Fallback icon when no book reference
+        Icon(
+          imageVector = Icons.Outlined.MusicNote,
+          contentDescription = null,
+          modifier = Modifier.size(24.dp),
+          tint = MaterialTheme.colorScheme.primary
+        )
+        Spacer(Modifier.width(MaterialTheme.spacing.md))
+      }
 
       Column(modifier = Modifier.weight(1f)) {
+        // Song name
         Text(
           text = suggestion.songName,
           style = MaterialTheme.typography.bodyLarge,
@@ -210,19 +285,38 @@ private fun SearchSuggestionItem(
           overflow = TextOverflow.Ellipsis,
           color = MaterialTheme.colorScheme.onSurface
         )
-        Text(
-          text = suggestion.bookDisplayName,
-          style = MaterialTheme.typography.bodySmall,
-          color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-      }
 
-      Icon(
-        imageVector = Icons.Outlined.MusicNote,
-        contentDescription = null,
-        modifier = Modifier.size(MaterialTheme.spacing.iconMd),
-        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-      )
+        // Books grouped by number
+        if (booksByNumber.isNotEmpty()) {
+          if (booksByNumber.size == 1) {
+            // All books have the same number - show them together
+            Text(
+              text = suggestion.booksDisplayTextForNumber(booksByNumber.first().first),
+              style = MaterialTheme.typography.bodySmall,
+              color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+          } else {
+            // Different numbers in different books - show primary book only
+            suggestion.bookReferences.firstOrNull()?.let { ref ->
+              Text(
+                text = ref.displayShortName,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+              )
+            }
+          }
+        }
+
+        // Snippet with highlighting
+        suggestion.snippet?.let { snippet ->
+          HighlightedText(
+            text = snippet,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+          )
+        }
+      }
     }
   }
 }
@@ -239,9 +333,13 @@ private fun SearchResultsList(
   ) {
     items(
       items = results,
-      key = { "${it.songNumberId.bookId}-${it.songNumberId.songId}" }
+      key = { it.songId.value }
     ) { result ->
-      val songScreen = rememberScreen(SharedScreens.Song(result.songNumberId))
+      // Navigate to song in book context if available, otherwise by id
+      val songScreen = result.bookReferences.firstOrNull()?.let { ref ->
+        rememberScreen(SharedScreens.Song(SongNumberId(ref.bookId, result.songId)))
+      } ?: rememberScreen(SharedScreens.SongById(result.songId))
+
       SearchSuggestionItem(
         suggestion = result,
         onClick = { navigator.push(songScreen) }
