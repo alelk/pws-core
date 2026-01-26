@@ -2,19 +2,7 @@ package io.github.alelk.pws.features.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -24,19 +12,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Dialpad
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.TextFields
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,6 +24,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
+import cafe.adriel.voyager.core.registry.ScreenRegistry
 import cafe.adriel.voyager.core.registry.rememberScreen
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
@@ -58,6 +37,8 @@ import io.github.alelk.pws.features.book.songs.BookSongsScreen
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
 import io.github.alelk.pws.features.components.NumberInputModal
+import io.github.alelk.pws.features.components.SearchBarWithSuggestions
+import io.github.alelk.pws.features.search.SearchSuggestion
 import io.github.alelk.pws.features.theme.spacing
 
 /**
@@ -68,12 +49,30 @@ class HomeScreen : Screen {
   override fun Content() {
     val viewModel = koinScreenModel<HomeScreenModel>()
     val state by viewModel.state.collectAsState()
-    HomeContent(state = state)
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val suggestions by viewModel.suggestions.collectAsState()
+    val isSearching by viewModel.isSearching.collectAsState()
+
+    HomeContent(
+      state = state,
+      searchQuery = searchQuery,
+      suggestions = suggestions,
+      isSearching = isSearching,
+      onSearchQueryChange = viewModel::onSearchQueryChange,
+      onClearSearch = viewModel::onClearSearch
+    )
   }
 }
 
 @Composable
-fun HomeContent(state: HomeUiState) {
+fun HomeContent(
+  state: HomeUiState,
+  searchQuery: String,
+  suggestions: List<SearchSuggestion>,
+  isSearching: Boolean,
+  onSearchQueryChange: (String) -> Unit,
+  onClearSearch: () -> Unit
+) {
   val navigator = LocalNavigator.currentOrThrow
   var showNumberInput by remember { mutableStateOf(false) }
 
@@ -87,63 +86,105 @@ fun HomeContent(state: HomeUiState) {
       }
 
       is HomeUiState.Content -> {
-        LazyVerticalGrid(
-          columns = GridCells.Adaptive(minSize = 140.dp),
-          modifier = Modifier.fillMaxSize(),
-          contentPadding = PaddingValues(
-            horizontal = MaterialTheme.spacing.screenHorizontal,
-            vertical = MaterialTheme.spacing.md
-          ),
-          horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md),
-          verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)
-        ) {
-          // Header with title
-          item(span = { GridItemSpan(maxLineSpan) }) {
-            HomeHeader()
+        // Use Box to layer search overlay on top of content
+        Box(modifier = Modifier.fillMaxSize()) {
+          // Main scrollable content
+          LazyVerticalGrid(
+            columns = GridCells.Adaptive(minSize = 140.dp),
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+              horizontal = MaterialTheme.spacing.screenHorizontal,
+              vertical = MaterialTheme.spacing.md
+            ),
+            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md),
+            verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)
+          ) {
+            // Header with title
+            item(span = { GridItemSpan(maxLineSpan) }) {
+              HomeHeader()
+            }
+
+            // Search bar placeholder (same height as actual search bar for proper spacing)
+            item(span = { GridItemSpan(maxLineSpan) }) {
+              Spacer(Modifier.height(56.dp))
+            }
+
+            // Quick action buttons
+            item(span = { GridItemSpan(maxLineSpan) }) {
+              QuickActionButtons(
+                onNumberSearchClick = { showNumberInput = true },
+                onTextSearchClick = {
+                  if (searchQuery.isNotBlank()) {
+                    val screen = ScreenRegistry.get(SharedScreens.SearchResults(searchQuery))
+                    onClearSearch()
+                    navigator.push(screen)
+                  }
+                }
+              )
+            }
+
+            // Section header for books
+            item(span = { GridItemSpan(maxLineSpan) }) {
+              Spacer(Modifier.height(MaterialTheme.spacing.sm))
+              Text(
+                text = "Сборники песен",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onBackground
+              )
+            }
+
+            // Books grid
+            items(
+              items = state.books,
+              key = { it.id.toString() }
+            ) { book ->
+              val bookSongsScreen = rememberScreen(SharedScreens.BookSongs(book.id))
+              HomeBookCard(
+                book = book,
+                onClick = { navigator.push(bookSongsScreen) }
+              )
+            }
+
+            // Bottom spacer
+            item(span = { GridItemSpan(maxLineSpan) }) {
+              Spacer(Modifier.height(32.dp))
+            }
           }
 
-          // Search bar - main focus
-          item(span = { GridItemSpan(maxLineSpan) }) {
-            val searchScreen = rememberScreen(SharedScreens.Search)
-            SearchBarButton(
-              onClick = { navigator.push(searchScreen) }
+          // Search bar with suggestions overlay - positioned on top
+          Column(
+            modifier = Modifier
+              .fillMaxWidth()
+              .padding(horizontal = MaterialTheme.spacing.screenHorizontal)
+              .padding(top = MaterialTheme.spacing.md + 72.dp) // After header
+              .zIndex(100f)
+          ) {
+            SearchBarWithSuggestions(
+              query = searchQuery,
+              onQueryChange = onSearchQueryChange,
+              onSearch = {
+                if (searchQuery.isNotBlank()) {
+                  val screen = ScreenRegistry.get(SharedScreens.SearchResults(searchQuery))
+                  onClearSearch()
+                  navigator.push(screen)
+                }
+              },
+              suggestions = suggestions,
+              onSuggestionClick = { suggestion ->
+                onClearSearch()
+                // Navigate to song in book context if available
+                val screen = suggestion.bookReferences.firstOrNull()?.let { ref ->
+                  ScreenRegistry.get(
+                    SharedScreens.Song(io.github.alelk.pws.domain.core.ids.SongNumberId(ref.bookId, suggestion.songId))
+                  )
+                } ?: ScreenRegistry.get(
+                  SharedScreens.SongById(suggestion.songId)
+                )
+                navigator.push(screen)
+              },
+              isLoading = isSearching,
+              showSuggestions = searchQuery.isNotBlank()
             )
-          }
-
-          // Quick action buttons
-          item(span = { GridItemSpan(maxLineSpan) }) {
-            val searchScreen = rememberScreen(SharedScreens.Search)
-            QuickActionButtons(
-              onNumberSearchClick = { showNumberInput = true },
-              onTextSearchClick = { navigator.push(searchScreen) }
-            )
-          }
-
-          // Section header for books
-          item(span = { GridItemSpan(maxLineSpan) }) {
-            Spacer(Modifier.height(MaterialTheme.spacing.sm))
-            Text(
-              text = "Сборники песен",
-              style = MaterialTheme.typography.titleMedium,
-              color = MaterialTheme.colorScheme.onBackground
-            )
-          }
-
-          // Books grid
-          items(
-            items = state.books,
-            key = { it.id.toString() }
-          ) { book ->
-            val bookSongsScreen = rememberScreen(SharedScreens.BookSongs(book.id))
-            HomeBookCard(
-              book = book,
-              onClick = { navigator.push(bookSongsScreen) }
-            )
-          }
-
-          // Bottom spacer
-          item(span = { GridItemSpan(maxLineSpan) }) {
-            Spacer(Modifier.height(32.dp))
           }
         }
       }
@@ -195,41 +236,6 @@ private fun HomeHeader() {
   }
 }
 
-@Composable
-private fun SearchBarButton(
-  onClick: () -> Unit,
-  modifier: Modifier = Modifier
-) {
-  Surface(
-    modifier = modifier
-      .fillMaxWidth()
-      .clip(RoundedCornerShape(28.dp))
-      .clickable(onClick = onClick),
-    color = MaterialTheme.colorScheme.surfaceContainerHigh,
-    shape = RoundedCornerShape(28.dp),
-    tonalElevation = 0.dp
-  ) {
-    Row(
-      modifier = Modifier
-        .fillMaxWidth()
-        .padding(horizontal = 20.dp, vertical = 16.dp),
-      verticalAlignment = Alignment.CenterVertically
-    ) {
-      Icon(
-        imageVector = Icons.Default.Search,
-        contentDescription = null,
-        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.size(24.dp)
-      )
-      Spacer(Modifier.width(16.dp))
-      Text(
-        text = "Найти песню...",
-        style = MaterialTheme.typography.bodyLarge,
-        color = MaterialTheme.colorScheme.onSurfaceVariant
-      )
-    }
-  }
-}
 
 @Composable
 private fun QuickActionButtons(

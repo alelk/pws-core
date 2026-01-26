@@ -19,6 +19,7 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -28,6 +29,11 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
@@ -41,18 +47,50 @@ import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.domain.core.ids.SongNumberId
 import io.github.alelk.pws.features.components.EmptyContent
 import io.github.alelk.pws.features.components.ErrorContent
+import io.github.alelk.pws.features.components.HighlightedText
 import io.github.alelk.pws.features.components.LoadingContent
 import io.github.alelk.pws.features.components.SearchEmptyContent
 import io.github.alelk.pws.features.components.SearchField
 import io.github.alelk.pws.features.theme.spacing
 
+/**
+ * Search screen without initial query.
+ */
 class SearchScreen : Screen {
   @Composable
   override fun Content() {
     val viewModel = koinScreenModel<SearchScreenModel>()
     val state by viewModel.state.collectAsState()
+    val query by viewModel.query.collectAsState()
 
     SearchContent(
+      query = query,
+      state = state,
+      onQueryChange = { viewModel.onEvent(SearchEvent.QueryChanged(it)) },
+      onSearch = { viewModel.onEvent(SearchEvent.SearchSubmitted) }
+    )
+  }
+}
+
+/**
+ * Search screen with initial query - navigated from HomeScreen.
+ * Immediately starts search with the provided query.
+ */
+class SearchResultsScreen(private val initialQuery: String) : Screen {
+  @Composable
+  override fun Content() {
+    val viewModel = koinScreenModel<SearchScreenModel>()
+    val state by viewModel.state.collectAsState()
+    val query by viewModel.query.collectAsState()
+
+    // Set initial query on first composition
+    LaunchedEffect(Unit) {
+      viewModel.onEvent(SearchEvent.QueryChanged(initialQuery))
+      viewModel.onEvent(SearchEvent.SearchSubmitted)
+    }
+
+    SearchContent(
+      query = query,
       state = state,
       onQueryChange = { viewModel.onEvent(SearchEvent.QueryChanged(it)) },
       onSearch = { viewModel.onEvent(SearchEvent.SearchSubmitted) }
@@ -63,13 +101,30 @@ class SearchScreen : Screen {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchContent(
+  query: String,
   state: SearchUiState,
   onQueryChange: (String) -> Unit,
   onSearch: () -> Unit
 ) {
+  val navigator = LocalNavigator.currentOrThrow
+  val focusRequester = remember { FocusRequester() }
+
+  // Auto-focus search field when screen opens
+  LaunchedEffect(Unit) {
+    focusRequester.requestFocus()
+  }
+
   Scaffold(
     topBar = {
       TopAppBar(
+        navigationIcon = {
+          IconButton(onClick = { navigator.pop() }) {
+            Icon(
+              imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+              contentDescription = "Назад"
+            )
+          }
+        },
         title = {
           Text(
             text = "Поиск",
@@ -87,19 +142,16 @@ fun SearchContent(
         .fillMaxSize()
         .padding(innerPadding)
     ) {
-      // Search field
+      // Search field - uses query directly for responsive input
       SearchField(
-        query = when (state) {
-          is SearchUiState.Suggestions -> state.query
-          is SearchUiState.Results -> state.query
-          else -> ""
-        },
+        query = query,
         onQueryChange = onQueryChange,
         onSearch = onSearch,
         modifier = Modifier
           .fillMaxWidth()
           .padding(horizontal = MaterialTheme.spacing.screenHorizontal)
-          .padding(bottom = MaterialTheme.spacing.md),
+          .padding(bottom = MaterialTheme.spacing.md)
+          .focusRequester(focusRequester),
         placeholder = "Поиск песен..."
       )
 
@@ -115,7 +167,7 @@ fun SearchContent(
 
         is SearchUiState.Suggestions -> {
           if (state.items.isEmpty()) {
-            SearchEmptyContent(query = state.query)
+            SearchEmptyContent(query = query)
           } else {
             SearchSuggestionsList(suggestions = state.items)
           }
@@ -123,7 +175,7 @@ fun SearchContent(
 
         is SearchUiState.Results -> {
           if (state.items.isEmpty() && !state.isLoading) {
-            SearchEmptyContent(query = state.query)
+            SearchEmptyContent(query = query)
           } else {
             SearchResultsList(
               results = state.items,
@@ -227,12 +279,11 @@ private fun SearchSuggestionItem(
           )
         }
         suggestion.snippet?.let { snippet ->
-          Text(
+          HighlightedText(
             text = snippet,
-            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+            overflow = TextOverflow.Ellipsis
           )
         }
       }

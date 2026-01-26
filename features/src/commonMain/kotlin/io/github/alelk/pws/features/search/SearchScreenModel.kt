@@ -8,7 +8,9 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
@@ -24,7 +26,10 @@ class SearchScreenModel(
   private val searchSuggestionsUseCase: SearchSongSuggestionsUseCase
 ) : StateScreenModel<SearchUiState>(SearchUiState.Idle) {
 
-  private val queryFlow = MutableStateFlow("")
+  /** Current query text - updated immediately for responsive UI */
+  private val _query = MutableStateFlow("")
+  val query: StateFlow<String> = _query.asStateFlow()
+
   private var searchJob: Job? = null
 
   sealed interface Effect {
@@ -36,8 +41,8 @@ class SearchScreenModel(
   val effects = _effects.asSharedFlow()
 
   init {
-    // Debounce search queries
-    queryFlow
+    // Debounce search queries - only for API calls, not for UI updates
+    _query
       .debounce(300)
       .distinctUntilChanged()
       .onEach { query ->
@@ -53,9 +58,12 @@ class SearchScreenModel(
   fun onEvent(event: SearchEvent) {
     when (event) {
       is SearchEvent.QueryChanged -> {
-        queryFlow.value = event.query
+        // Update query immediately for responsive UI
+        _query.value = event.query
         if (event.query.isNotBlank()) {
           mutableState.value = SearchUiState.Loading
+        } else {
+          mutableState.value = SearchUiState.Idle
         }
       }
 
@@ -66,16 +74,16 @@ class SearchScreenModel(
       }
 
       SearchEvent.SearchSubmitted -> {
-        val query = queryFlow.value
-        if (query.isNotBlank()) {
+        val currentQuery = _query.value
+        if (currentQuery.isNotBlank()) {
           screenModelScope.launch {
-            _effects.emit(Effect.NavigateToResults(query))
+            _effects.emit(Effect.NavigateToResults(currentQuery))
           }
         }
       }
 
       SearchEvent.ClearQuery -> {
-        queryFlow.value = ""
+        _query.value = ""
         mutableState.value = SearchUiState.Idle
       }
     }
