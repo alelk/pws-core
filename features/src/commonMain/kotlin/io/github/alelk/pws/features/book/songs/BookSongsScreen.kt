@@ -13,7 +13,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Dialpad
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -65,7 +67,8 @@ class BookSongsScreen(val bookId: BookId) : Screen {
 @Composable
 fun BookSongsContent(
   bookId: BookId,
-  state: BookSongsUiState
+  state: BookSongsUiState,
+  onNumberInputClick: () -> Unit = {}
 ) {
   val navigator = LocalNavigator.currentOrThrow
   val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -97,6 +100,20 @@ fun BookSongsContent(
           scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer
         )
       )
+    },
+    floatingActionButton = {
+      if (state is BookSongsUiState.Content) {
+        FloatingActionButton(
+          onClick = onNumberInputClick,
+          containerColor = MaterialTheme.colorScheme.primaryContainer,
+          contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        ) {
+          Icon(
+            imageVector = Icons.Default.Dialpad,
+            contentDescription = "Перейти по номеру"
+          )
+        }
+      }
     }
   ) { innerPadding ->
     when (state) {

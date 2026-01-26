@@ -1,0 +1,407 @@
+package io.github.alelk.pws.features.home
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Dialpad
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.TextFields
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import cafe.adriel.voyager.core.registry.rememberScreen
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.koin.koinScreenModel
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
+import io.github.alelk.pws.core.navigation.SharedScreens
+import io.github.alelk.pws.domain.book.model.BookSummary
+import io.github.alelk.pws.features.book.songs.BookSongsScreen
+import io.github.alelk.pws.features.components.ErrorContent
+import io.github.alelk.pws.features.components.LoadingContent
+import io.github.alelk.pws.features.components.NumberInputModal
+import io.github.alelk.pws.features.theme.spacing
+
+/**
+ * Home Screen - Main entry point with search focus.
+ */
+class HomeScreen : Screen {
+  @Composable
+  override fun Content() {
+    val viewModel = koinScreenModel<HomeScreenModel>()
+    val state by viewModel.state.collectAsState()
+    HomeContent(state = state)
+  }
+}
+
+@Composable
+fun HomeContent(state: HomeUiState) {
+  val navigator = LocalNavigator.currentOrThrow
+  var showNumberInput by remember { mutableStateOf(false) }
+
+  Surface(
+    modifier = Modifier.fillMaxSize(),
+    color = MaterialTheme.colorScheme.background
+  ) {
+    when (state) {
+      HomeUiState.Loading -> {
+        LoadingContent(message = "Загрузка...")
+      }
+
+      is HomeUiState.Content -> {
+        LazyVerticalGrid(
+          columns = GridCells.Adaptive(minSize = 140.dp),
+          modifier = Modifier.fillMaxSize(),
+          contentPadding = PaddingValues(
+            horizontal = MaterialTheme.spacing.screenHorizontal,
+            vertical = MaterialTheme.spacing.md
+          ),
+          horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md),
+          verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)
+        ) {
+          // Header with title
+          item(span = { GridItemSpan(maxLineSpan) }) {
+            HomeHeader()
+          }
+
+          // Search bar - main focus
+          item(span = { GridItemSpan(maxLineSpan) }) {
+            val searchScreen = rememberScreen(SharedScreens.Search)
+            SearchBarButton(
+              onClick = { navigator.push(searchScreen) }
+            )
+          }
+
+          // Quick action buttons
+          item(span = { GridItemSpan(maxLineSpan) }) {
+            val searchScreen = rememberScreen(SharedScreens.Search)
+            QuickActionButtons(
+              onNumberSearchClick = { showNumberInput = true },
+              onTextSearchClick = { navigator.push(searchScreen) }
+            )
+          }
+
+          // Section header for books
+          item(span = { GridItemSpan(maxLineSpan) }) {
+            Spacer(Modifier.height(MaterialTheme.spacing.sm))
+            Text(
+              text = "Сборники песен",
+              style = MaterialTheme.typography.titleMedium,
+              color = MaterialTheme.colorScheme.onBackground
+            )
+          }
+
+          // Books grid
+          items(
+            items = state.books,
+            key = { it.id.toString() }
+          ) { book ->
+            val bookSongsScreen = rememberScreen(SharedScreens.BookSongs(book.id))
+            HomeBookCard(
+              book = book,
+              onClick = { navigator.push(bookSongsScreen) }
+            )
+          }
+
+          // Bottom spacer
+          item(span = { GridItemSpan(maxLineSpan) }) {
+            Spacer(Modifier.height(32.dp))
+          }
+        }
+      }
+
+      HomeUiState.Error -> {
+        ErrorContent(
+          title = "Не удалось загрузить",
+          message = "Проверьте подключение и попробуйте снова"
+        )
+      }
+    }
+  }
+
+  // Number input modal
+  if (showNumberInput && state is HomeUiState.Content) {
+    NumberInputModal(
+      books = state.books,
+      onDismiss = { showNumberInput = false },
+      onConfirm = { bookId, songNumber ->
+        showNumberInput = false
+        // Navigate to book songs screen - the user will find the song by number
+        // TODO: Implement direct navigation to song by number when song lookup is available
+        navigator.push(BookSongsScreen(bookId))
+      }
+    )
+  }
+}
+
+@Composable
+private fun HomeHeader() {
+  Column(
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(vertical = MaterialTheme.spacing.lg)
+  ) {
+    Text(
+      text = "🎵 Псаломщик",
+      style = MaterialTheme.typography.headlineMedium.copy(
+        fontWeight = FontWeight.Bold
+      ),
+      color = MaterialTheme.colorScheme.onBackground
+    )
+    Spacer(Modifier.height(MaterialTheme.spacing.xs))
+    Text(
+      text = "Найди любимую песню",
+      style = MaterialTheme.typography.bodyMedium,
+      color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+  }
+}
+
+@Composable
+private fun SearchBarButton(
+  onClick: () -> Unit,
+  modifier: Modifier = Modifier
+) {
+  Surface(
+    modifier = modifier
+      .fillMaxWidth()
+      .clip(RoundedCornerShape(28.dp))
+      .clickable(onClick = onClick),
+    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+    shape = RoundedCornerShape(28.dp),
+    tonalElevation = 0.dp
+  ) {
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 20.dp, vertical = 16.dp),
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      Icon(
+        imageVector = Icons.Default.Search,
+        contentDescription = null,
+        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.size(24.dp)
+      )
+      Spacer(Modifier.width(16.dp))
+      Text(
+        text = "Найти песню...",
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+      )
+    }
+  }
+}
+
+@Composable
+private fun QuickActionButtons(
+  onNumberSearchClick: () -> Unit,
+  onTextSearchClick: () -> Unit,
+  modifier: Modifier = Modifier
+) {
+  Row(
+    modifier = modifier
+      .fillMaxWidth()
+      .padding(top = MaterialTheme.spacing.md),
+    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)
+  ) {
+    QuickActionButton(
+      icon = Icons.Default.Dialpad,
+      title = "По номеру",
+      subtitle = "123",
+      onClick = onNumberSearchClick,
+      containerColor = MaterialTheme.colorScheme.primaryContainer,
+      contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+      modifier = Modifier.weight(1f)
+    )
+    QuickActionButton(
+      icon = Icons.Default.TextFields,
+      title = "По тексту",
+      subtitle = "ABC",
+      onClick = onTextSearchClick,
+      containerColor = MaterialTheme.colorScheme.secondaryContainer,
+      contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+      modifier = Modifier.weight(1f)
+    )
+  }
+}
+
+@Composable
+private fun QuickActionButton(
+  icon: ImageVector,
+  title: String,
+  subtitle: String,
+  onClick: () -> Unit,
+  containerColor: Color,
+  contentColor: Color,
+  modifier: Modifier = Modifier
+) {
+  ElevatedCard(
+    modifier = modifier
+      .clip(MaterialTheme.shapes.large)
+      .clickable(onClick = onClick),
+    shape = MaterialTheme.shapes.large,
+    colors = CardDefaults.elevatedCardColors(
+      containerColor = containerColor
+    ),
+    elevation = CardDefaults.elevatedCardElevation(defaultElevation = 0.dp)
+  ) {
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(MaterialTheme.spacing.md),
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      Icon(
+        imageVector = icon,
+        contentDescription = null,
+        modifier = Modifier.size(32.dp),
+        tint = contentColor
+      )
+      Spacer(Modifier.width(MaterialTheme.spacing.sm))
+      Column {
+        Text(
+          text = title,
+          style = MaterialTheme.typography.labelLarge,
+          color = contentColor,
+          fontWeight = FontWeight.Medium
+        )
+        Text(
+          text = subtitle,
+          style = MaterialTheme.typography.bodySmall,
+          color = contentColor.copy(alpha = 0.7f)
+        )
+      }
+    }
+  }
+}
+
+/**
+ * Generates a color from book name.
+ */
+private fun bookNameToColor(name: String): Color {
+  val hash = name.hashCode()
+  val hue = (hash and 0xFF) / 255f * 360f
+  val saturation = 0.45f + (((hash shr 8) and 0xFF) / 255f) * 0.15f
+  val lightness = 0.4f + (((hash shr 16) and 0xFF) / 255f) * 0.1f
+  return Color.hsl(hue, saturation, lightness)
+}
+
+/**
+ * Extracts initials from book name.
+ */
+private fun getInitials(name: String): String {
+  val words = name.split(" ", "-").filter { it.isNotBlank() }
+  return when {
+    words.isEmpty() -> "?"
+    words.size == 1 -> words[0].take(2).uppercase()
+    else -> words.take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString("")
+  }
+}
+
+@Composable
+private fun HomeBookCard(
+  book: BookSummary,
+  onClick: () -> Unit,
+  modifier: Modifier = Modifier
+) {
+  val baseColor = remember(book.displayName.value) { bookNameToColor(book.displayName.value) }
+  val initials = remember(book.displayName.value) { getInitials(book.displayName.value) }
+
+  Card(
+    modifier = modifier
+      .fillMaxWidth()
+      .clickable(onClick = onClick),
+    shape = MaterialTheme.shapes.large,
+    colors = CardDefaults.cardColors(
+      containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+    ),
+    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+  ) {
+    Column {
+      // Gradient header with initials
+      Box(
+        modifier = Modifier
+          .fillMaxWidth()
+          .aspectRatio(1.4f)
+          .background(
+            Brush.linearGradient(
+              colors = listOf(
+                baseColor,
+                baseColor.copy(alpha = 0.7f)
+              )
+            )
+          ),
+        contentAlignment = Alignment.Center
+      ) {
+        Text(
+          text = initials,
+          style = MaterialTheme.typography.headlineMedium.copy(
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 2.sp
+          ),
+          color = Color.White.copy(alpha = 0.95f)
+        )
+      }
+
+      // Book info
+      Column(
+        modifier = Modifier.padding(MaterialTheme.spacing.md)
+      ) {
+        Text(
+          text = book.displayName.value,
+          style = MaterialTheme.typography.bodyMedium.copy(
+            fontWeight = FontWeight.Medium
+          ),
+          color = MaterialTheme.colorScheme.onSurface,
+          maxLines = 2,
+          overflow = TextOverflow.Ellipsis
+        )
+        Spacer(Modifier.height(2.dp))
+        Text(
+          text = "${book.countSongs} песен",
+          style = MaterialTheme.typography.bodySmall,
+          color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+      }
+    }
+  }
+}

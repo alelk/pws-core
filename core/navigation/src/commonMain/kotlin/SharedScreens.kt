@@ -8,6 +8,9 @@ import io.github.alelk.pws.domain.core.ids.TagId
 
 sealed interface SharedScreens : ScreenProvider {
 
+  // Main entry point
+  data object Home : SharedScreens
+
   // Main tabs
   data object Books : SharedScreens
   data object Tags : SharedScreens
