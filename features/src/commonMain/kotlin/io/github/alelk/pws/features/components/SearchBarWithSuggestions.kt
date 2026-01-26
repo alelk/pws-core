@@ -9,12 +9,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -239,6 +238,8 @@ private fun SuggestionItemRow(
   suggestion: SearchSuggestion,
   onClick: () -> Unit
 ) {
+  val booksByNumber = suggestion.booksByNumber
+
   Surface(
     modifier = Modifier
       .fillMaxWidth()
@@ -249,18 +250,28 @@ private fun SuggestionItemRow(
       modifier = Modifier
         .fillMaxWidth()
         .padding(horizontal = 16.dp, vertical = 12.dp),
-      verticalAlignment = Alignment.CenterVertically
+      verticalAlignment = Alignment.Top
     ) {
-      Icon(
-        imageVector = Icons.Outlined.MusicNote,
-        contentDescription = null,
-        modifier = Modifier.size(24.dp),
-        tint = MaterialTheme.colorScheme.primary
-      )
-
-      Spacer(Modifier.width(16.dp))
+      // Song number badge (from first book reference)
+      suggestion.primarySongNumber?.let { number ->
+        Text(
+          text = number.toString(),
+          style = MaterialTheme.typography.titleMedium,
+          color = MaterialTheme.colorScheme.primary,
+          modifier = Modifier.widthIn(min = 36.dp).padding(end = 12.dp)
+        )
+      } ?: run {
+        // Fallback icon when no book reference
+        Icon(
+          imageVector = Icons.Outlined.MusicNote,
+          contentDescription = null,
+          modifier = Modifier.size(24.dp).padding(end = 12.dp),
+          tint = MaterialTheme.colorScheme.primary
+        )
+      }
 
       Column(modifier = Modifier.weight(1f)) {
+        // Song name
         Text(
           text = suggestion.songName,
           style = MaterialTheme.typography.bodyMedium,
@@ -268,13 +279,30 @@ private fun SuggestionItemRow(
           overflow = TextOverflow.Ellipsis,
           color = MaterialTheme.colorScheme.onSurface
         )
-        if (suggestion.bookReferences.isNotEmpty()) {
-          Text(
-            text = suggestion.booksDisplayText,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-          )
+
+        // Books grouped by number
+        if (booksByNumber.isNotEmpty()) {
+          if (booksByNumber.size == 1) {
+            // All books have the same number - show them together
+            Text(
+              text = suggestion.booksDisplayTextForNumber(booksByNumber.first().first),
+              style = MaterialTheme.typography.bodySmall,
+              color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+          } else {
+            // Different numbers in different books - show primary book only
+            // (other numbers will be shown as separate suggestions if needed)
+            suggestion.bookReferences.firstOrNull()?.let { ref ->
+              Text(
+                text = ref.displayShortName,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+              )
+            }
+          }
         }
+
+        // Snippet with highlighting
         suggestion.snippet?.let { snippet ->
           HighlightedText(
             text = snippet,

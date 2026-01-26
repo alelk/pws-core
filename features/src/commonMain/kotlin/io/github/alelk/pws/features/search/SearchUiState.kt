@@ -30,6 +30,30 @@ data class SearchSuggestion(
 ) {
   /** Display string for books (e.g., "HYM, PSA") */
   val booksDisplayText: String get() = bookReferences.joinToString(", ") { it.displayShortName }
+
+  /**
+   * Group book references by song number.
+   * Returns list of pairs: (songNumber, list of books with that number).
+   * Useful for displaying: "1 Song Name\n  ПВ-1 | ПВ-2" when same number in multiple books.
+   */
+  val booksByNumber: List<Pair<Int, List<BookReferenceUi>>>
+    get() = bookReferences
+      .groupBy { it.songNumber }
+      .entries
+      .sortedBy { it.key }
+      .map { it.key to it.value }
+
+  /**
+   * Primary song number for display (from first book reference).
+   */
+  val primarySongNumber: Int? get() = bookReferences.firstOrNull()?.songNumber
+
+  /**
+   * Format books display for a specific song number.
+   * Example: "ПВ-1, ПВ-2" for books where song has that number.
+   */
+  fun booksDisplayTextForNumber(number: Int): String =
+    bookReferences.filter { it.songNumber == number }.joinToString(" | ") { it.displayShortName }
 }
 
 sealed interface SearchUiState {
