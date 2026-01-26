@@ -78,13 +78,25 @@ enum class SearchType { ALL, NAME, LYRIC, NUMBER }
 enum class SearchScope { ALL, GLOBAL, USER_BOOKS }
 ```
 
+### SongBookReference
+Reference to a song in a specific book. Used in search results to show which books contain the song and what number the song has in each book.
+
+```kotlin
+data class SongBookReference(
+    val bookId: BookId,
+    val displayShortName: NonEmptyString,
+    val songNumber: Int
+)
+```
+
 ### SongSearchResult
 ```kotlin
 data class SongSearchResult(
     val song: SongSummary,
     val snippet: String,
     val rank: Float,
-    val matchedFields: List<MatchedField>
+    val matchedFields: List<MatchedField>,
+    val bookReferences: List<SongBookReference> = emptyList()
 )
 ```
 
@@ -93,7 +105,7 @@ data class SongSearchResult(
 data class SongSearchSuggestion(
     val id: SongId,
     val name: NonEmptyString,
-    val books: List<String>,
+    val bookReferences: List<SongBookReference> = emptyList(),
     val snippet: String? = null
 )
 ```
@@ -175,6 +187,7 @@ When pressing Enter or search button, song search is performed and results are d
 
 - `domain/song/usecase/SearchSongsUseCase.kt`
 - `domain/song/usecase/SearchSongSuggestionsUseCase.kt`
+- `domain/song/model/SongBookReference.kt`
 - `domain/song/model/SongSearchResult.kt`
 - `domain/song/model/SongSearchSuggestion.kt`
 - `domain/song/model/SongSearchResponse.kt`

@@ -5,12 +5,13 @@
 ### Full-text Search
 - **Input**: songbook number OR arbitrary text
 - **Behavior**: search by numbers, titles, song lyrics
-- **Result**: `List<SongSearchResult>` with relevance and match highlighting
+- **Result**: `List<SongSearchResult>` with relevance, match highlighting, and book references (bookId, displayShortName, songNumber)
 - **Use Cases**: `SearchSongsUseCase`, `SearchSongSuggestionsUseCase`
 
 ### Search Suggestions
 - Displayed as user types
-- Returns `SongSearchSuggestion` with suggested text
+- Returns `SongSearchSuggestion` with suggested text and book references
+- Book references include: bookId, displayShortName, songNumber for navigation
 
 ## Songbook Browsing
 
