@@ -7,5 +7,6 @@ data class SongSearchResultDto(
   val song: SongSummaryDto,
   val snippet: String,
   val rank: Float,
-  val matchedFields: List<MatchedFieldDto>
+  val matchedFields: List<MatchedFieldDto>,
+  val bookReferences: List<SongBookReferenceDto> = emptyList()
 )

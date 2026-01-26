@@ -96,7 +96,7 @@ class SearchScreenModel(
   private fun SongSearchSuggestion.toUi() = SearchSuggestion(
     songId = id,
     songName = name.value,
-    books = books,
+    books = bookReferences.map { it.displayShortName.value },
     snippet = snippet
   )
 }

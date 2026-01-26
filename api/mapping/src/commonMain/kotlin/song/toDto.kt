@@ -7,6 +7,7 @@ import io.github.alelk.pws.api.contract.song.SongSortDto
 import io.github.alelk.pws.api.contract.song.SongSummaryDto
 import io.github.alelk.pws.api.contract.song.SearchTypeDto
 import io.github.alelk.pws.api.contract.song.MatchedFieldDto
+import io.github.alelk.pws.api.contract.song.SongBookReferenceDto
 import io.github.alelk.pws.api.contract.song.SongSearchSuggestionDto
 import io.github.alelk.pws.api.contract.song.SongSearchResultDto
 import io.github.alelk.pws.api.contract.song.SongSearchResponseDto
@@ -14,6 +15,7 @@ import io.github.alelk.pws.api.mapping.core.toDto
 import io.github.alelk.pws.domain.song.query.SongSort
 import io.github.alelk.pws.domain.song.query.SearchType
 import io.github.alelk.pws.domain.song.model.MatchedField
+import io.github.alelk.pws.domain.song.model.SongBookReference
 import io.github.alelk.pws.domain.song.model.SongSearchSuggestion
 import io.github.alelk.pws.domain.song.model.SongSearchResult
 import io.github.alelk.pws.domain.song.model.SongSearchResponse
@@ -78,10 +80,16 @@ fun MatchedField.toDto(): MatchedFieldDto = when (this) {
   MatchedField.LYRIC -> MatchedFieldDto.LYRIC
 }
 
+fun SongBookReference.toDto(): SongBookReferenceDto = SongBookReferenceDto(
+  bookId = bookId.toDto(),
+  displayShortName = displayShortName.value,
+  songNumber = songNumber
+)
+
 fun SongSearchSuggestion.toDto(): SongSearchSuggestionDto = SongSearchSuggestionDto(
   id = id.toDto(),
   name = name.value,
-  books = books,
+  bookReferences = bookReferences.map { it.toDto() },
   snippet = snippet
 )
 
@@ -89,7 +97,8 @@ fun SongSearchResult.toDto(): SongSearchResultDto = SongSearchResultDto(
   song = song.toDto(),
   snippet = snippet,
   rank = rank,
-  matchedFields = matchedFields.map { it.toDto() }
+  matchedFields = matchedFields.map { it.toDto() },
+  bookReferences = bookReferences.map { it.toDto() }
 )
 
 fun SongSearchResponse.toDto(): SongSearchResponseDto = SongSearchResponseDto(

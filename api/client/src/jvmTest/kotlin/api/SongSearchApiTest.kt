@@ -6,6 +6,7 @@ import io.github.alelk.pws.api.contract.core.ids.BookIdDto
 import io.github.alelk.pws.api.contract.core.ids.SongIdDto
 import io.github.alelk.pws.api.contract.song.MatchedFieldDto
 import io.github.alelk.pws.api.contract.song.SearchTypeDto
+import io.github.alelk.pws.api.contract.song.SongBookReferenceDto
 import io.github.alelk.pws.api.contract.song.SongSearchResponseDto
 import io.github.alelk.pws.api.contract.song.SongSearchResultDto
 import io.github.alelk.pws.api.contract.song.SongSearchSuggestionDto
@@ -37,7 +38,10 @@ class SongSearchApiTest : FunSpec({
   fun testSuggestion(id: Long = 1, name: String = "Test Song") = SongSearchSuggestionDto(
     id = SongIdDto(id),
     name = name,
-    books = listOf("HYM", "PSA"),
+    bookReferences = listOf(
+      SongBookReferenceDto(BookIdDto("hymnal"), "HYM", 101),
+      SongBookReferenceDto(BookIdDto("psalms"), "PSA", 42)
+    ),
     snippet = "Test snippet with <mark>match</mark>"
   )
 

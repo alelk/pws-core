@@ -5,8 +5,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class SongSearchSuggestionDto(
-    val id: SongIdDto,
-    val name: String,
-    val books: List<String>,
-    val snippet: String? = null
+  val id: SongIdDto,
+  val name: String,
+  val bookReferences: List<SongBookReferenceDto> = emptyList(),
+  val snippet: String? = null
 )
