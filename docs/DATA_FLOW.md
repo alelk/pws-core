@@ -125,6 +125,10 @@ However, in the current version, until the web application is implemented, autho
 | GET    | `/v1/songs/{id}`                | Song details                                       |
 | GET    | `/v1/songs/search`              | Full-text search on global songs                   |
 | GET    | `/v1/songs/search/suggestions`  | Search suggestions for autocomplete                |
+
+> **Note:** Search endpoints `/v1/songs/search` and `/v1/user/songs/search` have **identical interfaces** 
+> (same parameters and response format). Client can use a common adapter to switch between them.
+> Response includes `bookReferences` for navigation to song in book context.
 | GET    | `/v1/tags`                      | List of tags                                       |
 | GET    | `/v1/tags/{id}`                 | Tag details                                        |
 | GET    | `/v1/tags/{id}/songs`           | Songs by tag                                       |

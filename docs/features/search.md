@@ -136,6 +136,30 @@ enum class MatchedField {
 | `GET /v1/user/songs/search` | Search merged (global + user) | Required |
 | `GET /v1/user/songs/search/suggestions` | Suggestions merged | Required |
 
+### API Uniformity
+
+Both search APIs (`/v1/songs/search` and `/v1/user/songs/search`) are **fully uniform**:
+
+**Search Parameters (identical):**
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `query` | string | required | Search text or song number |
+| `type` | enum | `ALL` | `ALL`, `NAME`, `LYRIC` |
+| `bookId` | string | null | Filter by book ID |
+| `limit` | int | 20 | Max results (1-100) |
+| `offset` | int | 0 | Pagination offset |
+| `highlight` | bool | true | Enable `<mark>` highlighting |
+
+**Suggestion Parameters (identical):**
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `query` | string | required | Search text |
+| `bookId` | string | null | Filter by book ID |
+| `limit` | int | 10 | Max suggestions (1-50) |
+
+**Response Format (identical):**
+Both return `SongSearchResponseDto` / `List<SongSearchSuggestionDto>`.
+
 ## UI Flow
 
 ```
