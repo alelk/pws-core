@@ -21,6 +21,7 @@ sealed interface SharedScreens : ScreenProvider {
 
   // Song related
   data class Song(val songNumberId: SongNumberId) : SharedScreens
+  data class SongById(val songId: SongId) : SharedScreens
   data class SongEdit(val songId: SongId) : SharedScreens
 
   // Tag related

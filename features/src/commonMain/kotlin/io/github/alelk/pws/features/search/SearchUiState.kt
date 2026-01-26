@@ -1,14 +1,14 @@
 package io.github.alelk.pws.features.search
 
 import androidx.compose.runtime.Immutable
-import io.github.alelk.pws.domain.core.ids.SongNumberId
+import io.github.alelk.pws.domain.core.ids.SongId
 
 @Immutable
 data class SearchSuggestion(
-  val songNumberId: SongNumberId,
-  val songNumber: Int,
+  val songId: SongId,
   val songName: String,
-  val bookDisplayName: String
+  val books: List<String>,
+  val snippet: String? = null
 )
 
 sealed interface SearchUiState {

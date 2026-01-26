@@ -4,11 +4,23 @@
 
 Full-text search across songbook songs.
 
+## Search Types
+
+### Global Search (`/v1/songs/search`)
+- Searches only in global songs catalog
+- Available without authentication
+- Used for public song discovery
+
+### User Search (`/v1/user/songs/search`)
+- Searches both global and user's songs (merged)
+- Requires authentication
+- Includes user's custom songbooks with unified ranking
+
 ## Search Options
 
-### By Songbook Number
+### By Song Number
 - Input: `123` or `GS 45`
-- Search by `SongNumber.number` field
+- Search by song number field
 - Exact number match
 
 ### By Text
@@ -30,13 +42,7 @@ class SearchSongsUseCase(
         searchQuery: SearchQuery,
         userId: UserId? = null,
         bookId: BookId? = null
-    ): SongSearchResponse = txRunner.inRoTransaction {
-        // If scope is USER_BOOKS but no userId, return empty result
-        if (searchQuery.scope == SearchScope.USER_BOOKS && userId == null)
-            SongSearchResponse(emptyList(), 0, false)
-        else
-            searchRepository.search(searchQuery, userId, bookId)
-    }
+    ): SongSearchResponse
 }
 ```
 
@@ -51,14 +57,26 @@ class SearchSongSuggestionsUseCase(
         userId: UserId? = null,
         bookId: BookId? = null,
         limit: Int = 10
-    ): List<SongSearchSuggestion> =
-        txRunner.inRoTransaction {
-            searchRepository.searchSuggestions(query, userId, bookId, limit)
-        }
+    ): List<SongSearchSuggestion>
 }
 ```
 
 ## Models
+
+### SearchQuery
+```kotlin
+data class SearchQuery(
+    val query: String,
+    val type: SearchType = SearchType.ALL,
+    val scope: SearchScope = SearchScope.ALL,
+    val limit: Int = 20,
+    val offset: Int = 0,
+    val highlight: Boolean = true
+)
+
+enum class SearchType { ALL, NAME, LYRIC, NUMBER }
+enum class SearchScope { ALL, GLOBAL, USER_BOOKS }
+```
 
 ### SongSearchResult
 ```kotlin
@@ -80,6 +98,15 @@ data class SongSearchSuggestion(
 )
 ```
 
+### SongSearchResponse
+```kotlin
+data class SongSearchResponse(
+    val results: List<SongSearchResult>,
+    val totalCount: Long,
+    val hasMore: Boolean
+)
+```
+
 ### MatchedField
 ```kotlin
 enum class MatchedField {
@@ -87,6 +114,15 @@ enum class MatchedField {
     LYRIC
 }
 ```
+
+## API Endpoints
+
+| Endpoint | Description | Auth |
+|----------|-------------|------|
+| `GET /v1/songs/search` | Search global songs | Optional |
+| `GET /v1/songs/search/suggestions` | Suggestions from global songs | Optional |
+| `GET /v1/user/songs/search` | Search merged (global + user) | Required |
+| `GET /v1/user/songs/search/suggestions` | Suggestions merged | Required |
 
 ## UI Flow
 
@@ -125,8 +161,8 @@ enum class MatchedField {
 - Indexes on title, lyrics
 - Fast search without internet
 
-### Remote (Exposed)
-- Backend uses Exposed queries in PostgreSQL
+### Remote (Exposed/PostgreSQL)
+- Backend uses Exposed queries with PostgreSQL full-text search
 - Requires internet
 
 ## Debounce
@@ -140,6 +176,8 @@ When pressing Enter or search button, song search is performed and results are d
 - `domain/song/usecase/SearchSongsUseCase.kt`
 - `domain/song/usecase/SearchSongSuggestionsUseCase.kt`
 - `domain/song/model/SongSearchResult.kt`
-- `domain/song/repository/SearchRepository.kt`
+- `domain/song/model/SongSearchSuggestion.kt`
+- `domain/song/model/SongSearchResponse.kt`
+- `domain/song/repository/SongSearchRepository.kt`
 - `features/search/SearchScreen.kt`
 - `features/search/SearchScreenModel.kt`

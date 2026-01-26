@@ -41,7 +41,6 @@ import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.features.components.EmptyContent
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
-import io.github.alelk.pws.features.components.NumberBadge
 import io.github.alelk.pws.features.components.SearchEmptyContent
 import io.github.alelk.pws.features.components.SearchField
 import io.github.alelk.pws.features.theme.spacing
@@ -163,9 +162,9 @@ private fun SearchSuggestionsList(
   ) {
     items(
       items = suggestions,
-      key = { "${it.songNumberId.bookId}-${it.songNumberId.songId}" }
+      key = { it.songId.value }
     ) { suggestion ->
-      val songScreen = rememberScreen(SharedScreens.Song(suggestion.songNumberId))
+      val songScreen = rememberScreen(SharedScreens.SongById(suggestion.songId))
       SearchSuggestionItem(
         suggestion = suggestion,
         onClick = { navigator.push(songScreen) }
@@ -198,7 +197,12 @@ private fun SearchSuggestionItem(
         ),
       verticalAlignment = Alignment.CenterVertically
     ) {
-      NumberBadge(number = suggestion.songNumber)
+      Icon(
+        imageVector = Icons.Outlined.MusicNote,
+        contentDescription = null,
+        modifier = Modifier.size(MaterialTheme.spacing.iconMd),
+        tint = MaterialTheme.colorScheme.primary
+      )
 
       Spacer(Modifier.width(MaterialTheme.spacing.md))
 
@@ -211,18 +215,20 @@ private fun SearchSuggestionItem(
           color = MaterialTheme.colorScheme.onSurface
         )
         Text(
-          text = suggestion.bookDisplayName,
+          text = suggestion.books.joinToString(", "),
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+        suggestion.snippet?.let { snippet ->
+          Text(
+            text = snippet,
+            style = MaterialTheme.typography.bodySmall,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+          )
+        }
       }
-
-      Icon(
-        imageVector = Icons.Outlined.MusicNote,
-        contentDescription = null,
-        modifier = Modifier.size(MaterialTheme.spacing.iconMd),
-        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-      )
     }
   }
 }
@@ -239,9 +245,9 @@ private fun SearchResultsList(
   ) {
     items(
       items = results,
-      key = { "${it.songNumberId.bookId}-${it.songNumberId.songId}" }
+      key = { it.songId.value }
     ) { result ->
-      val songScreen = rememberScreen(SharedScreens.Song(result.songNumberId))
+      val songScreen = rememberScreen(SharedScreens.SongById(result.songId))
       SearchSuggestionItem(
         suggestion = result,
         onClick = { navigator.push(songScreen) }
