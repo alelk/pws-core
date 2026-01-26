@@ -166,6 +166,14 @@ enum class MatchedField {
 └─────────────────────────────────────────────┘
 ```
 
+### Navigation on Click
+
+When user clicks a suggestion or search result:
+1. **If song has book references** → Navigate to `SongDetailScreen` with `SongNumberId(bookId, songId)` using the first book from the list
+2. **If song has no book references** → Navigate to `SongDetailBySongIdScreen` with just `SongId`
+
+This ensures the song is displayed in the context of its book (showing book name, song number) when available.
+
 ## Search Implementations
 
 ### Local (Room FTS5)
@@ -194,3 +202,4 @@ When pressing Enter or search button, song search is performed and results are d
 - `domain/song/repository/SongSearchRepository.kt`
 - `features/search/SearchScreen.kt`
 - `features/search/SearchScreenModel.kt`
+- `features/search/SearchUiState.kt`

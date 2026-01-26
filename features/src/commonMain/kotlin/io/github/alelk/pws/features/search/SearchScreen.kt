@@ -38,6 +38,7 @@ import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.github.alelk.pws.core.navigation.SharedScreens
+import io.github.alelk.pws.domain.core.ids.SongNumberId
 import io.github.alelk.pws.features.components.EmptyContent
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
@@ -164,7 +165,11 @@ private fun SearchSuggestionsList(
       items = suggestions,
       key = { it.songId.value }
     ) { suggestion ->
-      val songScreen = rememberScreen(SharedScreens.SongById(suggestion.songId))
+      // Navigate to song in book context if available, otherwise by id
+      val songScreen = suggestion.bookReferences.firstOrNull()?.let { ref ->
+        rememberScreen(SharedScreens.Song(SongNumberId(ref.bookId, suggestion.songId)))
+      } ?: rememberScreen(SharedScreens.SongById(suggestion.songId))
+
       SearchSuggestionItem(
         suggestion = suggestion,
         onClick = { navigator.push(songScreen) }
@@ -214,11 +219,13 @@ private fun SearchSuggestionItem(
           overflow = TextOverflow.Ellipsis,
           color = MaterialTheme.colorScheme.onSurface
         )
-        Text(
-          text = suggestion.books.joinToString(", "),
-          style = MaterialTheme.typography.bodySmall,
-          color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        if (suggestion.bookReferences.isNotEmpty()) {
+          Text(
+            text = suggestion.booksDisplayText,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+          )
+        }
         suggestion.snippet?.let { snippet ->
           Text(
             text = snippet,
@@ -247,7 +254,11 @@ private fun SearchResultsList(
       items = results,
       key = { it.songId.value }
     ) { result ->
-      val songScreen = rememberScreen(SharedScreens.SongById(result.songId))
+      // Navigate to song in book context if available, otherwise by id
+      val songScreen = result.bookReferences.firstOrNull()?.let { ref ->
+        rememberScreen(SharedScreens.Song(SongNumberId(ref.bookId, result.songId)))
+      } ?: rememberScreen(SharedScreens.SongById(result.songId))
+
       SearchSuggestionItem(
         suggestion = result,
         onClick = { navigator.push(songScreen) }
