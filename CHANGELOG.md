@@ -1,5 +1,20 @@
 # PWS Android
 
+# [1.26.0](https://github.com/alelk/pws-core/compare/v1.25.0...v1.26.0) (2026-01-26)
+
+
+### Features
+
+* **home:** Implement Home Screen with search functionality and quick actions ([adaa701](https://github.com/alelk/pws-core/commit/adaa7011d5e8f92cc7aa84e812d59d377249ecb4))
+* **search:** Add book references to search results and suggestions ([36b003e](https://github.com/alelk/pws-core/commit/36b003e8e1be01462ced77a60569c7592b9abcdd))
+* **search:** Add detailed search functionality and new SongDetailBySongId screen ([dfcefdd](https://github.com/alelk/pws-core/commit/dfcefdd0792e85f9ec54fbfcb3ac0e3de13b7b73))
+* **search:** Document search API endpoints and book references in results ([129fd37](https://github.com/alelk/pws-core/commit/129fd37b173fc9d3bc9bb6fed84d42f570960b9d))
+* **search:** Enhance navigation in search results with book context ([56cde05](https://github.com/alelk/pws-core/commit/56cde054516a59d7565f706ac0c1de843196b608))
+* **search:** Enhance song search suggestions with grouped book references and improved display ([a42d55c](https://github.com/alelk/pws-core/commit/a42d55c37cdd5d1131995b669a53a7713898bfab))
+* **search:** Enhance SongApi with full-text search and suggestions for global songs ([2774167](https://github.com/alelk/pws-core/commit/27741672f18df94a79f0e0a75e7d8d3efff51fec))
+* **search:** Implement inline search with suggestions on Home Screen ([5d14d81](https://github.com/alelk/pws-core/commit/5d14d81abed113b7fdb63d28398f52f74305bd05))
+* **search:** Introduce SongBookReferenceDto for song book associations in search results ([fd60885](https://github.com/alelk/pws-core/commit/fd60885e7d322898ae7a4d657e854d6fc16da2db))
+
 # [1.25.0](https://github.com/alelk/pws-core/compare/v1.24.0...v1.25.0) (2026-01-12)
 
 
