@@ -64,16 +64,38 @@ api/client/src/commonMain/kotlin/repository/
 ## Key Patterns
 
 ```kotlin
-// Use Case
-class GetSongDetailUseCase(private val repo: SongReadRepository) {
-    suspend operator fun invoke(id: Long): SongDetail?
+// Use Case with Transaction
+class GetSongDetailUseCase(
+    private val repo: SongReadRepository,
+    private val txRunner: TransactionRunner
+) {
+    suspend operator fun invoke(id: SongId): SongDetail? =
+        txRunner.inRoTransaction { repo.get(id) }
 }
 
 // Repository Interface (domain)
 interface SongReadRepository {
-    suspend fun getSong(id: Long): SongDetail?
-    fun observeSong(id: Long): Flow<SongDetail?>
+    suspend fun get(id: SongId): SongDetail?
+    suspend fun getMany(query: SongQuery, sort: SongSort): List<SongSummary>
 }
+
+// Write operations return sealed results
+interface SongWriteRepository {
+    suspend fun create(command: CreateSongCommand): CreateResourceResult<SongId>
+}
+
+// Value Objects with validation
+@JvmInline
+value class SongId(val value: Long) {
+    init { require(value >= 0) }
+}
+
+// OptionalField for patch operations
+data class UpdateSongCommand(
+    val id: SongId,
+    val name: NonEmptyString? = null,                    // null = unchanged
+    val author: OptionalField<Person?> = OptionalField.Unchanged  // Unchanged/Set/Clear
+)
 
 // ViewModel
 class SongViewModel(private val useCase: GetSongDetailUseCase) : ViewModel() {

@@ -10,19 +10,21 @@ Central module with business logic. Platform-independent.
 
 ```
 domain/src/commonMain/kotlin/io/github/alelk/pws/domain/
-├── song/           # Songs
+├── song/           # Songs (models, repositories, use cases, commands, queries)
 ├── book/           # Songbooks
+├── bookstatistic/  # Book statistics (song counts, etc.)
 ├── songnumber/     # Song numbers in songbooks
 ├── tag/            # Tags/categories
 ├── songtag/        # Song-tag associations
 ├── favorite/       # Favorites
 ├── history/        # View history
-├── search/         # Search
-├── cross/          # Cross-references between songs
+├── cross/          # Cross-module projections and use cases
 ├── songreference/  # References to similar songs
-├── auth/           # Authorization
+├── auth/           # Authorization (users, tokens, access plans)
 ├── payment/        # Payments (future)
-└── core/           # Common utilities (Locale, etc.)
+├── person/         # Person value object (author, translator, composer)
+├── tonality/       # Musical tonality enum
+└── core/           # Common utilities (ids, pagination, results, transactions)
 ```
 
 ### Entity Package Organization
@@ -38,6 +40,26 @@ Each package is organized identically:
 └── query/          # Query objects for reads
 ```
 
+### Core Package Structure
+
+The `core/` package contains foundational types:
+
+```
+core/
+├── ids/            # Typed identifiers (SongId, BookId, TagId, UserId, etc.)
+├── pagination/     # Paging, Page
+├── result/         # Sealed result types (CreateResourceResult, UpdateResourceResult, etc.)
+├── transaction/    # TransactionRunner abstraction
+├── Color.kt        # Color value object
+├── Locale.kt       # Locale value object  
+├── NonEmptyString.kt
+├── OptionalField.kt # For patch operations (Unchanged/Set/Clear)
+├── Reference.kt    # BibleRef, SongRef
+├── SongNumber.kt   # Song number in book
+├── Version.kt      # Semantic versioning
+└── Year.kt         # Year value object
+```
+
 ### Dependencies
 
 - `kotlinx.serialization.core`
@@ -51,8 +73,46 @@ Test fixtures for domain models.
 
 ### Contents
 
-- Generators for property-based testing
-- Repository mocks
+- Kotest Arb generators for property-based testing
+- Helper functions for test data generation
+
+### Structure
+
+```
+domain-test-fixtures/src/commonMain/kotlin/io/github/alelk/pws/domain/
+├── KotestHelpers.kt      # distinctBy and other Arb extensions
+├── core/                 # Generators for core types
+│   ├── color.kt          # Arb.color()
+│   ├── locale.kt         # Arb.locale()
+│   ├── version.kt        # Arb.version()
+│   ├── year.kt           # Arb.year()
+│   ├── nonEmptyString.kt # Arb.nonEmptyString()
+│   ├── songNumber.kt     # Arb.songNumber()
+│   ├── ids/              # Arb.songId(), Arb.bookId(), etc.
+│   └── ...
+├── song/
+│   ├── model/            # Arb.songSummary(), Arb.songDetail()
+│   ├── command/          # Arb.createSongCommand()
+│   └── lyric/            # Arb.lyric(), Arb.lyricPart()
+├── book/                 # Arb.bookSummary(), Arb.bookDetail()
+├── person/               # Arb.person()
+├── songnumber/           # Arb.songNumberLink()
+└── tonality/             # Arb.tonality()
+```
+
+### Usage Example
+
+```kotlin
+class SongTest : StringSpec({
+  "should serialize and deserialize song" {
+    checkAll(Arb.songDetail()) { song ->
+      val json = Json.encodeToString(song)
+      val decoded = Json.decodeFromString<SongDetail>(json)
+      decoded shouldBe song
+    }
+  }
+})
+```
 
 ---
 

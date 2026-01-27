@@ -163,19 +163,27 @@ pws-core/
 │
 ├── domain/                      # Application core
 │   │   ├── song/
-│   │   │   ├── model/           # SongDetail, SongSummary, etc.
-│   │   │   ├── repository/      # SongReadRepository, SongWriteRepository
+│   │   │   ├── model/           # SongDetail, SongSummary, Lyric, etc.
+│   │   │   ├── repository/      # SongReadRepository, SongWriteRepository, SongObserveRepository
 │   │   │   ├── usecase/         # GetSongDetailUseCase, SearchSongsUseCase, etc.
-│   │   │   ├── command/         # Commands for writing
-│   │   │   └── query/           # Queries for reading
+│   │   │   ├── command/         # CreateSongCommand, UpdateSongCommand
+│   │   │   └── query/           # SongQuery, SearchQuery, SongSort
 │   │   ├── book/
+│   │   ├── bookstatistic/
+│   │   ├── songnumber/
 │   │   ├── tag/
+│   │   ├── songtag/
 │   │   ├── favorite/
 │   │   ├── history/
-│   │   ├── search/
-│   │   └── ...
-│   ├── domain-test-fixtures/    # Test data generators and test utilities
-│   └── lyric-format/            # Song lyrics parsing
+│   │   ├── cross/               # Cross-module projections
+│   │   ├── songreference/
+│   │   ├── auth/
+│   │   ├── payment/
+│   │   ├── person/
+│   │   ├── tonality/
+│   │   └── core/                # ids/, pagination/, result/, transaction/, value objects
+│   ├── domain-test-fixtures/    # Test data generators (Kotest Arb)
+│   └── lyric-format/            # Song lyrics parsing (Kudzu parser)
 │
 ├── api/
 │   ├── contract/                # API DTOs (Serializable), Api resources

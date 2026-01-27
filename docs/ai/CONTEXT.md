@@ -71,15 +71,81 @@ pws-core/
 | Entity          | Description                                 |
 |-----------------|---------------------------------------------|
 | `Song`          | Song with lyrics and metadata               |
-| `SongDetail`    | Full song data with tags and references     |
+| `SongDetail`    | Full song data (lyric, author, tonalities)  |
 | `SongSummary`   | Brief song info for lists                   |
-| `Book`          | Songbook                                    |
-| `SongNumber`    | Song-to-songbook link (number in songbook)  |
-| `Tag`           | Song category/tag                           |
+| `Lyric`         | Song text as list of LyricPart (Verse, Chorus, Bridge) |
+| `Book`          | Songbook (BookDetail, BookSummary)          |
+| `SongNumber`    | Song number in book (bookId + number)       |
+| `SongNumberId`  | Unique identifier for song-in-book (bookId/songId) |
+| `Tag`           | Song category/tag with color                |
 | `SongTag`       | Song-to-tag link                            |
-| `Favorite`      | User's favorite song                        |
-| `History`       | View history record                         |
+| `Favorite`      | User's favorite song (songNumberId + timestamp) |
+| `HistoryEntry`  | View history record (songNumberId + timestamp) |
 | `SongReference` | Links to similar songs                      |
+| `Person`        | Author/translator/composer name (value class) |
+| `Tonality`      | Musical tonality (enum)                     |
+| `UserDetail`    | User account information                    |
+
+## Key Domain Patterns
+
+### Value Objects (core/)
+
+Domain uses Kotlin value classes with self-validation:
+
+```kotlin
+@JvmInline
+value class SongId(val value: Long) {
+  init { require(value >= 0) { "song id must not be negative" } }
+}
+```
+
+Key value objects: `SongId`, `BookId`, `TagId`, `UserId`, `SongNumberId`, `NonEmptyString`, `Year`, `Color`, `Locale`, `Version`, `Person`, `Tonality`
+
+### Sealed Result Types (core/result/)
+
+Operations return sealed results instead of throwing exceptions:
+
+```kotlin
+sealed interface CreateResourceResult<out R : Any> {
+  data class Success<out R : Any>(val resource: R) : CreateResourceResult<R>
+  data class AlreadyExists<out R : Any>(val resource: R, val message: String) : Failure<R>
+  data class ValidationError<out R : Any>(val resource: R, val message: String) : Failure<R>
+}
+```
+
+Available: `CreateResourceResult`, `UpdateResourceResult`, `DeleteResourceResult`, `ToggleResourceResult`
+
+### OptionalField for Patch Operations
+
+Used in update commands to distinguish between "no change", "set value", and "clear value":
+
+```kotlin
+sealed interface OptionalField<out T> {
+  data object Unchanged : OptionalField<Nothing>
+  data class Set<T>(val value: T) : OptionalField<T>
+  data object Clear : OptionalField<Nothing>
+}
+
+// Usage in UpdateSongCommand:
+data class UpdateSongCommand(
+  val id: SongId,
+  val name: NonEmptyString? = null,           // null = no change
+  val author: OptionalField<Person?> = OptionalField.Unchanged  // Unchanged/Set/Clear
+)
+```
+
+### TransactionRunner
+
+Abstraction for database transactions, allowing platform-specific implementations:
+
+```kotlin
+interface TransactionRunner {
+  suspend fun <T> inRoTransaction(block: suspend RoTransactionScope.() -> T): T
+  suspend fun <T> inRwTransaction(block: suspend RwTransactionScope.() -> T): T
+}
+```
+
+Use `NoopTransactionRunner` for tests.
 
 ## Domain Module Organization
 
@@ -88,17 +154,25 @@ Each entity is organized in a separate package:
 ```
 domain/src/commonMain/kotlin/io/github/alelk/pws/domain/
 ├── song/
-│   ├── model/           # SongDetail, SongSummary, etc.
-│   ├── repository/      # SongReadRepository, SongWriteRepository
+│   ├── model/           # SongDetail, SongSummary, Lyric, etc.
+│   ├── repository/      # SongReadRepository, SongWriteRepository, SongObserveRepository
 │   ├── usecase/         # GetSongDetailUseCase, SearchSongsUseCase, etc.
-│   ├── command/         # Commands for writing
-│   └── query/           # Queries for reading
+│   ├── command/         # CreateSongCommand, UpdateSongCommand
+│   └── query/           # SongQuery, SearchQuery, SongSort
 ├── book/
+├── bookstatistic/
+├── songnumber/
 ├── tag/
+├── songtag/
 ├── favorite/
 ├── history/
-├── search/
-└── ...
+├── cross/               # Cross-module projections
+├── songreference/
+├── auth/
+├── payment/
+├── person/              # Person value object
+├── tonality/            # Tonality enum
+└── core/                # ids/, pagination/, result/, transaction/, value objects
 ```
 
 ## Naming Conventions

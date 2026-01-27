@@ -105,6 +105,45 @@ interface SongWriteRepository {
 }
 ```
 
+### Sealed Result Types
+
+Write operations return sealed results (not exceptions):
+
+```kotlin
+sealed interface CreateResourceResult<out R : Any> {
+  data class Success<out R : Any>(val resource: R) : CreateResourceResult<R>
+  data class AlreadyExists<out R : Any>(val resource: R, val message: String) : Failure<R>
+  data class ValidationError<out R : Any>(val resource: R, val message: String) : Failure<R>
+  data class UnknownError<out R : Any>(val resource: R, val exception: Throwable?) : Failure<R>
+}
+
+// Usage:
+when (val result = createSongUseCase(command)) {
+  is CreateResourceResult.Success -> handleSuccess(result.resource)
+  is CreateResourceResult.AlreadyExists -> showError(result.message)
+  is CreateResourceResult.ValidationError -> showValidation(result.message)
+  is CreateResourceResult.UnknownError -> logError(result.exception)
+}
+```
+
+### OptionalField for Updates
+
+Use `OptionalField` in update commands for patch semantics:
+
+```kotlin
+data class UpdateSongCommand(
+  val id: SongId,
+  val name: NonEmptyString? = null,                    // null = unchanged
+  val author: OptionalField<Person?> = OptionalField.Unchanged  // Unchanged/Set/Clear
+)
+
+// Clear author:
+UpdateSongCommand(id = songId, author = OptionalField.Clear)
+
+// Set author:
+UpdateSongCommand(id = songId, author = OptionalField.Set(Person("John")))
+```
+
 ### ViewModel Pattern
 
 ```kotlin
