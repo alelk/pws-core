@@ -1,5 +1,12 @@
 # PWS Android
 
+# [1.27.0](https://github.com/alelk/pws-core/compare/v1.26.0...v1.27.0) (2026-01-27)
+
+
+### Features
+
+* **domain:** Update documentation ([9d9c5dd](https://github.com/alelk/pws-core/commit/9d9c5dd8ab985ee18c4d13c9a7dfe5711a03fd50))
+
 # [1.26.0](https://github.com/alelk/pws-core/compare/v1.25.0...v1.26.0) (2026-01-26)
 
 
