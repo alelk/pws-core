@@ -40,6 +40,13 @@ import io.github.alelk.pws.features.components.NumberInputModal
 import io.github.alelk.pws.features.components.SearchBarWithSuggestions
 import io.github.alelk.pws.features.search.SearchSuggestion
 import io.github.alelk.pws.features.theme.spacing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.ui.graphics.graphicsLayer
+import io.github.alelk.pws.features.components.generateBookColor
+import io.github.alelk.pws.features.components.getInitials
+import io.github.alelk.pws.features.components.shimmerEffect
 
 /**
  * Home Screen - Main entry point with search focus.
@@ -82,7 +89,7 @@ fun HomeContent(
   ) {
     when (state) {
       HomeUiState.Loading -> {
-        LoadingContent(message = "Загрузка...")
+        HomeContentSkeleton()
       }
 
       is HomeUiState.Content -> {
@@ -306,28 +313,7 @@ private fun QuickActionButton(
   }
 }
 
-/**
- * Generates a color from book name.
- */
-private fun bookNameToColor(name: String): Color {
-  val hash = name.hashCode()
-  val hue = (hash and 0xFF) / 255f * 360f
-  val saturation = 0.45f + (((hash shr 8) and 0xFF) / 255f) * 0.15f
-  val lightness = 0.4f + (((hash shr 16) and 0xFF) / 255f) * 0.1f
-  return Color.hsl(hue, saturation, lightness)
-}
 
-/**
- * Extracts initials from book name.
- */
-private fun getInitials(name: String): String {
-  val words = name.split(" ", "-").filter { it.isNotBlank() }
-  return when {
-    words.isEmpty() -> "?"
-    words.size == 1 -> words[0].take(2).uppercase()
-    else -> words.take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString("")
-  }
-}
 
 @Composable
 private fun HomeBookCard(
@@ -335,13 +321,25 @@ private fun HomeBookCard(
   onClick: () -> Unit,
   modifier: Modifier = Modifier
 ) {
-  val baseColor = remember(book.displayName.value) { bookNameToColor(book.displayName.value) }
+  val baseColor = remember(book.displayName.value) { generateBookColor(book.displayName.value) }
   val initials = remember(book.displayName.value) { getInitials(book.displayName.value) }
+
+  val interactionSource = remember { MutableInteractionSource() }
+  val isPressed by interactionSource.collectIsPressedAsState()
+  val scale by animateFloatAsState(targetValue = if (isPressed) 0.96f else 1f)
 
   Card(
     modifier = modifier
       .fillMaxWidth()
-      .clickable(onClick = onClick),
+      .graphicsLayer {
+        scaleX = scale
+        scaleY = scale
+      }
+      .clickable(
+        interactionSource = interactionSource,
+        indication = null, // Custom scale animation replaces ripple or works with it if desired
+        onClick = onClick
+      ),
     shape = MaterialTheme.shapes.large,
     colors = CardDefaults.cardColors(
       containerColor = MaterialTheme.colorScheme.surfaceContainerLow
@@ -394,6 +392,74 @@ private fun HomeBookCard(
           color = MaterialTheme.colorScheme.onSurfaceVariant
         )
       }
+    }
+  }
+}
+
+@Composable
+private fun HomeContentSkeleton() {
+  LazyVerticalGrid(
+    columns = GridCells.Adaptive(minSize = 140.dp),
+    modifier = Modifier.fillMaxSize(),
+    contentPadding = PaddingValues(
+      horizontal = MaterialTheme.spacing.screenHorizontal,
+      vertical = MaterialTheme.spacing.md
+    ),
+    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md),
+    verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)
+  ) {
+    // Header placeholder
+    item(span = { GridItemSpan(maxLineSpan) }) {
+      HomeHeader()
+    }
+
+    // Search bar placeholder
+    item(span = { GridItemSpan(maxLineSpan) }) {
+      Box(
+        modifier = Modifier
+          .fillMaxWidth()
+          .height(56.dp)
+          .shimmerEffect(RoundedCornerShape(28.dp))
+      )
+    }
+
+    // Quick actions placeholder
+    item(span = { GridItemSpan(maxLineSpan) }) {
+      Row(horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)) {
+        Box(
+          modifier = Modifier
+            .weight(1f)
+            .height(80.dp)
+            .shimmerEffect(MaterialTheme.shapes.medium)
+        )
+        Box(
+          modifier = Modifier
+            .weight(1f)
+            .height(80.dp)
+            .shimmerEffect(MaterialTheme.shapes.medium)
+        )
+      }
+    }
+
+    // Section title
+    item(span = { GridItemSpan(maxLineSpan) }) {
+      Spacer(Modifier.height(MaterialTheme.spacing.sm))
+      Box(
+        modifier = Modifier
+          .width(150.dp)
+          .height(24.dp)
+          .shimmerEffect(MaterialTheme.shapes.small)
+      )
+    }
+
+    // Books placeholders
+    items(6) {
+      Box(
+        modifier = Modifier
+          .fillMaxWidth()
+          .aspectRatio(1f)
+          .shimmerEffect(MaterialTheme.shapes.medium)
+      )
     }
   }
 }
