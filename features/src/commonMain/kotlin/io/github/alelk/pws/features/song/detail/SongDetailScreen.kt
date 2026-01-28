@@ -35,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -63,6 +64,7 @@ import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
 import io.github.alelk.pws.features.theme.spacing
 import org.koin.core.parameter.parametersOf
+import kotlinx.coroutines.delay
 
 class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
   @Composable
@@ -71,6 +73,13 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
     val viewModel = koinScreenModel<SongDetailScreenModel>(parameters = { parametersOf(songNumberId) })
     val state by viewModel.state.collectAsState()
     val searchScreen = cafe.adriel.voyager.core.registry.rememberScreen(io.github.alelk.pws.core.navigation.SharedScreens.Search)
+
+    LaunchedEffect(state) {
+      if (state is SongDetailUiState.Content) {
+        delay(5000)
+        viewModel.onSongViewed()
+      }
+    }
 
     SongDetailContent(
       state = state,
@@ -440,4 +449,3 @@ private fun MetadataRow(label: String, value: String) {
     )
   }
 }
-

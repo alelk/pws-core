@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -45,9 +46,11 @@ fun RecentSongCard(
       // Song Number Badge
       Box(
         modifier = Modifier
-          .size(32.dp)
+          .widthIn(min = 32.dp)
+          .height(32.dp)
           .clip(MaterialTheme.shapes.small)
-          .background(MaterialTheme.colorScheme.primaryContainer),
+          .background(MaterialTheme.colorScheme.primaryContainer)
+          .padding(horizontal = 8.dp),
         contentAlignment = Alignment.Center
       ) {
         Text(

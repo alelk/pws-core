@@ -31,7 +31,7 @@ val featuresModule = module {
   factory { (bookId: BookId) -> BookSongsScreenModel(bookId, get()) }
 
   // Song Detail
-  factory { (songNumberId: SongNumberId) -> SongDetailScreenModel(songNumberId, get()) }
+  factory { (songNumberId: SongNumberId) -> SongDetailScreenModel(songNumberId, get(), get()) }
 
   // Song Detail by SongId (for search results navigation)
   factory { (songId: SongId) -> SongDetailBySongIdScreenModel(songId, get()) }

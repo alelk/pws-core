@@ -211,9 +211,9 @@ fun HomeContent(
             )
           }
 
-          // Books grid
+          // Books grid - limit to max 6 featured books
           items(
-            items = state.books,
+            items = state.books.take(6),
             key = { it.id.toString() }
           ) { book ->
             val bookSongsScreen = rememberScreen(SharedScreens.BookSongs(book.id))
