@@ -162,8 +162,12 @@ fun HomeContent(
             QuickActionsRow(
               onNumberSearchClick = { showNumberInput = true },
               onTextSearchClick = {
-                // Focus search bar or navigate to search screen
-                // For now, let's keep search logic
+                // Focus search bar? Or navigate to search screen?
+                // For now let's make it more useful - navigate to text search directly (which is conceptually 'Search')
+                navigator.push(ScreenRegistry.get(SharedScreens.Search))
+              },
+              onHistoryClick = {
+                navigator.push(ScreenRegistry.get(SharedScreens.History))
               }
             )
           }
@@ -258,7 +262,8 @@ fun HomeContent(
 @Composable
 private fun QuickActionsRow(
   onNumberSearchClick: () -> Unit,
-  onTextSearchClick: () -> Unit
+  onTextSearchClick: () -> Unit,
+  onHistoryClick: () -> Unit
 ) {
   Row(
     modifier = Modifier
@@ -281,7 +286,7 @@ private fun QuickActionsRow(
     QuickActionChip(
       icon = Icons.Default.History,
       label = "История",
-      onClick = { /* TODO */ },
+      onClick = onHistoryClick,
       modifier = Modifier.weight(1f)
     )
   }

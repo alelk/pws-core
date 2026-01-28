@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.PopupProperties
 import io.github.alelk.pws.features.search.SearchSuggestion
 import io.github.alelk.pws.features.theme.spacing
 
@@ -78,7 +79,8 @@ fun SearchBarWithSuggestions(
     // DropdownMenu for suggestions - renders as overlay
     DropdownMenu(
       expanded = expanded,
-      onDismissRequest = { /* Keep open while typing */ },
+      onDismissRequest = { /* Dismiss logic should be handled by parent or by clicking outside which is what this callback is for */ },
+      properties = PopupProperties(focusable = false), // Allow typing while menu is open
       modifier = Modifier
         .fillMaxWidth(0.95f)
         .heightIn(max = 350.dp)
