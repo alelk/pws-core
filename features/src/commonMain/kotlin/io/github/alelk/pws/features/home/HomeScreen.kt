@@ -86,38 +86,61 @@ fun HomeContent(
       }
 
       is HomeUiState.Content -> {
-        // Use Box to layer search overlay on top of content
-        Box(modifier = Modifier.fillMaxSize()) {
-          // Main scrollable content
-          LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 140.dp),
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-              horizontal = MaterialTheme.spacing.screenHorizontal,
-              vertical = MaterialTheme.spacing.md
-            ),
-            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md),
-            verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)
-          ) {
-            // Header with title
-            item(span = { GridItemSpan(maxLineSpan) }) {
-              HomeHeader()
-            }
+        // Main scrollable content with search bar inside
+        LazyVerticalGrid(
+          columns = GridCells.Adaptive(minSize = 140.dp),
+          modifier = Modifier.fillMaxSize(),
+          contentPadding = PaddingValues(
+            horizontal = MaterialTheme.spacing.screenHorizontal,
+            vertical = MaterialTheme.spacing.md
+          ),
+          horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md),
+          verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)
+        ) {
+          // Header with title
+          item(span = { GridItemSpan(maxLineSpan) }) {
+            HomeHeader()
+          }
 
-            // Search bar placeholder (same height as actual search bar for proper spacing)
-            item(span = { GridItemSpan(maxLineSpan) }) {
-              Spacer(Modifier.height(56.dp))
-            }
+          // Search bar - scrolls with content
+          item(span = { GridItemSpan(maxLineSpan) }) {
+            SearchBarWithSuggestions(
+              query = searchQuery,
+              onQueryChange = onSearchQueryChange,
+              onSearch = {
+                if (searchQuery.isNotBlank()) {
+                  val screen = ScreenRegistry.get(SharedScreens.SearchResults(searchQuery))
+                  onClearSearch()
+                  navigator.push(screen)
+                }
+              },
+              suggestions = suggestions,
+              onSuggestionClick = { suggestion ->
+                onClearSearch()
+                // Navigate to song in book context if available
+                val screen = suggestion.bookReferences.firstOrNull()?.let { ref ->
+                  ScreenRegistry.get(
+                    SharedScreens.Song(io.github.alelk.pws.domain.core.ids.SongNumberId(ref.bookId, suggestion.songId))
+                  )
+                } ?: ScreenRegistry.get(
+                  SharedScreens.SongById(suggestion.songId)
+                )
+                navigator.push(screen)
+              },
+              isLoading = isSearching,
+              showSuggestions = searchQuery.isNotBlank()
+            )
+          }
 
-            // Quick action buttons
-            item(span = { GridItemSpan(maxLineSpan) }) {
-              QuickActionButtons(
-                onNumberSearchClick = { showNumberInput = true },
-                onTextSearchClick = {
-                  if (searchQuery.isNotBlank()) {
-                    val screen = ScreenRegistry.get(SharedScreens.SearchResults(searchQuery))
-                    onClearSearch()
-                    navigator.push(screen)
+          // Quick action buttons
+          item(span = { GridItemSpan(maxLineSpan) }) {
+            QuickActionButtons(
+              onNumberSearchClick = { showNumberInput = true },
+              onTextSearchClick = {
+                if (searchQuery.isNotBlank()) {
+                  val screen = ScreenRegistry.get(SharedScreens.SearchResults(searchQuery))
+                  onClearSearch()
+                  navigator.push(screen)
                   }
                 }
               )
@@ -150,43 +173,6 @@ fun HomeContent(
               Spacer(Modifier.height(32.dp))
             }
           }
-
-          // Search bar with suggestions overlay - positioned on top
-          Column(
-            modifier = Modifier
-              .fillMaxWidth()
-              .padding(horizontal = MaterialTheme.spacing.screenHorizontal)
-              .padding(top = MaterialTheme.spacing.md + 72.dp) // After header
-              .zIndex(100f)
-          ) {
-            SearchBarWithSuggestions(
-              query = searchQuery,
-              onQueryChange = onSearchQueryChange,
-              onSearch = {
-                if (searchQuery.isNotBlank()) {
-                  val screen = ScreenRegistry.get(SharedScreens.SearchResults(searchQuery))
-                  onClearSearch()
-                  navigator.push(screen)
-                }
-              },
-              suggestions = suggestions,
-              onSuggestionClick = { suggestion ->
-                onClearSearch()
-                // Navigate to song in book context if available
-                val screen = suggestion.bookReferences.firstOrNull()?.let { ref ->
-                  ScreenRegistry.get(
-                    SharedScreens.Song(io.github.alelk.pws.domain.core.ids.SongNumberId(ref.bookId, suggestion.songId))
-                  )
-                } ?: ScreenRegistry.get(
-                  SharedScreens.SongById(suggestion.songId)
-                )
-                navigator.push(screen)
-              },
-              isLoading = isSearching,
-              showSuggestions = searchQuery.isNotBlank()
-            )
-          }
-        }
       }
 
       HomeUiState.Error -> {
