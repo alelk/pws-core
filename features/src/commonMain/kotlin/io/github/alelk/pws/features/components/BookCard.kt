@@ -86,7 +86,7 @@ fun BookCard(
   Card(
     modifier = modifier
       .fillMaxWidth()
-      .clickable(onClick = onClick),
+      .clickableWithScale(onClick = onClick),
     shape = MaterialTheme.shapes.large,
     colors = CardDefaults.cardColors(
       containerColor = MaterialTheme.colorScheme.surfaceContainerLow

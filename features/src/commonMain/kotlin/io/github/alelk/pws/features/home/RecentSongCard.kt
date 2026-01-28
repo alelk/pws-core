@@ -1,13 +1,11 @@
 package io.github.alelk.pws.features.home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Card
@@ -22,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.alelk.pws.domain.history.model.SongHistorySummary
+import io.github.alelk.pws.features.components.clickableWithScale
 import io.github.alelk.pws.features.theme.spacing
 
 @Composable
@@ -33,7 +32,7 @@ fun RecentSongCard(
   Card(
     modifier = modifier
       .width(140.dp)
-      .clickable(onClick = onClick),
+      .clickableWithScale(onClick = onClick),
     shape = MaterialTheme.shapes.medium,
     colors = CardDefaults.cardColors(
       containerColor = MaterialTheme.colorScheme.surfaceContainer

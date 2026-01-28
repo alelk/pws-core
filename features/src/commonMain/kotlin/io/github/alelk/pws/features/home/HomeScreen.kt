@@ -1,10 +1,7 @@
 package io.github.alelk.pws.features.home
 
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -26,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
@@ -47,6 +43,7 @@ import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
 import io.github.alelk.pws.features.components.NumberInputModal
 import io.github.alelk.pws.features.components.SearchBarWithSuggestions
+import io.github.alelk.pws.features.components.clickableWithScale
 import io.github.alelk.pws.features.components.generateBookColor
 import io.github.alelk.pws.features.components.getInitials
 import io.github.alelk.pws.features.components.shimmerEffect
@@ -300,7 +297,7 @@ private fun QuickActionChip(
   modifier: Modifier = Modifier
 ) {
   Surface(
-    modifier = modifier.clickable(onClick = onClick),
+    modifier = modifier.clickableWithScale(onClick = onClick),
     shape = MaterialTheme.shapes.medium,
     color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
     tonalElevation = 2.dp
@@ -337,22 +334,10 @@ private fun HomeBookCard(
   val baseColor = remember(book.displayName.value) { generateBookColor(book.displayName.value) }
   val initials = remember(book.displayName.value) { getInitials(book.displayName.value) }
 
-  val interactionSource = remember { MutableInteractionSource() }
-  val isPressed by interactionSource.collectIsPressedAsState()
-  val scale by animateFloatAsState(targetValue = if (isPressed) 0.96f else 1f)
-
   Card(
     modifier = modifier
       .fillMaxWidth()
-      .graphicsLayer {
-        scaleX = scale
-        scaleY = scale
-      }
-      .clickable(
-        interactionSource = interactionSource,
-        indication = null, // Custom scale animation replaces ripple or works with it if desired
-        onClick = onClick
-      ),
+      .clickableWithScale(onClick = onClick),
     shape = MaterialTheme.shapes.large,
     colors = CardDefaults.cardColors(
       containerColor = MaterialTheme.colorScheme.surfaceContainerLow
