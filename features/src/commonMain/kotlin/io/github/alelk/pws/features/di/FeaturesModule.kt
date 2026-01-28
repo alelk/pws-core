@@ -4,6 +4,7 @@ import io.github.alelk.pws.features.books.BooksScreenModel
 import io.github.alelk.pws.features.book.songs.BookSongsScreenModel
 import io.github.alelk.pws.features.favorites.FavoritesScreenModel
 import io.github.alelk.pws.features.history.HistoryScreenModel
+import io.github.alelk.pws.features.home.HomeScreenModel
 import io.github.alelk.pws.features.search.SearchScreenModel
 import io.github.alelk.pws.features.song.detail.SongDetailScreenModel
 import io.github.alelk.pws.features.song.detail.SongDetailBySongIdScreenModel
@@ -20,6 +21,9 @@ import org.koin.dsl.module
  * Koin module for all features screen models.
  */
 val featuresModule = module {
+  // Home
+  factory { HomeScreenModel(get(), get(), get()) }
+
   // Books
   factory { BooksScreenModel(get()) }
 

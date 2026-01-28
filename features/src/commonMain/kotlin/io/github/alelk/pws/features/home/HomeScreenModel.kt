@@ -19,6 +19,9 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
+import io.github.alelk.pws.domain.history.usecase.ObserveHistoryUseCase
+import kotlinx.coroutines.flow.combine
+
 /**
  * ScreenModel for Home Screen.
  * Manages books list and inline search with suggestions.
@@ -26,7 +29,8 @@ import kotlinx.coroutines.launch
 @OptIn(FlowPreview::class)
 class HomeScreenModel(
   observeBooksUseCase: ObserveBooksUseCase,
-  private val searchSuggestionsUseCase: SearchSongSuggestionsUseCase
+  private val searchSuggestionsUseCase: SearchSongSuggestionsUseCase,
+  observeHistoryUseCase: ObserveHistoryUseCase
 ) : StateScreenModel<HomeUiState>(HomeUiState.Loading) {
 
   /** Current search query - updated immediately for responsive UI */
@@ -44,15 +48,18 @@ class HomeScreenModel(
   private var searchJob: Job? = null
 
   init {
-    // Observe books
-    observeBooksUseCase()
-      .onEach { books ->
-        val currentState = mutableState.value
-        if (currentState is HomeUiState.Content) {
-          mutableState.value = currentState.copy(books = books)
-        } else {
-          mutableState.value = HomeUiState.Content(books = books)
-        }
+    // Observe books and history
+    combine(
+      observeBooksUseCase(),
+      observeHistoryUseCase(limit = 10)
+    ) { books, history ->
+      HomeUiState.Content(
+        books = books,
+        recentSongs = history
+      )
+    }
+      .onEach { content ->
+        mutableState.value = content
       }
       .catch {
         mutableState.value = HomeUiState.Error
