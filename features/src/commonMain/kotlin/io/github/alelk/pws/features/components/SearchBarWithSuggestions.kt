@@ -1,19 +1,7 @@
 package io.github.alelk.pws.features.components
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,17 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.MusicNote
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -46,7 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
+import androidx.compose.ui.window.PopupProperties
 import io.github.alelk.pws.features.search.SearchSuggestion
 import io.github.alelk.pws.features.theme.spacing
 
@@ -77,6 +55,7 @@ fun SearchBarWithSuggestions(
   placeholder: String = "Найти песню..."
 ) {
   val focusRequester = remember { FocusRequester() }
+  val expanded = showSuggestions && (suggestions.isNotEmpty() || isLoading)
 
   // Auto-focus when requested
   LaunchedEffect(autoFocus) {
@@ -85,29 +64,49 @@ fun SearchBarWithSuggestions(
     }
   }
 
-  Box(modifier = modifier.zIndex(10f)) {
-    Column {
-      // Search field
-      SearchInputField(
-        query = query,
-        onQueryChange = onQueryChange,
-        onSearch = onSearch,
-        isLoading = isLoading,
-        focusRequester = focusRequester,
-        placeholder = placeholder
-      )
+  // Column to anchor DropdownMenu properly
+  Column(modifier = modifier.fillMaxWidth()) {
+    // Search field
+    SearchInputField(
+      query = query,
+      onQueryChange = onQueryChange,
+      onSearch = onSearch,
+      isLoading = isLoading,
+      focusRequester = focusRequester,
+      placeholder = placeholder
+    )
 
-      // Suggestions dropdown
-      AnimatedVisibility(
-        visible = showSuggestions && (suggestions.isNotEmpty() || isLoading),
-        enter = fadeIn() + slideInVertically { -it / 4 },
-        exit = fadeOut() + slideOutVertically { -it / 4 }
-      ) {
-        SuggestionsDropdown(
-          suggestions = suggestions,
-          onSuggestionClick = onSuggestionClick,
-          isLoading = isLoading
-        )
+    // DropdownMenu for suggestions - renders as overlay
+    DropdownMenu(
+      expanded = expanded,
+      onDismissRequest = { /* Dismiss logic should be handled by parent or by clicking outside which is what this callback is for */ },
+      properties = PopupProperties(focusable = false), // Allow typing while menu is open
+      modifier = Modifier
+        .fillMaxWidth(0.95f)
+        .heightIn(max = 350.dp)
+    ) {
+      if (isLoading && suggestions.isEmpty()) {
+        Box(
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(MaterialTheme.spacing.lg),
+          contentAlignment = Alignment.Center
+        ) {
+          CircularProgressIndicator(modifier = Modifier.size(24.dp))
+        }
+      } else {
+        suggestions.forEachIndexed { index, suggestion ->
+          SuggestionDropdownItem(
+            suggestion = suggestion,
+            onClick = { onSuggestionClick(suggestion) }
+          )
+          if (index < suggestions.lastIndex) {
+            HorizontalDivider(
+              modifier = Modifier.padding(start = 56.dp),
+              color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+            )
+          }
+        }
       }
     }
   }
@@ -314,4 +313,64 @@ private fun SuggestionItemRow(
       }
     }
   }
+}
+
+@Composable
+private fun SuggestionDropdownItem(
+  suggestion: SearchSuggestion,
+  onClick: () -> Unit
+) {
+  DropdownMenuItem(
+    text = {
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Top
+      ) {
+        // Song number badge
+        suggestion.primarySongNumber?.let { number ->
+          Text(
+            text = number.toString(),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.widthIn(min = 36.dp).padding(end = 12.dp)
+          )
+        } ?: run {
+          Icon(
+            imageVector = Icons.Outlined.MusicNote,
+            contentDescription = null,
+            modifier = Modifier.size(24.dp).padding(end = 12.dp),
+            tint = MaterialTheme.colorScheme.primary
+          )
+        }
+
+        Column(modifier = Modifier.weight(1f)) {
+          Text(
+            text = suggestion.songName,
+            style = MaterialTheme.typography.bodyMedium,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            color = MaterialTheme.colorScheme.onSurface
+          )
+
+          suggestion.bookReferences.firstOrNull()?.let { ref ->
+            Text(
+              text = ref.displayShortName,
+              style = MaterialTheme.typography.bodySmall,
+              color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+          }
+
+          suggestion.snippet?.let { snippet ->
+            HighlightedText(
+              text = snippet,
+              color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+              maxLines = 1,
+              overflow = TextOverflow.Ellipsis
+            )
+          }
+        }
+      }
+    },
+    onClick = onClick
+  )
 }

@@ -34,20 +34,33 @@ import androidx.compose.ui.unit.sp
 import io.github.alelk.pws.features.theme.spacing
 
 /**
- * Generates a stable color from a string (e.g., book name).
+ * Generates a stable color from a string (e.g., book name) using a predefined palette.
+ * Colors are chosen to be content-friendly (not too bright, not too dark).
  */
-private fun stringToColor(str: String): Color {
-  val hash = str.hashCode()
-  val hue = (hash and 0xFF) / 255f * 360f
-  val saturation = 0.4f + (((hash shr 8) and 0xFF) / 255f) * 0.2f
-  val lightness = 0.35f + (((hash shr 16) and 0xFF) / 255f) * 0.15f
-  return Color.hsl(hue, saturation, lightness)
+fun generateBookColor(str: String): Color {
+  val palette = listOf(
+    Color(0xFFE57373), // Red 300
+    Color(0xFFF06292), // Pink 300
+    Color(0xFFBA68C8), // Purple 300
+    Color(0xFF9575CD), // Deep Purple 300
+    Color(0xFF7986CB), // Indigo 300
+    Color(0xFF64B5F6), // Blue 300
+    Color(0xFF4FC3F7), // Light Blue 300
+    Color(0xFF4DB6AC), // Teal 300
+    Color(0xFF81C784), // Green 300
+    Color(0xFFAED581), // Light Green 300
+    Color(0xFFFF8A65), // Deep Orange 300
+    Color(0xFFA1887F), // Brown 300
+    Color(0xFF90A4AE)  // Blue Grey 300
+  )
+  val index = kotlin.math.abs(str.hashCode()) % palette.size
+  return palette[index]
 }
 
 /**
  * Extracts initials from a display name.
  */
-private fun getInitials(name: String): String {
+fun getInitials(name: String): String {
   val words = name.split(" ", "-").filter { it.isNotBlank() }
   return when {
     words.isEmpty() -> "?"
@@ -67,13 +80,13 @@ fun BookCard(
   onClick: () -> Unit,
   modifier: Modifier = Modifier
 ) {
-  val baseColor = remember(displayName) { stringToColor(displayName) }
+  val baseColor = remember(displayName) { generateBookColor(displayName) }
   val initials = remember(displayName) { getInitials(displayName) }
 
   Card(
     modifier = modifier
       .fillMaxWidth()
-      .clickable(onClick = onClick),
+      .clickableWithScale(onClick = onClick),
     shape = MaterialTheme.shapes.large,
     colors = CardDefaults.cardColors(
       containerColor = MaterialTheme.colorScheme.surfaceContainerLow
@@ -140,7 +153,7 @@ fun BookListItem(
   onClick: () -> Unit,
   modifier: Modifier = Modifier
 ) {
-  val baseColor = remember(displayName) { stringToColor(displayName) }
+  val baseColor = remember(displayName) { generateBookColor(displayName) }
   val initials = remember(displayName) { getInitials(displayName) }
 
   Surface(

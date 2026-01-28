@@ -1,59 +1,69 @@
 package io.github.alelk.pws.features.song.detail
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FormatSize
 import androidx.compose.material.icons.filled.Keyboard
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.TextDecrease
-import androidx.compose.material.icons.filled.TextIncrease
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
@@ -69,6 +79,7 @@ import io.github.alelk.pws.domain.song.model.SongDetail
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
 import io.github.alelk.pws.features.theme.spacing
+import kotlinx.coroutines.delay
 import org.koin.core.parameter.parametersOf
 
 class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
@@ -79,8 +90,16 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
     val state by viewModel.state.collectAsState()
     val searchScreen = cafe.adriel.voyager.core.registry.rememberScreen(io.github.alelk.pws.core.navigation.SharedScreens.Search)
 
+    LaunchedEffect(state) {
+      if (state is SongDetailUiState.Content) {
+        delay(5000)
+        viewModel.onSongViewed()
+      }
+    }
+
     SongDetailContent(
       state = state,
+      songNumber = songNumberId.identifier,
       onSearchClick = {
         navigator.push(searchScreen)
       },
@@ -95,88 +114,159 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
 @Composable
 fun SongDetailContent(
   state: SongDetailUiState,
+  songNumber: String? = null,
   onSearchClick: () -> Unit = {},
-  onNumberInputClick: () -> Unit = {}
+  onNumberInputClick: () -> Unit = {},
+  onFavoriteClick: () -> Unit = {}
 ) {
   val navigator = LocalNavigator.currentOrThrow
   var fontScale by remember { mutableFloatStateOf(1f) }
-  var isFavorite by remember { mutableFloatStateOf(0f) } // TODO: connect to actual state
+  var isFavorite by remember { mutableStateOf(false) } // TODO: Bind to real state
+  var showSettingsSheet by remember { mutableStateOf(false) }
+  val spacing = MaterialTheme.spacing
+
+  // Sheet State
+  val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
   Scaffold(
     topBar = {
       TopAppBar(
-        title = { },
+        title = {
+          if (state is SongDetailUiState.Content && !songNumber.isNullOrBlank()) {
+            Text(
+              text = "№ $songNumber",
+              style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+            )
+          }
+        },
         navigationIcon = {
           IconButton(onClick = { navigator.pop() }) {
-            Icon(
-              Icons.AutoMirrored.Filled.ArrowBack,
-              contentDescription = "Назад"
-            )
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
           }
         },
         actions = {
-          // Search button
-          IconButton(onClick = onSearchClick) {
-            Icon(
-              Icons.Default.Search,
-              contentDescription = "Поиск"
-            )
+          // Text Appearance
+          IconButton(onClick = { showSettingsSheet = true }) {
+            Icon(Icons.Filled.FormatSize, contentDescription = "Настройки текста")
           }
-          // Number input button (keyboard)
-          IconButton(onClick = onNumberInputClick) {
-            Icon(
-              Icons.Default.Keyboard,
-              contentDescription = "Перейти по номеру"
-            )
+          // Share
+          IconButton(onClick = { /* TODO: Implement share */ }) {
+            Icon(Icons.Filled.Share, contentDescription = "Поделиться")
           }
-          // Font size controls
-          IconButton(
-            onClick = { fontScale = (fontScale - 0.1f).coerceAtLeast(0.7f) }
-          ) {
-            Icon(
-              Icons.Default.TextDecrease,
-              contentDescription = "Уменьшить шрифт"
-            )
-          }
-          IconButton(
-            onClick = { fontScale = (fontScale + 0.1f).coerceAtMost(1.5f) }
-          ) {
-            Icon(
-              Icons.Default.TextIncrease,
-              contentDescription = "Увеличить шрифт"
-            )
-          }
+          // Search (Optional, maybe hidden to reduce clutter if we have global search)
+          // IconButton(onClick = onSearchClick) { Icon(Icons.Default.Search, contentDescription = "Поиск") }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-          containerColor = MaterialTheme.colorScheme.surface
+          containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
         )
       )
     },
-    bottomBar = {
+    floatingActionButton = {
       if (state is SongDetailUiState.Content) {
-        SongActionBar()
+        FloatingActionButton(
+          onClick = {
+            isFavorite = !isFavorite
+            onFavoriteClick()
+          },
+          containerColor = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
+          contentColor = if (isFavorite) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+          elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation(),
+          modifier = Modifier.padding(bottom = 60.dp) // Lift FAB above global bottom bar if visible
+        ) {
+           Icon(
+             imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+             contentDescription = if (isFavorite) "Убрать из избранного" else "Добавить в избранное"
+           )
+        }
       }
     }
   ) { innerPadding ->
-    when (state) {
-      SongDetailUiState.Loading -> {
-        LoadingContent(modifier = Modifier.padding(innerPadding))
-      }
-      is SongDetailUiState.Content -> {
-        SongContent(
-          song = state.song,
-          fontScale = fontScale,
-          modifier = Modifier.padding(innerPadding)
-        )
-      }
-      SongDetailUiState.Error -> {
-        ErrorContent(
-          modifier = Modifier.padding(innerPadding),
+    Box(
+      modifier = Modifier
+        .fillMaxSize()
+        .padding(innerPadding)
+        .background(MaterialTheme.colorScheme.background)
+    ) {
+      when (state) {
+        SongDetailUiState.Loading -> LoadingContent()
+        is SongDetailUiState.Content -> {
+          SongContent(
+            song = state.song,
+            fontScale = fontScale
+          )
+        }
+        SongDetailUiState.Error -> ErrorContent(
           title = "Песня не найдена",
           message = "Возможно, она была удалена или перемещена"
         )
       }
     }
+
+    // Settings Sheet
+    if (showSettingsSheet) {
+      ModalBottomSheet(
+        onDismissRequest = { showSettingsSheet = false },
+        sheetState = sheetState,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+      ) {
+        TextSettingsSheet(
+          fontScale = fontScale,
+          onFontScaleChange = { fontScale = it }
+        )
+      }
+    }
+  }
+}
+
+@Composable
+private fun TextSettingsSheet(
+  fontScale: Float,
+  onFontScaleChange: (Float) -> Unit
+) {
+  val spacing = MaterialTheme.spacing
+  Column(
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(spacing.lg)
+      // Add standard bottom padding for navigation bars
+      .padding(WindowInsets.navigationBars.asPaddingValues())
+  ) {
+    Text(
+      text = "Размер текста",
+      style = MaterialTheme.typography.titleMedium,
+      color = MaterialTheme.colorScheme.onSurface
+    )
+    Spacer(Modifier.height(spacing.lg))
+    Row(
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.spacedBy(spacing.md)
+    ) {
+      Icon(
+        Icons.Filled.FormatSize,
+        contentDescription = null,
+        modifier = Modifier.size(20.dp),
+        tint = MaterialTheme.colorScheme.onSurfaceVariant
+      )
+      Slider(
+        value = fontScale,
+        onValueChange = onFontScaleChange,
+        valueRange = 0.7f..1.6f,
+        steps = 9, // Steps: 0.7, 0.8 ... 1.6
+        modifier = Modifier.weight(1f),
+        colors = SliderDefaults.colors(
+          thumbColor = MaterialTheme.colorScheme.primary,
+          activeTrackColor = MaterialTheme.colorScheme.primary,
+          inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+      )
+      Icon(
+        Icons.Filled.FormatSize,
+        contentDescription = null,
+        modifier = Modifier.size(28.dp),
+        tint = MaterialTheme.colorScheme.onSurface
+      )
+    }
+    Spacer(Modifier.height(spacing.lg))
   }
 }
 
@@ -186,77 +276,70 @@ private fun SongContent(
   fontScale: Float,
   modifier: Modifier = Modifier
 ) {
-  val scrollState = rememberScrollState()
-
-  Column(
-    modifier = modifier
-      .fillMaxSize()
-      .verticalScroll(scrollState)
-      .padding(horizontal = MaterialTheme.spacing.screenHorizontal)
+  val spacing = MaterialTheme.spacing
+  LazyColumn(
+    modifier = modifier.fillMaxSize(),
+    contentPadding = PaddingValues(
+      top = spacing.lg,
+      bottom = spacing.xxl,
+      start = spacing.screenHorizontal,
+      end = spacing.screenHorizontal
+    ),
+    horizontalAlignment = Alignment.CenterHorizontally
   ) {
-    // Song header
-    SongHeader(song = song)
-
-    Spacer(Modifier.height(MaterialTheme.spacing.xl))
-
-    // Lyric content
-    LyricContent(
-      lyric = song.lyric,
-      fontScale = fontScale
-    )
-
-    // Metadata footer
-    if (song.author != null || song.composer != null || song.translator != null) {
-      Spacer(Modifier.height(MaterialTheme.spacing.xxl))
-      HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-      Spacer(Modifier.height(MaterialTheme.spacing.lg))
-      SongMetadata(song = song)
+    // Header
+    item {
+      SongHeader(song)
+      Spacer(Modifier.height(spacing.xl))
     }
 
-    // Bottom padding for action bar
-    Spacer(Modifier.height(100.dp))
+    // Lyrics
+    items(song.lyric) { part ->
+      LyricPartView(
+        part = part,
+        fontScale = fontScale
+      )
+      Spacer(Modifier.height(spacing.lg))
+    }
+
+    // Metadata
+    item {
+      SongMetadata(song)
+    }
   }
 }
 
 @Composable
 private fun SongHeader(song: SongDetail) {
-  Column {
+  val spacing = MaterialTheme.spacing
+  Column(
+    horizontalAlignment = Alignment.CenterHorizontally,
+    modifier = Modifier.fillMaxWidth().widthIn(max = 600.dp)
+  ) {
     Text(
       text = song.name.value,
-      style = MaterialTheme.typography.headlineSmall.copy(
-        fontWeight = FontWeight.Bold
+      style = MaterialTheme.typography.headlineMedium.copy(
+        fontWeight = FontWeight.Bold,
+        letterSpacing = (-0.5).sp
       ),
-      color = MaterialTheme.colorScheme.onSurface
+      color = MaterialTheme.colorScheme.onBackground,
+      textAlign = TextAlign.Center
     )
 
-    song.tonalities?.takeIf { it.isNotEmpty() }?.let { tonalities ->
-      Spacer(Modifier.height(MaterialTheme.spacing.sm))
-      Text(
-        text = tonalities.joinToString(" • ") { it.identifier },
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.primary
-      )
-    }
-  }
-}
-
-@Composable
-private fun LyricContent(
-  lyric: List<LyricPart>,
-  fontScale: Float
-) {
-  val baseTextSize = 18.sp * fontScale
-  val chorusTextSize = 17.sp * fontScale
-
-  Column(
-    verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.lg)
-  ) {
-    lyric.forEach { part ->
-      LyricPartView(
-        part = part,
-        baseTextSize = baseTextSize,
-        chorusTextSize = chorusTextSize
-      )
+    val tonalities = song.tonalities
+    if (!tonalities.isNullOrEmpty()) {
+      Spacer(Modifier.height(spacing.md))
+      Surface(
+        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+        shape = CircleShape,
+      ) {
+        Text(
+          text = tonalities.joinToString(" • ") { it.identifier },
+          style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium),
+          color = MaterialTheme.colorScheme.onSecondaryContainer,
+          modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+        )
+      }
     }
   }
 }
@@ -264,187 +347,184 @@ private fun LyricContent(
 @Composable
 private fun LyricPartView(
   part: LyricPart,
-  baseTextSize: androidx.compose.ui.unit.TextUnit,
-  chorusTextSize: androidx.compose.ui.unit.TextUnit
+  fontScale: Float
 ) {
-  when (part) {
-    is Verse -> {
-      Column {
-        // Verse number
-        if (part.numbers.isNotEmpty()) {
+  val baseFontSize = 18.sp * fontScale
+  val lineHeight = baseFontSize * 1.6f
+
+  Box(modifier = Modifier.widthIn(max = 600.dp).fillMaxWidth()) {
+    when (part) {
+      is Verse -> {
+        Row(modifier = Modifier.fillMaxWidth()) {
+          // Subtle Verse Number
+          if (part.numbers.isNotEmpty()) {
+            Text(
+              text = part.numbers.first().toString(),
+              style = MaterialTheme.typography.titleMedium.copy(
+                fontSize = baseFontSize * 0.8f,
+                fontWeight = FontWeight.SemiBold
+              ),
+              color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+              modifier = Modifier.width(32.dp).padding(top = 4.dp)
+            )
+          }
+
           Text(
-            text = part.numbers.joinToString(", "),
-            style = MaterialTheme.typography.labelMedium.copy(
-              fontWeight = FontWeight.Bold
+            text = part.text.trim(),
+            style = MaterialTheme.typography.bodyLarge.copy(
+              fontSize = baseFontSize,
+              lineHeight = lineHeight,
+              color = MaterialTheme.colorScheme.onBackground
             ),
-            color = MaterialTheme.colorScheme.primary
+            modifier = Modifier.weight(1f)
           )
-          Spacer(Modifier.height(MaterialTheme.spacing.xs))
         }
-        Text(
-          text = part.text.trim(),
-          style = MaterialTheme.typography.bodyLarge.copy(
-            fontSize = baseTextSize,
-            lineHeight = baseTextSize * 1.5f
-          ),
-          color = MaterialTheme.colorScheme.onSurface
+      }
+
+      is Chorus -> {
+        IntrinsicChorusView(
+          text = part.text,
+          label = "Припев",
+          fontSize = baseFontSize,
+          lineHeight = lineHeight,
+          accentColor = MaterialTheme.colorScheme.primary
+        )
+      }
+
+      is Bridge -> {
+        IntrinsicChorusView(
+          text = part.text,
+          label = "Бридж",
+          fontSize = baseFontSize,
+          lineHeight = lineHeight,
+          accentColor = MaterialTheme.colorScheme.tertiary
         )
       }
     }
+  }
+}
 
-    is Chorus -> {
-      Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium,
-        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-      ) {
-        Column(
-          modifier = Modifier.padding(MaterialTheme.spacing.md)
-        ) {
-          Row(
-            verticalAlignment = Alignment.CenterVertically
-          ) {
-            Box(
-              modifier = Modifier
-                .size(4.dp, 20.dp)
-                .clip(MaterialTheme.shapes.extraSmall)
-                .background(MaterialTheme.colorScheme.primary)
-            )
-            Spacer(Modifier.width(MaterialTheme.spacing.sm))
-            Text(
-              text = "Припев",
-              style = MaterialTheme.typography.labelMedium.copy(
-                fontWeight = FontWeight.SemiBold
-              ),
-              color = MaterialTheme.colorScheme.primary
-            )
-          }
-          Spacer(Modifier.height(MaterialTheme.spacing.sm))
-          Text(
-            text = part.text.trim(),
-            style = MaterialTheme.typography.bodyLarge.copy(
-              fontSize = chorusTextSize,
-              lineHeight = chorusTextSize * 1.5f,
-              fontStyle = FontStyle.Italic
-            ),
-            color = MaterialTheme.colorScheme.onSurface
-          )
-        }
-      }
-    }
+@Composable
+private fun IntrinsicChorusView(
+  text: String,
+  label: String,
+  fontSize: androidx.compose.ui.unit.TextUnit,
+  lineHeight: androidx.compose.ui.unit.TextUnit,
+  accentColor: Color
+) {
+  val spacing = MaterialTheme.spacing
+  // Use IntrinsicSize.Min to match the height of the accent line to the text content
+  Row(
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(vertical = 4.dp)
+      .height(IntrinsicSize.Min)
+  ) {
+    // Accent Line
+    Spacer(Modifier.width(8.dp))
+    Box(
+      modifier = Modifier
+        .width(4.dp)
+        .fillMaxHeight()
+        .clip(RoundedCornerShape(2.dp))
+        .background(accentColor)
+    )
+    Spacer(Modifier.width(spacing.md))
 
-    is Bridge -> {
-      Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium,
-        color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.3f)
-      ) {
-        Column(
-          modifier = Modifier.padding(MaterialTheme.spacing.md)
-        ) {
-          Text(
-            text = "Бридж",
-            style = MaterialTheme.typography.labelMedium.copy(
-              fontWeight = FontWeight.SemiBold
-            ),
-            color = MaterialTheme.colorScheme.tertiary
-          )
-          Spacer(Modifier.height(MaterialTheme.spacing.sm))
-          Text(
-            text = part.text.trim(),
-            style = MaterialTheme.typography.bodyLarge.copy(
-              fontSize = baseTextSize,
-              lineHeight = baseTextSize * 1.5f
-            ),
-            color = MaterialTheme.colorScheme.onSurface
-          )
-        }
-      }
+    Column(modifier = Modifier.weight(1f)) {
+      Text(
+        text = label.uppercase(),
+        style = MaterialTheme.typography.labelSmall.copy(
+          fontWeight = FontWeight.Bold,
+          letterSpacing = 1.sp
+        ),
+        color = accentColor
+      )
+      Spacer(Modifier.height(4.dp))
+      Text(
+        text = text.trim(),
+        style = MaterialTheme.typography.bodyLarge.copy(
+          fontSize = fontSize,
+          lineHeight = lineHeight,
+          fontStyle = FontStyle.Italic
+        ),
+        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.9f)
+      )
     }
   }
 }
 
 @Composable
 private fun SongMetadata(song: SongDetail) {
+  val bibleRefText = song.bibleRef?.toString()
+  val hasBibleRef = !bibleRefText.isNullOrBlank() && bibleRefText != "-"
+  val hasMetadata = song.author != null ||
+    song.composer != null ||
+    song.translator != null ||
+    song.year != null ||
+    hasBibleRef
+
+  if (!hasMetadata) return
+
+  val spacing = MaterialTheme.spacing
   Column(
-    verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sm)
+    modifier = Modifier.widthIn(max = 600.dp).fillMaxWidth()
   ) {
-    song.author?.let { author ->
-      MetadataRow(label = "Автор", value = author.name)
-    }
-    song.composer?.let { composer ->
-      MetadataRow(label = "Композитор", value = composer.name)
-    }
-    song.translator?.let { translator ->
-      MetadataRow(label = "Перевод", value = translator.name)
-    }
-    song.year?.let { year ->
-      MetadataRow(label = "Год", value = year.toString())
+    Spacer(Modifier.height(spacing.xl))
+    HorizontalDivider(
+      color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
+      modifier = Modifier.padding(vertical = spacing.lg)
+    )
+
+    Column(
+      verticalArrangement = Arrangement.spacedBy(spacing.sm)
+    ) {
+      // Info Header
+      Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+          Icons.Outlined.Info,
+          contentDescription = null,
+          modifier = Modifier.size(16.dp),
+          tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(Modifier.width(spacing.sm))
+        Text(
+          text = "Информация о песне",
+          style = MaterialTheme.typography.labelLarge,
+          color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+      }
+
+      Spacer(Modifier.height(spacing.sm))
+
+      if (song.author != null) MetadataItem("Автор", song.author!!.name)
+      if (song.composer != null) MetadataItem("Композитор", song.composer!!.name)
+      if (song.translator != null) MetadataItem("Перевод", song.translator!!.name)
+      if (song.year != null) MetadataItem("Год", song.year.toString())
+      if (hasBibleRef) {
+        MetadataItem("Библия", bibleRefText!!)
+      }
     }
   }
 }
 
 @Composable
-private fun MetadataRow(label: String, value: String) {
-  Row {
+private fun MetadataItem(label: String, value: String) {
+  Row(
+    modifier = Modifier.fillMaxWidth(),
+    horizontalArrangement = Arrangement.SpaceBetween
+  ) {
     Text(
-      text = "$label: ",
-      style = MaterialTheme.typography.bodySmall,
+      text = label,
+      style = MaterialTheme.typography.bodyMedium,
       color = MaterialTheme.colorScheme.onSurfaceVariant
     )
     Text(
       text = value,
-      style = MaterialTheme.typography.bodySmall.copy(
-        fontWeight = FontWeight.Medium
-      ),
-      color = MaterialTheme.colorScheme.onSurface
+      style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+      color = MaterialTheme.colorScheme.onSurface,
+      textAlign = TextAlign.End,
+      modifier = Modifier.padding(start = 16.dp)
     )
-  }
-}
-
-@Composable
-private fun SongActionBar() {
-  Surface(
-    modifier = Modifier.fillMaxWidth(),
-    color = MaterialTheme.colorScheme.surfaceContainer,
-    tonalElevation = 3.dp
-  ) {
-    Row(
-      modifier = Modifier
-        .fillMaxWidth()
-        .padding(MaterialTheme.spacing.md),
-      horizontalArrangement = Arrangement.SpaceEvenly,
-      verticalAlignment = Alignment.CenterVertically
-    ) {
-      // Favorite button
-      FilledTonalIconButton(
-        onClick = { /* TODO */ }
-      ) {
-        Icon(
-          imageVector = Icons.Outlined.FavoriteBorder,
-          contentDescription = "Добавить в избранное"
-        )
-      }
-
-      // Share button
-      FilledTonalIconButton(
-        onClick = { /* TODO */ }
-      ) {
-        Icon(
-          imageVector = Icons.Default.Share,
-          contentDescription = "Поделиться"
-        )
-      }
-
-      // Edit button
-      FilledTonalIconButton(
-        onClick = { /* TODO */ }
-      ) {
-        Icon(
-          imageVector = Icons.Default.Edit,
-          contentDescription = "Редактировать"
-        )
-      }
-    }
   }
 }

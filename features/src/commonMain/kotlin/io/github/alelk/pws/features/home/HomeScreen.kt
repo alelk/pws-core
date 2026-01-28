@@ -3,6 +3,8 @@ package io.github.alelk.pws.features.home
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -10,7 +12,9 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Dialpad
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -20,11 +24,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import cafe.adriel.voyager.core.registry.ScreenRegistry
 import cafe.adriel.voyager.core.registry.rememberScreen
 import cafe.adriel.voyager.core.screen.Screen
@@ -33,11 +37,16 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.domain.book.model.BookSummary
+import io.github.alelk.pws.domain.history.model.SongHistorySummary
 import io.github.alelk.pws.features.book.songs.BookSongsScreen
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
 import io.github.alelk.pws.features.components.NumberInputModal
 import io.github.alelk.pws.features.components.SearchBarWithSuggestions
+import io.github.alelk.pws.features.components.clickableWithScale
+import io.github.alelk.pws.features.components.generateBookColor
+import io.github.alelk.pws.features.components.getInitials
+import io.github.alelk.pws.features.components.shimmerEffect
 import io.github.alelk.pws.features.search.SearchSuggestion
 import io.github.alelk.pws.features.theme.spacing
 
@@ -64,6 +73,7 @@ class HomeScreen : Screen {
   }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeContent(
   state: HomeUiState,
@@ -75,90 +85,47 @@ fun HomeContent(
 ) {
   val navigator = LocalNavigator.currentOrThrow
   var showNumberInput by remember { mutableStateOf(false) }
+  val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
-  Surface(
-    modifier = Modifier.fillMaxSize(),
-    color = MaterialTheme.colorScheme.background
-  ) {
+  Scaffold(
+    modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
+    topBar = {
+      LargeTopAppBar(
+        title = {
+          Text(
+            text = "Псаломщик",
+            fontWeight = FontWeight.Bold
+          )
+        },
+        scrollBehavior = scrollBehavior,
+        colors = TopAppBarDefaults.largeTopAppBarColors(
+          containerColor = MaterialTheme.colorScheme.background,
+          scrolledContainerColor = MaterialTheme.colorScheme.background
+        )
+      )
+    }
+  ) { innerPadding ->
     when (state) {
       HomeUiState.Loading -> {
-        LoadingContent(message = "Загрузка...")
+        HomeContentSkeleton(
+          modifier = Modifier.padding(innerPadding)
+        )
       }
 
       is HomeUiState.Content -> {
-        // Use Box to layer search overlay on top of content
-        Box(modifier = Modifier.fillMaxSize()) {
-          // Main scrollable content
-          LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 140.dp),
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-              horizontal = MaterialTheme.spacing.screenHorizontal,
-              vertical = MaterialTheme.spacing.md
-            ),
-            horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md),
-            verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)
-          ) {
-            // Header with title
-            item(span = { GridItemSpan(maxLineSpan) }) {
-              HomeHeader()
-            }
-
-            // Search bar placeholder (same height as actual search bar for proper spacing)
-            item(span = { GridItemSpan(maxLineSpan) }) {
-              Spacer(Modifier.height(56.dp))
-            }
-
-            // Quick action buttons
-            item(span = { GridItemSpan(maxLineSpan) }) {
-              QuickActionButtons(
-                onNumberSearchClick = { showNumberInput = true },
-                onTextSearchClick = {
-                  if (searchQuery.isNotBlank()) {
-                    val screen = ScreenRegistry.get(SharedScreens.SearchResults(searchQuery))
-                    onClearSearch()
-                    navigator.push(screen)
-                  }
-                }
-              )
-            }
-
-            // Section header for books
-            item(span = { GridItemSpan(maxLineSpan) }) {
-              Spacer(Modifier.height(MaterialTheme.spacing.sm))
-              Text(
-                text = "Сборники песен",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onBackground
-              )
-            }
-
-            // Books grid
-            items(
-              items = state.books,
-              key = { it.id.toString() }
-            ) { book ->
-              val bookSongsScreen = rememberScreen(SharedScreens.BookSongs(book.id))
-              HomeBookCard(
-                book = book,
-                onClick = { navigator.push(bookSongsScreen) }
-              )
-            }
-
-            // Bottom spacer
-            item(span = { GridItemSpan(maxLineSpan) }) {
-              Spacer(Modifier.height(32.dp))
-            }
-          }
-
-          // Search bar with suggestions overlay - positioned on top
-          Column(
-            modifier = Modifier
-              .fillMaxWidth()
-              .padding(horizontal = MaterialTheme.spacing.screenHorizontal)
-              .padding(top = MaterialTheme.spacing.md + 72.dp) // After header
-              .zIndex(100f)
-          ) {
+        // Main scrollable content with search bar inside
+        LazyVerticalGrid(
+          columns = GridCells.Adaptive(minSize = 140.dp),
+          modifier = Modifier.fillMaxSize().padding(innerPadding),
+          contentPadding = PaddingValues(
+            horizontal = MaterialTheme.spacing.screenHorizontal,
+            vertical = MaterialTheme.spacing.md
+          ),
+          horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md),
+          verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)
+        ) {
+          // Search bar - scrolls with content
+          item(span = { GridItemSpan(maxLineSpan) }) {
             SearchBarWithSuggestions(
               query = searchQuery,
               onQueryChange = onSearchQueryChange,
@@ -186,11 +153,87 @@ fun HomeContent(
               showSuggestions = searchQuery.isNotBlank()
             )
           }
+
+          // Quick action chips - scrollable row
+          item(span = { GridItemSpan(maxLineSpan) }) {
+            QuickActionsRow(
+              onNumberSearchClick = { showNumberInput = true },
+              onTextSearchClick = {
+                // Focus search bar? Or navigate to search screen?
+                // For now let's make it more useful - navigate to text search directly (which is conceptually 'Search')
+                navigator.push(ScreenRegistry.get(SharedScreens.Search))
+              },
+              onHistoryClick = {
+                navigator.push(ScreenRegistry.get(SharedScreens.History))
+              }
+            )
+          }
+
+          // Recently viewed songs section
+          if (state.recentSongs.isNotEmpty()) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
+              Spacer(Modifier.height(MaterialTheme.spacing.md))
+              Text(
+                text = "Недавно открытые",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onBackground
+              )
+            }
+
+            item(span = { GridItemSpan(maxLineSpan) }) {
+              LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = 0.dp),
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)
+              ) {
+                items(
+                  items = state.recentSongs,
+                  key = { it.id }
+                ) { song ->
+                  val songScreen = rememberScreen(
+                    SharedScreens.Song(song.songNumberId)
+                  )
+                  RecentSongCard(
+                    song = song,
+                    onClick = { navigator.push(songScreen) }
+                  )
+                }
+              }
+            }
+          }
+
+          // Section header for books
+          item(span = { GridItemSpan(maxLineSpan) }) {
+            Spacer(Modifier.height(MaterialTheme.spacing.sm))
+            Text(
+              text = "Сборники песен",
+              style = MaterialTheme.typography.titleMedium,
+              color = MaterialTheme.colorScheme.onBackground
+            )
+          }
+
+          // Books grid - limit to max 6 featured books
+          items(
+            items = state.books.take(6),
+            key = { it.id.toString() }
+          ) { book ->
+            val bookSongsScreen = rememberScreen(SharedScreens.BookSongs(book.id))
+            HomeBookCard(
+              book = book,
+              onClick = { navigator.push(bookSongsScreen) }
+            )
+          }
+
+          // Bottom spacer
+          item(span = { GridItemSpan(maxLineSpan) }) {
+            Spacer(Modifier.height(32.dp))
+          }
         }
       }
 
       HomeUiState.Error -> {
         ErrorContent(
+          modifier = Modifier.padding(innerPadding),
           title = "Не удалось загрузить",
           message = "Проверьте подключение и попробуйте снова"
         )
@@ -214,132 +257,71 @@ fun HomeContent(
 }
 
 @Composable
-private fun HomeHeader() {
-  Column(
-    modifier = Modifier
-      .fillMaxWidth()
-      .padding(vertical = MaterialTheme.spacing.lg)
-  ) {
-    Text(
-      text = "🎵 Псаломщик",
-      style = MaterialTheme.typography.headlineMedium.copy(
-        fontWeight = FontWeight.Bold
-      ),
-      color = MaterialTheme.colorScheme.onBackground
-    )
-    Spacer(Modifier.height(MaterialTheme.spacing.xs))
-    Text(
-      text = "Найди любимую песню",
-      style = MaterialTheme.typography.bodyMedium,
-      color = MaterialTheme.colorScheme.onSurfaceVariant
-    )
-  }
-}
-
-
-@Composable
-private fun QuickActionButtons(
+private fun QuickActionsRow(
   onNumberSearchClick: () -> Unit,
   onTextSearchClick: () -> Unit,
-  modifier: Modifier = Modifier
+  onHistoryClick: () -> Unit
 ) {
   Row(
-    modifier = modifier
+    modifier = Modifier
       .fillMaxWidth()
       .padding(top = MaterialTheme.spacing.md),
     horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)
   ) {
-    QuickActionButton(
+    QuickActionChip(
       icon = Icons.Default.Dialpad,
-      title = "По номеру",
-      subtitle = "123",
+      label = "По номеру",
       onClick = onNumberSearchClick,
-      containerColor = MaterialTheme.colorScheme.primaryContainer,
-      contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
       modifier = Modifier.weight(1f)
     )
-    QuickActionButton(
+    QuickActionChip(
       icon = Icons.Default.TextFields,
-      title = "По тексту",
-      subtitle = "ABC",
+      label = "По тексту",
       onClick = onTextSearchClick,
-      containerColor = MaterialTheme.colorScheme.secondaryContainer,
-      contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+      modifier = Modifier.weight(1f)
+    )
+    QuickActionChip(
+      icon = Icons.Default.History,
+      label = "История",
+      onClick = onHistoryClick,
       modifier = Modifier.weight(1f)
     )
   }
 }
 
 @Composable
-private fun QuickActionButton(
+private fun QuickActionChip(
   icon: ImageVector,
-  title: String,
-  subtitle: String,
+  label: String,
   onClick: () -> Unit,
-  containerColor: Color,
-  contentColor: Color,
   modifier: Modifier = Modifier
 ) {
-  ElevatedCard(
-    modifier = modifier
-      .clip(MaterialTheme.shapes.large)
-      .clickable(onClick = onClick),
-    shape = MaterialTheme.shapes.large,
-    colors = CardDefaults.elevatedCardColors(
-      containerColor = containerColor
-    ),
-    elevation = CardDefaults.elevatedCardElevation(defaultElevation = 0.dp)
+  Surface(
+    modifier = modifier.clickableWithScale(onClick = onClick),
+    shape = MaterialTheme.shapes.medium,
+    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+    tonalElevation = 2.dp
   ) {
-    Row(
-      modifier = Modifier
-        .fillMaxWidth()
-        .padding(MaterialTheme.spacing.md),
-      verticalAlignment = Alignment.CenterVertically
+    Column(
+      modifier = Modifier.padding(vertical = 12.dp, horizontal = 4.dp),
+      horizontalAlignment = Alignment.CenterHorizontally,
+      verticalArrangement = Arrangement.Center
     ) {
       Icon(
         imageVector = icon,
         contentDescription = null,
-        modifier = Modifier.size(32.dp),
-        tint = contentColor
+        modifier = Modifier.size(24.dp),
+        tint = MaterialTheme.colorScheme.onSecondaryContainer
       )
-      Spacer(Modifier.width(MaterialTheme.spacing.sm))
-      Column {
-        Text(
-          text = title,
-          style = MaterialTheme.typography.labelLarge,
-          color = contentColor,
-          fontWeight = FontWeight.Medium
-        )
-        Text(
-          text = subtitle,
-          style = MaterialTheme.typography.bodySmall,
-          color = contentColor.copy(alpha = 0.7f)
-        )
-      }
+      Spacer(Modifier.height(4.dp))
+      Text(
+        text = label,
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSecondaryContainer,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
+      )
     }
-  }
-}
-
-/**
- * Generates a color from book name.
- */
-private fun bookNameToColor(name: String): Color {
-  val hash = name.hashCode()
-  val hue = (hash and 0xFF) / 255f * 360f
-  val saturation = 0.45f + (((hash shr 8) and 0xFF) / 255f) * 0.15f
-  val lightness = 0.4f + (((hash shr 16) and 0xFF) / 255f) * 0.1f
-  return Color.hsl(hue, saturation, lightness)
-}
-
-/**
- * Extracts initials from book name.
- */
-private fun getInitials(name: String): String {
-  val words = name.split(" ", "-").filter { it.isNotBlank() }
-  return when {
-    words.isEmpty() -> "?"
-    words.size == 1 -> words[0].take(2).uppercase()
-    else -> words.take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString("")
   }
 }
 
@@ -349,13 +331,13 @@ private fun HomeBookCard(
   onClick: () -> Unit,
   modifier: Modifier = Modifier
 ) {
-  val baseColor = remember(book.displayName.value) { bookNameToColor(book.displayName.value) }
+  val baseColor = remember(book.displayName.value) { generateBookColor(book.displayName.value) }
   val initials = remember(book.displayName.value) { getInitials(book.displayName.value) }
 
   Card(
     modifier = modifier
       .fillMaxWidth()
-      .clickable(onClick = onClick),
+      .clickableWithScale(onClick = onClick),
     shape = MaterialTheme.shapes.large,
     colors = CardDefaults.cardColors(
       containerColor = MaterialTheme.colorScheme.surfaceContainerLow
@@ -408,6 +390,70 @@ private fun HomeBookCard(
           color = MaterialTheme.colorScheme.onSurfaceVariant
         )
       }
+    }
+  }
+}
+
+@Composable
+private fun HomeContentSkeleton(modifier: Modifier = Modifier) {
+  LazyVerticalGrid(
+    columns = GridCells.Adaptive(minSize = 140.dp),
+    modifier = modifier.fillMaxSize(),
+    contentPadding = PaddingValues(
+      horizontal = MaterialTheme.spacing.screenHorizontal,
+      vertical = MaterialTheme.spacing.md
+    ),
+    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md),
+    verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)
+  ) {
+
+    // Search bar placeholder
+    item(span = { GridItemSpan(maxLineSpan) }) {
+      Box(
+        modifier = Modifier
+          .fillMaxWidth()
+          .height(56.dp)
+          .shimmerEffect(RoundedCornerShape(28.dp))
+      )
+    }
+
+    // Quick actions placeholder
+    item(span = { GridItemSpan(maxLineSpan) }) {
+      Row(horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)) {
+        Box(
+          modifier = Modifier
+            .weight(1f)
+            .height(80.dp)
+            .shimmerEffect(MaterialTheme.shapes.medium)
+        )
+        Box(
+          modifier = Modifier
+            .weight(1f)
+            .height(80.dp)
+            .shimmerEffect(MaterialTheme.shapes.medium)
+        )
+      }
+    }
+
+    // Section title
+    item(span = { GridItemSpan(maxLineSpan) }) {
+      Spacer(Modifier.height(MaterialTheme.spacing.sm))
+      Box(
+        modifier = Modifier
+          .width(150.dp)
+          .height(24.dp)
+          .shimmerEffect(MaterialTheme.shapes.small)
+      )
+    }
+
+    // Books placeholders
+    items(6) {
+      Box(
+        modifier = Modifier
+          .fillMaxWidth()
+          .aspectRatio(1f)
+          .shimmerEffect(MaterialTheme.shapes.medium)
+      )
     }
   }
 }
