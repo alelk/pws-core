@@ -3,6 +3,7 @@ package io.github.alelk.pws.features.favorites
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import io.github.alelk.pws.domain.favorite.model.FavoriteSong
+import io.github.alelk.pws.domain.favorite.model.FavoriteSubject
 import io.github.alelk.pws.domain.favorite.usecase.ObserveFavoritesUseCase
 import io.github.alelk.pws.domain.favorite.usecase.RemoveFavoriteUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -64,7 +65,7 @@ class FavoritesScreenModel(
   private fun removeFromFavorites(song: FavoriteSongUi) {
     screenModelScope.launch {
       try {
-        removeFavoriteUseCase(song.songNumberId)
+        removeFavoriteUseCase(song.subject)
         _effects.emit(Effect.ShowUndoSnackbar(song))
       } catch (e: Exception) {
         // Handle error
@@ -73,12 +74,19 @@ class FavoritesScreenModel(
   }
 
   @OptIn(ExperimentalTime::class)
-  private fun FavoriteSong.toUi() = FavoriteSongUi(
-    songNumberId = songNumberId,
-    songNumber = songNumber,
-    songName = songName,
-    bookDisplayName = bookDisplayName,
-    addedAt = addedAt
-  )
+  private fun FavoriteSong.toUi(): FavoriteSongUi = when (val s = subject) {
+    is FavoriteSubject.BookedSong -> FavoriteSongUi.BookedSong(
+      subject = s,
+      songNumber = songNumber ?: 0,
+      songName = songName,
+      bookDisplayName = bookDisplayName ?: "",
+      addedAt = addedAt
+    )
+    is FavoriteSubject.StandaloneSong -> FavoriteSongUi.StandaloneSong(
+      subject = s,
+      songName = songName,
+      addedAt = addedAt
+    )
+  }
 }
 

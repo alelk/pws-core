@@ -1,6 +1,11 @@
 package io.github.alelk.pws.domain.favorite.repository
 
-import io.github.alelk.pws.domain.core.ids.SongNumberId
+import io.github.alelk.pws.domain.core.result.ClearResourcesResult
+import io.github.alelk.pws.domain.core.result.CreateResourceResult
+import io.github.alelk.pws.domain.core.result.DeleteResourceResult
+import io.github.alelk.pws.domain.core.result.ToggleResourceResult
+import io.github.alelk.pws.domain.favorite.model.Favorite
+import io.github.alelk.pws.domain.favorite.model.FavoriteSubject
 
 /**
  * Mutation operations for Favorites.
@@ -8,20 +13,22 @@ import io.github.alelk.pws.domain.core.ids.SongNumberId
 interface FavoriteWriteRepository {
   /**
    * Add song to favorites.
-   * @return ID of the created favorite entry, or null if already exists.
    */
-  suspend fun add(songNumberId: SongNumberId): Long?
+  suspend fun add(subject: FavoriteSubject): CreateResourceResult<Favorite>
 
   /**
    * Remove song from favorites.
-   * @return true if removed, false if not found.
    */
-  suspend fun remove(songNumberId: SongNumberId): Boolean
+  suspend fun remove(subject: FavoriteSubject): DeleteResourceResult<FavoriteSubject>
 
   /**
    * Toggle favorite status.
-   * @return true if now favorite, false if removed from favorites.
    */
-  suspend fun toggle(songNumberId: SongNumberId): Boolean
+  suspend fun toggle(subject: FavoriteSubject): ToggleResourceResult<FavoriteSubject>
+
+  /**
+   * Clear all favorites.
+   */
+  suspend fun clearAll(): ClearResourcesResult
 }
 

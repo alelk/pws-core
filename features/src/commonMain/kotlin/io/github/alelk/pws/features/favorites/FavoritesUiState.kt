@@ -1,19 +1,43 @@
 package io.github.alelk.pws.features.favorites
 
 import androidx.compose.runtime.Immutable
-import io.github.alelk.pws.domain.core.ids.SongNumberId
+import io.github.alelk.pws.domain.favorite.model.FavoriteSubject
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
+/**
+ * UI representation of a favorite song.
+ * Supports both booked songs (in a book) and standalone songs.
+ */
 @OptIn(ExperimentalTime::class)
 @Immutable
-data class FavoriteSongUi(
-  val songNumberId: SongNumberId,
-  val songNumber: Int,
-  val songName: String,
-  val bookDisplayName: String,
-  val addedAt: Instant // timestamp
-)
+sealed interface FavoriteSongUi {
+  val subject: FavoriteSubject
+  val songName: String
+  val addedAt: Instant
+
+  /**
+   * A song favorited in context of a book.
+   */
+  @Immutable
+  data class BookedSong(
+    override val subject: FavoriteSubject.BookedSong,
+    val songNumber: Int,
+    override val songName: String,
+    val bookDisplayName: String,
+    override val addedAt: Instant
+  ) : FavoriteSongUi
+
+  /**
+   * A standalone song favorited without book context.
+   */
+  @Immutable
+  data class StandaloneSong(
+    override val subject: FavoriteSubject.StandaloneSong,
+    override val songName: String,
+    override val addedAt: Instant
+  ) : FavoriteSongUi
+}
 
 sealed interface FavoritesUiState {
   data object Loading : FavoritesUiState

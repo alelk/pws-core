@@ -1,7 +1,7 @@
 package io.github.alelk.pws.domain.favorite.repository
 
-import io.github.alelk.pws.domain.core.ids.SongNumberId
 import io.github.alelk.pws.domain.favorite.model.FavoriteSong
+import io.github.alelk.pws.domain.favorite.model.FavoriteSubject
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -11,11 +11,11 @@ interface FavoriteObserveRepository {
   /**
    * Observe all favorites ordered by addedAt desc.
    */
-  fun observeAll(): Flow<List<FavoriteSong>>
+  fun observeAll(limit: Int? = null, offset: Int = 0): Flow<List<FavoriteSong>>
 
   /**
    * Check if a song is in favorites.
    */
-  fun observeIsFavorite(songNumberId: SongNumberId): Flow<Boolean>
+  fun observeIsFavorite(subject: FavoriteSubject): Flow<Boolean>
 }
 

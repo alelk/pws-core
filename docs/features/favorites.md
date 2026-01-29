@@ -2,7 +2,9 @@
 
 ## Description
 
-User can add songs to favorites for quick access.
+User can add songs to favorites for quick access. Supports two types of favorites:
+- **Booked songs**: Songs favorited in context of a specific book (with book ID and song number)
+- **Standalone songs**: Songs favorited without book context (only song ID)
 
 ## Behavior
 
@@ -25,47 +27,100 @@ User can add songs to favorites for quick access.
 
 ## Use Cases
 
-### AddFavoriteUseCase
+### ToggleFavoriteUseCase
 ```kotlin
 class ToggleFavoriteUseCase(
     private val favoriteRepository: FavoriteWriteRepository,
     private val txRunner: TransactionRunner
 ) {
-    suspend operator fun invoke(songNumberId: SongNumberId): Boolean =
-        txRunner.inRwTransaction { favoriteRepository.toggle(songNumberId) }
+    suspend operator fun invoke(subject: FavoriteSubject): ToggleResourceResult<FavoriteSubject> =
+        txRunner.inRwTransaction { favoriteRepository.toggle(subject) }
 }
 ```
 
-Song is added to favorites with songbook binding (`SongNumberId`, not just `SongId`)
+### AddFavoriteUseCase
+```kotlin
+class AddFavoriteUseCase(
+    private val favoriteRepository: FavoriteWriteRepository,
+    private val txRunner: TransactionRunner
+) {
+    suspend operator fun invoke(subject: FavoriteSubject): CreateResourceResult<Favorite> =
+        txRunner.inRwTransaction { favoriteRepository.add(subject) }
+}
+```
 
-### ObserveFavoritesUseCase
+### RemoveFavoriteUseCase
+```kotlin
+class RemoveFavoriteUseCase(
+    private val favoriteRepository: FavoriteWriteRepository,
+    private val txRunner: TransactionRunner
+) {
+    suspend operator fun invoke(subject: FavoriteSubject): DeleteResourceResult<FavoriteSubject> =
+        txRunner.inRwTransaction { favoriteRepository.remove(subject) }
+}
+```
 
+### GetFavoritesUseCase (for API/backend)
+```kotlin
+class GetFavoritesUseCase(
+    private val favoriteRepository: FavoriteReadRepository,
+    private val txRunner: TransactionRunner
+) {
+    suspend operator fun invoke(limit: Int? = null, offset: Int = 0): List<FavoriteSong> =
+        txRunner.inRoTransaction { favoriteRepository.getAll(limit, offset) }
+}
+```
+
+### ObserveFavoritesUseCase (for UI, reactive)
 ```kotlin
 class ObserveFavoritesUseCase(
     private val favoriteRepository: FavoriteObserveRepository
 ) {
-    operator fun invoke(): Flow<List<FavoriteWithSongInfo>> =
-        favoriteRepository.observeAll()
+    operator fun invoke(limit: Int? = null, offset: Int = 0): Flow<List<FavoriteSong>> =
+        favoriteRepository.observeAll(limit, offset)
 }
 ```
 
-### ObserveFavoriteUseCase
-
+### ObserveIsFavoriteUseCase
 ```kotlin
 class ObserveIsFavoriteUseCase(
-  private val favoriteRepository: FavoriteObserveRepository
+    private val favoriteRepository: FavoriteObserveRepository
 ) {
-  operator fun invoke(songNumberId: SongNumberId): Flow<Boolean> =
-    favoriteRepository.observeIsFavorite(songNumberId)
+    operator fun invoke(subject: FavoriteSubject): Flow<Boolean> =
+        favoriteRepository.observeIsFavorite(subject)
+}
+```
+
+### ClearFavoritesUseCase
+```kotlin
+class ClearFavoritesUseCase(
+    private val favoriteRepository: FavoriteWriteRepository,
+    private val txRunner: TransactionRunner
+) {
+    suspend operator fun invoke(): ClearResourcesResult =
+        txRunner.inRwTransaction { favoriteRepository.clearAll() }
 }
 ```
 
 ## Models
 
+### FavoriteSubject
+```kotlin
+sealed interface FavoriteSubject {
+    val songId: SongId
+
+    data class BookedSong(val songNumberId: SongNumberId) : FavoriteSubject {
+        override val songId: SongId get() = songNumberId.songId
+    }
+
+    data class StandaloneSong(override val songId: SongId) : FavoriteSubject
+}
+```
+
 ### Favorite
 ```kotlin
 data class Favorite(
-    val songNumberId: SongNumberId,
+    val subject: FavoriteSubject,
     val addedAt: Instant
 )
 ```
@@ -73,12 +128,41 @@ data class Favorite(
 ### FavoriteSong
 ```kotlin
 data class FavoriteSong(
-    val songNumberId: SongNumberId,
-    val songNumber: Int,
+    val subject: FavoriteSubject,
     val songName: String,
-    val bookDisplayName: String,
+    val songNumber: Int?,           // null for standalone songs
+    val bookDisplayName: String?,   // null for standalone songs
     val addedAt: Instant
 )
+```
+
+## Repositories
+
+### FavoriteReadRepository (domain)
+```kotlin
+interface FavoriteReadRepository {
+    suspend fun getAll(limit: Int? = null, offset: Int = 0): List<FavoriteSong>
+    suspend fun isFavorite(subject: FavoriteSubject): Boolean
+    suspend fun count(): Long
+}
+```
+
+### FavoriteWriteRepository (domain)
+```kotlin
+interface FavoriteWriteRepository {
+    suspend fun add(subject: FavoriteSubject): CreateResourceResult<Favorite>
+    suspend fun remove(subject: FavoriteSubject): DeleteResourceResult<FavoriteSubject>
+    suspend fun toggle(subject: FavoriteSubject): ToggleResourceResult<FavoriteSubject>
+    suspend fun clearAll(): ClearResourcesResult
+}
+```
+
+### FavoriteObserveRepository (domain)
+```kotlin
+interface FavoriteObserveRepository {
+    fun observeAll(limit: Int? = null, offset: Int = 0): Flow<List<FavoriteSong>>
+    fun observeIsFavorite(subject: FavoriteSubject): Flow<Boolean>
+}
 ```
 
 ## UI Components

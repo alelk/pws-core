@@ -170,9 +170,9 @@ class UserHistoryApiTest : FunSpec({
     val api = UserHistoryApiImpl(client)
     val result = api.removeSongView(subject)
     result.shouldBeInstanceOf<ResourceDeleteResult.Success<HistorySubjectDto>>()
-    val deleted = (result as ResourceDeleteResult.Success).resourceId
+    val deleted = result.resourceId
     deleted.shouldBeInstanceOf<HistorySubjectDto.BookedSong>()
-    (deleted as HistorySubjectDto.BookedSong).songNumberId shouldBe SongNumberIdDto("book1/42")
+    deleted.songNumberId shouldBe SongNumberIdDto("book1/42")
   }
 
   test("removeSongView() should return Success for standalone song") {
@@ -188,9 +188,9 @@ class UserHistoryApiTest : FunSpec({
     val api = UserHistoryApiImpl(client)
     val result = api.removeSongView(subject)
     result.shouldBeInstanceOf<ResourceDeleteResult.Success<HistorySubjectDto>>()
-    val deleted = (result as ResourceDeleteResult.Success).resourceId
+    val deleted = result.resourceId
     deleted.shouldBeInstanceOf<HistorySubjectDto.StandaloneSong>()
-    (deleted as HistorySubjectDto.StandaloneSong).songId shouldBe SongIdDto(456)
+    deleted.songId shouldBe SongIdDto(456)
   }
 
   test("removeSongView() should handle idempotent response (entry didn't exist)") {

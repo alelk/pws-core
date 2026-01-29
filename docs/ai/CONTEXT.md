@@ -79,7 +79,9 @@ pws-core/
 | `SongNumberId`  | Unique identifier for song-in-book (bookId/songId) |
 | `Tag`           | Song category/tag with color                |
 | `SongTag`       | Song-to-tag link                            |
-| `Favorite`      | User's favorite song (songNumberId + timestamp) |
+| `Favorite`      | User's favorite song (subject + timestamp)  |
+| `FavoriteSubject` | Sealed: BookedSong(songNumberId) or StandaloneSong(songId) |
+| `FavoriteSong`  | Favorite with full song info for display    |
 | `HistoryEntry`  | View history record with subject (BookedSong or StandaloneSong), songName, viewedAt, viewCount |
 | `HistorySubject`| Sealed: BookedSong(songNumberId) or StandaloneSong(songId) |
 | `SongReference` | Links to similar songs                      |
