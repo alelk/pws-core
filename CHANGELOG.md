@@ -1,5 +1,15 @@
 # PWS Android
 
+# [2.0.0](https://github.com/alelk/pws-core/compare/v1.28.0...v2.0.0) (2026-01-29)
+
+
+* feat(history,favorites)!: Reimplement history & favorites api: standalone songs support ([#7](https://github.com/alelk/pws-core/issues/7)) ([daa9f8e](https://github.com/alelk/pws-core/commit/daa9f8e3b365045c520ef0d8a53b9d422ee7eeda))
+
+
+### BREAKING CHANGES
+
+* history and favorites api updated
+
 # [1.28.0](https://github.com/alelk/pws-core/compare/v1.27.0...v1.28.0) (2026-01-28)
 
 
