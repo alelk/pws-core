@@ -32,7 +32,7 @@ jobs:
 
       - name: Build and run tests
         run: |
-          ./gradlew :domain:check :domain:lyric-format:check :api:client:check :backup:check :data:db-room:check :data:repo-room:check :features:check
+          ./gradlew :domain:check :domain:lyric-format:check :api:client:check :backup:check :data:db-room:check :data:repo-room:check :features:check assemble
 
       - name: Publish Test Results
         uses: mikepenz/action-junit-report@v4
