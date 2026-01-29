@@ -1,5 +1,12 @@
 # PWS Android
 
+## [2.1.1](https://github.com/alelk/pws-core/compare/v2.1.0...v2.1.1) (2026-01-29)
+
+
+### Bug Fixes
+
+* **ci:** Update CI workflow to include assemble step in test run ([8edefa3](https://github.com/alelk/pws-core/commit/8edefa3f205b95393c3781e105aa9fe349bdbb5f))
+
 # [2.1.0](https://github.com/alelk/pws-core/compare/v2.0.0...v2.1.0) (2026-01-29)
 
 
