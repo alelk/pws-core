@@ -1,23 +1,33 @@
 package io.github.alelk.pws.api.client.api
 
-import io.github.alelk.pws.api.contract.core.ids.BookIdDto
 import io.github.alelk.pws.api.contract.history.HistoryEntryDto
-import io.github.alelk.pws.api.contract.history.RecordViewResultDto
+import io.github.alelk.pws.api.contract.history.HistorySubjectDto
 import io.github.alelk.pws.api.contract.history.UserHistory
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.resources.delete
 import io.ktor.client.plugins.resources.get
 import io.ktor.client.plugins.resources.post
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
 
 /**
  * User History API client for managing user's song view history.
  * Requires user authentication.
  */
 interface UserHistoryApi {
+
+  /** Get history entries (newest first). */
   suspend fun list(limit: Int = 50, offset: Int = 0): List<HistoryEntryDto>
+
+  /** Clear all history entries. */
   suspend fun clearAll()
-  suspend fun recordView(bookId: BookIdDto, songNumber: Int): RecordViewResultDto
-  suspend fun remove(bookId: BookIdDto, songNumber: Int)
+
+  /** Record a song view. Returns the created/updated history entry. */
+  suspend fun recordSongView(subject: HistorySubjectDto): ResourceUpsertResult<HistoryEntryDto>
+
+  /** Remove a history entry. Returns the removed subject. */
+  suspend fun removeSongView(subject: HistorySubjectDto): ResourceDeleteResult<HistorySubjectDto>
 }
 
 internal class UserHistoryApiImpl(client: HttpClient) : BaseResourceApi(client), UserHistoryApi {
@@ -29,15 +39,20 @@ internal class UserHistoryApiImpl(client: HttpClient) : BaseResourceApi(client),
     execute<Unit> { client.delete(UserHistory()) }.getOrThrow()
   }
 
-  override suspend fun recordView(bookId: BookIdDto, songNumber: Int): RecordViewResultDto =
-    execute<RecordViewResultDto> {
-      client.post(UserHistory.BySongNumber(bookId = bookId, songNumber = songNumber))
+  override suspend fun recordSongView(subject: HistorySubjectDto): ResourceUpsertResult<HistoryEntryDto> =
+    executeUpsert<HistoryEntryDto> {
+      client.post(UserHistory()) {
+        contentType(ContentType.Application.Json)
+        setBody(subject)
+      }
     }.getOrThrow()
 
-  override suspend fun remove(bookId: BookIdDto, songNumber: Int) {
-    execute<Unit> {
-      client.delete(UserHistory.BySongNumber(bookId = bookId, songNumber = songNumber))
+  override suspend fun removeSongView(subject: HistorySubjectDto): ResourceDeleteResult<HistorySubjectDto> =
+    executeDelete<HistorySubjectDto>(resourceId = subject) {
+      client.delete(UserHistory.Entry()) {
+        contentType(ContentType.Application.Json)
+        setBody(subject)
+      }
     }.getOrThrow()
-  }
 }
 

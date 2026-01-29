@@ -1,6 +1,6 @@
 package io.github.alelk.pws.domain.favorite.usecase
 
-import io.github.alelk.pws.domain.core.ids.SongNumberId
+import io.github.alelk.pws.domain.favorite.model.FavoriteSubject
 import io.github.alelk.pws.domain.favorite.repository.FavoriteObserveRepository
 import kotlinx.coroutines.flow.Flow
 
@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 class ObserveIsFavoriteUseCase(
   private val favoriteRepository: FavoriteObserveRepository
 ) {
-  operator fun invoke(songNumberId: SongNumberId): Flow<Boolean> =
-    favoriteRepository.observeIsFavorite(songNumberId)
+  operator fun invoke(subject: FavoriteSubject): Flow<Boolean> =
+    favoriteRepository.observeIsFavorite(subject)
 }
 

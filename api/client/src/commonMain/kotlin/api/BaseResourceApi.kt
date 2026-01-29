@@ -93,6 +93,24 @@ internal abstract class BaseResourceApi(protected val client: HttpClient) {
         } else throw exc
       }
 
+  protected suspend inline fun <reified T : Any> executeUpsert(crossinline block: suspend () -> HttpResponse): Result<ResourceUpsertResult<T>> =
+    handleResponse(json) { block() }
+      .mapCatching {
+        val resource = try {
+          it.body<T>()
+        } catch (se: Throwable) {
+          throw ApiException.Serialization(se)
+        }
+        ResourceUpsertResult.Success(resource)
+      }.recoverCatching { exc ->
+        if (exc is ApiException.Server) {
+          when (exc.error?.code) {
+            ErrorCodes.VALIDATION_ERROR -> ResourceUpsertResult.ValidationError(exc.error.message)
+            else -> throw exc
+          }
+        } else throw exc
+      }
+
   protected suspend inline fun <ID> executeDelete(resourceId: ID, crossinline block: suspend () -> HttpResponse): Result<ResourceDeleteResult<ID>> =
     handleResponse(json) { block() }
       .mapCatching {

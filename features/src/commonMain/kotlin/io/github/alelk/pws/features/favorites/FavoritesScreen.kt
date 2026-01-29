@@ -130,17 +130,37 @@ private fun FavoritesList(
   ) {
     items(
       items = songs,
-      key = { "${it.songNumberId.bookId}-${it.songNumberId.songId}" }
+      key = { song ->
+        when (song) {
+          is FavoriteSongUi.BookedSong -> "booked-${song.subject.songNumberId}"
+          is FavoriteSongUi.StandaloneSong -> "standalone-${song.subject.songId}"
+        }
+      }
     ) { song ->
-      val songScreen = rememberScreen(SharedScreens.Song(song.songNumberId))
-      SwipeableSongItem(
-        number = song.songNumber,
-        title = song.songName,
-        subtitle = song.bookDisplayName,
-        onClick = { navigator.push(songScreen) },
-        onFavoriteToggle = { onRemove(song) },
-        isFavorite = true
-      )
+      when (song) {
+        is FavoriteSongUi.BookedSong -> {
+          val songScreen = rememberScreen(SharedScreens.Song(song.subject.songNumberId))
+          SwipeableSongItem(
+            number = song.songNumber,
+            title = song.songName,
+            subtitle = song.bookDisplayName,
+            onClick = { navigator.push(songScreen) },
+            onFavoriteToggle = { onRemove(song) },
+            isFavorite = true
+          )
+        }
+        is FavoriteSongUi.StandaloneSong -> {
+          val songScreen = rememberScreen(SharedScreens.SongById(song.subject.songId))
+          SwipeableSongItem(
+            number = null,
+            title = song.songName,
+            subtitle = null,
+            onClick = { navigator.push(songScreen) },
+            onFavoriteToggle = { onRemove(song) },
+            isFavorite = true
+          )
+        }
+      }
 
       if (song != songs.last()) {
         HorizontalDivider(
