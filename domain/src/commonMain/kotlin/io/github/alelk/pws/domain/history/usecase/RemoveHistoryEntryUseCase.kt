@@ -1,7 +1,8 @@
 package io.github.alelk.pws.domain.history.usecase
 
-import io.github.alelk.pws.domain.core.ids.SongNumberId
+import io.github.alelk.pws.domain.core.result.DeleteResourceResult
 import io.github.alelk.pws.domain.core.transaction.TransactionRunner
+import io.github.alelk.pws.domain.history.model.HistorySubject
 import io.github.alelk.pws.domain.history.repository.HistoryWriteRepository
 
 /**
@@ -11,7 +12,7 @@ class RemoveHistoryEntryUseCase(
   private val historyRepository: HistoryWriteRepository,
   private val txRunner: TransactionRunner
 ) {
-  suspend operator fun invoke(id: SongNumberId): Boolean =
-    txRunner.inRwTransaction { historyRepository.remove(id) }
+  suspend operator fun invoke(subject: HistorySubject): DeleteResourceResult<HistorySubject> =
+    txRunner.inRwTransaction { historyRepository.remove(subject) }
 }
 

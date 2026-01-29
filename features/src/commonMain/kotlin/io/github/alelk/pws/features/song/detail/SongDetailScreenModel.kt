@@ -3,6 +3,7 @@ package io.github.alelk.pws.features.song.detail
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import io.github.alelk.pws.domain.core.ids.SongNumberId
+import io.github.alelk.pws.domain.history.model.HistorySubject
 import io.github.alelk.pws.domain.history.usecase.RecordSongViewUseCase
 import io.github.alelk.pws.domain.song.model.SongDetail
 import io.github.alelk.pws.domain.song.usecase.ObserveSongUseCase
@@ -27,7 +28,7 @@ class SongDetailScreenModel(
   fun onSongViewed() {
     screenModelScope.launch {
       try {
-        recordSongView(songNumberId)
+        recordSongView(HistorySubject.BookedSong(songNumberId))
       } catch (e: Exception) {
         // Ignore errors when recording view
       }

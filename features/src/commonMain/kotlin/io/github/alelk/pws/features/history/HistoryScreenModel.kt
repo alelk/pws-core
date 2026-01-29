@@ -2,7 +2,8 @@ package io.github.alelk.pws.features.history
 
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import io.github.alelk.pws.domain.history.model.SongHistorySummary
+import io.github.alelk.pws.domain.history.model.HistoryEntry
+import io.github.alelk.pws.domain.history.model.HistorySubject
 import io.github.alelk.pws.domain.history.usecase.ClearHistoryUseCase
 import io.github.alelk.pws.domain.history.usecase.ObserveHistoryUseCase
 import io.github.alelk.pws.domain.history.usecase.RemoveHistoryEntryUseCase
@@ -83,7 +84,7 @@ class HistoryScreenModel(
   private fun removeItem(item: HistoryItemUi) {
     screenModelScope.launch {
       try {
-        removeHistoryItemUseCase(item.songNumberId)
+        removeHistoryItemUseCase(item.subject)
       } catch (e: Exception) {
         // Handle error
       }
@@ -102,13 +103,23 @@ class HistoryScreenModel(
   }
 
   @OptIn(ExperimentalTime::class)
-  private fun SongHistorySummary.toUi() = HistoryItemUi(
-    id = id,
-    songNumberId = songNumberId,
-    songNumber = songNumber,
-    songName = songName,
-    bookDisplayName = bookDisplayName,
-    viewedAt = viewedAt
-  )
+  private fun HistoryEntry.toUi(): HistoryItemUi = when (val s = subject) {
+    is HistorySubject.BookedSong -> HistoryItemUi.BookedSong(
+      id = id,
+      subject = s,
+      songNumber = songNumber ?: 0,
+      songName = songName,
+      bookDisplayName = bookDisplayName ?: "",
+      viewedAt = viewedAt,
+      viewCount = viewCount
+    )
+    is HistorySubject.StandaloneSong -> HistoryItemUi.StandaloneSong(
+      id = id,
+      subject = s,
+      songName = songName,
+      viewedAt = viewedAt,
+      viewCount = viewCount
+    )
+  }
 }
 

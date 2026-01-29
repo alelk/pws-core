@@ -155,13 +155,26 @@ private fun HistoryList(
       items = items,
       key = { it.id }
     ) { item ->
-      val songScreen = rememberScreen(SharedScreens.Song(item.songNumberId))
-      SwipeableSongItem(
-        number = item.songNumber,
-        title = item.songName,
-        subtitle = "${item.bookDisplayName} • ${formatTime(item.viewedAt.toEpochMilliseconds())}",
-        onClick = { navigator.push(songScreen) }
-      )
+      when (item) {
+        is HistoryItemUi.BookedSong -> {
+          val songScreen = rememberScreen(SharedScreens.Song(item.subject.songNumberId))
+          SwipeableSongItem(
+            number = item.songNumber,
+            title = item.songName,
+            subtitle = "${item.bookDisplayName} • ${formatTime(item.viewedAt.toEpochMilliseconds())}",
+            onClick = { navigator.push(songScreen) }
+          )
+        }
+        is HistoryItemUi.StandaloneSong -> {
+          val songScreen = rememberScreen(SharedScreens.SongById(item.subject.songId))
+          SwipeableSongItem(
+            number = null,
+            title = item.songName,
+            subtitle = formatTime(item.viewedAt.toEpochMilliseconds()),
+            onClick = { navigator.push(songScreen) }
+          )
+        }
+      }
 
       if (item != items.last()) {
         HorizontalDivider(

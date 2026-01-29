@@ -1,27 +1,31 @@
 package io.github.alelk.pws.domain.history.repository
 
-import io.github.alelk.pws.domain.core.ids.SongNumberId
+import io.github.alelk.pws.domain.core.result.ClearResourcesResult
+import io.github.alelk.pws.domain.core.result.DeleteResourceResult
+import io.github.alelk.pws.domain.core.result.UpsertResourceResult
+import io.github.alelk.pws.domain.history.model.HistoryEntry
+import io.github.alelk.pws.domain.history.model.HistorySubject
 
 /**
  * Mutation operations for History.
  */
 interface HistoryWriteRepository {
   /**
-   * Add or update entry for a song view.
-   * If entry exists, updates viewedAt. Otherwise creates new entry.
-   * @return ID of the history entry.
+   * Record a view for a song.
+   * If entry exists, updates viewedAt and increments viewCount.
+   * Otherwise creates new entry.
+   * @return Upserted history entry on success.
    */
-  suspend fun recordView(songNumberId: SongNumberId): Long
+  suspend fun recordView(subject: HistorySubject): UpsertResourceResult<HistoryEntry>
 
   /**
-   * Remove a single history entry.
+   * Remove a history entry.
    */
-  suspend fun remove(id:  SongNumberId): Boolean
+  suspend fun remove(subject: HistorySubject): DeleteResourceResult<HistorySubject>
 
   /**
    * Clear all history.
-   * @return Number of entries removed.
    */
-  suspend fun clearAll(): Int
+  suspend fun clearAll(): ClearResourcesResult
 }
 

@@ -37,7 +37,8 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.domain.book.model.BookSummary
-import io.github.alelk.pws.domain.history.model.SongHistorySummary
+import io.github.alelk.pws.domain.history.model.HistoryEntry
+import io.github.alelk.pws.domain.history.model.HistorySubject
 import io.github.alelk.pws.features.book.songs.BookSongsScreen
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
@@ -190,9 +191,10 @@ fun HomeContent(
                   items = state.recentSongs,
                   key = { it.id }
                 ) { song ->
-                  val songScreen = rememberScreen(
-                    SharedScreens.Song(song.songNumberId)
-                  )
+                  val songScreen = when (val subject = song.subject) {
+                    is HistorySubject.BookedSong -> rememberScreen(SharedScreens.Song(subject.songNumberId))
+                    is HistorySubject.StandaloneSong -> rememberScreen(SharedScreens.SongById(subject.songId))
+                  }
                   RecentSongCard(
                     song = song,
                     onClick = { navigator.push(songScreen) }

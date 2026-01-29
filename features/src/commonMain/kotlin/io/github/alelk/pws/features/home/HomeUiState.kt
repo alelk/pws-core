@@ -2,7 +2,7 @@ package io.github.alelk.pws.features.home
 
 import androidx.compose.runtime.Immutable
 import io.github.alelk.pws.domain.book.model.BookSummary
-import io.github.alelk.pws.domain.history.model.SongHistorySummary
+import io.github.alelk.pws.domain.history.model.HistoryEntry
 
 /**
  * UI State for Home Screen.
@@ -13,7 +13,7 @@ sealed interface HomeUiState {
   @Immutable
   data class Content(
     val books: List<BookSummary>,
-    val recentSongs: List<SongHistorySummary> = emptyList(),
+    val recentSongs: List<HistoryEntry> = emptyList(),
     val isSearchActive: Boolean = false
   ) : HomeUiState
 

@@ -19,13 +19,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import io.github.alelk.pws.domain.history.model.SongHistorySummary
+import io.github.alelk.pws.domain.history.model.HistoryEntry
+import io.github.alelk.pws.domain.history.model.HistorySubject
 import io.github.alelk.pws.features.components.clickableWithScale
 import io.github.alelk.pws.features.theme.spacing
 
 @Composable
 fun RecentSongCard(
-  song: SongHistorySummary,
+  song: HistoryEntry,
   onClick: () -> Unit,
   modifier: Modifier = Modifier
 ) {
@@ -42,26 +43,28 @@ fun RecentSongCard(
     Column(
       modifier = Modifier.padding(MaterialTheme.spacing.md)
     ) {
-      // Song Number Badge
-      Box(
-        modifier = Modifier
-          .widthIn(min = 32.dp)
-          .height(32.dp)
-          .clip(MaterialTheme.shapes.small)
-          .background(MaterialTheme.colorScheme.primaryContainer)
-          .padding(horizontal = 8.dp),
-        contentAlignment = Alignment.Center
-      ) {
-        Text(
-          text = song.songNumber.toString(),
-          style = MaterialTheme.typography.titleMedium.copy(
-            fontWeight = FontWeight.Bold
-          ),
-          color = MaterialTheme.colorScheme.onPrimaryContainer
-        )
+      // Song Number Badge (only for booked songs)
+      val songNumber = song.songNumber
+      if (songNumber != null) {
+        Box(
+          modifier = Modifier
+            .widthIn(min = 32.dp)
+            .height(32.dp)
+            .clip(MaterialTheme.shapes.small)
+            .background(MaterialTheme.colorScheme.primaryContainer)
+            .padding(horizontal = 8.dp),
+          contentAlignment = Alignment.Center
+        ) {
+          Text(
+            text = songNumber.toString(),
+            style = MaterialTheme.typography.titleMedium.copy(
+              fontWeight = FontWeight.Bold
+            ),
+            color = MaterialTheme.colorScheme.onPrimaryContainer
+          )
+        }
+        Spacer(Modifier.height(MaterialTheme.spacing.sm))
       }
-
-      Spacer(Modifier.height(MaterialTheme.spacing.sm))
 
       // Song Title
       Text(
@@ -77,14 +80,17 @@ fun RecentSongCard(
 
       Spacer(Modifier.height(MaterialTheme.spacing.xs))
 
-      // Book Name (Short) - using bookDisplayName from SongHistorySummary
-      Text(
-        text = song.bookDisplayName,
-        style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis
-      )
+      // Book Name (only for booked songs)
+      val bookName = song.bookDisplayName
+      if (bookName != null) {
+        Text(
+          text = bookName,
+          style = MaterialTheme.typography.labelSmall,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis
+        )
+      }
     }
   }
 }
