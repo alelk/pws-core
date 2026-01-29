@@ -1,5 +1,12 @@
 # PWS Android
 
+# [2.1.0](https://github.com/alelk/pws-core/compare/v2.0.0...v2.1.0) (2026-01-29)
+
+
+### Features
+
+* **project:** Update library dependencies. Fix tests. ([ed27aa7](https://github.com/alelk/pws-core/commit/ed27aa7fcb112408bb4946714bb4db4a22cfa625))
+
 # [2.0.0](https://github.com/alelk/pws-core/compare/v1.28.0...v2.0.0) (2026-01-29)
 
 
