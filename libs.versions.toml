@@ -1,16 +1,16 @@
 [versions]
 
-kotlin = "2.2.21"
+kotlin = "2.3.0"
 kotlinx-coroutines = "1.10.2"
-kotlinx-serialization = "1.9.0"
+kotlinx-serialization = "1.10.0"
 kotlinx-datetime = "0.7.1"
-ksp = "2.2.21-2.0.4" # https://central.sonatype.com/artifact/com.google.devtools.ksp/com.google.devtools.ksp.gradle.plugin/versions
+ksp = "2.3.5" # https://central.sonatype.com/artifact/com.google.devtools.ksp/com.google.devtools.ksp.gradle.plugin/versions
 
 kaml = "0.104.0"
 
-ktor = "3.3.3"
+ktor = "3.4.0"
 
-composeMultiplatform = "1.9.3"
+composeMultiplatform = "1.10.0"
 androidx-lifecycle = "2.9.6"
 
 koin = "4.1.1"
@@ -22,15 +22,15 @@ android = "8.12.3"
 
 room = "2.8.4"
 
-kotest = "6.0.7"
+kotest = "6.1.1"
 kotest-property-datetime = "2.0.0"
-kotest-runner-android = "1.2.0"
-kotest-extensions-android = "0.1.7"
-kotest-multiplatform = "5.9.1"
+kotest-runner-android = "1.2.2"
+kotest-extensions-android = "0.1.9"
+kotest-multiplatform = "6.0.0.M3"
 
 kudzu = "6.1.0"
 i18n4k = "0.11.1"
-robolectric = "4.16"
+robolectric = "4.16.1"
 sqlite-bundled = "2.6.2"
 
 [libraries]
@@ -87,7 +87,7 @@ kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest"
 kotest-property-datetime = { module = "io.kotest.extensions:kotest-property-datetime", version.ref = "kotest-property-datetime" } # https://central.sonatype.com/artifact/io.kotest.extensions/kotest-property-datetime
 kotest-runner-junit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 
-ktor-clientMockJvm = { module = "io.ktor:ktor-client-mock-jvm", version.ref = "ktor" }
+ktor-clientMock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
 
 androidx-test-core = { group = "androidx.test", name = "core", version = "1.7.0" } # https://mvnrepository.com/artifact/androidx.test/core
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" } # https://mvnrepository.com/artifact/org.robolectric/robolectric
@@ -110,5 +110,8 @@ kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", versio
 
 androidLibrary = { id = "com.android.library", version.ref = "android" } # Use same AGP version as application
 
+kotest = { id = "io.kotest", version.ref = "kotest" }
+
+# todo: deprecated?
 kotestMultiplatform = { id = "io.kotest.multiplatform", version.ref = "kotest-multiplatform" }
 i18n4k = { id = "de.comahe.i18n4k", version.ref = "i18n4k" } # https://plugins.gradle.org/plugin/de.comahe.i18n4k

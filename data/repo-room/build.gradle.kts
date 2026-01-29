@@ -1,6 +1,7 @@
 plugins {
   alias(libs.plugins.kotlinMultiplatform)
-  alias(libs.plugins.kotestMultiplatform)
+  alias(libs.plugins.kotest)
+  id("com.google.devtools.ksp")
 }
 
 group = "io.github.alelk.pws.data"

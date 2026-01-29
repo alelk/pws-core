@@ -1,6 +1,8 @@
 plugins {
   alias(libs.plugins.kotlinMultiplatform)
   alias(libs.plugins.kotlinSerialization)
+  alias(libs.plugins.kotest)
+  id("com.google.devtools.ksp")
 }
 
 group = "io.github.alelk.pws.backup"

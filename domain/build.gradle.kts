@@ -1,6 +1,8 @@
 plugins {
   alias(libs.plugins.kotlinMultiplatform)
   alias(libs.plugins.kotlinSerialization)
+  alias(libs.plugins.kotest)
+  id("com.google.devtools.ksp")
 }
 
 group = "io.github.alelk.pws.domain"
@@ -33,9 +35,15 @@ kotlin {
       implementation(kotlin("test-annotations-common"))
     }
 
+    jsTest.dependencies {
+    }
+
     jvmTest.dependencies {
       implementation(libs.kotest.runner.junit5)
     }
   }
 }
 
+tasks.withType<Test> {
+  useJUnitPlatform()
+}

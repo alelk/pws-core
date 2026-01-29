@@ -1,5 +1,7 @@
 plugins {
   alias(libs.plugins.kotlinMultiplatform)
+  alias(libs.plugins.kotest)
+  id("com.google.devtools.ksp")
 }
 
 group = "io.github.alelk.pws.api"
@@ -31,12 +33,14 @@ kotlin {
     jsMain.dependencies {
       implementation(libs.ktor.client.js)
     }
-    jvmTest.dependencies {
-      implementation(libs.kotest.runner.junit5)
+    commonTest.dependencies {
       implementation(libs.kotest.assertions.core)
       implementation(libs.kotest.property)
-      implementation(libs.ktor.clientMockJvm)
+      implementation(libs.ktor.clientMock)
       implementation(project(":domain:domain-test-fixtures"))
+    }
+    jvmTest.dependencies {
+      implementation(libs.kotest.runner.junit5)
     }
   }
 }

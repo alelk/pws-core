@@ -5,6 +5,7 @@ import io.github.alelk.pws.domain.core.Color
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+@ConsistentCopyVisibility
 @Serializable
 data class Tag private constructor(
   val name: String,

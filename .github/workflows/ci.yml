@@ -32,9 +32,7 @@ jobs:
 
       - name: Build and run tests
         run: |
-          ./gradlew assemble publishToMavenLocal -x test domain:jvmTest :backup:jvmTest :data:db-room:jvmTest :api:client:jvmTest
-        # fixme: enable android tests
-        #./gradlew assemble domain:jvmTest :backup:jvmTest :data:db-room:testDebugUnitTest :data:db-room:jvmTest :api:client:jvmTest
+          ./gradlew :domain:check :domain:lyric-format:check :api:client:check :backup:check :data:db-room:check :data:repo-room:check :features:check
 
       - name: Publish Test Results
         uses: mikepenz/action-junit-report@v4
