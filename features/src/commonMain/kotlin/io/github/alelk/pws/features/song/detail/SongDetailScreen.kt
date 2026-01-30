@@ -33,6 +33,7 @@ import io.github.alelk.pws.domain.song.lyric.Chorus
 import io.github.alelk.pws.domain.song.lyric.LyricPart
 import io.github.alelk.pws.domain.song.lyric.Verse
 import io.github.alelk.pws.domain.song.model.SongDetail
+import io.github.alelk.pws.features.components.AppModalBottomSheet
 import io.github.alelk.pws.features.components.AppTopBar
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
@@ -142,7 +143,7 @@ fun SongDetailContent(
 
     // Settings Sheet
     if (showSettingsSheet) {
-      ModalBottomSheet(
+      AppModalBottomSheet(
         onDismissRequest = { showSettingsSheet = false },
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow
