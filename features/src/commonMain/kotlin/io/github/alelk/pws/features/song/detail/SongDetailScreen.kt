@@ -88,6 +88,7 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
     val navigator = LocalNavigator.currentOrThrow
     val viewModel = koinScreenModel<SongDetailScreenModel>(parameters = { parametersOf(songNumberId) })
     val state by viewModel.state.collectAsState()
+    val isFavorite by viewModel.isFavorite.collectAsState()
     val searchScreen = cafe.adriel.voyager.core.registry.rememberScreen(io.github.alelk.pws.core.navigation.SharedScreens.Search)
 
     LaunchedEffect(state) {
@@ -100,11 +101,15 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
     SongDetailContent(
       state = state,
       songNumber = songNumberId.identifier,
+      isFavorite = isFavorite,
       onSearchClick = {
         navigator.push(searchScreen)
       },
       onNumberInputClick = {
         // TODO: Show number input modal in context of current book
+      },
+      onFavoriteClick = {
+        viewModel.onToggleFavorite()
       }
     )
   }
@@ -115,13 +120,13 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
 fun SongDetailContent(
   state: SongDetailUiState,
   songNumber: String? = null,
+  isFavorite: Boolean = false,
   onSearchClick: () -> Unit = {},
   onNumberInputClick: () -> Unit = {},
   onFavoriteClick: () -> Unit = {}
 ) {
   val navigator = LocalNavigator.currentOrThrow
   var fontScale by remember { mutableFloatStateOf(1f) }
-  var isFavorite by remember { mutableStateOf(false) } // TODO: Bind to real state
   var showSettingsSheet by remember { mutableStateOf(false) }
   val spacing = MaterialTheme.spacing
 
@@ -164,10 +169,7 @@ fun SongDetailContent(
     floatingActionButton = {
       if (state is SongDetailUiState.Content) {
         FloatingActionButton(
-          onClick = {
-            isFavorite = !isFavorite
-            onFavoriteClick()
-          },
+          onClick = onFavoriteClick,
           containerColor = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
           contentColor = if (isFavorite) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
           elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation(),
