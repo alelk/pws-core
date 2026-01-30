@@ -3,7 +3,7 @@ package io.github.alelk.pws.domain.songtag.repository
 import io.github.alelk.pws.domain.core.ids.SongNumberId
 import io.github.alelk.pws.domain.core.ids.TagId
 import io.github.alelk.pws.domain.songtag.model.SongWithBookInfo
-import io.github.alelk.pws.domain.tag.model.TagSummary
+import io.github.alelk.pws.domain.tag.Tag
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -18,6 +18,6 @@ interface SongTagObserveRepository {
   /**
    * Observe all tags for a specific song.
    */
-  fun observeTagsForSong(songNumberId: SongNumberId): Flow<List<TagSummary>>
+  fun observeTagsForSong(songNumberId: SongNumberId): Flow<List<Tag>>
 }
 

@@ -2,7 +2,7 @@ package io.github.alelk.pws.domain.songtag.usecase
 
 import io.github.alelk.pws.domain.core.ids.SongNumberId
 import io.github.alelk.pws.domain.songtag.repository.SongTagObserveRepository
-import io.github.alelk.pws.domain.tag.model.TagSummary
+import io.github.alelk.pws.domain.tag.Tag
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 class ObserveTagsForSongUseCase(
   private val songTagRepository: SongTagObserveRepository
 ) {
-  operator fun invoke(songNumberId: SongNumberId): Flow<List<TagSummary>> =
+  operator fun invoke(songNumberId: SongNumberId): Flow<List<Tag>> =
     songTagRepository.observeTagsForSong(songNumberId)
 }
 

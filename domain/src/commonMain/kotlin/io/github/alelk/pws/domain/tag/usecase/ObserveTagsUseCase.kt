@@ -1,6 +1,6 @@
 package io.github.alelk.pws.domain.tag.usecase
 
-import io.github.alelk.pws.domain.tag.model.TagSummary
+import io.github.alelk.pws.domain.tag.Tag
 import io.github.alelk.pws.domain.tag.query.TagSort
 import io.github.alelk.pws.domain.tag.repository.TagObserveRepository
 import kotlinx.coroutines.flow.Flow
@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 class ObserveTagsUseCase(
   private val tagRepository: TagObserveRepository
 ) {
-  operator fun invoke(sort: TagSort = TagSort.ByPriority): Flow<List<TagSummary>> =
+  operator fun invoke(sort: TagSort = TagSort.ByPriority): Flow<List<Tag>> =
     tagRepository.observeAll(sort)
 }
 

@@ -8,8 +8,8 @@ import io.github.alelk.pws.api.contract.tag.songtag.SongTagAssociationDto
 import io.github.alelk.pws.api.mapping.core.toDto
 import io.github.alelk.pws.domain.core.result.ReplaceAllResourcesResult
 import io.github.alelk.pws.domain.songtag.model.SongTagAssociation
+import io.github.alelk.pws.domain.tag.Tag
 import io.github.alelk.pws.domain.tag.model.TagDetail
-import io.github.alelk.pws.domain.tag.model.TagSummary
 import io.github.alelk.pws.domain.tag.query.TagSort
 
 fun TagSort.toDto(): TagSortDto = when (this) {
@@ -18,11 +18,11 @@ fun TagSort.toDto(): TagSortDto = when (this) {
   TagSort.BySongCount -> TagSortDto.BySongCount
 }
 
-fun TagSummary.toDto(): TagSummaryDto = TagSummaryDto(
+fun Tag.toDto(): TagSummaryDto = TagSummaryDto(
   id = id.toDto(),
   name = name,
+  priority = priority,
   color = color.toDto(),
-  songCount = songCount,
   predefined = predefined
 )
 

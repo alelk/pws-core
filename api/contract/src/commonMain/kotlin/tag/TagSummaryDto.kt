@@ -11,8 +11,8 @@ import kotlinx.serialization.Serializable
 data class TagSummaryDto(
   val id: TagIdDto,
   val name: String,
+  val priority: Int,
   val color: ColorDto,
-  val songCount: Int,
   val predefined: Boolean
 )
 

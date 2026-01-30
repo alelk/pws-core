@@ -6,10 +6,10 @@ import io.github.alelk.pws.api.contract.tag.TagSortDto
 import io.github.alelk.pws.api.contract.tag.TagSummaryDto
 import io.github.alelk.pws.api.contract.tag.TagUpdateRequestDto
 import io.github.alelk.pws.api.mapping.core.toDomain
+import io.github.alelk.pws.domain.tag.Tag
 import io.github.alelk.pws.domain.tag.command.CreateTagCommand
 import io.github.alelk.pws.domain.tag.command.UpdateTagCommand
 import io.github.alelk.pws.domain.tag.model.TagDetail
-import io.github.alelk.pws.domain.tag.model.TagSummary
 import io.github.alelk.pws.domain.tag.query.TagSort
 
 fun TagSortDto.toDomain(): TagSort = when (this) {
@@ -32,11 +32,11 @@ fun TagUpdateRequestDto.toDomain(tagId: io.github.alelk.pws.domain.core.ids.TagI
   priority = priority
 )
 
-fun TagSummaryDto.toDomain(): TagSummary = TagSummary(
+fun TagSummaryDto.toDomain(): Tag = Tag(
   id = id.toDomain(),
   name = name,
+  priority = priority,
   color = color.toDomain(),
-  songCount = songCount,
   predefined = predefined
 )
 

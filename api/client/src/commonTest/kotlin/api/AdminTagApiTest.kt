@@ -44,8 +44,8 @@ class AdminTagApiTest : FunSpec({
   // --- list ---
 
   test("list() should GET /v1/admin/tags and return parsed tag summaries") {
-    val tag1 = TagSummaryDto(TagIdDto("worship"), "Worship", ColorDto("#FF0000"), songCount = 10, predefined = true)
-    val tag2 = TagSummaryDto(TagIdDto("praise"), "Praise", ColorDto("#00FF00"), songCount = 5, predefined = true)
+    val tag1 = TagSummaryDto(TagIdDto("worship"), "Worship", priority = 1, ColorDto("#FF0000"), predefined = true)
+    val tag2 = TagSummaryDto(TagIdDto("praise"), "Praise", priority = 2, ColorDto("#00FF00"), predefined = true)
     val responseJson = json.encodeToString(listOf(tag1, tag2))
 
     val client = httpClientWith { req ->
