@@ -11,7 +11,6 @@ data class TagDetail(
   val name: String,
   val priority: Int,
   val color: Color,
-  val predefined: Boolean,
   val songCount: Int
 )
 

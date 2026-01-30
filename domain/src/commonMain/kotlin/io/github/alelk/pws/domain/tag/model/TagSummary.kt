@@ -11,6 +11,5 @@ data class TagSummary(
   val name: String,
   val color: Color,
   val songCount: Int,
-  val predefined: Boolean
 )
 
