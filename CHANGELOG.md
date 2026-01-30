@@ -1,5 +1,12 @@
 # PWS Android
 
+# [2.2.0](https://github.com/alelk/pws-core/compare/v2.1.1...v2.2.0) (2026-01-30)
+
+
+### Features
+
+* **ui:** Implement ui components for history/favorites ([#8](https://github.com/alelk/pws-core/issues/8)) ([95d334d](https://github.com/alelk/pws-core/commit/95d334d18891b5cce12099e03a06bd14964f40ae))
+
 ## [2.1.1](https://github.com/alelk/pws-core/compare/v2.1.0...v2.1.1) (2026-01-29)
 
 
