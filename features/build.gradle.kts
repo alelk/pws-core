@@ -30,6 +30,7 @@ kotlin {
       implementation(libs.kotlinx.coroutines.core)
 
       implementation(libs.voyager.navigator)
+      implementation(libs.voyager.tab.navigator)
       implementation(libs.voyager.koin)
 
       implementation(libs.koin.core)

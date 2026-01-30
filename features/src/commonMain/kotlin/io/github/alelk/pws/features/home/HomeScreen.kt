@@ -12,10 +12,11 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Dialpad
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.TextFields
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Tag
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -170,6 +171,20 @@ fun HomeContent(
             )
           }
 
+          // Second row of quick actions - Favorites and Tags
+          item(span = { GridItemSpan(maxLineSpan) }) {
+            QuickActionsRowSecondary(
+              onFavoritesClick = {
+                // Navigate to favorites screen
+                navigator.push(ScreenRegistry.get(SharedScreens.Favorites))
+              },
+              onTagsClick = {
+                // Navigate to tags screen
+                navigator.push(ScreenRegistry.get(SharedScreens.Tags))
+              }
+            )
+          }
+
           // Recently viewed songs section
           if (state.recentSongs.isNotEmpty()) {
             item(span = { GridItemSpan(maxLineSpan) }) {
@@ -288,6 +303,35 @@ private fun QuickActionsRow(
       onClick = onHistoryClick,
       modifier = Modifier.weight(1f)
     )
+  }
+}
+
+@Composable
+private fun QuickActionsRowSecondary(
+  onFavoritesClick: () -> Unit,
+  onTagsClick: () -> Unit,
+  modifier: Modifier = Modifier
+) {
+  Row(
+    modifier = modifier
+      .fillMaxWidth()
+      .padding(top = MaterialTheme.spacing.sm),
+    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)
+  ) {
+    QuickActionChip(
+      icon = Icons.Outlined.FavoriteBorder,
+      label = "Избранное",
+      onClick = onFavoritesClick,
+      modifier = Modifier.weight(1f)
+    )
+    QuickActionChip(
+      icon = Icons.Outlined.Tag,
+      label = "Теги",
+      onClick = onTagsClick,
+      modifier = Modifier.weight(1f)
+    )
+    // Балансируем сетку, чтобы визуально была ровная 3-колоночная линия как в первом ряду
+    Spacer(Modifier.weight(1f))
   }
 }
 
@@ -420,6 +464,24 @@ private fun HomeContentSkeleton(modifier: Modifier = Modifier) {
     }
 
     // Quick actions placeholder
+    item(span = { GridItemSpan(maxLineSpan) }) {
+      Row(horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)) {
+        Box(
+          modifier = Modifier
+            .weight(1f)
+            .height(80.dp)
+            .shimmerEffect(MaterialTheme.shapes.medium)
+        )
+        Box(
+          modifier = Modifier
+            .weight(1f)
+            .height(80.dp)
+            .shimmerEffect(MaterialTheme.shapes.medium)
+        )
+      }
+    }
+
+    // Second row quick actions placeholder
     item(span = { GridItemSpan(maxLineSpan) }) {
       Row(horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)) {
         Box(

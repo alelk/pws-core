@@ -1,14 +1,17 @@
 package io.github.alelk.pws.features.components
 
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material.icons.automirrored.outlined.LibraryBooks
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Tag
 import androidx.compose.material3.Icon
@@ -20,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import cafe.adriel.voyager.navigator.tab.Tab
 
 /**
  * Navigation destinations for the app.
@@ -30,6 +34,12 @@ enum class NavDestination(
   val selectedIcon: ImageVector,
   val unselectedIcon: ImageVector
 ) {
+  Home(
+    route = "home",
+    label = "Главная",
+    selectedIcon = Icons.Filled.Home,
+    unselectedIcon = Icons.Outlined.Home
+  ),
   Books(
     route = "books",
     label = "Сборники",
@@ -64,31 +74,42 @@ enum class NavDestination(
 
 /**
  * Bottom navigation bar for main app navigation.
+ *
+ * Important: we pass the explicit list of tabs so the component can map UI items -> concrete Tab instances.
  */
 @Composable
 fun AppNavigationBar(
-  currentDestination: NavDestination,
-  onDestinationSelected: (NavDestination) -> Unit,
+  tabs: List<Tab>,
+  currentTab: Tab,
+  onTabSelected: (Tab) -> Unit,
   modifier: Modifier = Modifier
 ) {
   NavigationBar(
     modifier = modifier,
     containerColor = MaterialTheme.colorScheme.surfaceContainer
   ) {
-    NavDestination.entries.forEach { destination ->
-      val selected = currentDestination == destination
+    tabs.forEach { tab ->
+      val title = tab.options.title
+      val destination = NavDestination.entries.firstOrNull { it.label == title }
+        ?: if (title == NavDestination.Home.label) NavDestination.Home else null
+
+      // Fallback: if some tab title doesn't match, still render it with generic styling.
+      val selected = currentTab.options.index == tab.options.index
+
       NavigationBarItem(
         selected = selected,
-        onClick = { onDestinationSelected(destination) },
+        onClick = { onTabSelected(tab) },
         icon = {
+          val icons = destination
           Icon(
-            imageVector = if (selected) destination.selectedIcon else destination.unselectedIcon,
-            contentDescription = destination.label
+            imageVector = if (selected) (icons?.selectedIcon ?: NavDestination.Home.selectedIcon)
+            else (icons?.unselectedIcon ?: NavDestination.Home.unselectedIcon),
+            contentDescription = title
           )
         },
         label = {
           Text(
-            text = destination.label,
+            text = title,
             style = MaterialTheme.typography.labelSmall
           )
         },
@@ -103,4 +124,3 @@ fun AppNavigationBar(
     }
   }
 }
-

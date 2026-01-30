@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.DeleteSweep
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material3.AlertDialog
@@ -69,11 +70,24 @@ fun HistoryContent(
   onRemoveItem: (HistoryItemUi) -> Unit
 ) {
   val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+  val navigator = LocalNavigator.currentOrThrow
 
   Scaffold(
     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
     topBar = {
       LargeTopAppBar(
+        navigationIcon = {
+          // Show back only when there's something to pop.
+          // This covers the "Home -> History" flow (push).
+          if (navigator.canPop) {
+            IconButton(onClick = { navigator.pop() }) {
+              Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Назад"
+              )
+            }
+          }
+        },
         title = {
           Text(
             text = "История",
@@ -233,4 +247,3 @@ private fun formatTime(timestamp: Long): String {
   // In production, use kotlinx-datetime for proper KMP time handling
   return "недавно"
 }
-
