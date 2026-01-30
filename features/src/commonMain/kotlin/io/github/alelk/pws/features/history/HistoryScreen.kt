@@ -52,7 +52,8 @@ class HistoryScreen : Screen {
       showClearDialog = showClearDialog,
       onClearAll = { viewModel.onEvent(HistoryEvent.ClearAll) },
       onConfirmClear = { viewModel.onEvent(HistoryEvent.ConfirmClearAll) },
-      onDismissClear = { viewModel.onEvent(HistoryEvent.DismissClearDialog) }
+      onDismissClear = { viewModel.onEvent(HistoryEvent.DismissClearDialog) },
+      onRemoveItem = { viewModel.onEvent(HistoryEvent.RemoveItem(it)) }
     )
   }
 }
@@ -64,7 +65,8 @@ fun HistoryContent(
   showClearDialog: Boolean,
   onClearAll: () -> Unit,
   onConfirmClear: () -> Unit,
-  onDismissClear: () -> Unit
+  onDismissClear: () -> Unit,
+  onRemoveItem: (HistoryItemUi) -> Unit
 ) {
   val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
@@ -116,7 +118,8 @@ fun HistoryContent(
       is HistoryUiState.Content -> {
         HistoryList(
           items = state.items,
-          modifier = Modifier.padding(innerPadding)
+          modifier = Modifier.padding(innerPadding),
+          onRemove = onRemoveItem
         )
       }
 
@@ -143,7 +146,8 @@ fun HistoryContent(
 @Composable
 private fun HistoryList(
   items: List<HistoryItemUi>,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
+  onRemove: (HistoryItemUi) -> Unit
 ) {
   val navigator = LocalNavigator.currentOrThrow
 
@@ -162,7 +166,8 @@ private fun HistoryList(
             number = item.songNumber,
             title = item.songName,
             subtitle = "${item.bookDisplayName} • ${formatTime(item.viewedAt.toEpochMilliseconds())}",
-            onClick = { navigator.push(songScreen) }
+            onClick = { navigator.push(songScreen) },
+            onDelete = { onRemove(item) }
           )
         }
         is HistoryItemUi.StandaloneSong -> {
@@ -171,7 +176,8 @@ private fun HistoryList(
             number = null,
             title = item.songName,
             subtitle = formatTime(item.viewedAt.toEpochMilliseconds()),
-            onClick = { navigator.push(songScreen) }
+            onClick = { navigator.push(songScreen) },
+            onDelete = { onRemove(item) }
           )
         }
       }

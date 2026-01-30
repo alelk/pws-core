@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -153,6 +154,7 @@ fun SwipeableSongItem(
   title: String,
   onClick: () -> Unit,
   onFavoriteToggle: (() -> Unit)? = null,
+  onDelete: (() -> Unit)? = null,
   modifier: Modifier = Modifier,
   isFavorite: Boolean = false,
   subtitle: String? = null
@@ -206,6 +208,17 @@ fun SwipeableSongItem(
             imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
             contentDescription = if (isFavorite) "Удалить из избранного" else "Добавить в избранное",
             tint = if (isFavorite) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant
+          )
+        }
+      }
+
+      // Delete button
+      if (onDelete != null) {
+        IconButton(onClick = onDelete) {
+          Icon(
+            imageVector = Icons.Outlined.Delete,
+            contentDescription = "Удалить",
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
           )
         }
       }
