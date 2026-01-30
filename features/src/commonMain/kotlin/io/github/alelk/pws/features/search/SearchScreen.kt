@@ -20,23 +20,19 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.registry.rememberScreen
@@ -46,6 +42,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.domain.core.ids.SongNumberId
+import io.github.alelk.pws.features.components.AppTopBar
 import io.github.alelk.pws.features.components.EmptyContent
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.HighlightedText
@@ -117,24 +114,10 @@ fun SearchContent(
 
   Scaffold(
     topBar = {
-      TopAppBar(
-        navigationIcon = {
-          IconButton(onClick = { navigator.pop() }) {
-            Icon(
-              imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-              contentDescription = "Назад"
-            )
-          }
-        },
-        title = {
-          Text(
-            text = "Поиск",
-            style = MaterialTheme.typography.headlineSmall
-          )
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-          containerColor = MaterialTheme.colorScheme.surface
-        )
+      AppTopBar(
+        title = "Поиск",
+        canNavigateBack = navigator.canPop,
+        onNavigateBack = { navigator.pop() }
       )
     }
   ) { innerPadding ->
@@ -364,4 +347,3 @@ private fun SearchResultsList(
     }
   }
 }
-

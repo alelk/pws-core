@@ -6,6 +6,18 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
+/**
+ * Use for numeric badges / song numbers.
+ * Keeping monospace only where it improves readability.
+ */
+val NumberBadgeTextStyle = TextStyle(
+  fontFamily = FontFamily.Monospace,
+  fontWeight = FontWeight.W600,
+  fontSize = 12.sp,
+  lineHeight = 16.sp,
+  letterSpacing = 0.sp
+)
+
 val AppTypography = Typography(
     displayLarge = TextStyle(
         fontWeight = FontWeight.W400,
@@ -92,10 +104,9 @@ val AppTypography = Typography(
         letterSpacing = 0.5.sp,
     ),
     labelSmall = TextStyle(
-        fontFamily = FontFamily.Monospace,
         fontWeight = FontWeight.W500,
-        fontSize = 10.sp,
+        fontSize = 11.sp,
         lineHeight = 16.sp,
-        letterSpacing = 0.sp,
+        letterSpacing = 0.2.sp,
     )
 )

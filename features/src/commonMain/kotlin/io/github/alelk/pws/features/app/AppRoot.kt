@@ -14,13 +14,13 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
-import cafe.adriel.voyager.navigator.CurrentScreen
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.CurrentTab
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabNavigator
 import cafe.adriel.voyager.navigator.tab.TabOptions
+import cafe.adriel.voyager.transitions.SlideTransition
 import io.github.alelk.pws.features.books.BooksScreen
 import io.github.alelk.pws.features.components.AppNavigationBar
 import io.github.alelk.pws.features.components.NavDestination
@@ -65,7 +65,7 @@ private object HomeTab : Tab {
     val holder = LocalTabNavigatorsHolder.currentOrThrow
     Navigator(HomeScreen()) { navigator ->
       holder.navigators[this] = navigator
-      CurrentScreen()
+      SlideTransition(navigator)
     }
   }
 }
@@ -86,7 +86,7 @@ private object BooksTab : Tab {
     val holder = LocalTabNavigatorsHolder.currentOrThrow
     Navigator(BooksScreen()) { navigator ->
       holder.navigators[this] = navigator
-      CurrentScreen()
+      SlideTransition(navigator)
     }
   }
 }
@@ -107,7 +107,7 @@ private object SearchTab : Tab {
     val holder = LocalTabNavigatorsHolder.currentOrThrow
     Navigator(SearchScreen()) { navigator ->
       holder.navigators[this] = navigator
-      CurrentScreen()
+      SlideTransition(navigator)
     }
   }
 }
@@ -128,7 +128,7 @@ private object FavoritesTab : Tab {
     val holder = LocalTabNavigatorsHolder.currentOrThrow
     Navigator(FavoritesScreen()) { navigator ->
       holder.navigators[this] = navigator
-      CurrentScreen()
+      SlideTransition(navigator)
     }
   }
 }
@@ -149,7 +149,7 @@ private object HistoryTab : Tab {
     val holder = LocalTabNavigatorsHolder.currentOrThrow
     Navigator(HistoryScreen()) { navigator ->
       holder.navigators[this] = navigator
-      CurrentScreen()
+      SlideTransition(navigator)
     }
   }
 }

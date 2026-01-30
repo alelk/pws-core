@@ -27,9 +27,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import io.github.alelk.pws.features.theme.NumberBadgeTextStyle
 import io.github.alelk.pws.features.theme.spacing
 
 /**
@@ -137,9 +137,7 @@ fun NumberBadge(
   ) {
     Text(
       text = number.toString(),
-      style = MaterialTheme.typography.labelLarge.copy(
-        fontWeight = FontWeight.SemiBold
-      ),
+      style = NumberBadgeTextStyle,
       color = MaterialTheme.colorScheme.onPrimaryContainer
     )
   }
@@ -225,4 +223,3 @@ fun SwipeableSongItem(
     }
   }
 }
-
