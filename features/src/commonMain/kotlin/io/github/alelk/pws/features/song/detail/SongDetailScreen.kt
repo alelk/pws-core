@@ -1,62 +1,19 @@
 package io.github.alelk.pws.features.song.detail
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FormatSize
-import androidx.compose.material.icons.filled.Keyboard
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -76,6 +33,7 @@ import io.github.alelk.pws.domain.song.lyric.Chorus
 import io.github.alelk.pws.domain.song.lyric.LyricPart
 import io.github.alelk.pws.domain.song.lyric.Verse
 import io.github.alelk.pws.domain.song.model.SongDetail
+import io.github.alelk.pws.features.components.AppTopBar
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
 import io.github.alelk.pws.features.theme.spacing
@@ -85,11 +43,9 @@ import org.koin.core.parameter.parametersOf
 class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
   @Composable
   override fun Content() {
-    val navigator = LocalNavigator.currentOrThrow
     val viewModel = koinScreenModel<SongDetailScreenModel>(parameters = { parametersOf(songNumberId) })
     val state by viewModel.state.collectAsState()
     val isFavorite by viewModel.isFavorite.collectAsState()
-    val searchScreen = cafe.adriel.voyager.core.registry.rememberScreen(io.github.alelk.pws.core.navigation.SharedScreens.Search)
 
     LaunchedEffect(state) {
       if (state is SongDetailUiState.Content) {
@@ -102,12 +58,6 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
       state = state,
       songNumber = songNumberId.identifier,
       isFavorite = isFavorite,
-      onSearchClick = {
-        navigator.push(searchScreen)
-      },
-      onNumberInputClick = {
-        // TODO: Show number input modal in context of current book
-      },
       onFavoriteClick = {
         viewModel.onToggleFavorite()
       }
@@ -121,49 +71,35 @@ fun SongDetailContent(
   state: SongDetailUiState,
   songNumber: String? = null,
   isFavorite: Boolean = false,
-  onSearchClick: () -> Unit = {},
-  onNumberInputClick: () -> Unit = {},
   onFavoriteClick: () -> Unit = {}
 ) {
   val navigator = LocalNavigator.currentOrThrow
   var fontScale by remember { mutableFloatStateOf(1f) }
   var showSettingsSheet by remember { mutableStateOf(false) }
-  val spacing = MaterialTheme.spacing
 
   // Sheet State
   val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
   Scaffold(
     topBar = {
-      TopAppBar(
-        title = {
-          if (state is SongDetailUiState.Content && !songNumber.isNullOrBlank()) {
-            Text(
-              text = "№ $songNumber",
-              style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-            )
-          }
-        },
-        navigationIcon = {
-          IconButton(onClick = { navigator.pop() }) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
-          }
-        },
+      val title = if (state is SongDetailUiState.Content && !songNumber.isNullOrBlank()) {
+        "№ $songNumber"
+      } else {
+        "Песня"
+      }
+
+      AppTopBar(
+        title = title,
+        canNavigateBack = navigator.canPop,
+        onNavigateBack = { navigator.pop() },
         actions = {
-          // Text Appearance
           IconButton(onClick = { showSettingsSheet = true }) {
             Icon(Icons.Filled.FormatSize, contentDescription = "Настройки текста")
           }
-          // Share
           IconButton(onClick = { /* TODO: Implement share */ }) {
             Icon(Icons.Filled.Share, contentDescription = "Поделиться")
           }
-          // Search (Optional, maybe hidden to reduce clutter if we have global search)
-          // IconButton(onClick = onSearchClick) { Icon(Icons.Default.Search, contentDescription = "Поиск") }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-          containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
-        )
+        }
       )
     },
     floatingActionButton = {
@@ -504,7 +440,7 @@ private fun SongMetadata(song: SongDetail) {
       if (song.translator != null) MetadataItem("Перевод", song.translator!!.name)
       if (song.year != null) MetadataItem("Год", song.year.toString())
       if (hasBibleRef) {
-        MetadataItem("Библия", bibleRefText!!)
+        MetadataItem("Библия", bibleRefText)
       }
     }
   }
