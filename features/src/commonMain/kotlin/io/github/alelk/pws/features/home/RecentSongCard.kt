@@ -21,7 +21,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.alelk.pws.domain.history.model.HistoryEntry
 import io.github.alelk.pws.domain.history.model.HistorySubject
-import io.github.alelk.pws.features.components.clickableWithScale
+import io.github.alelk.pws.features.components.clickableWithScaleAndClip
 import io.github.alelk.pws.features.theme.spacing
 
 @Composable
@@ -33,7 +33,7 @@ fun RecentSongCard(
   Card(
     modifier = modifier
       .width(140.dp)
-      .clickableWithScale(onClick = onClick),
+      .clickableWithScaleAndClip(shape = MaterialTheme.shapes.medium, onClick = onClick),
     shape = MaterialTheme.shapes.medium,
     colors = CardDefaults.cardColors(
       containerColor = MaterialTheme.colorScheme.surfaceContainer

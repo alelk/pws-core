@@ -291,22 +291,21 @@ private fun LyricPartView(
   fontScale: Float
 ) {
   val baseFontSize = 18.sp * fontScale
-  val lineHeight = baseFontSize * 1.6f
+  val lineHeight = baseFontSize * 1.7f
 
   Box(modifier = Modifier.widthIn(max = 600.dp).fillMaxWidth()) {
     when (part) {
       is Verse -> {
         Row(modifier = Modifier.fillMaxWidth()) {
-          // Subtle Verse Number
           if (part.numbers.isNotEmpty()) {
             Text(
               text = part.numbers.first().toString(),
               style = MaterialTheme.typography.titleMedium.copy(
-                fontSize = baseFontSize * 0.8f,
+                fontSize = baseFontSize * 0.78f,
                 fontWeight = FontWeight.SemiBold
               ),
-              color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
-              modifier = Modifier.width(32.dp).padding(top = 4.dp)
+              color = MaterialTheme.colorScheme.primary.copy(alpha = 0.75f),
+              modifier = Modifier.width(32.dp).padding(top = 6.dp)
             )
           }
 
@@ -323,23 +322,35 @@ private fun LyricPartView(
       }
 
       is Chorus -> {
-        IntrinsicChorusView(
-          text = part.text,
-          label = "Припев",
-          fontSize = baseFontSize,
-          lineHeight = lineHeight,
-          accentColor = MaterialTheme.colorScheme.primary
-        )
+        Surface(
+          color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.45f),
+          shape = MaterialTheme.shapes.large,
+          tonalElevation = 0.dp
+        ) {
+          IntrinsicChorusView(
+            text = part.text,
+            label = "Припев",
+            fontSize = baseFontSize,
+            lineHeight = lineHeight,
+            accentColor = MaterialTheme.colorScheme.primary
+          )
+        }
       }
 
       is Bridge -> {
-        IntrinsicChorusView(
-          text = part.text,
-          label = "Бридж",
-          fontSize = baseFontSize,
-          lineHeight = lineHeight,
-          accentColor = MaterialTheme.colorScheme.tertiary
-        )
+        Surface(
+          color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.35f),
+          shape = MaterialTheme.shapes.large,
+          tonalElevation = 0.dp
+        ) {
+          IntrinsicChorusView(
+            text = part.text,
+            label = "Бридж",
+            fontSize = baseFontSize,
+            lineHeight = lineHeight,
+            accentColor = MaterialTheme.colorScheme.tertiary
+          )
+        }
       }
     }
   }
@@ -354,15 +365,12 @@ private fun IntrinsicChorusView(
   accentColor: Color
 ) {
   val spacing = MaterialTheme.spacing
-  // Use IntrinsicSize.Min to match the height of the accent line to the text content
   Row(
     modifier = Modifier
       .fillMaxWidth()
-      .padding(vertical = 4.dp)
+      .padding(vertical = 10.dp, horizontal = 12.dp)
       .height(IntrinsicSize.Min)
   ) {
-    // Accent Line
-    Spacer(Modifier.width(8.dp))
     Box(
       modifier = Modifier
         .width(4.dp)
@@ -381,7 +389,7 @@ private fun IntrinsicChorusView(
         ),
         color = accentColor
       )
-      Spacer(Modifier.height(4.dp))
+      Spacer(Modifier.height(6.dp))
       Text(
         text = text.trim(),
         style = MaterialTheme.typography.bodyLarge.copy(

@@ -27,7 +27,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -86,7 +85,7 @@ fun BookCard(
   Card(
     modifier = modifier
       .fillMaxWidth()
-      .clickableWithScale(onClick = onClick),
+      .clickableWithScaleAndClip(shape = MaterialTheme.shapes.large, onClick = onClick),
     shape = MaterialTheme.shapes.large,
     colors = CardDefaults.cardColors(
       containerColor = MaterialTheme.colorScheme.surfaceContainerLow
@@ -159,7 +158,7 @@ fun BookListItem(
   Surface(
     modifier = modifier
       .fillMaxWidth()
-      .clickable(onClick = onClick),
+      .clickableWithScaleAndClip(shape = MaterialTheme.shapes.medium, onClick = onClick),
     shape = MaterialTheme.shapes.medium,
     color = MaterialTheme.colorScheme.surface,
     tonalElevation = 0.dp
@@ -228,4 +227,3 @@ private fun pluralizeSongs(count: Int): String {
   }
   return "$count $word"
 }
-

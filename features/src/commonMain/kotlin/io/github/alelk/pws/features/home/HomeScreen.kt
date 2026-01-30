@@ -66,7 +66,7 @@ import io.github.alelk.pws.features.components.AppLargeTopBar
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.NumberInputModal
 import io.github.alelk.pws.features.components.SearchBarWithSuggestions
-import io.github.alelk.pws.features.components.clickableWithScale
+import io.github.alelk.pws.features.components.clickableWithScaleAndClip
 import io.github.alelk.pws.features.components.generateBookColor
 import io.github.alelk.pws.features.components.getInitials
 import io.github.alelk.pws.features.components.shimmerEffect
@@ -354,7 +354,7 @@ private fun QuickActionChip(
   modifier: Modifier = Modifier
 ) {
   Surface(
-    modifier = modifier.clickableWithScale(onClick = onClick),
+    modifier = modifier.clickableWithScaleAndClip(shape = MaterialTheme.shapes.medium, onClick = onClick),
     shape = MaterialTheme.shapes.medium,
     color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
     tonalElevation = 2.dp
@@ -394,7 +394,7 @@ private fun HomeBookCard(
   Card(
     modifier = modifier
       .fillMaxWidth()
-      .clickableWithScale(onClick = onClick),
+      .clickableWithScaleAndClip(shape = MaterialTheme.shapes.large, onClick = onClick),
     shape = MaterialTheme.shapes.large,
     colors = CardDefaults.cardColors(
       containerColor = MaterialTheme.colorScheme.surfaceContainerLow
