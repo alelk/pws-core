@@ -1,6 +1,5 @@
 package io.github.alelk.pws.features.components
 
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material.icons.automirrored.outlined.LibraryBooks
@@ -82,6 +81,7 @@ fun AppNavigationBar(
   tabs: List<Tab>,
   currentTab: Tab,
   onTabSelected: (Tab) -> Unit,
+  onReselectCurrentTab: () -> Unit,
   modifier: Modifier = Modifier
 ) {
   NavigationBar(
@@ -93,12 +93,17 @@ fun AppNavigationBar(
       val destination = NavDestination.entries.firstOrNull { it.label == title }
         ?: if (title == NavDestination.Home.label) NavDestination.Home else null
 
-      // Fallback: if some tab title doesn't match, still render it with generic styling.
       val selected = currentTab.options.index == tab.options.index
 
       NavigationBarItem(
         selected = selected,
-        onClick = { onTabSelected(tab) },
+        onClick = {
+          if (selected) {
+            onReselectCurrentTab()
+          } else {
+            onTabSelected(tab)
+          }
+        },
         icon = {
           val icons = destination
           Icon(
