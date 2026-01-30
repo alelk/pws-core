@@ -1,62 +1,19 @@
 package io.github.alelk.pws.features.song.detail
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FormatSize
-import androidx.compose.material.icons.filled.Keyboard
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -76,6 +33,8 @@ import io.github.alelk.pws.domain.song.lyric.Chorus
 import io.github.alelk.pws.domain.song.lyric.LyricPart
 import io.github.alelk.pws.domain.song.lyric.Verse
 import io.github.alelk.pws.domain.song.model.SongDetail
+import io.github.alelk.pws.features.components.AppModalBottomSheet
+import io.github.alelk.pws.features.components.AppTopBar
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
 import io.github.alelk.pws.features.theme.spacing
@@ -85,10 +44,9 @@ import org.koin.core.parameter.parametersOf
 class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
   @Composable
   override fun Content() {
-    val navigator = LocalNavigator.currentOrThrow
     val viewModel = koinScreenModel<SongDetailScreenModel>(parameters = { parametersOf(songNumberId) })
     val state by viewModel.state.collectAsState()
-    val searchScreen = cafe.adriel.voyager.core.registry.rememberScreen(io.github.alelk.pws.core.navigation.SharedScreens.Search)
+    val isFavorite by viewModel.isFavorite.collectAsState()
 
     LaunchedEffect(state) {
       if (state is SongDetailUiState.Content) {
@@ -100,11 +58,9 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
     SongDetailContent(
       state = state,
       songNumber = songNumberId.identifier,
-      onSearchClick = {
-        navigator.push(searchScreen)
-      },
-      onNumberInputClick = {
-        // TODO: Show number input modal in context of current book
+      isFavorite = isFavorite,
+      onFavoriteClick = {
+        viewModel.onToggleFavorite()
       }
     )
   }
@@ -115,68 +71,53 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
 fun SongDetailContent(
   state: SongDetailUiState,
   songNumber: String? = null,
-  onSearchClick: () -> Unit = {},
-  onNumberInputClick: () -> Unit = {},
+  isFavorite: Boolean = false,
   onFavoriteClick: () -> Unit = {}
 ) {
   val navigator = LocalNavigator.currentOrThrow
   var fontScale by remember { mutableFloatStateOf(1f) }
-  var isFavorite by remember { mutableStateOf(false) } // TODO: Bind to real state
   var showSettingsSheet by remember { mutableStateOf(false) }
-  val spacing = MaterialTheme.spacing
 
   // Sheet State
   val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
   Scaffold(
     topBar = {
-      TopAppBar(
-        title = {
-          if (state is SongDetailUiState.Content && !songNumber.isNullOrBlank()) {
-            Text(
-              text = "№ $songNumber",
-              style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-            )
-          }
-        },
-        navigationIcon = {
-          IconButton(onClick = { navigator.pop() }) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
-          }
-        },
+      val title = if (state is SongDetailUiState.Content && !songNumber.isNullOrBlank()) {
+        "№ $songNumber"
+      } else {
+        "Песня"
+      }
+
+      AppTopBar(
+        title = title,
+        canNavigateBack = navigator.canPop,
+        onNavigateBack = { navigator.pop() },
         actions = {
-          // Text Appearance
           IconButton(onClick = { showSettingsSheet = true }) {
             Icon(Icons.Filled.FormatSize, contentDescription = "Настройки текста")
           }
-          // Share
           IconButton(onClick = { /* TODO: Implement share */ }) {
             Icon(Icons.Filled.Share, contentDescription = "Поделиться")
           }
-          // Search (Optional, maybe hidden to reduce clutter if we have global search)
-          // IconButton(onClick = onSearchClick) { Icon(Icons.Default.Search, contentDescription = "Поиск") }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-          containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
-        )
+        }
       )
     },
     floatingActionButton = {
       if (state is SongDetailUiState.Content) {
+        val bottomInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
         FloatingActionButton(
-          onClick = {
-            isFavorite = !isFavorite
-            onFavoriteClick()
-          },
+          onClick = onFavoriteClick,
           containerColor = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
           contentColor = if (isFavorite) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
           elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation(),
-          modifier = Modifier.padding(bottom = 60.dp) // Lift FAB above global bottom bar if visible
+          modifier = Modifier.padding(bottom = bottomInset + 12.dp)
         ) {
-           Icon(
-             imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-             contentDescription = if (isFavorite) "Убрать из избранного" else "Добавить в избранное"
-           )
+          Icon(
+            imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+            contentDescription = if (isFavorite) "Убрать из избранного" else "Добавить в избранное"
+          )
         }
       }
     }
@@ -204,7 +145,7 @@ fun SongDetailContent(
 
     // Settings Sheet
     if (showSettingsSheet) {
-      ModalBottomSheet(
+      AppModalBottomSheet(
         onDismissRequest = { showSettingsSheet = false },
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow
@@ -350,22 +291,21 @@ private fun LyricPartView(
   fontScale: Float
 ) {
   val baseFontSize = 18.sp * fontScale
-  val lineHeight = baseFontSize * 1.6f
+  val lineHeight = baseFontSize * 1.7f
 
   Box(modifier = Modifier.widthIn(max = 600.dp).fillMaxWidth()) {
     when (part) {
       is Verse -> {
         Row(modifier = Modifier.fillMaxWidth()) {
-          // Subtle Verse Number
           if (part.numbers.isNotEmpty()) {
             Text(
               text = part.numbers.first().toString(),
               style = MaterialTheme.typography.titleMedium.copy(
-                fontSize = baseFontSize * 0.8f,
+                fontSize = baseFontSize * 0.78f,
                 fontWeight = FontWeight.SemiBold
               ),
-              color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
-              modifier = Modifier.width(32.dp).padding(top = 4.dp)
+              color = MaterialTheme.colorScheme.primary.copy(alpha = 0.75f),
+              modifier = Modifier.width(32.dp).padding(top = 6.dp)
             )
           }
 
@@ -382,23 +322,35 @@ private fun LyricPartView(
       }
 
       is Chorus -> {
-        IntrinsicChorusView(
-          text = part.text,
-          label = "Припев",
-          fontSize = baseFontSize,
-          lineHeight = lineHeight,
-          accentColor = MaterialTheme.colorScheme.primary
-        )
+        Surface(
+          color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.45f),
+          shape = MaterialTheme.shapes.large,
+          tonalElevation = 0.dp
+        ) {
+          IntrinsicChorusView(
+            text = part.text,
+            label = "Припев",
+            fontSize = baseFontSize,
+            lineHeight = lineHeight,
+            accentColor = MaterialTheme.colorScheme.primary
+          )
+        }
       }
 
       is Bridge -> {
-        IntrinsicChorusView(
-          text = part.text,
-          label = "Бридж",
-          fontSize = baseFontSize,
-          lineHeight = lineHeight,
-          accentColor = MaterialTheme.colorScheme.tertiary
-        )
+        Surface(
+          color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.35f),
+          shape = MaterialTheme.shapes.large,
+          tonalElevation = 0.dp
+        ) {
+          IntrinsicChorusView(
+            text = part.text,
+            label = "Бридж",
+            fontSize = baseFontSize,
+            lineHeight = lineHeight,
+            accentColor = MaterialTheme.colorScheme.tertiary
+          )
+        }
       }
     }
   }
@@ -413,15 +365,12 @@ private fun IntrinsicChorusView(
   accentColor: Color
 ) {
   val spacing = MaterialTheme.spacing
-  // Use IntrinsicSize.Min to match the height of the accent line to the text content
   Row(
     modifier = Modifier
       .fillMaxWidth()
-      .padding(vertical = 4.dp)
+      .padding(vertical = 10.dp, horizontal = 12.dp)
       .height(IntrinsicSize.Min)
   ) {
-    // Accent Line
-    Spacer(Modifier.width(8.dp))
     Box(
       modifier = Modifier
         .width(4.dp)
@@ -440,7 +389,7 @@ private fun IntrinsicChorusView(
         ),
         color = accentColor
       )
-      Spacer(Modifier.height(4.dp))
+      Spacer(Modifier.height(6.dp))
       Text(
         text = text.trim(),
         style = MaterialTheme.typography.bodyLarge.copy(
@@ -502,7 +451,7 @@ private fun SongMetadata(song: SongDetail) {
       if (song.translator != null) MetadataItem("Перевод", song.translator!!.name)
       if (song.year != null) MetadataItem("Год", song.year.toString())
       if (hasBibleRef) {
-        MetadataItem("Библия", bibleRefText!!)
+        MetadataItem("Библия", bibleRefText)
       }
     }
   }

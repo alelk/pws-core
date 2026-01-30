@@ -1,8 +1,19 @@
 package io.github.alelk.pws.features.home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -12,15 +23,27 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Dialpad
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.TextFields
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Tag
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -37,14 +60,13 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.domain.book.model.BookSummary
-import io.github.alelk.pws.domain.history.model.HistoryEntry
 import io.github.alelk.pws.domain.history.model.HistorySubject
 import io.github.alelk.pws.features.book.songs.BookSongsScreen
+import io.github.alelk.pws.features.components.AppLargeTopBar
 import io.github.alelk.pws.features.components.ErrorContent
-import io.github.alelk.pws.features.components.LoadingContent
 import io.github.alelk.pws.features.components.NumberInputModal
 import io.github.alelk.pws.features.components.SearchBarWithSuggestions
-import io.github.alelk.pws.features.components.clickableWithScale
+import io.github.alelk.pws.features.components.clickableWithScaleAndClip
 import io.github.alelk.pws.features.components.generateBookColor
 import io.github.alelk.pws.features.components.getInitials
 import io.github.alelk.pws.features.components.shimmerEffect
@@ -91,18 +113,10 @@ fun HomeContent(
   Scaffold(
     modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
     topBar = {
-      LargeTopAppBar(
-        title = {
-          Text(
-            text = "Псаломщик",
-            fontWeight = FontWeight.Bold
-          )
-        },
-        scrollBehavior = scrollBehavior,
-        colors = TopAppBarDefaults.largeTopAppBarColors(
-          containerColor = MaterialTheme.colorScheme.background,
-          scrolledContainerColor = MaterialTheme.colorScheme.background
-        )
+      AppLargeTopBar(
+        title = "Псаломщик",
+        canNavigateBack = false,
+        scrollBehavior = scrollBehavior
       )
     }
   ) { innerPadding ->
@@ -166,6 +180,20 @@ fun HomeContent(
               },
               onHistoryClick = {
                 navigator.push(ScreenRegistry.get(SharedScreens.History))
+              }
+            )
+          }
+
+          // Second row of quick actions - Favorites and Tags
+          item(span = { GridItemSpan(maxLineSpan) }) {
+            QuickActionsRowSecondary(
+              onFavoritesClick = {
+                // Navigate to favorites screen
+                navigator.push(ScreenRegistry.get(SharedScreens.Favorites))
+              },
+              onTagsClick = {
+                // Navigate to tags screen
+                navigator.push(ScreenRegistry.get(SharedScreens.Tags))
               }
             )
           }
@@ -248,10 +276,8 @@ fun HomeContent(
     NumberInputModal(
       books = state.books,
       onDismiss = { showNumberInput = false },
-      onConfirm = { bookId, songNumber ->
+      onConfirm = { bookId, _ ->
         showNumberInput = false
-        // Navigate to book songs screen - the user will find the song by number
-        // TODO: Implement direct navigation to song by number when song lookup is available
         navigator.push(BookSongsScreen(bookId))
       }
     )
@@ -292,6 +318,35 @@ private fun QuickActionsRow(
 }
 
 @Composable
+private fun QuickActionsRowSecondary(
+  onFavoritesClick: () -> Unit,
+  onTagsClick: () -> Unit,
+  modifier: Modifier = Modifier
+) {
+  Row(
+    modifier = modifier
+      .fillMaxWidth()
+      .padding(top = MaterialTheme.spacing.sm),
+    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)
+  ) {
+    QuickActionChip(
+      icon = Icons.Outlined.FavoriteBorder,
+      label = "Избранное",
+      onClick = onFavoritesClick,
+      modifier = Modifier.weight(1f)
+    )
+    QuickActionChip(
+      icon = Icons.Outlined.Tag,
+      label = "Теги",
+      onClick = onTagsClick,
+      modifier = Modifier.weight(1f)
+    )
+    // Балансируем сетку, чтобы визуально была ровная 3-колоночная линия как в первом ряду
+    Spacer(Modifier.weight(1f))
+  }
+}
+
+@Composable
 private fun QuickActionChip(
   icon: ImageVector,
   label: String,
@@ -299,7 +354,7 @@ private fun QuickActionChip(
   modifier: Modifier = Modifier
 ) {
   Surface(
-    modifier = modifier.clickableWithScale(onClick = onClick),
+    modifier = modifier.clickableWithScaleAndClip(shape = MaterialTheme.shapes.medium, onClick = onClick),
     shape = MaterialTheme.shapes.medium,
     color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
     tonalElevation = 2.dp
@@ -339,7 +394,7 @@ private fun HomeBookCard(
   Card(
     modifier = modifier
       .fillMaxWidth()
-      .clickableWithScale(onClick = onClick),
+      .clickableWithScaleAndClip(shape = MaterialTheme.shapes.large, onClick = onClick),
     shape = MaterialTheme.shapes.large,
     colors = CardDefaults.cardColors(
       containerColor = MaterialTheme.colorScheme.surfaceContainerLow
@@ -420,6 +475,24 @@ private fun HomeContentSkeleton(modifier: Modifier = Modifier) {
     }
 
     // Quick actions placeholder
+    item(span = { GridItemSpan(maxLineSpan) }) {
+      Row(horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)) {
+        Box(
+          modifier = Modifier
+            .weight(1f)
+            .height(80.dp)
+            .shimmerEffect(MaterialTheme.shapes.medium)
+        )
+        Box(
+          modifier = Modifier
+            .weight(1f)
+            .height(80.dp)
+            .shimmerEffect(MaterialTheme.shapes.medium)
+        )
+      }
+    }
+
+    // Second row quick actions placeholder
     item(span = { GridItemSpan(maxLineSpan) }) {
       Row(horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)) {
         Box(

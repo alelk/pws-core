@@ -8,8 +8,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
@@ -60,11 +63,22 @@ fun FavoritesContent(
   onRemove: (FavoriteSongUi) -> Unit
 ) {
   val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+  val navigator = LocalNavigator.currentOrThrow
 
   Scaffold(
     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
     topBar = {
       LargeTopAppBar(
+        navigationIcon = {
+          if (navigator.canPop) {
+            IconButton(onClick = { navigator.pop() }) {
+              Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Назад"
+              )
+            }
+          }
+        },
         title = {
           Text(
             text = "Избранное",
@@ -175,4 +189,3 @@ private fun FavoritesList(
     }
   }
 }
-

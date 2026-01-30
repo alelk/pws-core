@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.DeleteSweep
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material3.AlertDialog
@@ -52,7 +53,8 @@ class HistoryScreen : Screen {
       showClearDialog = showClearDialog,
       onClearAll = { viewModel.onEvent(HistoryEvent.ClearAll) },
       onConfirmClear = { viewModel.onEvent(HistoryEvent.ConfirmClearAll) },
-      onDismissClear = { viewModel.onEvent(HistoryEvent.DismissClearDialog) }
+      onDismissClear = { viewModel.onEvent(HistoryEvent.DismissClearDialog) },
+      onRemoveItem = { viewModel.onEvent(HistoryEvent.RemoveItem(it)) }
     )
   }
 }
@@ -64,14 +66,28 @@ fun HistoryContent(
   showClearDialog: Boolean,
   onClearAll: () -> Unit,
   onConfirmClear: () -> Unit,
-  onDismissClear: () -> Unit
+  onDismissClear: () -> Unit,
+  onRemoveItem: (HistoryItemUi) -> Unit
 ) {
   val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+  val navigator = LocalNavigator.currentOrThrow
 
   Scaffold(
     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
     topBar = {
       LargeTopAppBar(
+        navigationIcon = {
+          // Show back only when there's something to pop.
+          // This covers the "Home -> History" flow (push).
+          if (navigator.canPop) {
+            IconButton(onClick = { navigator.pop() }) {
+              Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Назад"
+              )
+            }
+          }
+        },
         title = {
           Text(
             text = "История",
@@ -116,7 +132,8 @@ fun HistoryContent(
       is HistoryUiState.Content -> {
         HistoryList(
           items = state.items,
-          modifier = Modifier.padding(innerPadding)
+          modifier = Modifier.padding(innerPadding),
+          onRemove = onRemoveItem
         )
       }
 
@@ -143,7 +160,8 @@ fun HistoryContent(
 @Composable
 private fun HistoryList(
   items: List<HistoryItemUi>,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
+  onRemove: (HistoryItemUi) -> Unit
 ) {
   val navigator = LocalNavigator.currentOrThrow
 
@@ -162,7 +180,8 @@ private fun HistoryList(
             number = item.songNumber,
             title = item.songName,
             subtitle = "${item.bookDisplayName} • ${formatTime(item.viewedAt.toEpochMilliseconds())}",
-            onClick = { navigator.push(songScreen) }
+            onClick = { navigator.push(songScreen) },
+            onDelete = { onRemove(item) }
           )
         }
         is HistoryItemUi.StandaloneSong -> {
@@ -171,7 +190,8 @@ private fun HistoryList(
             number = null,
             title = item.songName,
             subtitle = formatTime(item.viewedAt.toEpochMilliseconds()),
-            onClick = { navigator.push(songScreen) }
+            onClick = { navigator.push(songScreen) },
+            onDelete = { onRemove(item) }
           )
         }
       }
@@ -227,4 +247,3 @@ private fun formatTime(timestamp: Long): String {
   // In production, use kotlinx-datetime for proper KMP time handling
   return "недавно"
 }
-
