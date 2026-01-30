@@ -31,7 +31,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -63,6 +62,7 @@ import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.domain.book.model.BookSummary
 import io.github.alelk.pws.domain.history.model.HistorySubject
 import io.github.alelk.pws.features.book.songs.BookSongsScreen
+import io.github.alelk.pws.features.components.AppLargeTopBar
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.NumberInputModal
 import io.github.alelk.pws.features.components.SearchBarWithSuggestions
@@ -113,18 +113,10 @@ fun HomeContent(
   Scaffold(
     modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
     topBar = {
-      LargeTopAppBar(
-        title = {
-          Text(
-            text = "Псаломщик",
-            fontWeight = FontWeight.Bold
-          )
-        },
-        scrollBehavior = scrollBehavior,
-        colors = TopAppBarDefaults.topAppBarColors(
-          containerColor = MaterialTheme.colorScheme.background,
-          scrolledContainerColor = MaterialTheme.colorScheme.background
-        )
+      AppLargeTopBar(
+        title = "Псаломщик",
+        canNavigateBack = false,
+        scrollBehavior = scrollBehavior
       )
     }
   ) { innerPadding ->

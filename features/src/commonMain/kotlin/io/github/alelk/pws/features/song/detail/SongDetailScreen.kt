@@ -105,17 +105,19 @@ fun SongDetailContent(
     },
     floatingActionButton = {
       if (state is SongDetailUiState.Content) {
+        val bottomInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
         FloatingActionButton(
           onClick = onFavoriteClick,
           containerColor = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
           contentColor = if (isFavorite) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
           elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation(),
-          modifier = Modifier.padding(bottom = 60.dp) // Lift FAB above global bottom bar if visible
+          modifier = Modifier.padding(bottom = bottomInset + 12.dp)
         ) {
-           Icon(
-             imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-             contentDescription = if (isFavorite) "Убрать из избранного" else "Добавить в избранное"
-           )
+          Icon(
+            imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+            contentDescription = if (isFavorite) "Убрать из избранного" else "Добавить в избранное"
+          )
         }
       }
     }
