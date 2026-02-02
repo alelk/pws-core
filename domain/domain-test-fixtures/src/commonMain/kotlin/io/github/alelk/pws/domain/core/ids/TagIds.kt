@@ -1,8 +1,8 @@
 package io.github.alelk.pws.domain.core.ids
 
-val TagId.Companion.BeforeGathering get() = parse("before-gathering")
-val TagId.Companion.Prayer get() = parse("prayer")
-val TagId.Companion.ForBaptism get() = parse("for-baptism")
+val TagId.Companion.BeforeGathering get() = TagId.parse("before-gathering")
+val TagId.Companion.Prayer get() = TagId.parse("prayer")
+val TagId.Companion.ForBaptism get() = TagId.parse("for-baptism")
 val TagId.Companion.ForChildrenAndFamilies get() = parse("for-children-and-families")
 val TagId.Companion.ForCommunion get() = parse("for-communion")
 val TagId.Companion.EndOfGathering get() = parse("end-of-gathering")
