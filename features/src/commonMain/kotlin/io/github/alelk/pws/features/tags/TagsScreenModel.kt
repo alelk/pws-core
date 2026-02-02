@@ -4,9 +4,9 @@ import androidx.compose.ui.graphics.Color
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import io.github.alelk.pws.domain.core.ids.TagId
+import io.github.alelk.pws.domain.tag.Tag
 import io.github.alelk.pws.domain.tag.command.CreateTagCommand
 import io.github.alelk.pws.domain.tag.command.UpdateTagCommand
-import io.github.alelk.pws.domain.tag.model.TagSummary
 import io.github.alelk.pws.domain.tag.usecase.CreateTagUseCase
 import io.github.alelk.pws.domain.tag.usecase.DeleteTagUseCase
 import io.github.alelk.pws.domain.tag.usecase.ObserveTagsUseCase
@@ -134,9 +134,8 @@ class TagsScreenModel(
           updateTagUseCase(command)
           _effects.emit(Effect.ShowSnackbar("Тег обновлён"))
         } else {
-          // Create new tag
-          val tagIdBase = name.take(20).replace(Regex("[^\\p{L}\\d_-]"), "").ifEmpty { "tag" }
-          val tagId = TagId("$tagIdBase-${Clock.System.now().toEpochMilliseconds()}")
+          // Create new tag - use TagId.Custom for user-created tags
+          val tagId = TagId.Custom.random()
           val command = CreateTagCommand(
             id = tagId,
             name = name,
@@ -177,11 +176,11 @@ class TagsScreenModel(
     mutableState.value = transform(mutableState.value)
   }
 
-  private fun TagSummary.toUi() = TagUi(
+  private fun Tag.toUi() = TagUi(
     id = id,
     name = name,
     color = color.toCompose(),
-    songCount = songCount,
+    songCount = 0, // Tag doesn't have songCount, only TagDetail does
     isPredefined = predefined
   )
 
