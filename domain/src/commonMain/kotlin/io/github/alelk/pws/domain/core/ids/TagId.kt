@@ -45,7 +45,7 @@ sealed interface TagId : Comparable<TagId> {
       require(number > 0) { "custom tag number should be greater than 0" }
     }
 
-    val number: Int get() = identifier.drop(PREFIX.length).dropWhile { it == '0' }.toInt()
+    val number: Int get() = identifier.drop(PREFIX.length).toInt()
 
     companion object {
       const val PREFIX = "custom-"
