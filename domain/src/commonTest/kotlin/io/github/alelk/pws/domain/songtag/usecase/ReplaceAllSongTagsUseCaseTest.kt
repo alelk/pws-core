@@ -27,6 +27,8 @@ class ReplaceAllSongTagsUseCaseTest : StringSpec({
   class InMemorySongTagReadRepository : SongTagReadRepository {
     val data = mutableMapOf<SongId, MutableSet<TagId>>()
 
+    override suspend fun getSongsByTag(tagId: TagId) = emptyList<io.github.alelk.pws.domain.songtag.model.SongWithBookInfo>()
+    override suspend fun getTagsForSong(songId: SongId) = emptyList<io.github.alelk.pws.domain.tag.Tag>()
     override suspend fun getTagIdsBySongId(songId: SongId) = data[songId]?.toSet() ?: emptySet()
     override suspend fun getSongIdsByTagId(tagId: TagId) =
       data.filterValues { tagId in it }.keys.toSet()
