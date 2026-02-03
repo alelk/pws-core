@@ -11,8 +11,8 @@ import io.github.alelk.pws.api.contract.tag.TagUpdateRequestDto
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.resources.delete
 import io.ktor.client.plugins.resources.get
-import io.ktor.client.plugins.resources.patch
 import io.ktor.client.plugins.resources.post
+import io.ktor.client.plugins.resources.put
 import io.ktor.client.request.header
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -49,7 +49,7 @@ internal class AdminTagApiImpl(client: HttpClient) : BaseResourceApi(client), Ad
 
   override suspend fun update(id: TagIdDto, request: TagUpdateRequestDto): ResourceUpdateResult<TagIdDto> =
     executeUpdate<TagDetailDto, TagIdDto>(resourceId = id) {
-      client.patch(AdminTags.ById(id = id)) {
+      client.put(AdminTags.ById(id = id)) {
         header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(request)
       }

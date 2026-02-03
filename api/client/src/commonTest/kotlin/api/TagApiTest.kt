@@ -40,9 +40,9 @@ class TagApiTest : FunSpec({
   // --- list ---
 
   test("list() should GET /v1/tags and return parsed tag summaries") {
-    val tag1 = TagSummaryDto(TagIdDto("worship"), "Worship", priority = 1, ColorDto("#FF0000"), predefined = true)
-    val tag2 = TagSummaryDto(TagIdDto("praise"), "Praise", priority = 2, ColorDto("#00FF00"), predefined = true)
-    val responseJson = json.encodeToString(listOf(tag1, tag2))
+    val tag1 = TagSummaryDto.Predefined(TagIdDto("worship"), "Worship", priority = 1, ColorDto("#FF0000"), edited = false)
+    val tag2 = TagSummaryDto.Predefined(TagIdDto("praise"), "Praise", priority = 2, ColorDto("#00FF00"), edited = false)
+    val responseJson = json.encodeToString<List<TagSummaryDto>>(listOf(tag1, tag2))
 
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Get
@@ -58,8 +58,8 @@ class TagApiTest : FunSpec({
   // --- get ---
 
   test("get(id) should GET /v1/tags/{id} and return parsed detail") {
-    val detail = TagDetailDto(TagIdDto("worship"), "Worship", priority = 1, ColorDto("#FF0000"), predefined = true, songCount = 10)
-    val responseJson = json.encodeToString(detail)
+    val detail = TagDetailDto.Predefined(TagIdDto("worship"), "Worship", priority = 1, ColorDto("#FF0000"), edited = false, songCount = 10)
+    val responseJson = json.encodeToString<TagDetailDto>(detail)
 
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Get
@@ -100,4 +100,3 @@ class TagApiTest : FunSpec({
     res shouldBe songIds
   }
 })
-

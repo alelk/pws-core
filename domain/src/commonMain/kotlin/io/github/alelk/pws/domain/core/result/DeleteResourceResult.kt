@@ -14,18 +14,3 @@ sealed interface DeleteResourceResult<out R : Any> {
   ) : DeleteResourceResult<R>
 }
 
-fun <A : Any, B : Any> DeleteResourceResult<A>.map(transform: (A) -> B): DeleteResourceResult<B> =
-  when (this) {
-    is DeleteResourceResult.Success -> DeleteResourceResult.Success(resource = transform(this.resource))
-    is DeleteResourceResult.NotFound -> DeleteResourceResult.NotFound(resource = transform(this.resource))
-    is DeleteResourceResult.ValidationError -> DeleteResourceResult.ValidationError(
-      resource = transform(this.resource),
-      message = this.message
-    )
-
-    is DeleteResourceResult.UnknownError -> DeleteResourceResult.UnknownError(
-      resource = transform(this.resource),
-      exception = this.exception,
-      message = this.message
-    )
-  }

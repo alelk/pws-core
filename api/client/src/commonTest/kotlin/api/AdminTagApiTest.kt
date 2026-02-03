@@ -20,6 +20,7 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.resources.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 /**
@@ -38,9 +39,9 @@ class AdminTagApiTest : FunSpec({
   // --- list ---
 
   test("list() should GET /v1/admin/tags and return parsed tag summaries") {
-    val tag1 = TagSummaryDto(TagIdDto("worship"), "Worship", priority = 1, ColorDto("#FF0000"), predefined = true)
-    val tag2 = TagSummaryDto(TagIdDto("praise"), "Praise", priority = 2, ColorDto("#00FF00"), predefined = true)
-    val responseJson = json.encodeToString(listOf(tag1, tag2))
+    val tag1 = TagSummaryDto.Predefined(TagIdDto("worship"), "Worship", priority = 1, ColorDto("#FF0000"), edited = false)
+    val tag2 = TagSummaryDto.Predefined(TagIdDto("praise"), "Praise", priority = 2, ColorDto("#00FF00"), edited = false)
+    val responseJson = json.encodeToString<List<TagSummaryDto>>(listOf(tag1, tag2))
 
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Get
@@ -56,8 +57,8 @@ class AdminTagApiTest : FunSpec({
   // --- get ---
 
   test("get(id) should GET /v1/admin/tags/{id} and return parsed detail") {
-    val detail = TagDetailDto(TagIdDto("worship"), "Worship", priority = 1, ColorDto("#FF0000"), predefined = true, songCount = 10)
-    val responseJson = json.encodeToString(detail)
+    val detail = TagDetailDto.Predefined(TagIdDto("worship"), "Worship", priority = 1, ColorDto("#FF0000"), edited = false, songCount = 10)
+    val responseJson = json.encodeToString<TagDetailDto>(detail)
 
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Get
@@ -85,8 +86,8 @@ class AdminTagApiTest : FunSpec({
 
   test("create() should POST /v1/admin/tags and return ResourceCreateResult.Success") {
     val createReq = TagCreateRequestDto(id = TagIdDto("newtag"), name = "New Tag", color = ColorDto("#0000FF"), priority = 5)
-    val created = TagDetailDto(TagIdDto("newtag"), "New Tag", priority = 5, ColorDto("#0000FF"), predefined = true, songCount = 0)
-    val responseJson = json.encodeToString(created)
+    val created = TagDetailDto.Predefined(TagIdDto("newtag"), "New Tag", priority = 5, ColorDto("#0000FF"), edited = false, songCount = 0)
+    val responseJson = json.encodeToString<TagDetailDto>(created)
 
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Post
@@ -127,14 +128,14 @@ class AdminTagApiTest : FunSpec({
 
   // --- update ---
 
-  test("update() should PATCH /v1/admin/tags/{id} and return Success") {
+  test("update() should PUT /v1/admin/tags/{id} and return Success") {
     val tagId = TagIdDto("worship")
     val updateReq = TagUpdateRequestDto(name = "Renamed")
-    val updated = TagDetailDto(tagId, "Renamed", priority = 1, ColorDto("#FF0000"), predefined = true, songCount = 10)
-    val responseJson = json.encodeToString(updated)
+    val updated = TagDetailDto.Predefined(tagId, "Renamed", priority = 1, ColorDto("#FF0000"), edited = false, songCount = 10)
+    val responseJson = json.encodeToString<TagDetailDto>(updated)
 
     val client = httpClientWith { req ->
-      req.method shouldBe HttpMethod.Patch
+      req.method shouldBe HttpMethod.Put
       req.url.encodedPath shouldBe "/v1/admin/tags/worship"
       respond(responseJson, status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
     }
@@ -204,4 +205,3 @@ class AdminTagApiTest : FunSpec({
     res shouldBe songIds
   }
 })
-
