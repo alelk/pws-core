@@ -337,7 +337,7 @@ private fun QuickActionsRowSecondary(
     )
     QuickActionChip(
       icon = Icons.Outlined.Tag,
-      label = "Теги",
+      label = "Категории",
       onClick = onTagsClick,
       modifier = Modifier.weight(1f)
     )

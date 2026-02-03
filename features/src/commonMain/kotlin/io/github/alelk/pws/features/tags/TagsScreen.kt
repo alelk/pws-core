@@ -43,6 +43,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,6 +55,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.registry.ScreenRegistry
 import cafe.adriel.voyager.core.registry.rememberScreen
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
@@ -85,6 +87,22 @@ class TagsScreen : Screen {
     val viewModel = koinScreenModel<TagsScreenModel>()
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val navigator = LocalNavigator.currentOrThrow
+
+    // Handle navigation effects
+    LaunchedEffect(Unit) {
+      viewModel.effects.collect { effect ->
+        when (effect) {
+          is TagsScreenModel.Effect.NavigateToTagSongs -> {
+            val screen = ScreenRegistry.get(SharedScreens.TagSongs(effect.tag.id))
+            navigator.push(screen)
+          }
+          is TagsScreenModel.Effect.ShowSnackbar -> {
+            snackbarHostState.showSnackbar(effect.message)
+          }
+        }
+      }
+    }
 
     TagsContent(
       state = state,
@@ -109,7 +127,7 @@ fun TagsContent(
       LargeTopAppBar(
         title = {
           Text(
-            text = "Теги",
+            text = "Категории",
             style = MaterialTheme.typography.headlineMedium
           )
         },
@@ -127,7 +145,7 @@ fun TagsContent(
         ) {
           Icon(
             imageVector = Icons.Default.Add,
-            contentDescription = "Добавить тег"
+            contentDescription = "Добавить категорию"
           )
         }
       }
@@ -138,7 +156,7 @@ fun TagsContent(
       TagsUiState.Loading -> {
         LoadingContent(
           modifier = Modifier.padding(innerPadding),
-          message = "Загрузка тегов..."
+          message = "Загрузка категорий..."
         )
       }
 
@@ -146,8 +164,8 @@ fun TagsContent(
         EmptyContent(
           modifier = Modifier.padding(innerPadding),
           icon = Icons.Outlined.Tag,
-          title = "Нет тегов",
-          subtitle = "Создавайте теги для организации песен"
+          title = "Нет категорий",
+          subtitle = "Создавайте категории для организации песен"
         )
       }
 
@@ -267,36 +285,28 @@ private fun TagListItem(
 
       Spacer(Modifier.width(MaterialTheme.spacing.md))
 
-      // Name and count
-      Column(modifier = Modifier.weight(1f)) {
-        Text(
-          text = tag.name,
-          style = MaterialTheme.typography.bodyLarge,
-          color = MaterialTheme.colorScheme.onSurface
-        )
-        Text(
-          text = pluralizeSongs(tag.songCount),
-          style = MaterialTheme.typography.bodySmall,
-          color = MaterialTheme.colorScheme.onSurfaceVariant
+      // Name
+      Text(
+        text = tag.name,
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.onSurface,
+        modifier = Modifier.weight(1f)
+      )
+
+      // Actions for all tags (API handles user overrides for predefined tags)
+      IconButton(onClick = onEditClick) {
+        Icon(
+          imageVector = Icons.Outlined.Edit,
+          contentDescription = "Редактировать",
+          tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
       }
-
-      // Actions (only for non-predefined tags)
-      if (!tag.isPredefined) {
-        IconButton(onClick = onEditClick) {
-          Icon(
-            imageVector = Icons.Outlined.Edit,
-            contentDescription = "Редактировать",
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
-          )
-        }
-        IconButton(onClick = onDeleteClick) {
-          Icon(
-            imageVector = Icons.Outlined.Delete,
-            contentDescription = "Удалить",
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
-          )
-        }
+      IconButton(onClick = onDeleteClick) {
+        Icon(
+          imageVector = Icons.Outlined.Delete,
+          contentDescription = "Удалить",
+          tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
       }
     }
   }
@@ -317,7 +327,7 @@ private fun TagDialog(
   AlertDialog(
     onDismissRequest = onDismiss,
     title = {
-      Text(if (editingTag != null) "Редактировать тег" else "Новый тег")
+      Text(if (editingTag != null) "Редактировать категорию" else "Новая категория")
     },
     text = {
       Column {
@@ -405,6 +415,15 @@ private fun DeleteTagDialog(
   onConfirm: () -> Unit,
   onDismiss: () -> Unit
 ) {
+  val isPredefined = tag.isPredefined
+  val title = if (isPredefined) "Скрыть категорию?" else "Удалить категорию?"
+  val message = if (isPredefined) {
+    "Категория \"${tag.name}\" будет скрыта. Вы сможете восстановить её позже."
+  } else {
+    "Категория \"${tag.name}\" будет удалена. Песни не будут затронуты."
+  }
+  val confirmText = if (isPredefined) "Скрыть" else "Удалить"
+
   AlertDialog(
     onDismissRequest = onDismiss,
     icon = {
@@ -415,14 +434,14 @@ private fun DeleteTagDialog(
       )
     },
     title = {
-      Text("Удалить тег?")
+      Text(title)
     },
     text = {
-      Text("Тег \"${tag.name}\" будет удалён. Песни не будут затронуты.")
+      Text(message)
     },
     confirmButton = {
       TextButton(onClick = onConfirm) {
-        Text("Удалить", color = MaterialTheme.colorScheme.error)
+        Text(confirmText, color = MaterialTheme.colorScheme.error)
       }
     },
     dismissButton = {

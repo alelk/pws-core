@@ -47,7 +47,7 @@ enum class NavDestination(
   ),
   Tags(
     route = "tags",
-    label = "Теги",
+    label = "Категории",
     selectedIcon = Icons.Filled.Tag,
     unselectedIcon = Icons.Outlined.Tag
   ),

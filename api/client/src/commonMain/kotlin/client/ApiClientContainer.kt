@@ -11,6 +11,7 @@ import io.github.alelk.pws.api.client.api.UserBookApi
 import io.github.alelk.pws.api.client.api.UserFavoriteApi
 import io.github.alelk.pws.api.client.api.UserHistoryApi
 import io.github.alelk.pws.api.client.api.UserSongApi
+import io.github.alelk.pws.api.client.api.UserTagApi
 import io.github.alelk.pws.domain.book.repository.BookReadRepository
 import io.github.alelk.pws.domain.book.repository.BookWriteRepository
 import io.github.alelk.pws.domain.song.repository.SongReadRepository
@@ -38,6 +39,7 @@ data class ApiClientContainer(
   val userFavoriteApi: UserFavoriteApi,
   val userHistoryApi: UserHistoryApi,
   val userSongApi: UserSongApi,
+  val userTagApi: UserTagApi,
   // Repositories (for domain layer integration)
   val songReadRepository: SongReadRepository,
   val songWriteRepository: SongWriteRepository,

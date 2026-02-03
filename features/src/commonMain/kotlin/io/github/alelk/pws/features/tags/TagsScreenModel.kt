@@ -131,7 +131,7 @@ class TagsScreenModel(
             color = domainColor
           )
           updateTagUseCase(command)
-          _effects.emit(Effect.ShowSnackbar("Тег обновлён"))
+          _effects.emit(Effect.ShowSnackbar("Категория обновлена"))
         } else {
           // Create new tag - use TagId.Custom for user-created tags
           val tagId = TagId.Custom.random()
@@ -141,7 +141,7 @@ class TagsScreenModel(
             color = domainColor
           )
           createTagUseCase(command)
-          _effects.emit(Effect.ShowSnackbar("Тег создан"))
+          _effects.emit(Effect.ShowSnackbar("Категория создана"))
         }
 
         updateState { state ->
@@ -164,7 +164,8 @@ class TagsScreenModel(
             state.copy(showDeleteConfirmation = null)
           } else state
         }
-        _effects.emit(Effect.ShowSnackbar("Тег удалён"))
+        val message = if (tag.isPredefined) "Категория скрыта" else "Категория удалена"
+        _effects.emit(Effect.ShowSnackbar(message))
       } catch (e: Exception) {
         _effects.emit(Effect.ShowSnackbar("Ошибка: ${e.message}"))
       }
