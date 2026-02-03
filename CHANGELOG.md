@@ -1,5 +1,17 @@
 # PWS Android
 
+# [2.4.0](https://github.com/alelk/pws-core/compare/v2.3.0...v2.4.0) (2026-02-03)
+
+
+### Bug Fixes
+
+* **tags:** Update validation for predefined tag IDs to allow up to 64 characters ([ded89b6](https://github.com/alelk/pws-core/commit/ded89b6cc039d017500252814814c611fa17e758))
+
+
+### Features
+
+* **tags:** Increase maximum length for predefined tag IDs to 64 characters ([f2d7c0c](https://github.com/alelk/pws-core/commit/f2d7c0cdb4cfeaec6c7233d546b5d6c763d3d84e))
+
 # [2.3.0](https://github.com/alelk/pws-core/compare/v2.2.0...v2.3.0) (2026-02-03)
 
 
