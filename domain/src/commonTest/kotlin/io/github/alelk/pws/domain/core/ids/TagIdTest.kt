@@ -49,8 +49,8 @@ class TagIdTest : StringSpec({
 
   "predefined tag id fails when too long" {
     shouldThrow<IllegalArgumentException> {
-      TagId.Predefined("verylongtagidthatexceedslimit")
-    }.message shouldContain "less than 24"
+      TagId.Predefined("verylongtagidthatexceedslimit_12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890")
+    }.message shouldContain "less than 64"
   }
 
   // Custom TagId tests
