@@ -16,13 +16,14 @@ import io.github.alelk.pws.domain.songtag.repository.SongTagWriteRepository
  *  - Any new tags are inserted.
  *
  * Applied atomically.
+ * @param ID The type of TagId this use case works with
  */
-class ReplaceAllSongTagsUseCase(
-  private val readRepository: SongTagReadRepository,
-  private val writeRepository: SongTagWriteRepository,
+class ReplaceAllSongTagsUseCase<ID : TagId>(
+  private val readRepository: SongTagReadRepository<ID>,
+  private val writeRepository: SongTagWriteRepository<ID>,
   private val txRunner: TransactionRunner
 ) {
-  suspend operator fun invoke(songId: SongId, tagIds: Set<TagId>): ReplaceAllResourcesResult<SongTagAssociation> =
+  suspend operator fun invoke(songId: SongId, tagIds: Set<ID>): ReplaceAllResourcesResult<SongTagAssociation<ID>> =
     txRunner.inRwTransaction {
       val existingTagIds = readRepository.getTagIdsBySongId(songId)
 
@@ -53,10 +54,10 @@ class ReplaceAllSongTagsUseCase(
       }
 
       ReplaceAllResourcesResult.Success(
-        created = tagIdsToCreate.map { SongTagAssociation(songId, it) },
+        created = tagIdsToCreate.map { tagId -> SongTagAssociation(songId, tagId) },
         updated = emptyList(), // Song-tag has no updatable fields
-        unchanged = unchangedTagIds.map { SongTagAssociation(songId, it) },
-        deleted = tagIdsToDelete.map { SongTagAssociation(songId, it) }
+        unchanged = unchangedTagIds.map { tagId -> SongTagAssociation(songId, tagId) },
+        deleted = tagIdsToDelete.map { tagId -> SongTagAssociation(songId, tagId) }
       )
     }
 }

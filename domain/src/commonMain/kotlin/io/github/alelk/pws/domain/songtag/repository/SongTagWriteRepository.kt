@@ -8,16 +8,17 @@ import io.github.alelk.pws.domain.songtag.model.SongTagAssociation
 
 /**
  * Mutation operations for Song-Tag associations.
+ * @param ID The type of TagId this repository works with
  */
-interface SongTagWriteRepository {
+interface SongTagWriteRepository<ID : TagId> {
   /**
    * Add a tag to a song.
    */
-  suspend fun create(songId: SongId, tagId: TagId): CreateResourceResult<SongTagAssociation>
+  suspend fun create(songId: SongId, tagId: ID): CreateResourceResult<SongTagAssociation<ID>>
 
   /**
    * Remove a tag from a song.
    */
-  suspend fun delete(songId: SongId, tagId: TagId): DeleteResourceResult<SongTagAssociation>
+  suspend fun delete(songId: SongId, tagId: ID): DeleteResourceResult<SongTagAssociation<ID>>
 }
 

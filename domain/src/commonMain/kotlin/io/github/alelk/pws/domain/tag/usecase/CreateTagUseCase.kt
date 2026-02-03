@@ -8,12 +8,13 @@ import io.github.alelk.pws.domain.tag.repository.TagWriteRepository
 
 /**
  * Use case: create a new tag.
+ * @param ID The type of TagId this use case works with
  */
-class CreateTagUseCase(
-  private val tagRepository: TagWriteRepository,
+class CreateTagUseCase<ID : TagId>(
+  private val tagRepository: TagWriteRepository<ID>,
   private val txRunner: TransactionRunner
 ) {
-  suspend operator fun invoke(command: CreateTagCommand): CreateResourceResult<TagId> =
+  suspend operator fun invoke(command: CreateTagCommand<ID>): CreateResourceResult<ID> =
     txRunner.inRwTransaction { tagRepository.create(command) }
 }
 

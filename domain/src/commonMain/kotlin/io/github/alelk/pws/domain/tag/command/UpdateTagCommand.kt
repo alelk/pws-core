@@ -5,9 +5,10 @@ import io.github.alelk.pws.domain.core.ids.TagId
 
 /**
  * Command to update an existing tag.
+ * @param ID The type of TagId
  */
-data class UpdateTagCommand(
-  val id: TagId,
+data class UpdateTagCommand<out ID : TagId>(
+  val id: ID,
   val name: String? = null,
   val color: Color? = null,
   val priority: Int? = null

@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.Color
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import io.github.alelk.pws.domain.core.ids.TagId
-import io.github.alelk.pws.domain.tag.Tag
+import io.github.alelk.pws.domain.tag.model.Tag
 import io.github.alelk.pws.domain.tag.command.CreateTagCommand
 import io.github.alelk.pws.domain.tag.command.UpdateTagCommand
 import io.github.alelk.pws.domain.tag.usecase.CreateTagUseCase
@@ -14,7 +14,6 @@ import io.github.alelk.pws.domain.tag.usecase.UpdateTagUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
-import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import io.github.alelk.pws.domain.core.Color as DomainColor
 
@@ -176,12 +175,12 @@ class TagsScreenModel(
     mutableState.value = transform(mutableState.value)
   }
 
-  private fun Tag.toUi() = TagUi(
+  private fun Tag<*>.toUi() = TagUi(
     id = id,
     name = name,
     color = color.toCompose(),
     songCount = 0, // Tag doesn't have songCount, only TagDetail does
-    isPredefined = predefined
+    isPredefined = this is Tag.Predefined
   )
 
   private fun DomainColor.toCompose() = Color(r / 255f, g / 255f, b / 255f)

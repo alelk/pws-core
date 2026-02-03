@@ -9,10 +9,11 @@ import io.github.alelk.pws.domain.tag.command.UpdateTagCommand
 
 /**
  * Mutation operations for Tag aggregate.
+ * @param ID The type of TagId this repository works with
  */
-interface TagWriteRepository {
-  suspend fun create(command: CreateTagCommand): CreateResourceResult<TagId>
-  suspend fun update(command: UpdateTagCommand): UpdateResourceResult<TagId>
-  suspend fun delete(id: TagId): DeleteResourceResult<TagId>
+interface TagWriteRepository<ID : TagId> {
+  suspend fun create(command: CreateTagCommand<ID>): CreateResourceResult<ID>
+  suspend fun update(command: UpdateTagCommand<ID>): UpdateResourceResult<ID>
+  suspend fun delete(id: ID): DeleteResourceResult<ID>
 }
 

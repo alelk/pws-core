@@ -7,12 +7,13 @@ import io.github.alelk.pws.domain.tag.repository.TagReadRepository
 
 /**
  * Use case: get tag details by id.
+ * @param ID The type of TagId this use case works with
  */
-class GetTagDetailUseCase(
-  private val tagRepository: TagReadRepository,
+class GetTagDetailUseCase<ID : TagId>(
+  private val tagRepository: TagReadRepository<ID>,
   private val txRunner: TransactionRunner
 ) {
-  suspend operator fun invoke(id: TagId): TagDetail? =
+  suspend operator fun invoke(id: ID): TagDetail<ID>? =
     txRunner.inRoTransaction { tagRepository.get(id) }
 }
 

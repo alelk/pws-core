@@ -7,12 +7,13 @@ import io.github.alelk.pws.domain.songtag.repository.SongTagReadRepository
 
 /**
  * Use case: get all song IDs for a tag.
+ * @param ID The type of TagId this use case works with
  */
-class GetTagSongsUseCase(
-  private val songTagRepository: SongTagReadRepository,
+class GetTagSongIdsUseCase<ID : TagId>(
+  private val songTagRepository: SongTagReadRepository<ID>,
   private val txRunner: TransactionRunner
 ) {
-  suspend operator fun invoke(tagId: TagId): Set<SongId> =
+  suspend operator fun invoke(tagId: ID): Set<SongId> =
     txRunner.inRoTransaction { songTagRepository.getSongIdsByTagId(tagId) }
 }
 

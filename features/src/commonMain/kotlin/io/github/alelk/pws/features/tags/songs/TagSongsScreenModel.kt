@@ -45,7 +45,7 @@ class TagSongsScreenModel(
     }
   }
 
-  private fun TagDetail.toUi() = TagInfoUi(
+  private fun TagDetail<*>.toUi() = TagInfoUi(
     id = id,
     name = name,
     color = color.toCompose()
