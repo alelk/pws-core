@@ -265,6 +265,17 @@ Workflow:
 3. A moderation request is created
 4. Moderator reviews and applies to global song
 
+## Related Concepts
+
+### Tag Overrides
+
+Пользователи также могут переопределять глобальные теги:
+- Изменять название, цвет, приоритет предопределённого тега
+- Скрывать предопределённые теги
+- Добавлять/скрывать связи глобальных тегов с песнями
+
+Подробнее см. [Tags and Categories](./tags.md).
+
 ## Related Files
 
 - `domain/song/model/UserSongOverride.kt`

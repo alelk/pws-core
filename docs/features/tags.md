@@ -22,82 +22,171 @@ Tags allow categorizing songs for easy search and navigation.
 ### Reading Tags
 
 ```kotlin
-class GetTagsUseCase(
-    private val tagRepository: TagReadRepository
+class GetTagsUseCase<ID : TagId>(
+    private val tagRepository: TagReadRepository<ID>
 ) {
-    operator fun invoke(): Flow<List<Tag>>
+    suspend operator fun invoke(sort: TagSort): List<Tag<ID>>
 }
 
-class GetSongTagsUseCase(
-    private val songTagRepository: SongTagReadRepository
+class GetTagDetailUseCase<ID : TagId>(
+    private val tagRepository: TagReadRepository<ID>
 ) {
-    operator fun invoke(songId: Long): Flow<List<Tag>>
+    suspend operator fun invoke(tagId: ID): TagDetail<ID>?
 }
 
-class GetSongsByTagUseCase(
-    private val songTagRepository: SongTagReadRepository
+class GetSongTagsUseCase<ID : TagId>(
+    private val songTagRepository: SongTagReadRepository<ID>
 ) {
-    operator fun invoke(tagId: Long): Flow<List<SongSummary>>
+    suspend operator fun invoke(songId: SongId): List<Tag<ID>>
+}
+
+class GetTagSongsUseCase<ID : TagId>(
+    private val songTagRepository: SongTagReadRepository<ID>
+) {
+    suspend operator fun invoke(tagId: ID): List<SongWithBookInfo>
 }
 ```
 
-### Managing User Tags
+### Managing Tags
 
 ```kotlin
-class CreateTagUseCase(
-    private val tagRepository: TagWriteRepository
+class CreateTagUseCase<ID : TagId>(
+    private val tagRepository: TagWriteRepository<ID>
 ) {
-    suspend operator fun invoke(name: String, color: String?): Tag
+    suspend operator fun invoke(command: CreateTagCommand<ID>): CreateResourceResult<ID>
 }
 
-class UpdateTagUseCase(
-    private val tagRepository: TagWriteRepository
+class UpdateTagUseCase<ID : TagId>(
+    private val tagRepository: TagWriteRepository<ID>
 ) {
-    suspend operator fun invoke(tagId: Long, name: String, color: String?)
+    suspend operator fun invoke(command: UpdateTagCommand<ID>): UpdateResourceResult<ID>
 }
 
-class DeleteTagUseCase(
-    private val tagRepository: TagWriteRepository
+class DeleteTagUseCase<ID : TagId>(
+    private val tagRepository: TagWriteRepository<ID>
 ) {
-    suspend operator fun invoke(tagId: Long)
+    suspend operator fun invoke(tagId: ID): DeleteResourceResult<ID>
+}
+```
+
+### User Tags (Server-side)
+
+```kotlin
+// Creates custom tag or returns TagDetail
+class CreateUserTagUseCase(
+    private val userTagWriteRepository: UserTagWriteRepository,
+    private val userTagReadRepository: UserTagReadRepository
+) {
+    suspend operator fun invoke(
+        userId: UserId,
+        command: CreateTagCommand<TagId>
+    ): CreateResourceResult<TagDetail<TagId>>
+}
+
+// Updates custom tag or creates override for predefined tag
+class UpdateUserTagUseCase(
+    private val userTagWriteRepository: UserTagWriteRepository,
+    private val userTagReadRepository: UserTagReadRepository
+) {
+    suspend operator fun invoke(
+        userId: UserId,
+        command: UpdateTagCommand<TagId>
+    ): UpdateResourceResult<TagDetail<TagId>>
+}
+
+// Deletes custom tag or hides predefined tag
+class DeleteUserTagUseCase(
+    private val userTagRepository: UserTagWriteRepository
+) {
+    suspend operator fun invoke(
+        userId: UserId,
+        tagId: TagId
+    ): DeleteResourceResult<TagId>
 }
 ```
 
 ### Assigning Tags to Songs
 
 ```kotlin
-class AddSongTagUseCase(
-    private val songTagRepository: SongTagWriteRepository
+class AddSongTagUseCase<ID : TagId>(
+    private val songTagRepository: SongTagWriteRepository<ID>
 ) {
-    suspend operator fun invoke(songId: Long, tagId: Long)
+    suspend operator fun invoke(songId: SongId, tagId: ID): CreateResourceResult<SongTagAssociation<ID>>
 }
 
-class RemoveSongTagUseCase(
-    private val songTagRepository: SongTagWriteRepository
+class RemoveSongTagUseCase<ID : TagId>(
+    private val songTagRepository: SongTagWriteRepository<ID>
 ) {
-    suspend operator fun invoke(songId: Long, tagId: Long)
+    suspend operator fun invoke(songId: SongId, tagId: ID): DeleteResourceResult<SongTagAssociation<ID>>
+}
+
+class ReplaceAllSongTagsUseCase<ID : TagId>(
+    private val readRepository: SongTagReadRepository<ID>,
+    private val writeRepository: SongTagWriteRepository<ID>
+) {
+    suspend operator fun invoke(songId: SongId, tagIds: Set<ID>): ReplaceAllResourcesResult<SongTagAssociation<ID>>
 }
 ```
 
 ## Models
 
-### Tag
+### TagId
 ```kotlin
-data class Tag(
-    val id: Long,
-    val name: String,
-    val color: String?,      // HEX color, e.g. "#FF5722"
-    val isGlobal: Boolean,   // true = global, false = user tag
-    val songCount: Int       // number of songs with this tag
-)
+sealed interface TagId {
+  /** Predefined (global) tag identifier */
+  data class Predefined(val identifier: String) : TagId
+  
+  /** User-created custom tag identifier */
+  data class Custom(val id: Long) : TagId
+}
 ```
 
-### SongTag
+### Tag
 ```kotlin
-data class SongTag(
-    val songId: Long,
-    val tagId: Long,
-    val assignedAt: Instant
+sealed class Tag<out ID : TagId>(
+  open val id: ID,
+  open val name: String,
+  open val priority: Int,
+  open val color: Color
+) {
+  /** Predefined (global) tag, optionally edited by user */
+  data class Predefined(
+    override val id: TagId.Predefined,
+    override val name: String,
+    override val priority: Int,
+    override val color: Color,
+    val edited: Boolean = false  // true if user has overridden properties
+  ) : Tag<TagId.Predefined>(id, name, priority, color)
+
+  /** User-created custom tag */
+  data class Custom(
+    override val id: TagId.Custom,
+    override val name: String,
+    override val priority: Int,
+    override val color: Color
+  ) : Tag<TagId.Custom>(id, name, priority, color)
+}
+```
+
+### TagDetail
+```kotlin
+sealed class TagDetail<out ID : TagId>(
+  open val id: ID,
+  open val name: String,
+  open val priority: Int,
+  open val color: Color,
+  open val songCount: Int
+) {
+  data class Predefined(..., val edited: Boolean) : TagDetail<TagId.Predefined>(...)
+  data class Custom(...) : TagDetail<TagId.Custom>(...)
+}
+```
+
+### SongTagAssociation
+```kotlin
+data class SongTagAssociation<out ID : TagId>(
+  val songId: SongId,
+  val tagId: ID
 )
 ```
 
@@ -236,11 +325,30 @@ fun SongScreen(songId: Long) {
 
 ## Related Files
 
-- `domain/tag/Tag.kt`
-- `domain/tag/model/*.kt`
-- `domain/tag/repository/*.kt`
-- `domain/tag/usecase/*.kt`
-- `domain/songtag/repository/*.kt`
-- `domain/songtag/usecase/*.kt`
-- `features/tags/TagsScreen.kt`
-- `features/tags/TagSongsScreen.kt`
+### Domain (pws-core)
+- `domain/src/commonMain/kotlin/io/github/alelk/pws/domain/core/ids/TagId.kt`
+- `domain/src/commonMain/kotlin/io/github/alelk/pws/domain/tag/model/Tag.kt`
+- `domain/src/commonMain/kotlin/io/github/alelk/pws/domain/tag/model/TagDetail.kt`
+- `domain/src/commonMain/kotlin/io/github/alelk/pws/domain/tag/repository/*.kt`
+- `domain/src/commonMain/kotlin/io/github/alelk/pws/domain/tag/usecase/*.kt`
+- `domain/src/commonMain/kotlin/io/github/alelk/pws/domain/songtag/repository/*.kt`
+- `domain/src/commonMain/kotlin/io/github/alelk/pws/domain/songtag/usecase/*.kt`
+
+### API Contract (pws-core)
+- `api/contract/src/commonMain/kotlin/tag/TagSummaryDto.kt`
+- `api/contract/src/commonMain/kotlin/tag/TagDetailDto.kt`
+- `api/contract/src/commonMain/kotlin/core/ids/TagIdDto.kt`
+
+### Server (pws-server)
+- `infra/src/main/kotlin/db/table/TagTable.kt`
+- `infra/src/main/kotlin/db/table/UserTagTable.kt`
+- `infra/src/main/kotlin/db/table/UserTagOverrideTable.kt`
+- `infra/src/main/kotlin/repository/tag/*.kt`
+- `infra/src/main/kotlin/usecase/tag/*.kt`
+- `transport/src/main/kotlin/routes/tagRoutes.kt`
+- `transport/src/main/kotlin/routes/userTagRoutes.kt`
+- `transport/src/main/kotlin/routes/adminTagRoutes.kt`
+
+### UI (pws-core)
+- `features/src/commonMain/kotlin/io/github/alelk/pws/features/tags/TagsScreen.kt`
+- `features/src/commonMain/kotlin/io/github/alelk/pws/features/tags/TagsScreenModel.kt`
