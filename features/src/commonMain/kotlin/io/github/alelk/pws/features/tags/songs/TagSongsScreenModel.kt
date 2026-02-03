@@ -16,8 +16,8 @@ import io.github.alelk.pws.domain.core.Color as DomainColor
  */
 class TagSongsScreenModel(
   private val tagId: TagId,
-  private val getTagDetailUseCase: GetTagDetailUseCase,
-  private val observeSongsByTagUseCase: ObserveSongsByTagUseCase
+  private val getTagDetailUseCase: GetTagDetailUseCase<TagId>,
+  private val observeSongsByTagUseCase: ObserveSongsByTagUseCase<TagId>
 ) : StateScreenModel<TagSongsUiState>(TagSongsUiState.Loading) {
 
   init {

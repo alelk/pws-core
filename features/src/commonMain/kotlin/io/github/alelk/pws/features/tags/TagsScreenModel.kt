@@ -21,10 +21,10 @@ import io.github.alelk.pws.domain.core.Color as DomainColor
  * ScreenModel for tags management screen.
  */
 class TagsScreenModel(
-  private val observeTagsUseCase: ObserveTagsUseCase,
-  private val createTagUseCase: CreateTagUseCase,
-  private val updateTagUseCase: UpdateTagUseCase,
-  private val deleteTagUseCase: DeleteTagUseCase
+  private val observeTagsUseCase: ObserveTagsUseCase<TagId>,
+  private val createTagUseCase: CreateTagUseCase<TagId>,
+  private val updateTagUseCase: UpdateTagUseCase<TagId>,
+  private val deleteTagUseCase: DeleteTagUseCase<TagId>
 ) : StateScreenModel<TagsUiState>(TagsUiState.Loading) {
 
   sealed interface Effect {

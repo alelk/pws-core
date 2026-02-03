@@ -25,7 +25,7 @@ class SongEditScreenModel(
   private val songId: SongId,
   private val getSongDetailUseCase: GetSongDetailUseCase,
   private val updateSongUseCase: UpdateSongUseCase,
-  private val observeTagsUseCase: ObserveTagsUseCase
+  private val observeTagsUseCase: ObserveTagsUseCase<TagId>
 ) : StateScreenModel<SongEditUiState>(SongEditUiState.Loading) {
 
   sealed interface Effect {
