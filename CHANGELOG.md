@@ -1,5 +1,22 @@
 # PWS Android
 
+# [2.3.0](https://github.com/alelk/pws-core/compare/v2.2.0...v2.3.0) (2026-02-03)
+
+
+### Features
+
+* **tags:** Add methods to retrieve songs by tag and tags for a song ([7e582c2](https://github.com/alelk/pws-core/commit/7e582c25b7be20f5354d2a32f9226739b88c151d))
+* **tags:** Refactor tag ID handling to support new length constraints and user-defined tags ([49205ae](https://github.com/alelk/pws-core/commit/49205ae0782cfdc1de9a08d3e00ca1fd30f30bd6))
+* **tags:** Refactor tag model and repository interfaces to support generic TagId types ([1d57a22](https://github.com/alelk/pws-core/commit/1d57a225b5349d7b5960a4d56ddcebcd9de5ce0d))
+* **tags:** Refactor tag use cases and models to support generic TagId types and enhance user tag management ([79e56d1](https://github.com/alelk/pws-core/commit/79e56d15d8f15c7c8ddb7d606db626ebc21a423b))
+* **tags:** Refactor TagId implementation to support predefined and custom tag IDs with enhanced validation ([b3b354a](https://github.com/alelk/pws-core/commit/b3b354a7f2a3109d3ae6db80dddbc496db23e36c))
+* **tags:** Refactor user tag handling with new use cases and repositories ([2565217](https://github.com/alelk/pws-core/commit/2565217d95e7da473bb4a166324f1edf82486f05))
+* **tags:** Refactor user tag handling with new use cases and repositories ([160fe7e](https://github.com/alelk/pws-core/commit/160fe7e3a969399464a2381de73bd050bf1b524a))
+* **tags:** Tags api refactoring ([5ec0808](https://github.com/alelk/pws-core/commit/5ec08087e1cd295e6163beb795756c29c7aa3ea5))
+* **tags:** Update ScreenModels to use generic TagId types for improved tag management ([254c6d7](https://github.com/alelk/pws-core/commit/254c6d7967e83dbf8e79ddc50d1adc929daf31d3))
+* **tags:** Update tag creation logic to utilize TagId.Custom for user-defined tags ([b37e762](https://github.com/alelk/pws-core/commit/b37e762393d4011b1e394f81c95a4b082499056b))
+* **tags:** Update tag update logic to use PUT method for both custom and predefined tags ([7fc4e23](https://github.com/alelk/pws-core/commit/7fc4e23fe866f1729df778a34358ae7584577683))
+
 # [2.2.0](https://github.com/alelk/pws-core/compare/v2.1.1...v2.2.0) (2026-01-30)
 
 
