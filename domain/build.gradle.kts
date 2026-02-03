@@ -20,8 +20,8 @@ kotlin {
 
   sourceSets {
     commonMain.dependencies {
-      implementation(libs.kotlinx.serialization.core)
-      implementation(libs.kotlinx.coroutines.core)
+      api(libs.kotlinx.serialization.core)
+      api(libs.kotlinx.coroutines.core)
     }
 
     commonTest.dependencies {

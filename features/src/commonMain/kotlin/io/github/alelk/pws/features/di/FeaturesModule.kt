@@ -15,6 +15,12 @@ import io.github.alelk.pws.domain.core.ids.BookId
 import io.github.alelk.pws.domain.core.ids.SongId
 import io.github.alelk.pws.domain.core.ids.SongNumberId
 import io.github.alelk.pws.domain.core.ids.TagId
+import io.github.alelk.pws.domain.songtag.usecase.ObserveSongsByTagUseCase
+import io.github.alelk.pws.domain.tag.usecase.CreateTagUseCase
+import io.github.alelk.pws.domain.tag.usecase.DeleteTagUseCase
+import io.github.alelk.pws.domain.tag.usecase.GetTagDetailUseCase
+import io.github.alelk.pws.domain.tag.usecase.ObserveTagsUseCase
+import io.github.alelk.pws.domain.tag.usecase.UpdateTagUseCase
 import org.koin.dsl.module
 
 /**
@@ -37,7 +43,7 @@ val featuresModule = module {
   factory { (songId: SongId) -> SongDetailBySongIdScreenModel(songId, get()) }
 
   // Song Edit
-  factory { (songId: SongId) -> SongEditScreenModel(songId, get(), get(), get()) }
+  factory { (songId: SongId) -> SongEditScreenModel(songId, get(), get(), get<ObserveTagsUseCase<TagId>>()) }
 
   // Search
   factory { SearchScreenModel(get()) }
@@ -49,9 +55,9 @@ val featuresModule = module {
   factory { HistoryScreenModel(get(), get(), get()) }
 
   // Tags
-  factory { TagsScreenModel(get(), get(), get(), get()) }
+  factory { TagsScreenModel(get<ObserveTagsUseCase<TagId>>(), get<CreateTagUseCase<TagId>>(), get<UpdateTagUseCase<TagId>>(), get<DeleteTagUseCase<TagId>>()) }
 
   // Tag Songs
-  factory { (tagId: TagId) -> TagSongsScreenModel(tagId, get(), get()) }
+  factory { (tagId: TagId) -> TagSongsScreenModel(tagId, get<GetTagDetailUseCase<TagId>>(), get<ObserveSongsByTagUseCase<TagId>>()) }
 }
 

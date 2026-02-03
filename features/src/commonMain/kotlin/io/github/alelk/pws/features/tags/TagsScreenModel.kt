@@ -4,9 +4,9 @@ import androidx.compose.ui.graphics.Color
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import io.github.alelk.pws.domain.core.ids.TagId
+import io.github.alelk.pws.domain.tag.model.Tag
 import io.github.alelk.pws.domain.tag.command.CreateTagCommand
 import io.github.alelk.pws.domain.tag.command.UpdateTagCommand
-import io.github.alelk.pws.domain.tag.model.TagSummary
 import io.github.alelk.pws.domain.tag.usecase.CreateTagUseCase
 import io.github.alelk.pws.domain.tag.usecase.DeleteTagUseCase
 import io.github.alelk.pws.domain.tag.usecase.ObserveTagsUseCase
@@ -14,7 +14,6 @@ import io.github.alelk.pws.domain.tag.usecase.UpdateTagUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
-import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import io.github.alelk.pws.domain.core.Color as DomainColor
 
@@ -22,10 +21,10 @@ import io.github.alelk.pws.domain.core.Color as DomainColor
  * ScreenModel for tags management screen.
  */
 class TagsScreenModel(
-  private val observeTagsUseCase: ObserveTagsUseCase,
-  private val createTagUseCase: CreateTagUseCase,
-  private val updateTagUseCase: UpdateTagUseCase,
-  private val deleteTagUseCase: DeleteTagUseCase
+  private val observeTagsUseCase: ObserveTagsUseCase<TagId>,
+  private val createTagUseCase: CreateTagUseCase<TagId>,
+  private val updateTagUseCase: UpdateTagUseCase<TagId>,
+  private val deleteTagUseCase: DeleteTagUseCase<TagId>
 ) : StateScreenModel<TagsUiState>(TagsUiState.Loading) {
 
   sealed interface Effect {
@@ -134,9 +133,8 @@ class TagsScreenModel(
           updateTagUseCase(command)
           _effects.emit(Effect.ShowSnackbar("Тег обновлён"))
         } else {
-          // Create new tag
-          val tagIdBase = name.take(20).replace(Regex("[^\\p{L}\\d_-]"), "").ifEmpty { "tag" }
-          val tagId = TagId("$tagIdBase-${Clock.System.now().toEpochMilliseconds()}")
+          // Create new tag - use TagId.Custom for user-created tags
+          val tagId = TagId.Custom.random()
           val command = CreateTagCommand(
             id = tagId,
             name = name,
@@ -177,12 +175,12 @@ class TagsScreenModel(
     mutableState.value = transform(mutableState.value)
   }
 
-  private fun TagSummary.toUi() = TagUi(
+  private fun Tag<*>.toUi() = TagUi(
     id = id,
     name = name,
     color = color.toCompose(),
-    songCount = songCount,
-    isPredefined = predefined
+    songCount = 0, // Tag doesn't have songCount, only TagDetail does
+    isPredefined = this is Tag.Predefined
   )
 
   private fun DomainColor.toCompose() = Color(r / 255f, g / 255f, b / 255f)

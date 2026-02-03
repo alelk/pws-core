@@ -7,11 +7,12 @@ import kotlinx.coroutines.flow.Flow
 
 /**
  * Use case: observe songs by tag.
+ * @param ID The type of TagId this use case works with
  */
-class ObserveSongsByTagUseCase(
-  private val songTagRepository: SongTagObserveRepository
+class ObserveSongsByTagUseCase<ID : TagId>(
+  private val songTagRepository: SongTagObserveRepository<ID>
 ) {
-  operator fun invoke(tagId: TagId): Flow<List<SongWithBookInfo>> =
+  operator fun invoke(tagId: ID): Flow<List<SongWithBookInfo>> =
     songTagRepository.observeSongsByTag(tagId)
 }
 

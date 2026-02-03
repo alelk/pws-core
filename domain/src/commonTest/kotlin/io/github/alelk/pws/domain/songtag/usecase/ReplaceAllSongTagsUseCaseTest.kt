@@ -9,6 +9,7 @@ import io.github.alelk.pws.domain.core.transaction.NoopTransactionRunner
 import io.github.alelk.pws.domain.songtag.model.SongTagAssociation
 import io.github.alelk.pws.domain.songtag.repository.SongTagReadRepository
 import io.github.alelk.pws.domain.songtag.repository.SongTagWriteRepository
+import io.github.alelk.pws.domain.tag.model.Tag
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
@@ -18,24 +19,26 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 class ReplaceAllSongTagsUseCaseTest : StringSpec({
 
   val songId = SongId(1)
-  val tagId1 = TagId.parse("tag-1")
-  val tagId2 = TagId.parse("tag-2")
-  val tagId3 = TagId.parse("tag-3")
-  val tagId4 = TagId.parse("tag-4")
+  val tagId1 = TagId.Predefined("tag-1")
+  val tagId2 = TagId.Predefined("tag-2")
+  val tagId3 = TagId.Predefined("tag-3")
+  val tagId4 = TagId.Predefined("tag-4")
 
   // Simple in-memory implementation for testing
-  class InMemorySongTagReadRepository : SongTagReadRepository {
-    val data = mutableMapOf<SongId, MutableSet<TagId>>()
+  class InMemorySongTagReadRepository : SongTagReadRepository<TagId.Predefined> {
+    val data = mutableMapOf<SongId, MutableSet<TagId.Predefined>>()
 
+    override suspend fun getSongsByTag(tagId: TagId.Predefined) = emptyList<io.github.alelk.pws.domain.songtag.model.SongWithBookInfo>()
+    override suspend fun getTagsForSong(songId: SongId) = emptyList<Tag.Predefined>()
     override suspend fun getTagIdsBySongId(songId: SongId) = data[songId]?.toSet() ?: emptySet()
-    override suspend fun getSongIdsByTagId(tagId: TagId) =
+    override suspend fun getSongIdsByTagId(tagId: TagId.Predefined) =
       data.filterValues { tagId in it }.keys.toSet()
-    override suspend fun exists(songId: SongId, tagId: TagId) =
+    override suspend fun exists(songId: SongId, tagId: TagId.Predefined) =
       data[songId]?.contains(tagId) == true
   }
 
-  class InMemorySongTagWriteRepository(private val readRepo: InMemorySongTagReadRepository) : SongTagWriteRepository {
-    override suspend fun create(songId: SongId, tagId: TagId): CreateResourceResult<SongTagAssociation> {
+  class InMemorySongTagWriteRepository(private val readRepo: InMemorySongTagReadRepository) : SongTagWriteRepository<TagId.Predefined> {
+    override suspend fun create(songId: SongId, tagId: TagId.Predefined): CreateResourceResult<SongTagAssociation<TagId.Predefined>> {
       val association = SongTagAssociation(songId, tagId)
       val set = readRepo.data.getOrPut(songId) { mutableSetOf() }
       if (tagId in set) return CreateResourceResult.AlreadyExists(association)
@@ -43,7 +46,7 @@ class ReplaceAllSongTagsUseCaseTest : StringSpec({
       return CreateResourceResult.Success(association)
     }
 
-    override suspend fun delete(songId: SongId, tagId: TagId): DeleteResourceResult<SongTagAssociation> {
+    override suspend fun delete(songId: SongId, tagId: TagId.Predefined): DeleteResourceResult<SongTagAssociation<TagId.Predefined>> {
       val association = SongTagAssociation(songId, tagId)
       val set = readRepo.data[songId] ?: return DeleteResourceResult.NotFound(association)
       if (tagId !in set) return DeleteResourceResult.NotFound(association)
@@ -61,7 +64,7 @@ class ReplaceAllSongTagsUseCaseTest : StringSpec({
 
     val result = useCase(songId, setOf(tagId1, tagId2, tagId3))
 
-    result.shouldBeInstanceOf<ReplaceAllResourcesResult.Success<SongTagAssociation>>()
+    result.shouldBeInstanceOf<ReplaceAllResourcesResult.Success<SongTagAssociation<TagId.Predefined>>>()
     result.created.map { it.tagId } shouldContainExactlyInAnyOrder listOf(tagId1, tagId2, tagId3)
     result.updated shouldHaveSize 0
     result.unchanged shouldHaveSize 0
@@ -76,7 +79,7 @@ class ReplaceAllSongTagsUseCaseTest : StringSpec({
 
     val result = useCase(songId, emptySet())
 
-    result.shouldBeInstanceOf<ReplaceAllResourcesResult.Success<SongTagAssociation>>()
+    result.shouldBeInstanceOf<ReplaceAllResourcesResult.Success<SongTagAssociation<TagId.Predefined>>>()
     result.created shouldHaveSize 0
     result.updated shouldHaveSize 0
     result.unchanged shouldHaveSize 0
@@ -91,7 +94,7 @@ class ReplaceAllSongTagsUseCaseTest : StringSpec({
 
     val result = useCase(songId, setOf(tagId1, tagId2, tagId3))
 
-    result.shouldBeInstanceOf<ReplaceAllResourcesResult.Success<SongTagAssociation>>()
+    result.shouldBeInstanceOf<ReplaceAllResourcesResult.Success<SongTagAssociation<TagId.Predefined>>>()
     result.created shouldHaveSize 0
     result.updated shouldHaveSize 0
     result.unchanged.map { it.tagId } shouldContainExactlyInAnyOrder listOf(tagId1, tagId2, tagId3)
@@ -109,7 +112,7 @@ class ReplaceAllSongTagsUseCaseTest : StringSpec({
 
     val result = useCase(songId, setOf(tagId2, tagId3, tagId4))
 
-    result.shouldBeInstanceOf<ReplaceAllResourcesResult.Success<SongTagAssociation>>()
+    result.shouldBeInstanceOf<ReplaceAllResourcesResult.Success<SongTagAssociation<TagId.Predefined>>>()
     result.created.map { it.tagId } shouldContainExactlyInAnyOrder listOf(tagId4)
     result.updated shouldHaveSize 0 // song-tag has no updatable fields
     result.unchanged.map { it.tagId } shouldContainExactlyInAnyOrder listOf(tagId2, tagId3)
@@ -127,7 +130,7 @@ class ReplaceAllSongTagsUseCaseTest : StringSpec({
 
     val result = useCase(songId, setOf(tagId2, tagId3, tagId4))
 
-    result.shouldBeInstanceOf<ReplaceAllResourcesResult.Success<SongTagAssociation>>()
+    result.shouldBeInstanceOf<ReplaceAllResourcesResult.Success<SongTagAssociation<TagId.Predefined>>>()
     result.created.map { it.tagId } shouldContainExactlyInAnyOrder listOf(tagId3, tagId4)
     result.unchanged.map { it.tagId } shouldContainExactlyInAnyOrder listOf(tagId2)
     result.deleted.map { it.tagId } shouldContainExactlyInAnyOrder listOf(tagId1)
@@ -141,9 +144,8 @@ class ReplaceAllSongTagsUseCaseTest : StringSpec({
 
     val result = useCase(songId, setOf(tagId2, tagId3))
 
-    result.shouldBeInstanceOf<ReplaceAllResourcesResult.Success<SongTagAssociation>>()
+    result.shouldBeInstanceOf<ReplaceAllResourcesResult.Success<SongTagAssociation<TagId.Predefined>>>()
     result.created.forEach { it.songId shouldBe songId }
     result.deleted.forEach { it.songId shouldBe songId }
   }
 })
-

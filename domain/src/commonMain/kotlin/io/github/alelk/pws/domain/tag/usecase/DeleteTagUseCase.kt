@@ -7,12 +7,13 @@ import io.github.alelk.pws.domain.tag.repository.TagWriteRepository
 
 /**
  * Use case: delete a tag.
+ * @param ID The type of TagId this use case works with
  */
-class DeleteTagUseCase(
-  private val tagRepository: TagWriteRepository,
+class DeleteTagUseCase<ID : TagId>(
+  private val tagRepository: TagWriteRepository<ID>,
   private val txRunner: TransactionRunner
 ) {
-  suspend operator fun invoke(id: TagId): DeleteResourceResult<TagId> =
+  suspend operator fun invoke(id: ID): DeleteResourceResult<ID> =
     txRunner.inRwTransaction { tagRepository.delete(id) }
 }
 

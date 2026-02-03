@@ -7,10 +7,14 @@ sealed interface CreateResourceResult<out R : Any> {
     val message: String
   }
 
+  // todo: nullable resource + not-null existing resource
+
   data class AlreadyExists<out R : Any>(val resource: R, override val message: String = "Resource already exists: $resource") : Failure<R>
 
+  // todo: nullable resource
   data class ValidationError<out R : Any>(val resource: R, override val message: String) : Failure<R>
 
+  // todo: nullable resource
   data class UnknownError<out R : Any>(
     val resource: R,
     val exception: Throwable?,
