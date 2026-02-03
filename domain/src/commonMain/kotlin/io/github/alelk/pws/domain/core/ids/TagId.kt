@@ -20,7 +20,7 @@ sealed interface TagId : Comparable<TagId> {
         "predefined tag id should contain only letters, digits and '-', '_' symbols; should not start with digit; should not end with '-' or '_'"
       }
       require(identifier.startsWith(Custom.PREFIX).not()) { "predefined tag id should not start with '${Custom.PREFIX}'" }
-      require(identifier.length < 24) { "predefined tag id length should be less than 24 characters" }
+      require(identifier.length < 64) { "predefined tag id length should be less than 24 characters" }
     }
 
     companion object {
