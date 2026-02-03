@@ -1,5 +1,12 @@
 # PWS Android
 
+# [2.5.0](https://github.com/alelk/pws-core/compare/v2.4.0...v2.5.0) (2026-02-03)
+
+
+### Features
+
+* **tags:** Integrate UserTagApi ([ddbe32a](https://github.com/alelk/pws-core/commit/ddbe32a40d44d53d8c8c4f2a8f98f4b3de8070b5))
+
 # [2.4.0](https://github.com/alelk/pws-core/compare/v2.3.0...v2.4.0) (2026-02-03)
 
 
