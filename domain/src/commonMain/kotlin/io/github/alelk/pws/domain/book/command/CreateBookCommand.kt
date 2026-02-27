@@ -11,7 +11,7 @@ import io.github.alelk.pws.domain.person.Person
 data class CreateBookCommand(
   val id: BookId,
   val version: Version = Version(1, 0),
-  val locale: Locale,
+  val locales: List<Locale>,
   val name: NonEmptyString,
   val displayShortName: NonEmptyString,
   val displayName: NonEmptyString,
@@ -24,4 +24,8 @@ data class CreateBookCommand(
   val preface: String? = null,
   val enabled: Boolean = true,
   val priority: Int = if (enabled) 10 else 0
-)
+) {
+  init {
+      require(locales.isNotEmpty()) { "book $id locales must not be empty" }
+  }
+}

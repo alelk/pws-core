@@ -15,6 +15,7 @@ import io.kotest.property.arbitrary.Codepoint
 import io.kotest.property.arbitrary.arbitrary
 import io.kotest.property.arbitrary.az
 import io.kotest.property.arbitrary.list
+import io.kotest.property.arbitrary.map
 import io.kotest.property.arbitrary.orNull
 import io.kotest.property.arbitrary.removeEdgecases
 import io.kotest.property.arbitrary.string
@@ -22,7 +23,7 @@ import io.kotest.property.arbitrary.string
 fun Arb.Companion.bookEntity(
   id: Arb<BookId> = Arb.bookId().removeEdgecases(),
   version: Arb<Version> = Arb.version(),
-  locale: Arb<Locale> = Arb.locale(),
+  locales: Arb<List<Locale>> = Arb.list(Arb.locale(), 1..2).map { it.distinct() },
   name: Arb<String> = Arb.string(5..40, Codepoint.az()),
   displayShortName: Arb<String> = Arb.string(3..20, Codepoint.az()),
   displayName: Arb<String> = Arb.string(5..40, Codepoint.az()),
@@ -37,7 +38,7 @@ fun Arb.Companion.bookEntity(
   BookEntity(
     id = id.bind(),
     version = version.bind(),
-    locale = locale.bind(),
+    locales = locales.bind(),
     name = name.bind(),
     displayShortName = displayShortName.bind(),
     displayName = displayName.bind(),

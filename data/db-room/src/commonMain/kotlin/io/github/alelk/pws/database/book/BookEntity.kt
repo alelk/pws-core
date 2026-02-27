@@ -13,7 +13,7 @@ import io.github.alelk.pws.domain.person.Person
 data class BookEntity(
     @PrimaryKey @ColumnInfo(name = "id") val id: BookId,
     @ColumnInfo(name = "version") val version: Version,
-    @ColumnInfo(name = "locale") val locale: Locale,
+    @ColumnInfo(name = "locales") val locales: List<Locale>,
     @ColumnInfo(name = "name") val name: String,
     @ColumnInfo(name = "display_short_name") val displayShortName: String,
     @ColumnInfo(name = "display_name") val displayName: String,
@@ -26,8 +26,9 @@ data class BookEntity(
     @ColumnInfo(name = "preface") val preface: String? = null
 ) {
   init {
-    require(name.isNotBlank()) { "book name must not be blank" }
-    require(displayShortName.isNotBlank()) { "book display short name must not be blank" }
-    require(displayName.isNotBlank()) { "book display name must not be blank" }
+    require(name.isNotBlank()) { "book $id name must not be blank" }
+    require(displayShortName.isNotBlank()) { "book $id display short name must not be blank" }
+    require(displayName.isNotBlank()) { "book $id display name must not be blank" }
+    require(locales.isNotEmpty()) { "book $id must have at least one locale" }
   }
 }

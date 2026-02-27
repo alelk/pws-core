@@ -27,7 +27,7 @@ import io.github.alelk.pws.database.song_reference.SongReferenceEntity
 import io.github.alelk.pws.database.tag.TagEntity
 
 @Database(
-  version = 11,
+  version = 12,
   entities = [
     BookEntity::class,
     BookStatisticEntity::class,

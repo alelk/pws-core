@@ -9,7 +9,7 @@ import io.github.alelk.pws.domain.core.getOrElse
 
 fun UpdateBookCommand.toRequestDto(): BookUpdateRequestDto =
   BookUpdateRequestDto(
-    locale = locale?.toDto(),
+    locales = locales?.map { it.toDto() },
     name = name?.value,
     displayShortName = displayShortName?.value,
     displayName = displayName?.value,
@@ -25,7 +25,7 @@ fun UpdateBookCommand.toRequestDto(): BookUpdateRequestDto =
 fun CreateBookCommand.toRequestDto(): BookCreateRequestDto =
   BookCreateRequestDto(
     id = id.toDto(),
-    locale = locale.toDto(),
+    locales = locales.map { it.toDto() },
     name = name.value,
     displayShortName = displayShortName.value,
     displayName = displayName.value,

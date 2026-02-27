@@ -27,7 +27,7 @@ import io.kotest.property.arbitrary.string
 fun Arb.Companion.createBookCommand(
   id: Arb<BookId> = Arb.bookId(),
   version: Arb<Version> = Arb.version(),
-  locale: Arb<Locale> = Arb.locale(),
+  locales: Arb<List<Locale>> = Arb.list(Arb.locale(), 1..2).map { it.distinct() },
   name: Arb<NonEmptyString> = Arb.nonEmptyString(1..25),
   displayShortName: Arb<NonEmptyString> = name.map { NonEmptyString(it.value.take(5)) },
   displayName: Arb<NonEmptyString> = name,
@@ -46,7 +46,7 @@ fun Arb.Companion.createBookCommand(
     CreateBookCommand(
       id = id.bind(),
       version = version.bind(),
-      locale = locale.bind(),
+      locales = locales.bind(),
       name = name.bind(),
       displayShortName = displayShortName.bind(),
       displayName = displayName.bind(),

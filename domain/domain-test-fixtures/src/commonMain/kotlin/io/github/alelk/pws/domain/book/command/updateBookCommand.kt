@@ -16,13 +16,14 @@ import io.kotest.property.Arb
 import io.kotest.property.arbitrary.arbitrary
 import io.kotest.property.arbitrary.boolean
 import io.kotest.property.arbitrary.int
+import io.kotest.property.arbitrary.list
 import io.kotest.property.arbitrary.map
 import io.kotest.property.arbitrary.orNull
 
 /** Arbitrary for UpdateBookCommand (patch semantics). */
 fun Arb.Companion.updateBookCommand(
   id: Arb<BookId> = Arb.bookId(),
-  locale: Arb<Locale?> = Arb.locale().orNull(0.5),
+  locales: Arb<List<Locale>?> = Arb.list(Arb.locale(), 1..2).map { it.distinct() },
   name: Arb<NonEmptyString?> = Arb.nonEmptyString(1..25).orNull(0.6),
   displayShortName: Arb<NonEmptyString?> = name.map { it?.let { NonEmptyString(it.value.take(5)) } },
   displayName: Arb<NonEmptyString?> = name,
@@ -36,7 +37,7 @@ fun Arb.Companion.updateBookCommand(
 ): Arb<UpdateBookCommand> = arbitrary {
   UpdateBookCommand(
     id = id.bind(),
-    locale = locale.bind(),
+    locales = locales.bind(),
     name = name.bind(),
     displayShortName = displayShortName.bind(),
     displayName = displayName.bind(),

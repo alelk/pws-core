@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class BookCreateRequestDto(
   val id: BookIdDto,
-  val locale: LocaleDto,
+  val locales: List<LocaleDto>,
   val name: String,
   val displayShortName: String? = null,
   val displayName: String? = null,
@@ -22,5 +22,9 @@ data class BookCreateRequestDto(
   val preface: String? = null,
   val enabled: Boolean = true,
   val priority: Int = 0
-)
+) {
+  init {
+    require(locales.isNotEmpty()) { "book $id locales must not be empty" }
+  }
+}
 

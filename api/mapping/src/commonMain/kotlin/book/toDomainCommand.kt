@@ -12,7 +12,7 @@ import io.github.alelk.pws.domain.core.ids.BookId
 
 fun BookUpdateRequestDto.toDomainCommand(id: BookIdDto): UpdateBookCommand = UpdateBookCommand(
   id = BookId.parse(id.value),
-  locale = locale?.toDomain(),
+  locales = locales?.map { it.toDomain() },
   name = name?.let(::NonEmptyString),
   displayShortName = displayShortName?.let(::NonEmptyString),
   displayName = displayName?.let(::NonEmptyString),
@@ -27,7 +27,7 @@ fun BookUpdateRequestDto.toDomainCommand(id: BookIdDto): UpdateBookCommand = Upd
 
 fun BookCreateRequestDto.toDomainCommand(): CreateBookCommand = CreateBookCommand(
   id = BookId.parse(id.value),
-  locale = locale.toDomain(),
+  locales = locales.map { it.toDomain() },
   name = NonEmptyString(name),
   displayShortName = NonEmptyString((displayShortName ?: name).take(5)),
   displayName = NonEmptyString(displayName ?: name),

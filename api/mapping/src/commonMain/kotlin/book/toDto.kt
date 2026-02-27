@@ -11,7 +11,7 @@ import io.github.alelk.pws.domain.book.query.BookSort
 fun BookSummary.toDto(): BookSummaryDto = BookSummaryDto(
   id = id.toDto(),
   version = version.toDto(),
-  locale = locale.toDto(),
+  locales = locales.map { it.toDto() },
   name = name.value,
   displayShortName = displayShortName.value,
   displayName = displayName.value,
@@ -24,7 +24,7 @@ fun BookSummary.toDto(): BookSummaryDto = BookSummaryDto(
 fun BookDetail.toDto(): BookDetailDto = BookDetailDto(
   id = id.toDto(),
   version = version.toDto(),
-  locale = locale.toDto(),
+  locales = locales.map { it.toDto() },
   name = name.value,
   displayShortName = displayShortName.value,
   displayName = displayName.value,

@@ -10,7 +10,7 @@ fun BookSummaryProjection.toDomain() =
   BookSummary(
     id = id,
     version = version,
-    locale = locale,
+    locales = locales,
     name = NonEmptyString(name),
     displayShortName = NonEmptyString(displayShortName),
     displayName = NonEmptyString(displayName),
@@ -24,7 +24,7 @@ fun BookDetailProjection.toDomain() =
   BookDetail(
     id = id,
     version = version,
-    locale = locale,
+    locales = locales,
     name = NonEmptyString(name),
     displayShortName = NonEmptyString(displayShortName),
     displayName = NonEmptyString(displayName),

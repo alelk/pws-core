@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class BookUpdateRequestDto(
-  val locale: LocaleDto? = null,
+  val locales: List<LocaleDto>? = null,
   val name: String? = null,
   val displayShortName: String? = null,
   val displayName: String? = null,

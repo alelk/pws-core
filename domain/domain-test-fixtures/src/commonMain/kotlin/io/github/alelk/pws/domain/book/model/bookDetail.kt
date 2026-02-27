@@ -22,12 +22,13 @@ import io.kotest.property.arbitrary.list
 import io.kotest.property.arbitrary.orNull
 import io.kotest.property.arbitrary.arbitrary
 import io.kotest.property.arbitrary.az
+import io.kotest.property.arbitrary.map
 import io.kotest.property.arbitrary.string
 
 fun Arb.Companion.bookDetail(
   id: Arb<BookId> = Arb.bookId(),
   version: Arb<Version> = Arb.version(),
-  locale: Arb<Locale> = Arb.locale(),
+  locales: Arb<List<Locale>> = Arb.list(Arb.locale(), 1..2).map { it.distinct() },
   name: Arb<NonEmptyString> = Arb.nonEmptyString(1..25),
   displayShortName: Arb<NonEmptyString> = Arb.nonEmptyString(1..7),
   displayName: Arb<NonEmptyString> = name,
@@ -55,7 +56,7 @@ fun Arb.Companion.bookDetail(
     BookDetail(
       id = id.bind(),
       version = version.bind(),
-      locale = locale.bind(),
+      locales = locales.bind(),
       name = name.bind(),
       displayShortName = displayShortName.bind(),
       displayName = displayName.bind(),

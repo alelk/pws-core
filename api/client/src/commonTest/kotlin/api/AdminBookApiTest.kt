@@ -101,7 +101,8 @@ class AdminBookApiTest : FunSpec({
   // --- create ---
 
   test("create() should POST /v1/admin/books and return ResourceCreateResult.Success") {
-    val createReq = BookCreateRequestDto(id = BookIdDto("new-book"), locale = LocaleDto("en"), name = "New", displayShortName = "N", displayName = "New Book")
+    val createReq =
+      BookCreateRequestDto(id = BookIdDto("new-book"), locales = listOf(LocaleDto("en")), name = "New", displayShortName = "N", displayName = "New Book")
     val created = BookIdDto("new-book")
     val responseJson = json.encodeToString(created)
 
@@ -117,7 +118,7 @@ class AdminBookApiTest : FunSpec({
   }
 
   test("create() should return AlreadyExists when 409") {
-    val createReq = BookCreateRequestDto(id = BookIdDto("existing"), locale = LocaleDto("en"), name = "Existing")
+    val createReq = BookCreateRequestDto(id = BookIdDto("existing"), locales = listOf(LocaleDto("en")), name = "Existing")
     val errorJson = json.encodeToString(ErrorDto.resourceAlreadyExists(ResourceTypeDto.BOOK, BookIdDto("existing")))
 
     val client = httpClientWith {
@@ -130,7 +131,7 @@ class AdminBookApiTest : FunSpec({
   }
 
   test("create() should return ValidationError when 400") {
-    val createReq = BookCreateRequestDto(id = BookIdDto("invalid"), locale = LocaleDto("en"), name = "")
+    val createReq = BookCreateRequestDto(id = BookIdDto("invalid"), locales = listOf(LocaleDto("en")), name = "")
     val errorJson = json.encodeToString(ErrorDto(ErrorCodes.VALIDATION_ERROR, "Name is required"))
 
     val client = httpClientWith {

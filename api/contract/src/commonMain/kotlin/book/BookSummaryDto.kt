@@ -10,7 +10,7 @@ import kotlinx.serialization.Serializable
 data class BookSummaryDto(
   val id: BookIdDto,
   val version: VersionDto,
-  val locale: LocaleDto,
+  val locales: List<LocaleDto>,
   val name: String,
   val displayShortName: String,
   val displayName: String,
@@ -18,4 +18,8 @@ data class BookSummaryDto(
   val firstSongNumberId: SongNumberIdDto?,
   val enabled: Boolean,
   val priority: Int,
-)
+) {
+  init {
+    require(locales.isNotEmpty()) { "book $id locales must not be empty" }
+  }
+}

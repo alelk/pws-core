@@ -11,7 +11,7 @@ import io.github.alelk.pws.domain.person.Person
 data class BookDetailProjection(
   @ColumnInfo(name = "id") val id: BookId,
   @ColumnInfo(name = "version") val version: Version,
-  @ColumnInfo(name = "locale") val locale: Locale,
+  @ColumnInfo(name = "locales") val locales: List<Locale>,
   @ColumnInfo(name = "name") val name: String,
   @ColumnInfo(name = "display_short_name") val displayShortName: String,
   @ColumnInfo(name = "display_name") val displayName: String,

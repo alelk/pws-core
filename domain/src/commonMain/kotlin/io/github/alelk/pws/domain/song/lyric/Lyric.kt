@@ -7,4 +7,6 @@ value class Lyric(private val parts: List<LyricPart>) : List<LyricPart> by parts
   init {
     require(parts.isNotEmpty()) { "Lyric must have at least one part" }
   }
+
+  constructor(vararg parts: LyricPart) : this(parts.toList())
 }

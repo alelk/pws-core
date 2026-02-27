@@ -10,7 +10,7 @@ import io.github.alelk.pws.domain.core.ids.BookId
 /** Patch-like update for Book fields. */
 data class UpdateBookCommand(
   val id: BookId,
-  val locale: Locale? = null,
+  val locales: List<Locale>? = null,
   val name: NonEmptyString? = null,
   val displayShortName: NonEmptyString? = null,
   val displayName: NonEmptyString? = null,
@@ -23,8 +23,12 @@ data class UpdateBookCommand(
   val priority: Int? = null
 ) {
 
+  init {
+    if (locales != null) require(locales.isNotEmpty()) { "book $id locales must not be empty" }
+  }
+
   fun hasChanges(): Boolean =
-    locale != null ||
+    locales != null ||
       name != null ||
       displayShortName != null ||
       displayName != null ||

@@ -13,7 +13,7 @@ import io.github.alelk.pws.domain.core.NonEmptyString
 fun BookSummaryDto.toDomain(): BookSummary = BookSummary(
   id = id.toDomain(),
   version = version.toDomain(),
-  locale = locale.toDomain(),
+  locales = locales.map { it.toDomain() },
   name = NonEmptyString(name),
   displayShortName = NonEmptyString(displayShortName),
   displayName = NonEmptyString(displayName),
@@ -26,7 +26,7 @@ fun BookSummaryDto.toDomain(): BookSummary = BookSummary(
 fun BookDetailDto.toDomain(): BookDetail = BookDetail(
   id = id.toDomain(),
   version = version.toDomain(),
-  locale = locale.toDomain(),
+  locales = locales.map { it.toDomain() },
   name = nonEmpty(name, "BookDetailDto.name"),
   displayShortName = nonEmpty(displayShortName, "BookDetailDto.displayShortName"),
   displayName = nonEmpty(displayName, "BookDetailDto.displayName"),

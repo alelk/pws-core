@@ -9,7 +9,7 @@ import io.github.alelk.pws.domain.core.ids.SongNumberId
 data class BookSummary(
     val id: BookId,
     val version: Version,
-    val locale: Locale,
+    val locales: List<Locale>,
     val name: NonEmptyString,
     val displayShortName: NonEmptyString,
     val displayName: NonEmptyString,
@@ -17,4 +17,8 @@ data class BookSummary(
     val firstSongNumberId: SongNumberId?,
     val enabled: Boolean,
     val priority: Int,
-)
+) {
+  init {
+      require(locales.isNotEmpty()) { "book $id locales must not be empty" }
+  }
+}

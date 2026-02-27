@@ -37,6 +37,12 @@ class DbTypeConverters {
   fun parseLocale(locale: String): Locale = Locale.of(locale)
 
   @TypeConverter
+  fun localeListToString(list: List<Locale>): String = list.joinToString(ENTITY_STRING_ARRAY_DELIMITER.toString()) { "[$it]" }
+
+  @TypeConverter
+  fun parseLocaleList(list: String): List<Locale> = list.split(ENTITY_STRING_ARRAY_DELIMITER).map { Locale.of(it.removeSurrounding("[", "]")) }
+
+  @TypeConverter
   fun bookExternalIdToString(id: BookId): String = id.toString()
 
   @TypeConverter

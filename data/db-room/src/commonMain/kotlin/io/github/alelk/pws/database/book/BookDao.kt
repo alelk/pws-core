@@ -50,7 +50,7 @@ interface BookDao : Pageable<BookEntity> {
   @Query(
     """
       SELECT 
-        b.id as id, b.version as version, b.locale as locale, b.name as name, b.display_short_name as display_short_name, b.display_name as display_name,
+        b.id as id, b.version as version, b.locales as locales, b.name as name, b.display_short_name as display_short_name, b.display_name as display_name,
         b.release_date as release_date, b.authors as authors, b.creators as creators, b.reviewers as reviewers, b.editors as editors,
         b.description as description, b.preface as preface,
         count(sn.number) as count_songs, 
@@ -69,7 +69,7 @@ interface BookDao : Pageable<BookEntity> {
   @Query(
     """
       SELECT 
-        b.id as id, b.version as version, b.locale as locale, b.name as name, b.display_short_name as display_short_name, b.display_name as display_name,
+        b.id as id, b.version as version, b.locales as locales, b.name as name, b.display_short_name as display_short_name, b.display_name as display_name,
         count(sn.number) as count_songs, 
         (SELECT (sn2.book_id || '/' || sn2.song_id) FROM song_numbers sn2 WHERE sn2.book_id = b.id ORDER BY sn2.number LIMIT 1) AS first_song_number_id, 
         bs.priority as priority
@@ -77,7 +77,7 @@ interface BookDao : Pageable<BookEntity> {
       INNER JOIN book_statistic bs on bs.id=b.id
       LEFT OUTER JOIN song_numbers sn on sn.book_id=b.id
       WHERE 
-        (:locale IS NULL OR b.locale = :locale) 
+        (:locale IS NULL OR b.locales LIKE '%[' || :locale || ']%') 
         AND (:minPriority IS NULL OR bs.priority >= :minPriority) 
         AND (:maxPriority IS NULL OR bs.priority <= :maxPriority)
       GROUP BY b.id
@@ -89,7 +89,7 @@ interface BookDao : Pageable<BookEntity> {
   @Query(
     """
       SELECT 
-        b.id as id, b.version as version, b.locale as locale, b.name as name, b.display_short_name as display_short_name, b.display_name as display_name,
+        b.id as id, b.version as version, b.locales as locales, b.name as name, b.display_short_name as display_short_name, b.display_name as display_name,
         b.release_date as release_date, b.authors as authors, b.creators as creators, b.reviewers as reviewers, b.editors as editors,
         b.description as description, b.preface as preface,
         count(sn.number) as count_songs, 
@@ -108,7 +108,7 @@ interface BookDao : Pageable<BookEntity> {
   @Query(
     """
       SELECT 
-        b.id as id, b.version as version, b.locale as locale, b.name as name, b.display_short_name as display_short_name, b.display_name as display_name,
+        b.id as id, b.version as version, b.locales as locales, b.name as name, b.display_short_name as display_short_name, b.display_name as display_name,
         count(sn.number) as count_songs, 
         (SELECT (sn2.book_id || '/' || sn2.song_id) FROM song_numbers sn2 WHERE sn2.book_id = b.id ORDER BY sn2.number LIMIT 1) AS first_song_number_id, 
         bs.priority as priority
@@ -116,7 +116,7 @@ interface BookDao : Pageable<BookEntity> {
       INNER JOIN book_statistic bs on bs.id=b.id
       LEFT OUTER JOIN song_numbers sn on sn.book_id=b.id
       WHERE 
-        (:locale IS NULL OR b.locale = :locale) 
+        (:locale IS NULL OR b.locales LIKE '%[' || :locale || ']%')
         AND (:minPriority IS NULL OR bs.priority >= :minPriority) 
         AND (:maxPriority IS NULL OR bs.priority <= :maxPriority)
       GROUP BY b.id
