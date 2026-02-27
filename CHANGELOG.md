@@ -1,5 +1,12 @@
 # PWS Android
 
+# [2.6.0](https://github.com/alelk/pws-core/compare/v2.5.0...v2.6.0) (2026-02-27)
+
+
+### Features
+
+* **books:** Book supports multiple locales ([d53c172](https://github.com/alelk/pws-core/commit/d53c1723d0570b33eef357fa4aa823b39793e601))
+
 # [2.5.0](https://github.com/alelk/pws-core/compare/v2.4.0...v2.5.0) (2026-02-03)
 
 
