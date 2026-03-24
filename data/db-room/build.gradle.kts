@@ -1,9 +1,8 @@
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 plugins {
   id("com.google.devtools.ksp")
-  alias(libs.plugins.androidLibrary)
+  alias(libs.plugins.androidKmpLibrary)
   alias(libs.plugins.kotlinMultiplatform)
   alias(libs.plugins.kotest)
 }
@@ -11,9 +10,30 @@ plugins {
 group = "io.github.alelk.pws.data"
 
 kotlin {
-  androidTarget {
-    publishLibraryVariants("release", "debug")
+  android {
+    namespace = "io.github.alelk.pws.data.room_database"
+    compileSdk = rootProject.extra["androidSdkVersion"] as Int
+    minSdk = 23
+
+    compilations.configureEach {
+      compileTaskProvider.configure {
+        compilerOptions {
+          jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+        }
+      }
+    }
+
+    withHostTestBuilder {
+      sourceSetTreeName = "test"
+    }
+
+    withDeviceTestBuilder {
+      sourceSetTreeName = "test"
+    }.configure {
+      instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
   }
+
   jvm()
 
   iosX64()
@@ -50,7 +70,7 @@ kotlin {
       runtimeOnly(libs.room.ktx)
     }
 
-    androidUnitTest.dependencies {
+    getByName("androidHostTest").dependencies {
       implementation(libs.kotest.runner.junit5)
       implementation(libs.kotest.property)
       implementation(libs.kotest.assertions.core)
@@ -68,12 +88,6 @@ kotlin {
     jvmTest.dependencies {
       implementation(libs.kotest.runner.junit5)
       implementation(libs.sqlite.bundled)
-    }
-  }
-
-  targets.withType<KotlinAndroidTarget> {
-    ksp {
-      arg("room.generateKotlin", "true")
     }
   }
 
@@ -96,56 +110,3 @@ dependencies {
   add("kspIosArm64", libs.room.compiler)
 }
 
-android {
-  compileSdk = rootProject.extra["androidSdkVersion"] as Int
-
-  defaultConfig {
-    minSdk = 23
-    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-  }
-
-  lint {
-    targetSdk = rootProject.extra["androidSdkVersion"] as Int
-  }
-
-  buildTypes {
-    getByName("release") {
-      isMinifyEnabled = false
-      proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
-    }
-    getByName("debug") {
-      isMinifyEnabled = false
-    }
-  }
-
-  compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
-  }
-  namespace = "io.github.alelk.pws.data.room_database"
-  ksp {
-    arg("room.generateKotlin", "true")
-  }
-
-  testOptions {
-    unitTests {
-      isIncludeAndroidResources = true
-      all {
-        it.useJUnitPlatform()
-      }
-    }
-  }
-
-  publishing {
-
-    singleVariant("release") {
-      withSourcesJar()
-      withJavadocJar()
-    }
-
-    singleVariant("debug") {
-      withSourcesJar()
-      withJavadocJar()
-    }
-  }
-}
