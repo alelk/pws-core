@@ -1,5 +1,12 @@
 # PWS Android
 
+# [2.7.0](https://github.com/alelk/pws-core/compare/v2.6.0...v2.7.0) (2026-03-24)
+
+
+### Features
+
+* **build:** Update Gradle configuration and dependencies for Android KMP support ([56473c4](https://github.com/alelk/pws-core/commit/56473c4cfdd7af87b30499f0b96fba2137e14d8e))
+
 # [2.6.0](https://github.com/alelk/pws-core/compare/v2.5.0...v2.6.0) (2026-02-27)
 
 
