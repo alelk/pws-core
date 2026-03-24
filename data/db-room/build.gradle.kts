@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 
 plugins {
   id("com.google.devtools.ksp")
@@ -92,14 +93,22 @@ kotlin {
   }
 
   // fixme:
-  // Kotest native IR plugin is currently incompatible with Kotlin 2.2.21 in this project,
+  // Kotest native IR plugin is currently incompatible with Kotlin 2.3.0 in this project,
   // which fails native test compilations (compileTestKotlinIos*). Disable native test
-  // compilation for this module to allow the build to succeed while keeping JVM/Android tests.
+  // compilation, linking and execution for this module to allow the build to succeed
+  // while keeping JVM/Android tests.
   targets.withType<KotlinNativeTarget>().configureEach {
     compilations.named("test") {
       compileTaskProvider.configure { enabled = false }
     }
+    binaries.withType<org.jetbrains.kotlin.gradle.plugin.mpp.TestExecutable>().configureEach {
+      linkTaskProvider.configure { enabled = false }
+    }
   }
+}
+
+tasks.withType<KotlinNativeTest>().configureEach {
+  enabled = false
 }
 
 dependencies {
