@@ -1,5 +1,12 @@
 # PWS Android
 
+## [2.7.1](https://github.com/alelk/pws-core/compare/v2.7.0...v2.7.1) (2026-03-24)
+
+
+### Bug Fixes
+
+* **build:** Disable native test compilation and update database driver for Room ([75f6678](https://github.com/alelk/pws-core/commit/75f6678b23af7e2740d7df943ed0da9b5a16d7ec))
+
 # [2.7.0](https://github.com/alelk/pws-core/compare/v2.6.0...v2.7.0) (2026-03-24)
 
 
