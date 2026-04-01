@@ -15,7 +15,6 @@ kotlin {
   js(IR) {
     outputModuleName = "pws-domain"
     browser()
-    binaries.executable()
   }
 
   sourceSets {

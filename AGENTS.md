@@ -1,3 +1,7 @@
+// ViewModel
+class SongViewModel(private val useCase: GetSongDetailUseCase) : ViewModel() {
+    private val _state = MutableStateFlow<UiState>(UiState.Loading)
+    val state: StateFlow<UiState> = _state.asStateFlow()
 # PWS Core — Guide for AI Agents
 
 > **Quick start**: Read [docs/ai/CONTEXT.md](docs/ai/CONTEXT.md) to understand the project.
