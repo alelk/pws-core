@@ -1,5 +1,12 @@
 # PWS Android
 
+# [2.8.0](https://github.com/alelk/pws-core/compare/v2.7.1...v2.8.0) (2026-04-01)
+
+
+### Features
+
+* **build:** Update kotlin version ([00556b9](https://github.com/alelk/pws-core/commit/00556b9adf1761f16bb0d02fabf67091e4d34507))
+
 ## [2.7.1](https://github.com/alelk/pws-core/compare/v2.7.0...v2.7.1) (2026-03-24)
 
 
