@@ -1,5 +1,12 @@
 # PWS Android
 
+# [2.10.0](https://github.com/alelk/pws-core/compare/v2.9.0...v2.10.0) (2026-04-09)
+
+
+### Features
+
+* **songreference:** Add song reference API and use case for enriched song references ([622e858](https://github.com/alelk/pws-core/commit/622e8587eebe47d3cc14b0687e0b5131af527944))
+
 # [2.9.0](https://github.com/alelk/pws-core/compare/v2.8.0...v2.9.0) (2026-04-09)
 
 
