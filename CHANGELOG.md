@@ -1,5 +1,12 @@
 # PWS Android
 
+# [2.9.0](https://github.com/alelk/pws-core/compare/v2.8.0...v2.9.0) (2026-04-09)
+
+
+### Features
+
+* Implement song detail navigation with swipe support and update UI components ([e26c6dc](https://github.com/alelk/pws-core/commit/e26c6dc8abdebf3732f7608763a2f3f214432f07))
+
 # [2.8.0](https://github.com/alelk/pws-core/compare/v2.7.1...v2.8.0) (2026-04-01)
 
 
