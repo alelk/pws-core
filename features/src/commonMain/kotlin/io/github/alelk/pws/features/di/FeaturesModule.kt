@@ -15,6 +15,7 @@ import io.github.alelk.pws.domain.core.ids.BookId
 import io.github.alelk.pws.domain.core.ids.SongId
 import io.github.alelk.pws.domain.core.ids.SongNumberId
 import io.github.alelk.pws.domain.core.ids.TagId
+import io.github.alelk.pws.domain.song.repository.SongObserveRepository
 import io.github.alelk.pws.domain.songtag.usecase.ObserveSongsByTagUseCase
 import io.github.alelk.pws.domain.tag.usecase.CreateTagUseCase
 import io.github.alelk.pws.domain.tag.usecase.DeleteTagUseCase
@@ -37,7 +38,7 @@ val featuresModule = module {
   factory { (bookId: BookId) -> BookSongsScreenModel(bookId, get()) }
 
   // Song Detail
-  factory { (songNumberId: SongNumberId) -> SongDetailScreenModel(songNumberId, get(), get(), get(), get()) }
+  factory { (songNumberId: SongNumberId) -> SongDetailScreenModel(songNumberId, get(), get<SongObserveRepository>(), get(), get(), get()) }
 
   // Song Detail by SongId (for search results navigation)
   factory { (songId: SongId) -> SongDetailBySongIdScreenModel(songId, get()) }

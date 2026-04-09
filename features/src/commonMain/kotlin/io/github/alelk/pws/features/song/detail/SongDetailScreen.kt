@@ -1,5 +1,9 @@
 package io.github.alelk.pws.features.song.detail
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -7,6 +11,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FormatSize
 import androidx.compose.material.icons.filled.Share
@@ -18,6 +24,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -40,6 +49,7 @@ import io.github.alelk.pws.features.components.LoadingContent
 import io.github.alelk.pws.features.theme.spacing
 import kotlinx.coroutines.delay
 import org.koin.core.parameter.parametersOf
+import kotlin.time.Duration.Companion.seconds
 
 class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
   @Composable
@@ -47,24 +57,128 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
     val viewModel = koinScreenModel<SongDetailScreenModel>(parameters = { parametersOf(songNumberId) })
     val state by viewModel.state.collectAsState()
     val isFavorite by viewModel.isFavorite.collectAsState()
+    val bookSongNumberIds by viewModel.bookSongNumberIds.collectAsState()
+    val currentSongNumberId by viewModel.currentSongNumberId.collectAsState()
 
     LaunchedEffect(state) {
       if (state is SongDetailUiState.Content) {
-        delay(5000)
+        delay(5.seconds)
         viewModel.onSongViewed()
       }
     }
 
-    SongDetailContent(
-      state = state,
-      songNumber = songNumberId.identifier,
-      isFavorite = isFavorite,
-      onFavoriteClick = {
-        viewModel.onToggleFavorite()
-      }
-    )
+    if (bookSongNumberIds.size > 1) {
+      val initialPage = bookSongNumberIds.indexOf(songNumberId).coerceAtLeast(0)
+      SongDetailPager(
+        state = state,
+        isFavorite = isFavorite,
+        currentSongNumberId = currentSongNumberId,
+        bookSongNumberIds = bookSongNumberIds,
+        initialPage = initialPage,
+        onFavoriteClick = { viewModel.onToggleFavorite() },
+        onPageChanged = { viewModel.onPageChanged(it) }
+      )
+    } else {
+      SongDetailContent(
+        state = state,
+        songNumber = songNumberId.identifier,
+        isFavorite = isFavorite,
+        onFavoriteClick = { viewModel.onToggleFavorite() }
+      )
+    }
   }
 }
+
+// ---------------------------------------------------------------------------
+// Pager — navigate left/right between all songs in the book
+// HorizontalPager is intentionally NOT used here: on Kotlin/JS (Skiko canvas)
+// touch/mouse-drag events are not delivered to the pager, so we use
+// AnimatedContent + explicit nav buttons + keyboard arrow keys instead.
+// ---------------------------------------------------------------------------
+
+@Composable
+private fun SongDetailPager(
+  state: SongDetailUiState,
+  isFavorite: Boolean,
+  currentSongNumberId: SongNumberId,
+  bookSongNumberIds: List<SongNumberId>,
+  initialPage: Int,
+  onFavoriteClick: () -> Unit,
+  onPageChanged: (SongNumberId) -> Unit
+) {
+  var currentPage by remember { mutableIntStateOf(initialPage.coerceIn(0, bookSongNumberIds.lastIndex)) }
+  var navigatingForward by remember { mutableStateOf(true) }
+  val focusRequester = remember { FocusRequester() }
+
+  // Sync page → ScreenModel
+  LaunchedEffect(currentPage) {
+    val id = bookSongNumberIds.getOrNull(currentPage) ?: return@LaunchedEffect
+    onPageChanged(id)
+  }
+
+  // Request focus so that keyboard arrow keys are captured
+  LaunchedEffect(Unit) {
+    focusRequester.requestFocus()
+  }
+
+  fun goToPrev() {
+    if (currentPage > 0) {
+      navigatingForward = false
+      currentPage--
+    }
+  }
+
+  fun goToNext() {
+    if (currentPage < bookSongNumberIds.lastIndex) {
+      navigatingForward = true
+      currentPage++
+    }
+  }
+
+  Box(
+    modifier = Modifier
+      .fillMaxSize()
+      .focusRequester(focusRequester)
+      .onKeyEvent { event ->
+        if (event.type == KeyEventType.KeyDown) {
+          when (event.key) {
+            Key.DirectionLeft, Key.NavigatePrevious -> { goToPrev(); true }
+            Key.DirectionRight, Key.NavigateNext -> { goToNext(); true }
+            else -> false
+          }
+        } else false
+      }
+  ) {
+
+    AnimatedContent(
+      targetState = currentPage,
+      transitionSpec = {
+        if (navigatingForward) {
+          slideInHorizontally { it } togetherWith slideOutHorizontally { -it }
+        } else {
+          slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
+        }
+      },
+      modifier = Modifier.fillMaxSize()
+    ) { page ->
+      val animPageId = bookSongNumberIds.getOrNull(page) ?: bookSongNumberIds.first()
+      val animPageState = if (animPageId == currentSongNumberId) state else SongDetailUiState.Loading
+      val animPageIsFavorite = if (animPageId == currentSongNumberId) isFavorite else false
+      SongDetailContent(
+        state = animPageState,
+        songNumber = animPageId.songId.value.toString(),
+        isFavorite = animPageIsFavorite,
+        onFavoriteClick = onFavoriteClick,
+        onNavigatePrev = if (page > 0) ::goToPrev else null,
+        onNavigateNext = if (page < bookSongNumberIds.lastIndex) ::goToNext else null
+      )
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Content
+// ---------------------------------------------------------------------------
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,7 +186,9 @@ fun SongDetailContent(
   state: SongDetailUiState,
   songNumber: String? = null,
   isFavorite: Boolean = false,
-  onFavoriteClick: () -> Unit = {}
+  onFavoriteClick: () -> Unit = {},
+  onNavigatePrev: (() -> Unit)? = null,
+  onNavigateNext: (() -> Unit)? = null,
 ) {
   val navigator = LocalNavigator.currentOrThrow
   var fontScale by remember { mutableFloatStateOf(1f) }
@@ -94,6 +210,16 @@ fun SongDetailContent(
         canNavigateBack = navigator.canPop,
         onNavigateBack = { navigator.pop() },
         actions = {
+          if (onNavigatePrev != null) {
+            IconButton(onClick = onNavigatePrev) {
+              Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Предыдущая песня")
+            }
+          }
+          if (onNavigateNext != null) {
+            IconButton(onClick = onNavigateNext) {
+              Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Следующая песня")
+            }
+          }
           IconButton(onClick = { showSettingsSheet = true }) {
             Icon(Icons.Filled.FormatSize, contentDescription = "Настройки текста")
           }

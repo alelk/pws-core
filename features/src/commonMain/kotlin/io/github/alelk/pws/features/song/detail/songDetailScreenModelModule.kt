@@ -4,6 +4,7 @@ import io.github.alelk.pws.domain.core.ids.SongNumberId
 import io.github.alelk.pws.domain.favorite.usecase.ObserveIsFavoriteUseCase
 import io.github.alelk.pws.domain.favorite.usecase.ToggleFavoriteUseCase
 import io.github.alelk.pws.domain.history.usecase.RecordSongViewUseCase
+import io.github.alelk.pws.domain.song.repository.SongObserveRepository
 import io.github.alelk.pws.domain.song.usecase.ObserveSongUseCase
 import org.koin.dsl.module
 
@@ -12,9 +13,12 @@ val songDetailScreenModelModule = module {
     SongDetailScreenModel(
       songNumberId = songNumberId,
       observeSong = get<ObserveSongUseCase>(),
+      songObserveRepository = get<SongObserveRepository>(),
       recordSongView = get<RecordSongViewUseCase>(),
       observeIsFavorite = get<ObserveIsFavoriteUseCase>(),
       toggleFavorite = get<ToggleFavoriteUseCase>()
     )
   }
 }
+
+
