@@ -12,7 +12,11 @@ class Songs(
   val sort: SongSortDto? = null
 ) {
   @Resource("{id}")
-  class ById(val parent: Songs = Songs(), val id: SongIdDto)
+  class ById(val parent: Songs = Songs(), val id: SongIdDto) {
+    /** GET /v1/songs/{id}/references — public endpoint: outgoing + incoming references for a song. */
+    @Resource("references")
+    class References(val parent: ById)
+  }
 
   /**
    * Full-text search on global songs.

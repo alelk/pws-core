@@ -11,6 +11,8 @@ import io.github.alelk.pws.domain.history.usecase.RecordSongViewUseCase
 import io.github.alelk.pws.domain.song.model.SongDetail
 import io.github.alelk.pws.domain.song.repository.SongObserveRepository
 import io.github.alelk.pws.domain.song.usecase.ObserveSongUseCase
+import io.github.alelk.pws.domain.songreference.usecase.GetSongReferencesWithDetailsUseCase
+import io.github.alelk.pws.domain.songreference.usecase.SongReferenceDetail
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,7 +29,8 @@ class SongDetailScreenModel(
   private val songObserveRepository: SongObserveRepository,
   private val recordSongView: RecordSongViewUseCase,
   private val observeIsFavorite: ObserveIsFavoriteUseCase,
-  private val toggleFavorite: ToggleFavoriteUseCase
+  private val toggleFavorite: ToggleFavoriteUseCase,
+  private val getSongReferences: GetSongReferencesWithDetailsUseCase,
 ) : StateScreenModel<SongDetailUiState>(SongDetailUiState.Loading) {
 
   /** Currently active song number id — changes when user swipes. */
@@ -40,6 +43,10 @@ class SongDetailScreenModel(
   /** Ordered list of SongNumberIds in the same book (sorted by number). Empty until loaded. */
   private val _bookSongNumberIds = MutableStateFlow<List<SongNumberId>>(emptyList())
   val bookSongNumberIds: StateFlow<List<SongNumberId>> = _bookSongNumberIds.asStateFlow()
+
+  /** Cross-references to related songs. Empty until loaded. */
+  private val _references = MutableStateFlow<List<SongReferenceDetail>>(emptyList())
+  val references: StateFlow<List<SongReferenceDetail>> = _references.asStateFlow()
 
   init {
     // Observe currently displayed song content
@@ -72,6 +79,17 @@ class SongDetailScreenModel(
         }
       } catch (_: Exception) {
         // Navigation without swipe list is acceptable
+      }
+    }
+
+    // Load cross-references for the current song
+    screenModelScope.launch {
+      _currentSongNumberId.collectLatest { currentId ->
+        try {
+          _references.value = getSongReferences(currentId.songId)
+        } catch (_: Exception) {
+          _references.value = emptyList()
+        }
       }
     }
   }

@@ -7,6 +7,7 @@ import io.github.alelk.pws.api.client.api.AdminTagApi
 import io.github.alelk.pws.api.client.api.AuthApi
 import io.github.alelk.pws.api.client.api.BookApi
 import io.github.alelk.pws.api.client.api.SongApi
+import io.github.alelk.pws.api.client.api.SongReferenceApi
 import io.github.alelk.pws.api.client.api.UserBookApi
 import io.github.alelk.pws.api.client.api.UserFavoriteApi
 import io.github.alelk.pws.api.client.api.UserHistoryApi
@@ -16,6 +17,7 @@ import io.github.alelk.pws.domain.book.repository.BookReadRepository
 import io.github.alelk.pws.domain.book.repository.BookWriteRepository
 import io.github.alelk.pws.domain.song.repository.SongReadRepository
 import io.github.alelk.pws.domain.song.repository.SongWriteRepository
+import io.github.alelk.pws.domain.songreference.repository.SongReferenceReadRepository
 import io.ktor.client.HttpClient
 
 /**
@@ -27,6 +29,7 @@ data class ApiClientContainer(
   // Public read-only APIs (SongApi includes search methods)
   val songApi: SongApi,
   val bookApi: BookApi,
+  val songReferenceApi: SongReferenceApi,
   // Auth API
   val authApi: AuthApi,
   // Admin APIs (require admin role)
@@ -45,6 +48,7 @@ data class ApiClientContainer(
   val songWriteRepository: SongWriteRepository,
   val bookReadRepository: BookReadRepository,
   val bookWriteRepository: BookWriteRepository,
+  val songReferenceReadRepository: SongReferenceReadRepository,
   val ownsClient: Boolean
 ) : AutoCloseable {
   override fun close() {

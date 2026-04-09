@@ -14,6 +14,8 @@ import io.github.alelk.pws.api.client.api.BookApi
 import io.github.alelk.pws.api.client.api.BookApiImpl
 import io.github.alelk.pws.api.client.api.SongApi
 import io.github.alelk.pws.api.client.api.SongApiImpl
+import io.github.alelk.pws.api.client.api.SongReferenceApi
+import io.github.alelk.pws.api.client.api.SongReferenceApiImpl
 import io.github.alelk.pws.api.client.api.UserBookApi
 import io.github.alelk.pws.api.client.api.UserBookApiImpl
 import io.github.alelk.pws.api.client.api.UserFavoriteApi
@@ -30,12 +32,14 @@ import io.github.alelk.pws.domain.auth.storage.TokenStorage
 import io.github.alelk.pws.api.client.repository.RemoteBookReadRepository
 import io.github.alelk.pws.api.client.repository.RemoteBookWriteRepository
 import io.github.alelk.pws.api.client.repository.RemoteSongReadRepository
+import io.github.alelk.pws.api.client.repository.RemoteSongReferenceReadRepository
 import io.github.alelk.pws.api.client.repository.RemoteSongWriteRepository
 import io.github.alelk.pws.domain.auth.storage.InMemoryTokenStorage
 import io.github.alelk.pws.domain.book.repository.BookReadRepository
 import io.github.alelk.pws.domain.book.repository.BookWriteRepository
 import io.github.alelk.pws.domain.song.repository.SongReadRepository
 import io.github.alelk.pws.domain.song.repository.SongWriteRepository
+import io.github.alelk.pws.domain.songreference.repository.SongReferenceReadRepository
 import io.ktor.client.HttpClient
 
 /**
@@ -57,6 +61,7 @@ fun createApiClient(
   // Public read-only APIs
   val songApi: SongApi = SongApiImpl(client)
   val bookApi: BookApi = BookApiImpl(client)
+  val songReferenceApi: SongReferenceApi = SongReferenceApiImpl(client)
 
   // Auth API
   val authApi: AuthApi = AuthApiImpl(client, tokenStorage)
@@ -79,11 +84,13 @@ fun createApiClient(
   val songWriteRepo: SongWriteRepository = RemoteSongWriteRepository(adminSongApi)
   val bookReadRepo: BookReadRepository = RemoteBookReadRepository(bookApi)
   val bookWriteRepo: BookWriteRepository = RemoteBookWriteRepository(adminBookApi)
+  val songReferenceReadRepo: SongReferenceReadRepository = RemoteSongReferenceReadRepository(songReferenceApi)
 
   return ApiClientContainer(
     httpClient = client,
     songApi = songApi,
     bookApi = bookApi,
+    songReferenceApi = songReferenceApi,
     authApi = authApi,
     adminBookApi = adminBookApi,
     adminSongApi = adminSongApi,
@@ -98,6 +105,7 @@ fun createApiClient(
     songWriteRepository = songWriteRepo,
     bookReadRepository = bookReadRepo,
     bookWriteRepository = bookWriteRepo,
+    songReferenceReadRepository = songReferenceReadRepo,
     ownsClient = owns
   )
 }

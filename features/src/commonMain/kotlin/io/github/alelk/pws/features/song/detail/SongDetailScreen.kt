@@ -36,12 +36,14 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import io.github.alelk.pws.domain.core.SongRefReason
 import io.github.alelk.pws.domain.core.ids.SongNumberId
 import io.github.alelk.pws.domain.song.lyric.Bridge
 import io.github.alelk.pws.domain.song.lyric.Chorus
 import io.github.alelk.pws.domain.song.lyric.LyricPart
 import io.github.alelk.pws.domain.song.lyric.Verse
 import io.github.alelk.pws.domain.song.model.SongDetail
+import io.github.alelk.pws.domain.songreference.usecase.SongReferenceDetail
 import io.github.alelk.pws.features.components.AppModalBottomSheet
 import io.github.alelk.pws.features.components.AppTopBar
 import io.github.alelk.pws.features.components.ErrorContent
@@ -59,6 +61,7 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
     val isFavorite by viewModel.isFavorite.collectAsState()
     val bookSongNumberIds by viewModel.bookSongNumberIds.collectAsState()
     val currentSongNumberId by viewModel.currentSongNumberId.collectAsState()
+    val references by viewModel.references.collectAsState()
 
     LaunchedEffect(state) {
       if (state is SongDetailUiState.Content) {
@@ -75,6 +78,7 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
         currentSongNumberId = currentSongNumberId,
         bookSongNumberIds = bookSongNumberIds,
         initialPage = initialPage,
+        references = references,
         onFavoriteClick = { viewModel.onToggleFavorite() },
         onPageChanged = { viewModel.onPageChanged(it) }
       )
@@ -83,6 +87,7 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
         state = state,
         songNumber = songNumberId.identifier,
         isFavorite = isFavorite,
+        references = references,
         onFavoriteClick = { viewModel.onToggleFavorite() }
       )
     }
@@ -103,6 +108,7 @@ private fun SongDetailPager(
   currentSongNumberId: SongNumberId,
   bookSongNumberIds: List<SongNumberId>,
   initialPage: Int,
+  references: List<SongReferenceDetail>,
   onFavoriteClick: () -> Unit,
   onPageChanged: (SongNumberId) -> Unit
 ) {
@@ -164,10 +170,12 @@ private fun SongDetailPager(
       val animPageId = bookSongNumberIds.getOrNull(page) ?: bookSongNumberIds.first()
       val animPageState = if (animPageId == currentSongNumberId) state else SongDetailUiState.Loading
       val animPageIsFavorite = if (animPageId == currentSongNumberId) isFavorite else false
+      val animPageReferences = if (animPageId == currentSongNumberId) references else emptyList()
       SongDetailContent(
         state = animPageState,
         songNumber = animPageId.songId.value.toString(),
         isFavorite = animPageIsFavorite,
+        references = animPageReferences,
         onFavoriteClick = onFavoriteClick,
         onNavigatePrev = if (page > 0) ::goToPrev else null,
         onNavigateNext = if (page < bookSongNumberIds.lastIndex) ::goToNext else null
@@ -186,6 +194,7 @@ fun SongDetailContent(
   state: SongDetailUiState,
   songNumber: String? = null,
   isFavorite: Boolean = false,
+  references: List<SongReferenceDetail> = emptyList(),
   onFavoriteClick: () -> Unit = {},
   onNavigatePrev: (() -> Unit)? = null,
   onNavigateNext: (() -> Unit)? = null,
@@ -259,7 +268,8 @@ fun SongDetailContent(
         is SongDetailUiState.Content -> {
           SongContent(
             song = state.song,
-            fontScale = fontScale
+            fontScale = fontScale,
+            references = references
           )
         }
         SongDetailUiState.Error -> ErrorContent(
@@ -341,6 +351,7 @@ private fun TextSettingsSheet(
 private fun SongContent(
   song: SongDetail,
   fontScale: Float,
+  references: List<SongReferenceDetail> = emptyList(),
   modifier: Modifier = Modifier
 ) {
   val spacing = MaterialTheme.spacing
@@ -372,6 +383,13 @@ private fun SongContent(
     // Metadata
     item {
       SongMetadata(song)
+    }
+
+    // Cross-references
+    if (references.isNotEmpty()) {
+      item {
+        SongReferencesSection(references = references)
+      }
     }
   }
 }
@@ -603,3 +621,88 @@ private fun MetadataItem(label: String, value: String) {
     )
   }
 }
+
+@Composable
+private fun SongReferencesSection(references: List<SongReferenceDetail>) {
+  val navigator = LocalNavigator.currentOrThrow
+  val spacing = MaterialTheme.spacing
+
+  Column(
+    modifier = Modifier.widthIn(max = 600.dp).fillMaxWidth()
+  ) {
+    Spacer(Modifier.height(spacing.xl))
+    HorizontalDivider(
+      color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
+      modifier = Modifier.padding(vertical = spacing.lg)
+    )
+
+    Row(verticalAlignment = Alignment.CenterVertically) {
+      Icon(
+        Icons.AutoMirrored.Filled.ArrowForward,
+        contentDescription = null,
+        modifier = Modifier.size(16.dp),
+        tint = MaterialTheme.colorScheme.onSurfaceVariant
+      )
+      Spacer(Modifier.width(spacing.sm))
+      Text(
+        text = "Смотрите также",
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+      )
+    }
+
+    Spacer(Modifier.height(spacing.md))
+
+    Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
+      references.forEach { ref ->
+        SongReferenceItem(
+          reference = ref,
+          onClick = { navigator.push(SongDetailBySongIdScreen(ref.refSongId)) }
+        )
+      }
+    }
+  }
+}
+
+@Composable
+private fun SongReferenceItem(
+  reference: SongReferenceDetail,
+  onClick: () -> Unit
+) {
+  val spacing = MaterialTheme.spacing
+  Surface(
+    onClick = onClick,
+    shape = MaterialTheme.shapes.medium,
+    color = MaterialTheme.colorScheme.surfaceContainerLow,
+    tonalElevation = 1.dp,
+    modifier = Modifier.fillMaxWidth()
+  ) {
+    Row(
+      modifier = Modifier.padding(horizontal = spacing.md, vertical = spacing.sm),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.spacedBy(spacing.sm)
+    ) {
+      Column(modifier = Modifier.weight(1f)) {
+        Text(
+          text = reference.songName,
+          style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+          color = MaterialTheme.colorScheme.onSurface
+        )
+        if (reference.reason == SongRefReason.Variation) {
+          Text(
+            text = "Вариант (${reference.volume}%)",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+          )
+        }
+      }
+      Icon(
+        Icons.AutoMirrored.Filled.ArrowForward,
+        contentDescription = "Открыть",
+        modifier = Modifier.size(16.dp),
+        tint = MaterialTheme.colorScheme.onSurfaceVariant
+      )
+    }
+  }
+}
+

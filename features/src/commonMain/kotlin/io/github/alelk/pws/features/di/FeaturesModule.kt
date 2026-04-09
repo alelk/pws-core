@@ -22,6 +22,7 @@ import io.github.alelk.pws.domain.tag.usecase.DeleteTagUseCase
 import io.github.alelk.pws.domain.tag.usecase.GetTagDetailUseCase
 import io.github.alelk.pws.domain.tag.usecase.ObserveTagsUseCase
 import io.github.alelk.pws.domain.tag.usecase.UpdateTagUseCase
+import io.github.alelk.pws.domain.songreference.usecase.GetSongReferencesWithDetailsUseCase
 import org.koin.dsl.module
 
 /**
@@ -37,8 +38,11 @@ val featuresModule = module {
   // Book Songs
   factory { (bookId: BookId) -> BookSongsScreenModel(bookId, get()) }
 
+  // Song references with details
+  factory { GetSongReferencesWithDetailsUseCase(get(), get(), get()) }
+
   // Song Detail
-  factory { (songNumberId: SongNumberId) -> SongDetailScreenModel(songNumberId, get(), get<SongObserveRepository>(), get(), get(), get()) }
+  factory { (songNumberId: SongNumberId) -> SongDetailScreenModel(songNumberId, get(), get<SongObserveRepository>(), get(), get(), get(), get()) }
 
   // Song Detail by SongId (for search results navigation)
   factory { (songId: SongId) -> SongDetailBySongIdScreenModel(songId, get()) }
