@@ -3,8 +3,12 @@ package io.github.alelk.pws.api.mapping.book
 import io.github.alelk.pws.domain.core.NonEmptyString
 import io.github.alelk.pws.api.contract.book.BookCreateRequestDto
 import io.github.alelk.pws.api.contract.book.BookUpdateRequestDto
+import io.github.alelk.pws.api.contract.core.error.FieldError
+import io.github.alelk.pws.api.contract.core.error.ValidationErrors
 import io.github.alelk.pws.api.contract.core.ids.BookIdDto
 import io.github.alelk.pws.api.mapping.core.toDomain
+import io.github.alelk.pws.api.mapping.core.validateNonEmpty
+import io.github.alelk.pws.api.mapping.song.ValidationErrorsException
 import io.github.alelk.pws.domain.book.command.CreateBookCommand
 import io.github.alelk.pws.domain.book.command.UpdateBookCommand
 import io.github.alelk.pws.domain.core.OptionalField
@@ -41,3 +45,16 @@ fun BookCreateRequestDto.toDomainCommand(): CreateBookCommand = CreateBookComman
   enabled = enabled,
   priority = priority
 )
+
+/**
+ * Validated variant — throws [ValidationErrorsException] with structured per-field errors.
+ * StatusPages catches this and returns HTTP 422.
+ */
+fun BookCreateRequestDto.toDomainCommandValidated(): CreateBookCommand {
+  val errors = buildList<FieldError> {
+    validateNonEmpty(name, "name")?.let { add(it) }
+    if (locales.isEmpty()) add(FieldError("locales", "must not be empty"))
+  }
+  if (errors.isNotEmpty()) throw ValidationErrorsException(ValidationErrors(errors))
+  return toDomainCommand()
+}

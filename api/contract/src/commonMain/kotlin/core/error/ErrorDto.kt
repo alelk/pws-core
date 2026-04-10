@@ -10,6 +10,7 @@ import kotlinx.serialization.Serializable
 data class ErrorDto(
   val code: String,
   val message: String,
+  val correlationId: String? = null,
   val details: Map<String, String>? = null
 ) {
   companion object
