@@ -1,5 +1,12 @@
 # PWS Android
 
+# [2.11.0](https://github.com/alelk/pws-core/compare/v2.10.0...v2.11.0) (2026-04-10)
+
+
+### Features
+
+* **validation:** Introduce structured validation errors and enhance domain command validation ([de1989d](https://github.com/alelk/pws-core/commit/de1989d0652b9f252152edc269a54f6ec76dd68e))
+
 # [2.10.0](https://github.com/alelk/pws-core/compare/v2.9.0...v2.10.0) (2026-04-09)
 
 
