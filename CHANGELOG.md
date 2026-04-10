@@ -1,5 +1,12 @@
 # PWS Android
 
+# [2.12.0](https://github.com/alelk/pws-core/compare/v2.11.0...v2.12.0) (2026-04-10)
+
+
+### Features
+
+* **song:** Enhance song detail screen with tag management and actions ([2c54bfe](https://github.com/alelk/pws-core/commit/2c54bfe643273c5a7c0ed8c4ca3585525d18c643))
+
 # [2.11.0](https://github.com/alelk/pws-core/compare/v2.10.0...v2.11.0) (2026-04-10)
 
 
