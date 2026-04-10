@@ -1,5 +1,7 @@
 package io.github.alelk.pws.features.song.detail
 
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
@@ -13,8 +15,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FormatSize
+import androidx.compose.material.icons.filled.Label
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Info
@@ -38,16 +43,19 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.github.alelk.pws.domain.core.SongRefReason
 import io.github.alelk.pws.domain.core.ids.SongNumberId
+import io.github.alelk.pws.domain.core.ids.TagId
 import io.github.alelk.pws.domain.song.lyric.Bridge
 import io.github.alelk.pws.domain.song.lyric.Chorus
 import io.github.alelk.pws.domain.song.lyric.LyricPart
 import io.github.alelk.pws.domain.song.lyric.Verse
 import io.github.alelk.pws.domain.song.model.SongDetail
 import io.github.alelk.pws.domain.songreference.usecase.SongReferenceDetail
+import io.github.alelk.pws.domain.tag.model.Tag
 import io.github.alelk.pws.features.components.AppModalBottomSheet
 import io.github.alelk.pws.features.components.AppTopBar
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
+import io.github.alelk.pws.features.song.edit.SongEditScreen
 import io.github.alelk.pws.features.theme.spacing
 import kotlinx.coroutines.delay
 import org.koin.core.parameter.parametersOf
@@ -62,6 +70,8 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
     val bookSongNumberIds by viewModel.bookSongNumberIds.collectAsState()
     val currentSongNumberId by viewModel.currentSongNumberId.collectAsState()
     val references by viewModel.references.collectAsState()
+    val songTags by viewModel.songTags.collectAsState()
+    val allTags by viewModel.allTags.collectAsState()
 
     LaunchedEffect(state) {
       if (state is SongDetailUiState.Content) {
@@ -79,7 +89,10 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
         bookSongNumberIds = bookSongNumberIds,
         initialPage = initialPage,
         references = references,
+        songTags = songTags,
+        allTags = allTags,
         onFavoriteClick = { viewModel.onToggleFavorite() },
+        onSaveTags = { viewModel.onSaveTags(it) },
         onPageChanged = { viewModel.onPageChanged(it) }
       )
     } else {
@@ -88,7 +101,10 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
         songNumber = songNumberId.identifier,
         isFavorite = isFavorite,
         references = references,
-        onFavoriteClick = { viewModel.onToggleFavorite() }
+        songTags = songTags,
+        allTags = allTags,
+        onFavoriteClick = { viewModel.onToggleFavorite() },
+        onSaveTags = { viewModel.onSaveTags(it) },
       )
     }
   }
@@ -109,7 +125,10 @@ private fun SongDetailPager(
   bookSongNumberIds: List<SongNumberId>,
   initialPage: Int,
   references: List<SongReferenceDetail>,
+  songTags: List<Tag<TagId>>,
+  allTags: List<Tag<TagId>>,
   onFavoriteClick: () -> Unit,
+  onSaveTags: (Set<TagId>) -> Unit,
   onPageChanged: (SongNumberId) -> Unit
 ) {
   var currentPage by remember { mutableIntStateOf(initialPage.coerceIn(0, bookSongNumberIds.lastIndex)) }
@@ -168,15 +187,16 @@ private fun SongDetailPager(
       modifier = Modifier.fillMaxSize()
     ) { page ->
       val animPageId = bookSongNumberIds.getOrNull(page) ?: bookSongNumberIds.first()
-      val animPageState = if (animPageId == currentSongNumberId) state else SongDetailUiState.Loading
-      val animPageIsFavorite = if (animPageId == currentSongNumberId) isFavorite else false
-      val animPageReferences = if (animPageId == currentSongNumberId) references else emptyList()
+      val isCurrentPage = animPageId == currentSongNumberId
       SongDetailContent(
-        state = animPageState,
+        state = if (isCurrentPage) state else SongDetailUiState.Loading,
         songNumber = animPageId.songId.value.toString(),
-        isFavorite = animPageIsFavorite,
-        references = animPageReferences,
+        isFavorite = if (isCurrentPage) isFavorite else false,
+        references = if (isCurrentPage) references else emptyList(),
+        songTags = if (isCurrentPage) songTags else emptyList(),
+        allTags = allTags,
         onFavoriteClick = onFavoriteClick,
+        onSaveTags = onSaveTags,
         onNavigatePrev = if (page > 0) ::goToPrev else null,
         onNavigateNext = if (page < bookSongNumberIds.lastIndex) ::goToNext else null
       )
@@ -195,16 +215,26 @@ fun SongDetailContent(
   songNumber: String? = null,
   isFavorite: Boolean = false,
   references: List<SongReferenceDetail> = emptyList(),
+  songTags: List<Tag<TagId>> = emptyList(),
+  allTags: List<Tag<TagId>> = emptyList(),
   onFavoriteClick: () -> Unit = {},
+  onSaveTags: (Set<TagId>) -> Unit = {},
   onNavigatePrev: (() -> Unit)? = null,
   onNavigateNext: (() -> Unit)? = null,
 ) {
   val navigator = LocalNavigator.currentOrThrow
   var fontScale by remember { mutableFloatStateOf(1f) }
-  var showSettingsSheet by remember { mutableStateOf(false) }
 
-  // Sheet State
-  val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+  // Sheet visibility state
+  var showTextSettingsSheet by remember { mutableStateOf(false) }
+  var showActionsSheet by remember { mutableStateOf(false) }
+  var showTagEditorSheet by remember { mutableStateOf(false) }
+
+  val textSettingsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+  val actionsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+  val tagEditorSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+  val songId = (state as? SongDetailUiState.Content)?.song?.id
 
   Scaffold(
     topBar = {
@@ -229,11 +259,14 @@ fun SongDetailContent(
               Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Следующая песня")
             }
           }
-          IconButton(onClick = { showSettingsSheet = true }) {
-            Icon(Icons.Filled.FormatSize, contentDescription = "Настройки текста")
+          IconButton(onClick = { showTextSettingsSheet = true }) {
+            Icon(Icons.Filled.FormatSize, contentDescription = "Размер текста")
           }
-          IconButton(onClick = { /* TODO: Implement share */ }) {
-            Icon(Icons.Filled.Share, contentDescription = "Поделиться")
+          // "More actions" button — visible only when content loaded
+          if (state is SongDetailUiState.Content) {
+            IconButton(onClick = { showActionsSheet = true }) {
+              Icon(Icons.Filled.MoreVert, contentDescription = "Действия")
+            }
           }
         }
       )
@@ -241,7 +274,6 @@ fun SongDetailContent(
     floatingActionButton = {
       if (state is SongDetailUiState.Content) {
         val bottomInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-
         FloatingActionButton(
           onClick = onFavoriteClick,
           containerColor = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -269,7 +301,8 @@ fun SongDetailContent(
           SongContent(
             song = state.song,
             fontScale = fontScale,
-            references = references
+            references = references,
+            songTags = songTags,
           )
         }
         SongDetailUiState.Error -> ErrorContent(
@@ -279,16 +312,56 @@ fun SongDetailContent(
       }
     }
 
-    // Settings Sheet
-    if (showSettingsSheet) {
+    // Text settings sheet
+    if (showTextSettingsSheet) {
       AppModalBottomSheet(
-        onDismissRequest = { showSettingsSheet = false },
-        sheetState = sheetState,
+        onDismissRequest = { showTextSettingsSheet = false },
+        sheetState = textSettingsSheetState,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow
       ) {
         TextSettingsSheet(
           fontScale = fontScale,
           onFontScaleChange = { fontScale = it }
+        )
+      }
+    }
+
+    // Actions sheet (Edit / Tags)
+    if (showActionsSheet && songId != null) {
+      AppModalBottomSheet(
+        onDismissRequest = { showActionsSheet = false },
+        sheetState = actionsSheetState,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+      ) {
+        SongActionsSheet(
+          onEditSong = {
+            showActionsSheet = false
+            navigator.push(SongEditScreen(songId))
+          },
+          onEditTags = {
+            showActionsSheet = false
+            showTagEditorSheet = true
+          },
+          onShare = { /* TODO */ },
+        )
+      }
+    }
+
+    // Tag editor sheet
+    if (showTagEditorSheet) {
+      AppModalBottomSheet(
+        onDismissRequest = { showTagEditorSheet = false },
+        sheetState = tagEditorSheetState,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+      ) {
+        TagEditorSheet(
+          songTags = songTags,
+          allTags = allTags,
+          onSave = { selectedIds ->
+            onSaveTags(selectedIds)
+            showTagEditorSheet = false
+          },
+          onDismiss = { showTagEditorSheet = false }
         )
       }
     }
@@ -352,6 +425,7 @@ private fun SongContent(
   song: SongDetail,
   fontScale: Float,
   references: List<SongReferenceDetail> = emptyList(),
+  songTags: List<Tag<TagId>> = emptyList(),
   modifier: Modifier = Modifier
 ) {
   val spacing = MaterialTheme.spacing
@@ -371,25 +445,26 @@ private fun SongContent(
       Spacer(Modifier.height(spacing.xl))
     }
 
+    // Tags row
+    if (songTags.isNotEmpty()) {
+      item {
+        SongTagsRow(tags = songTags)
+        Spacer(Modifier.height(spacing.lg))
+      }
+    }
+
     // Lyrics
     items(song.lyric) { part ->
-      LyricPartView(
-        part = part,
-        fontScale = fontScale
-      )
+      LyricPartView(part = part, fontScale = fontScale)
       Spacer(Modifier.height(spacing.lg))
     }
 
     // Metadata
-    item {
-      SongMetadata(song)
-    }
+    item { SongMetadata(song) }
 
     // Cross-references
     if (references.isNotEmpty()) {
-      item {
-        SongReferencesSection(references = references)
-      }
+      item { SongReferencesSection(references = references) }
     }
   }
 }
@@ -706,3 +781,196 @@ private fun SongReferenceItem(
   }
 }
 
+// ---------------------------------------------------------------------------
+// Song Tags Row — compact display of assigned tags
+// ---------------------------------------------------------------------------
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun SongTagsRow(tags: List<Tag<TagId>>) {
+  FlowRow(
+    modifier = Modifier.widthIn(max = 600.dp).fillMaxWidth(),
+    horizontalArrangement = Arrangement.spacedBy(6.dp),
+    verticalArrangement = Arrangement.spacedBy(6.dp)
+  ) {
+    tags.forEach { tag ->
+      val bgColor = Color(tag.color.r / 255f, tag.color.g / 255f, tag.color.b / 255f)
+      Surface(
+        shape = CircleShape,
+        color = bgColor.copy(alpha = 0.15f),
+        border = androidx.compose.foundation.BorderStroke(1.dp, bgColor.copy(alpha = 0.4f))
+      ) {
+        Row(
+          modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
+          Box(
+            modifier = Modifier
+              .size(8.dp)
+              .clip(CircleShape)
+              .background(bgColor)
+          )
+          Text(
+            text = tag.name,
+            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
+            color = MaterialTheme.colorScheme.onSurface
+          )
+        }
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Actions BottomSheet — Edit / Tags / Share
+// ---------------------------------------------------------------------------
+
+@Composable
+private fun SongActionsSheet(
+  onEditSong: () -> Unit,
+  onEditTags: () -> Unit,
+  onShare: () -> Unit,
+) {
+  val spacing = MaterialTheme.spacing
+  Column(
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(vertical = spacing.md)
+      .padding(WindowInsets.navigationBars.asPaddingValues())
+  ) {
+    Text(
+      text = "Действия",
+      style = MaterialTheme.typography.titleSmall,
+      color = MaterialTheme.colorScheme.onSurfaceVariant,
+      modifier = Modifier.padding(horizontal = spacing.lg, vertical = spacing.sm)
+    )
+
+    ActionItem(
+      icon = { Icon(Icons.Filled.Edit, contentDescription = null) },
+      label = "Редактировать песню",
+      onClick = onEditSong
+    )
+    ActionItem(
+      icon = { Icon(Icons.Filled.Label, contentDescription = null) },
+      label = "Изменить теги",
+      onClick = onEditTags
+    )
+    ActionItem(
+      icon = { Icon(Icons.Filled.Share, contentDescription = null) },
+      label = "Поделиться",
+      onClick = onShare
+    )
+
+    Spacer(Modifier.height(spacing.md))
+  }
+}
+
+@Composable
+private fun ActionItem(
+  icon: @Composable () -> Unit,
+  label: String,
+  onClick: () -> Unit,
+) {
+  val spacing = MaterialTheme.spacing
+  Surface(
+    onClick = onClick,
+    color = Color.Transparent,
+    modifier = Modifier.fillMaxWidth()
+  ) {
+    Row(
+      modifier = Modifier.padding(horizontal = spacing.lg, vertical = spacing.md),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.spacedBy(spacing.md)
+    ) {
+      CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurfaceVariant) {
+        icon()
+      }
+      Text(
+        text = label,
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.onSurface
+      )
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Tag Editor BottomSheet — select / deselect tags for the song
+// ---------------------------------------------------------------------------
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun TagEditorSheet(
+  songTags: List<Tag<TagId>>,
+  allTags: List<Tag<TagId>>,
+  onSave: (Set<TagId>) -> Unit,
+  onDismiss: () -> Unit,
+) {
+  val spacing = MaterialTheme.spacing
+  val currentTagIds = remember(songTags) { songTags.map { it.id }.toSet() }
+  var selected by remember(currentTagIds) { mutableStateOf(currentTagIds) }
+
+  Column(
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(spacing.lg)
+      .padding(WindowInsets.navigationBars.asPaddingValues())
+  ) {
+    Text(
+      text = "Теги песни",
+      style = MaterialTheme.typography.titleMedium,
+      color = MaterialTheme.colorScheme.onSurface
+    )
+    Spacer(Modifier.height(spacing.md))
+
+    if (allTags.isEmpty()) {
+      Text(
+        text = "Нет доступных тегов",
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+      )
+    } else {
+      FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+        verticalArrangement = Arrangement.spacedBy(spacing.sm)
+      ) {
+        allTags.forEach { tag ->
+          val isSelected = tag.id in selected
+          val chipColor = Color(tag.color.r / 255f, tag.color.g / 255f, tag.color.b / 255f)
+          FilterChip(
+            selected = isSelected,
+            onClick = {
+              selected = if (isSelected) selected - tag.id else selected + tag.id
+            },
+            label = { Text(tag.name) },
+            leadingIcon = {
+              Box(
+                modifier = Modifier
+                  .size(8.dp)
+                  .clip(CircleShape)
+                  .background(chipColor)
+              )
+            },
+            colors = FilterChipDefaults.filterChipColors(
+              selectedContainerColor = chipColor.copy(alpha = 0.18f),
+              selectedLabelColor = MaterialTheme.colorScheme.onSurface,
+            )
+          )
+        }
+      }
+    }
+
+    Spacer(Modifier.height(spacing.lg))
+
+    Row(
+      modifier = Modifier.fillMaxWidth(),
+      horizontalArrangement = Arrangement.End,
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      TextButton(onClick = onDismiss) { Text("Отмена") }
+      Spacer(Modifier.width(spacing.sm))
+      Button(onClick = { onSave(selected) }) { Text("Сохранить") }
+    }
+  }
+}

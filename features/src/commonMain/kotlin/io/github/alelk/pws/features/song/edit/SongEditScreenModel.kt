@@ -9,6 +9,8 @@ import io.github.alelk.pws.domain.core.ids.TagId
 import io.github.alelk.pws.domain.song.command.UpdateSongCommand
 import io.github.alelk.pws.domain.song.usecase.GetSongDetailUseCase
 import io.github.alelk.pws.domain.song.usecase.UpdateSongUseCase
+import io.github.alelk.pws.domain.songtag.usecase.GetSongTagIdsUseCase
+import io.github.alelk.pws.domain.songtag.usecase.ReplaceAllSongTagsUseCase
 import io.github.alelk.pws.domain.tag.usecase.ObserveTagsUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +27,9 @@ class SongEditScreenModel(
   private val songId: SongId,
   private val getSongDetailUseCase: GetSongDetailUseCase,
   private val updateSongUseCase: UpdateSongUseCase,
-  private val observeTagsUseCase: ObserveTagsUseCase<TagId>
+  private val observeTagsUseCase: ObserveTagsUseCase<TagId>,
+  private val getSongTagIdsUseCase: GetSongTagIdsUseCase<TagId>,
+  private val replaceAllSongTagsUseCase: ReplaceAllSongTagsUseCase<TagId>,
 ) : StateScreenModel<SongEditUiState>(SongEditUiState.Loading) {
 
   sealed interface Effect {
@@ -41,6 +45,7 @@ class SongEditScreenModel(
 
   private var originalTitle = ""
   private var originalText = ""
+  private var originalTagIds = emptySet<TagId>()
 
   init {
     loadSong()
@@ -69,25 +74,26 @@ class SongEditScreenModel(
         }
 
         val allTags = observeTagsUseCase().first()
+        val songTagIds = getSongTagIdsUseCase(songId)
 
-        // Extract name and lyric text
         val name = song.name.value
         val lyricText = song.lyric.toString()
 
         originalTitle = name
         originalText = lyricText
+        originalTagIds = songTagIds
 
         mutableState.value = SongEditUiState.Content(
           songId = songId,
           title = name,
-          number = "", // Song number comes from SongNumber, not SongDetail
+          number = "",
           text = lyricText,
           allTags = allTags.map { tag ->
             EditableTagUi(
               id = tag.id,
               name = tag.name,
               color = tag.color.toCompose(),
-              isSelected = false // Tags for song are managed separately
+              isSelected = tag.id in songTagIds
             )
           }
         )
@@ -122,14 +128,13 @@ class SongEditScreenModel(
     val currentState = mutableState.value as? SongEditUiState.Content ?: return false
     val t = title ?: currentState.title
     val tx = text ?: currentState.text
-
-    return t != originalTitle || tx != originalText
+    val currentTagIds = (tags ?: currentState.allTags).filter { it.isSelected }.map { it.id }.toSet()
+    return t != originalTitle || tx != originalText || currentTagIds != originalTagIds
   }
 
   private fun save() {
     val currentState = mutableState.value as? SongEditUiState.Content ?: return
 
-    // Validate
     if (currentState.title.isBlank()) {
       updateContent { it.copy(validationError = "Название не может быть пустым") }
       return
@@ -142,12 +147,14 @@ class SongEditScreenModel(
     screenModelScope.launch {
       updateContent { it.copy(isSaving = true, validationError = null) }
       try {
-        // TODO: add lyric parsing when parser is ready
         val command = UpdateSongCommand(
           id = songId,
           name = NonEmptyString(currentState.title)
         )
         updateSongUseCase(command)
+
+        val selectedTagIds = currentState.allTags.filter { it.isSelected }.map { it.id }.toSet()
+        replaceAllSongTagsUseCase(songId, selectedTagIds)
 
         _effects.emit(Effect.ShowSnackbar("Изменения сохранены"))
         _effects.emit(Effect.NavigateBack)
@@ -162,17 +169,13 @@ class SongEditScreenModel(
     if (currentState.hasUnsavedChanges) {
       _showDiscardDialog.value = true
     } else {
-      screenModelScope.launch {
-        _effects.emit(Effect.NavigateBack)
-      }
+      screenModelScope.launch { _effects.emit(Effect.NavigateBack) }
     }
   }
 
   private fun discardAndNavigateBack() {
     _showDiscardDialog.value = false
-    screenModelScope.launch {
-      _effects.emit(Effect.NavigateBack)
-    }
+    screenModelScope.launch { _effects.emit(Effect.NavigateBack) }
   }
 
   private inline fun updateContent(transform: (SongEditUiState.Content) -> SongEditUiState.Content) {

@@ -17,6 +17,9 @@ import io.github.alelk.pws.domain.core.ids.SongNumberId
 import io.github.alelk.pws.domain.core.ids.TagId
 import io.github.alelk.pws.domain.song.repository.SongObserveRepository
 import io.github.alelk.pws.domain.songtag.usecase.ObserveSongsByTagUseCase
+import io.github.alelk.pws.domain.songtag.usecase.ObserveTagsForSongUseCase
+import io.github.alelk.pws.domain.songtag.usecase.GetSongTagIdsUseCase
+import io.github.alelk.pws.domain.songtag.usecase.ReplaceAllSongTagsUseCase
 import io.github.alelk.pws.domain.tag.usecase.CreateTagUseCase
 import io.github.alelk.pws.domain.tag.usecase.DeleteTagUseCase
 import io.github.alelk.pws.domain.tag.usecase.GetTagDetailUseCase
@@ -42,13 +45,20 @@ val featuresModule = module {
   factory { GetSongReferencesWithDetailsUseCase(get(), get(), get()) }
 
   // Song Detail
-  factory { (songNumberId: SongNumberId) -> SongDetailScreenModel(songNumberId, get(), get<SongObserveRepository>(), get(), get(), get(), get()) }
+  factory { (songNumberId: SongNumberId) ->
+    SongDetailScreenModel(
+      songNumberId, get(), get<SongObserveRepository>(), get(), get(), get(),
+      get(), get<ObserveTagsForSongUseCase<TagId>>(), get<ObserveTagsUseCase<TagId>>(), get<ReplaceAllSongTagsUseCase<TagId>>()
+    )
+  }
 
   // Song Detail by SongId (for search results navigation)
   factory { (songId: SongId) -> SongDetailBySongIdScreenModel(songId, get()) }
 
   // Song Edit
-  factory { (songId: SongId) -> SongEditScreenModel(songId, get(), get(), get<ObserveTagsUseCase<TagId>>()) }
+  factory { (songId: SongId) ->
+    SongEditScreenModel(songId, get(), get(), get<ObserveTagsUseCase<TagId>>(), get<GetSongTagIdsUseCase<TagId>>(), get<ReplaceAllSongTagsUseCase<TagId>>())
+  }
 
   // Search
   factory { SearchScreenModel(get()) }

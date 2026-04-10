@@ -17,11 +17,10 @@ import io.github.alelk.pws.domain.book.repository.BookReadRepository
 import io.github.alelk.pws.domain.book.repository.BookWriteRepository
 import io.github.alelk.pws.domain.song.repository.SongReadRepository
 import io.github.alelk.pws.domain.song.repository.SongWriteRepository
-import io.github.alelk.pws.domain.songreference.repository.SongReferenceReadRepository
 import io.ktor.client.HttpClient
+import io.github.alelk.pws.domain.songreference.repository.SongReferenceReadRepository
 
 /**
- * Container holding prewired API and repository instances produced by the factory.
  * If [ownsClient] is true, [close] will close the underlying [io.ktor.client.HttpClient].
  */
 data class ApiClientContainer(
@@ -29,9 +28,9 @@ data class ApiClientContainer(
   // Public read-only APIs (SongApi includes search methods)
   val songApi: SongApi,
   val bookApi: BookApi,
-  val songReferenceApi: SongReferenceApi,
   // Auth API
   val authApi: AuthApi,
+  val songReferenceApi: SongReferenceApi,
   // Admin APIs (require admin role)
   val adminBookApi: AdminBookApi,
   val adminSongApi: AdminSongApi,

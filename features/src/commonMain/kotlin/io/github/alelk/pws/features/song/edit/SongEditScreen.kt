@@ -19,6 +19,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
+import kotlinx.coroutines.launch
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -34,8 +38,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,14 +60,28 @@ import org.koin.core.parameter.parametersOf
 class SongEditScreen(val songId: SongId) : Screen {
   @Composable
   override fun Content() {
-    val viewModel = koinScreenModel<SongEditScreenModel>(parameters = { parametersOf(songId) })
+    // SongId is a @JvmInline value class — pass the raw Long to avoid unboxing issues on Kotlin/JS
+    val viewModel = koinScreenModel<SongEditScreenModel>(parameters = { parametersOf(songId.value) })
     val state by viewModel.state.collectAsState()
     val showDiscardDialog by viewModel.showDiscardDialog.collectAsState()
     val navigator = LocalNavigator.currentOrThrow
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+      viewModel.effects.collect { effect ->
+        when (effect) {
+          is SongEditScreenModel.Effect.NavigateBack -> navigator.pop()
+          is SongEditScreenModel.Effect.ShowSnackbar ->
+            scope.launch { snackbarHostState.showSnackbar(effect.message) }
+        }
+      }
+    }
 
     SongEditContent(
       state = state,
       showDiscardDialog = showDiscardDialog,
+      snackbarHostState = snackbarHostState,
       onEvent = viewModel::onEvent,
       onNavigateBack = { navigator.pop() }
     )
@@ -72,10 +93,12 @@ class SongEditScreen(val songId: SongId) : Screen {
 fun SongEditContent(
   state: SongEditUiState,
   showDiscardDialog: Boolean,
+  snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
   onEvent: (SongEditEvent) -> Unit,
   onNavigateBack: () -> Unit
 ) {
   Scaffold(
+    snackbarHost = { SnackbarHost(snackbarHostState) },
     topBar = {
       TopAppBar(
         title = { Text("Редактирование") },

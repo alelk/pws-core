@@ -28,13 +28,13 @@ import io.github.alelk.pws.api.client.api.UserTagApi
 import io.github.alelk.pws.api.client.api.UserTagApiImpl
 import io.github.alelk.pws.api.client.config.NetworkConfig
 import io.github.alelk.pws.api.client.http.createHttpClient
-import io.github.alelk.pws.domain.auth.storage.TokenStorage
 import io.github.alelk.pws.api.client.repository.RemoteBookReadRepository
 import io.github.alelk.pws.api.client.repository.RemoteBookWriteRepository
 import io.github.alelk.pws.api.client.repository.RemoteSongReadRepository
 import io.github.alelk.pws.api.client.repository.RemoteSongReferenceReadRepository
 import io.github.alelk.pws.api.client.repository.RemoteSongWriteRepository
 import io.github.alelk.pws.domain.auth.storage.InMemoryTokenStorage
+import io.github.alelk.pws.domain.auth.storage.TokenStorage
 import io.github.alelk.pws.domain.book.repository.BookReadRepository
 import io.github.alelk.pws.domain.book.repository.BookWriteRepository
 import io.github.alelk.pws.domain.song.repository.SongReadRepository
@@ -46,7 +46,6 @@ import io.ktor.client.HttpClient
  * Create a ready-to-use ApiClientContainer. The factory will create a HttpClient if none provided.
  *
  * @param network network configuration (base url, timeouts, logging)
- * @param httpClient optional HttpClient instance. If provided, factory will not close it.
  * @param engineBuilder optional extension to further configure HttpClient (applied only when factory creates client)
  */
 fun createApiClient(
@@ -61,10 +60,11 @@ fun createApiClient(
   // Public read-only APIs
   val songApi: SongApi = SongApiImpl(client)
   val bookApi: BookApi = BookApiImpl(client)
-  val songReferenceApi: SongReferenceApi = SongReferenceApiImpl(client)
 
   // Auth API
   val authApi: AuthApi = AuthApiImpl(client, tokenStorage)
+
+  val songReferenceApi: SongReferenceApi = SongReferenceApiImpl(client)
 
   // Admin APIs
   val adminBookApi: AdminBookApi = AdminBookApiImpl(client)
@@ -90,8 +90,8 @@ fun createApiClient(
     httpClient = client,
     songApi = songApi,
     bookApi = bookApi,
-    songReferenceApi = songReferenceApi,
     authApi = authApi,
+    songReferenceApi = songReferenceApi,
     adminBookApi = adminBookApi,
     adminSongApi = adminSongApi,
     adminSongReferenceApi = adminSongReferenceApi,

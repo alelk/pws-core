@@ -17,7 +17,8 @@ import org.koin.core.parameter.parametersOf
 class SongDetailBySongIdScreen(val songId: SongId) : Screen {
   @Composable
   override fun Content() {
-    val viewModel = koinScreenModel<SongDetailBySongIdScreenModel>(parameters = { parametersOf(songId) })
+    // SongId is a @JvmInline value class — pass raw Long to avoid unboxing issues on Kotlin/JS
+    val viewModel = koinScreenModel<SongDetailBySongIdScreenModel>(parameters = { parametersOf(songId.value) })
     val state by viewModel.state.collectAsState()
     SongDetailContent(state = state)
   }
