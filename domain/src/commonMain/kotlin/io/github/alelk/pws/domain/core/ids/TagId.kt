@@ -16,7 +16,7 @@ sealed interface TagId : Comparable<TagId> {
   @JvmInline
   value class Predefined(override val identifier: String) : TagId {
     init {
-      require(pattern.matches(identifier)) {
+      require(isValid(identifier)) {
         "predefined tag id should contain only letters, digits and '-', '_' symbols; should not start with digit; should not end with '-' or '_'"
       }
       require(identifier.startsWith(Custom.PREFIX).not()) { "predefined tag id should not start with '${Custom.PREFIX}'" }
@@ -24,7 +24,22 @@ sealed interface TagId : Comparable<TagId> {
     }
 
     companion object {
-      val pattern = Regex("""^\p{L}+([\p{L}\d_-]*[\p{L}\d])?$""")
+
+      /** Fast no-regex validation — avoids JNI/ICU overhead on hot paths. */
+      fun isValid(s: String): Boolean {
+        if (s.isEmpty()) return false
+        if (!s[0].isAsciiLetter()) return false
+        if (s.length == 1) return true
+        if (!s[s.length - 1].isAsciiLetterOrDigit()) return false
+        for (i in 1 until s.length - 1) {
+          val c = s[i]
+          if (!c.isAsciiLetterOrDigit() && c != '-' && c != '_') return false
+        }
+        return true
+      }
+
+      private fun Char.isAsciiLetter() = this in 'a'..'z' || this in 'A'..'Z'
+      private fun Char.isAsciiLetterOrDigit() = isAsciiLetter() || this in '0'..'9'
 
       fun parse(identifier: String): Predefined = Predefined(identifier)
     }
