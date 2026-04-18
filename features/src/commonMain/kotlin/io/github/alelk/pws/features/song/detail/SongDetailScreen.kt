@@ -15,14 +15,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FormatSize
 import androidx.compose.material.icons.filled.Label
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -34,6 +38,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -72,6 +78,7 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
     val references by viewModel.references.collectAsState()
     val songTags by viewModel.songTags.collectAsState()
     val allTags by viewModel.allTags.collectAsState()
+    val bookNumberMap by viewModel.bookNumberMap.collectAsState()
 
     LaunchedEffect(state) {
       if (state is SongDetailUiState.Content) {
@@ -91,8 +98,10 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
         references = references,
         songTags = songTags,
         allTags = allTags,
+        bookNumberMap = bookNumberMap,
         onFavoriteClick = { viewModel.onToggleFavorite() },
         onSaveTags = { viewModel.onSaveTags(it) },
+        onJumpToNumber = { viewModel.resolveNumber(it) },
         onPageChanged = { viewModel.onPageChanged(it) }
       )
     } else {
@@ -103,8 +112,10 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
         references = references,
         songTags = songTags,
         allTags = allTags,
+        bookNumberMap = bookNumberMap,
         onFavoriteClick = { viewModel.onToggleFavorite() },
         onSaveTags = { viewModel.onSaveTags(it) },
+        onJumpToNumber = { viewModel.resolveNumber(it) },
       )
     }
   }
@@ -127,8 +138,10 @@ private fun SongDetailPager(
   references: List<SongReferenceDetail>,
   songTags: List<Tag<TagId>>,
   allTags: List<Tag<TagId>>,
+  bookNumberMap: Map<Int, SongNumberId>,
   onFavoriteClick: () -> Unit,
   onSaveTags: (Set<TagId>) -> Unit,
+  onJumpToNumber: (Int) -> SongNumberId?,
   onPageChanged: (SongNumberId) -> Unit
 ) {
   var currentPage by remember { mutableIntStateOf(initialPage.coerceIn(0, bookSongNumberIds.lastIndex)) }
@@ -195,8 +208,10 @@ private fun SongDetailPager(
         references = if (isCurrentPage) references else emptyList(),
         songTags = if (isCurrentPage) songTags else emptyList(),
         allTags = allTags,
+        bookNumberMap = bookNumberMap,
         onFavoriteClick = onFavoriteClick,
         onSaveTags = onSaveTags,
+        onJumpToNumber = onJumpToNumber,
         onNavigatePrev = if (page > 0) ::goToPrev else null,
         onNavigateNext = if (page < bookSongNumberIds.lastIndex) ::goToNext else null
       )
@@ -217,8 +232,10 @@ fun SongDetailContent(
   references: List<SongReferenceDetail> = emptyList(),
   songTags: List<Tag<TagId>> = emptyList(),
   allTags: List<Tag<TagId>> = emptyList(),
+  bookNumberMap: Map<Int, SongNumberId> = emptyMap(),
   onFavoriteClick: () -> Unit = {},
   onSaveTags: (Set<TagId>) -> Unit = {},
+  onJumpToNumber: (Int) -> SongNumberId? = { null },
   onNavigatePrev: (() -> Unit)? = null,
   onNavigateNext: (() -> Unit)? = null,
 ) {
@@ -229,10 +246,12 @@ fun SongDetailContent(
   var showTextSettingsSheet by remember { mutableStateOf(false) }
   var showActionsSheet by remember { mutableStateOf(false) }
   var showTagEditorSheet by remember { mutableStateOf(false) }
+  var showJumpSheet by remember { mutableStateOf(false) }
 
   val textSettingsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
   val actionsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
   val tagEditorSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+  val jumpSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
   val songId = (state as? SongDetailUiState.Content)?.song?.id
 
@@ -326,7 +345,7 @@ fun SongDetailContent(
       }
     }
 
-    // Actions sheet (Edit / Tags)
+    // Actions sheet (Edit / Tags / Jump)
     if (showActionsSheet && songId != null) {
       AppModalBottomSheet(
         onDismissRequest = { showActionsSheet = false },
@@ -334,6 +353,7 @@ fun SongDetailContent(
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow
       ) {
         SongActionsSheet(
+          showJump = bookNumberMap.isNotEmpty(),
           onEditSong = {
             showActionsSheet = false
             navigator.push(SongEditScreen(songId))
@@ -341,6 +361,10 @@ fun SongDetailContent(
           onEditTags = {
             showActionsSheet = false
             showTagEditorSheet = true
+          },
+          onJumpToNumber = {
+            showActionsSheet = false
+            showJumpSheet = true
           },
           onShare = { /* TODO */ },
         )
@@ -362,6 +386,24 @@ fun SongDetailContent(
             showTagEditorSheet = false
           },
           onDismiss = { showTagEditorSheet = false }
+        )
+      }
+    }
+
+    // Jump to number sheet
+    if (showJumpSheet && bookNumberMap.isNotEmpty()) {
+      AppModalBottomSheet(
+        onDismissRequest = { showJumpSheet = false },
+        sheetState = jumpSheetState,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+      ) {
+        JumpToNumberSheet(
+          bookNumberMap = bookNumberMap,
+          onNavigate = { targetId ->
+            showJumpSheet = false
+            navigator.push(SongDetailScreen(targetId))
+          },
+          onDismiss = { showJumpSheet = false }
         )
       }
     }
@@ -445,14 +487,6 @@ private fun SongContent(
       Spacer(Modifier.height(spacing.xl))
     }
 
-    // Tags row
-    if (songTags.isNotEmpty()) {
-      item {
-        SongTagsRow(tags = songTags)
-        Spacer(Modifier.height(spacing.lg))
-      }
-    }
-
     // Lyrics
     items(song.lyric) { part ->
       LyricPartView(part = part, fontScale = fontScale)
@@ -461,6 +495,11 @@ private fun SongContent(
 
     // Metadata
     item { SongMetadata(song) }
+
+    // Tags — shown after metadata, before cross-references
+    if (songTags.isNotEmpty()) {
+      item { SongTagsSection(tags = songTags) }
+    }
 
     // Cross-references
     if (references.isNotEmpty()) {
@@ -782,6 +821,41 @@ private fun SongReferenceItem(
 }
 
 // ---------------------------------------------------------------------------
+// Song Tags Section — displayed below metadata
+// ---------------------------------------------------------------------------
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun SongTagsSection(tags: List<Tag<TagId>>) {
+  val spacing = MaterialTheme.spacing
+  Column(
+    modifier = Modifier.widthIn(max = 600.dp).fillMaxWidth()
+  ) {
+    Spacer(Modifier.height(spacing.xl))
+    HorizontalDivider(
+      color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
+      modifier = Modifier.padding(vertical = spacing.lg)
+    )
+    Row(verticalAlignment = Alignment.CenterVertically) {
+      Icon(
+        Icons.AutoMirrored.Filled.Label,
+        contentDescription = null,
+        modifier = Modifier.size(16.dp),
+        tint = MaterialTheme.colorScheme.onSurfaceVariant
+      )
+      Spacer(Modifier.width(spacing.sm))
+      Text(
+        text = "Теги",
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+      )
+    }
+    Spacer(Modifier.height(spacing.md))
+    SongTagsRow(tags = tags)
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Song Tags Row — compact display of assigned tags
 // ---------------------------------------------------------------------------
 
@@ -828,8 +902,10 @@ private fun SongTagsRow(tags: List<Tag<TagId>>) {
 
 @Composable
 private fun SongActionsSheet(
+  showJump: Boolean,
   onEditSong: () -> Unit,
   onEditTags: () -> Unit,
+  onJumpToNumber: () -> Unit,
   onShare: () -> Unit,
 ) {
   val spacing = MaterialTheme.spacing
@@ -852,10 +928,17 @@ private fun SongActionsSheet(
       onClick = onEditSong
     )
     ActionItem(
-      icon = { Icon(Icons.Filled.Label, contentDescription = null) },
+      icon = { Icon(Icons.AutoMirrored.Filled.Label, contentDescription = null) },
       label = "Изменить теги",
       onClick = onEditTags
     )
+    if (showJump) {
+      ActionItem(
+        icon = { Icon(Icons.Filled.Search, contentDescription = null) },
+        label = "Перейти к номеру",
+        onClick = onJumpToNumber
+      )
+    }
     ActionItem(
       icon = { Icon(Icons.Filled.Share, contentDescription = null) },
       label = "Поделиться",
@@ -974,3 +1057,98 @@ private fun TagEditorSheet(
     }
   }
 }
+
+// ---------------------------------------------------------------------------
+// Jump to Number BottomSheet
+// ---------------------------------------------------------------------------
+
+@Composable
+private fun JumpToNumberSheet(
+  bookNumberMap: Map<Int, SongNumberId>,
+  onNavigate: (SongNumberId) -> Unit,
+  onDismiss: () -> Unit,
+) {
+  val spacing = MaterialTheme.spacing
+  val minNumber = remember(bookNumberMap) { bookNumberMap.keys.minOrNull() ?: 1 }
+  val maxNumber = remember(bookNumberMap) { bookNumberMap.keys.maxOrNull() ?: 1 }
+
+  var input by remember { mutableStateOf("") }
+  var errorText by remember { mutableStateOf<String?>(null) }
+
+  fun tryJump() {
+    val number = input.trim().toIntOrNull()
+    when {
+      number == null -> errorText = "Введите число"
+      number !in bookNumberMap -> errorText = "Нет песни с номером $number"
+      else -> {
+        errorText = null
+        onNavigate(bookNumberMap.getValue(number))
+      }
+    }
+  }
+
+  Column(
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(spacing.lg)
+      .padding(WindowInsets.navigationBars.asPaddingValues())
+  ) {
+    Text(
+      text = "Перейти к номеру",
+      style = MaterialTheme.typography.titleMedium,
+      color = MaterialTheme.colorScheme.onSurface
+    )
+
+    Spacer(Modifier.height(spacing.lg))
+
+    OutlinedTextField(
+      value = input,
+      onValueChange = { v ->
+        // allow only digits
+        if (v.all { it.isDigit() }) {
+          input = v
+          errorText = null
+        }
+      },
+      label = { Text("Номер ($minNumber – $maxNumber)") },
+      placeholder = { Text("$minNumber – $maxNumber", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)) },
+      isError = errorText != null,
+      supportingText = errorText?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+      singleLine = true,
+      keyboardOptions = KeyboardOptions(
+        keyboardType = KeyboardType.Number,
+        imeAction = ImeAction.Go
+      ),
+      keyboardActions = KeyboardActions(
+        onGo = { tryJump() }
+      ),
+      modifier = Modifier.fillMaxWidth(),
+      trailingIcon = {
+        if (input.isNotEmpty()) {
+          IconButton(onClick = { input = ""; errorText = null }) {
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Очистить",
+              modifier = Modifier.size(18.dp))
+          }
+        }
+      }
+    )
+
+    Spacer(Modifier.height(spacing.lg))
+
+    Row(
+      modifier = Modifier.fillMaxWidth(),
+      horizontalArrangement = Arrangement.End,
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      TextButton(onClick = onDismiss) { Text("Отмена") }
+      Spacer(Modifier.width(spacing.sm))
+      Button(
+        onClick = ::tryJump,
+        enabled = input.isNotEmpty()
+      ) {
+        Text("Перейти")
+      }
+    }
+  }
+}
+

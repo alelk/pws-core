@@ -16,6 +16,10 @@ class Songs(
     /** GET /v1/songs/{id}/references — public endpoint: outgoing + incoming references for a song. */
     @Resource("references")
     class References(val parent: ById)
+
+    /** GET /v1/songs/{id}/tags — public endpoint: all tags for a song (with full data). */
+    @Resource("tags")
+    class Tags(val parent: ById)
   }
 
   /**

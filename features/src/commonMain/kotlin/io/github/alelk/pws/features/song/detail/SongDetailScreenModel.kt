@@ -24,7 +24,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 
@@ -52,6 +51,10 @@ class SongDetailScreenModel(
   /** Ordered list of SongNumberIds in the same book (sorted by number). Empty until loaded. */
   private val _bookSongNumberIds = MutableStateFlow<List<SongNumberId>>(emptyList())
   val bookSongNumberIds: StateFlow<List<SongNumberId>> = _bookSongNumberIds.asStateFlow()
+
+  /** Map: song number (Int) → SongNumberId. Used for "jump by number" navigation. */
+  private val _bookNumberMap = MutableStateFlow<Map<Int, SongNumberId>>(emptyMap())
+  val bookNumberMap: StateFlow<Map<Int, SongNumberId>> = _bookNumberMap.asStateFlow()
 
   /** Cross-references to related songs. Empty until loaded. */
   private val _references = MutableStateFlow<List<SongReferenceDetail>>(emptyList())
@@ -85,14 +88,18 @@ class SongDetailScreenModel(
       }
     }
 
-    // Load all song IDs in the same book for swipe navigation
+    // Load all song IDs in the same book for swipe navigation and jump-by-number
     screenModelScope.launch {
       try {
         songObserveRepository.observeAllInBook(songNumberId.bookId).collectLatest { songsMap ->
           // songsMap: Map<Int /* number */, SongSummary>
-          _bookSongNumberIds.value = songsMap.entries
-            .sortedBy { it.key }
-            .map { (_, summary) -> SongNumberId(songNumberId.bookId, summary.id) }
+          val sorted = songsMap.entries.sortedBy { it.key }
+          _bookSongNumberIds.value = sorted.map { (_, summary) ->
+            SongNumberId(songNumberId.bookId, summary.id)
+          }
+          _bookNumberMap.value = sorted.associate { (number, summary) ->
+            number to SongNumberId(songNumberId.bookId, summary.id)
+          }
         }
       } catch (_: Exception) {
         // Navigation without swipe list is acceptable
@@ -158,4 +165,10 @@ class SongDetailScreenModel(
       } catch (_: Exception) {}
     }
   }
+
+  /**
+   * Returns the [SongNumberId] for the given song number in the current book,
+   * or null if no song with that number exists.
+   */
+  fun resolveNumber(number: Int): SongNumberId? = _bookNumberMap.value[number]
 }

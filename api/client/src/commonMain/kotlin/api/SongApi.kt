@@ -9,6 +9,7 @@ import io.github.alelk.pws.api.contract.song.SongSearchSuggestionDto
 import io.github.alelk.pws.api.contract.song.SongSortDto
 import io.github.alelk.pws.api.contract.song.SongSummaryDto
 import io.github.alelk.pws.api.contract.song.Songs
+import io.github.alelk.pws.api.contract.tag.TagSummaryDto
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.resources.get
 
@@ -68,6 +69,14 @@ interface SongApi {
     bookId: BookIdDto? = null,
     limit: Int? = null
   ): List<SongSearchSuggestionDto>
+
+  /**
+   * Get all tags for a specific song (with full data — name, color, etc.).
+   *
+   * @param id Song ID
+   * @return List of tag summaries (predefined + custom)
+   */
+  suspend fun listTags(id: SongIdDto): List<TagSummaryDto>
 }
 
 internal class SongApiImpl(client: HttpClient) : BaseResourceApi(client), SongApi {
@@ -110,5 +119,10 @@ internal class SongApiImpl(client: HttpClient) : BaseResourceApi(client), SongAp
   ): List<SongSearchSuggestionDto> =
     execute<List<SongSearchSuggestionDto>> {
       client.get(Songs.SearchSuggestions(query = query, bookId = bookId, limit = limit))
+    }.getOrThrow()
+
+  override suspend fun listTags(id: SongIdDto): List<TagSummaryDto> =
+    execute<List<TagSummaryDto>> {
+      client.get(Songs.ById.Tags(parent = Songs.ById(id = id)))
     }.getOrThrow()
 }
