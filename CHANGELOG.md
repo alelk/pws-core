@@ -1,5 +1,18 @@
 # PWS Android
 
+# [2.13.0](https://github.com/alelk/pws-core/compare/v2.12.0...v2.13.0) (2026-04-19)
+
+
+### Bug Fixes
+
+* **validation:** Replace regex validation with optimized no-regex checks for BookId and TagId ([462e993](https://github.com/alelk/pws-core/commit/462e99335926a18e839762488e2e336483b57fc5))
+
+
+### Features
+
+* **domain:** Refactor use cases to return Either types for error handling ([bd9d61d](https://github.com/alelk/pws-core/commit/bd9d61d4de189b4618f4fc02d0ef6394e7ee0f09))
+* **song:** Add functionality to list tags for a specific song and implement jump-to-number navigation ([d627860](https://github.com/alelk/pws-core/commit/d6278609ad8689b0577812beaa3cc438034a03ae))
+
 # [2.12.0](https://github.com/alelk/pws-core/compare/v2.11.0...v2.12.0) (2026-04-10)
 
 
