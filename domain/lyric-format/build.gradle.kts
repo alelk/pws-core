@@ -17,7 +17,6 @@ kotlin {
   js(IR) {
     outputModuleName = "pws-domain-lyric-format"
     browser()
-    binaries.executable()
   }
 
   sourceSets {

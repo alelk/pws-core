@@ -12,7 +12,6 @@ kotlin {
     js(IR) {
         outputModuleName = "pws-core-ui"
         browser()
-        binaries.executable()
     }
 
     sourceSets {

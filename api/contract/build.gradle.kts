@@ -11,7 +11,6 @@ kotlin {
   js(IR) {
     outputModuleName = "pws-api-contract"
     browser()
-    binaries.executable()
   }
 
   sourceSets {

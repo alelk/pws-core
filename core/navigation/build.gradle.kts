@@ -12,7 +12,6 @@ kotlin {
   js(IR) {
     outputModuleName = "pws-core-navigation"
     browser()
-    binaries.executable()
   }
 
   sourceSets {

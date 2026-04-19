@@ -11,7 +11,6 @@ kotlin {
   js(IR) {
     outputModuleName = "pws-api-mapping"
     browser()
-    binaries.executable()
   }
 
   sourceSets {

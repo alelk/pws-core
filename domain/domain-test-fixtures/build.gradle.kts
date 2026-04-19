@@ -11,9 +11,7 @@ kotlin {
   iosSimulatorArm64()
   js(IR) {
     outputModuleName = "pws-domain-test-fixtures"
-    browser()
     nodejs()
-    binaries.executable()
   }
 
   sourceSets {
