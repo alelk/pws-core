@@ -27,6 +27,8 @@ kotest-runner-android = "1.2.2"
 kotest-extensions-android = "0.1.9"
 kotest-multiplatform = "6.0.0.M4"
 
+arrow = "2.1.2"
+
 kudzu = "6.1.0"
 i18n4k = "0.11.1"
 robolectric = "4.16.1"
@@ -94,6 +96,8 @@ androidx-test-core = { group = "androidx.test", name = "core", version = "1.7.0"
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" } # https://mvnrepository.com/artifact/org.robolectric/robolectric
 kotest-runner-android = { group = "br.com.colman", name = "kotest-runner-android", version.ref = "kotest-runner-android" } # https://search.maven.org/artifact/br.com.colman/kotest-runner-android
 kotest-extensions-android = { group = "br.com.colman", name = "kotest-extensions-android", version.ref = "kotest-extensions-android" } # https://search.maven.org/artifact/br.com.colman/kotest-extensions-android
+
+arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" } # https://arrow-kt.io
 
 # Parser combinators
 kudzu-core = { module = "io.github.copper-leaf:kudzu-core", version.ref = "kudzu" } # https://search.maven.org/artifact/io.github.copper-leaf/kudzu-core

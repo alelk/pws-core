@@ -1,11 +1,15 @@
 package io.github.alelk.pws.api.client.api
 
+import arrow.core.Either
 import io.github.alelk.pws.api.contract.admin.AdminSongReferences
 import io.github.alelk.pws.api.contract.core.ids.SongIdDto
 import io.github.alelk.pws.api.contract.songreference.ReplaceAllSongReferencesResultDto
 import io.github.alelk.pws.api.contract.songreference.SongReferenceCreateRequestDto
 import io.github.alelk.pws.api.contract.songreference.SongReferenceDto
 import io.github.alelk.pws.api.contract.songreference.SongReferenceUpdateRequestDto
+import io.github.alelk.pws.domain.core.error.CreateError
+import io.github.alelk.pws.domain.core.error.DeleteError
+import io.github.alelk.pws.domain.core.error.UpdateError
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.resources.delete
 import io.ktor.client.plugins.resources.get
@@ -23,10 +27,10 @@ import io.ktor.http.HttpHeaders
  */
 interface AdminSongReferenceApi {
   suspend fun list(songId: SongIdDto): List<SongReferenceDto>
-  suspend fun create(songId: SongIdDto, request: SongReferenceCreateRequestDto): ResourceCreateResult<SongReferenceDto>
+  suspend fun create(songId: SongIdDto, request: SongReferenceCreateRequestDto): Either<CreateError, SongReferenceDto>
   suspend fun replace(songId: SongIdDto, references: List<SongReferenceDto>): ReplaceAllSongReferencesResultDto
-  suspend fun update(songId: SongIdDto, refSongId: SongIdDto, request: SongReferenceUpdateRequestDto): ResourceUpdateResult<SongReferenceDto>
-  suspend fun delete(songId: SongIdDto, refSongId: SongIdDto): ResourceDeleteResult<SongReferenceDto>
+  suspend fun update(songId: SongIdDto, refSongId: SongIdDto, request: SongReferenceUpdateRequestDto): Either<UpdateError, SongReferenceDto>
+  suspend fun delete(songId: SongIdDto, refSongId: SongIdDto): Either<DeleteError, SongReferenceDto>
 }
 
 internal class AdminSongReferenceApiImpl(client: HttpClient) : BaseResourceApi(client), AdminSongReferenceApi {
@@ -36,7 +40,7 @@ internal class AdminSongReferenceApiImpl(client: HttpClient) : BaseResourceApi(c
       client.get(AdminSongReferences(songId = songId))
     }.getOrThrow()
 
-  override suspend fun create(songId: SongIdDto, request: SongReferenceCreateRequestDto): ResourceCreateResult<SongReferenceDto> =
+  override suspend fun create(songId: SongIdDto, request: SongReferenceCreateRequestDto): Either<CreateError, SongReferenceDto> =
     executeCreate<SongReferenceDto, SongReferenceDto>(
       resource = SongReferenceDto(
         songId = songId,
@@ -50,7 +54,7 @@ internal class AdminSongReferenceApiImpl(client: HttpClient) : BaseResourceApi(c
         header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(request)
       }
-    }.getOrThrow()
+    }
 
   override suspend fun replace(songId: SongIdDto, references: List<SongReferenceDto>): ReplaceAllSongReferencesResultDto =
     execute<ReplaceAllSongReferencesResultDto> {
@@ -60,7 +64,7 @@ internal class AdminSongReferenceApiImpl(client: HttpClient) : BaseResourceApi(c
       }
     }.getOrThrow()
 
-  override suspend fun update(songId: SongIdDto, refSongId: SongIdDto, request: SongReferenceUpdateRequestDto): ResourceUpdateResult<SongReferenceDto> =
+  override suspend fun update(songId: SongIdDto, refSongId: SongIdDto, request: SongReferenceUpdateRequestDto): Either<UpdateError, SongReferenceDto> =
     executeUpdate<SongReferenceDto, SongReferenceDto>(
       resourceId = SongReferenceDto(
         songId = songId,
@@ -74,9 +78,9 @@ internal class AdminSongReferenceApiImpl(client: HttpClient) : BaseResourceApi(c
         header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(request)
       }
-    }.getOrThrow()
+    }
 
-  override suspend fun delete(songId: SongIdDto, refSongId: SongIdDto): ResourceDeleteResult<SongReferenceDto> =
+  override suspend fun delete(songId: SongIdDto, refSongId: SongIdDto): Either<DeleteError, SongReferenceDto> =
     executeDelete<SongReferenceDto>(
       resourceId = SongReferenceDto(
         songId = songId,
@@ -87,5 +91,5 @@ internal class AdminSongReferenceApiImpl(client: HttpClient) : BaseResourceApi(c
       )
     ) {
       client.delete(AdminSongReferences.ByRefSongId(parent = AdminSongReferences(songId = songId), refSongId = refSongId))
-    }.getOrThrow()
+    }
 }

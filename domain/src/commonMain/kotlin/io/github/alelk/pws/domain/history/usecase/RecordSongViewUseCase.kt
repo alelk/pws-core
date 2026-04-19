@@ -1,6 +1,7 @@
 package io.github.alelk.pws.domain.history.usecase
 
-import io.github.alelk.pws.domain.core.result.UpsertResourceResult
+import arrow.core.Either
+import io.github.alelk.pws.domain.core.error.UpsertError
 import io.github.alelk.pws.domain.core.transaction.TransactionRunner
 import io.github.alelk.pws.domain.history.model.HistoryEntry
 import io.github.alelk.pws.domain.history.model.HistorySubject
@@ -13,7 +14,6 @@ class RecordSongViewUseCase(
   private val historyRepository: HistoryWriteRepository,
   private val txRunner: TransactionRunner
 ) {
-  suspend operator fun invoke(subject: HistorySubject): UpsertResourceResult<HistoryEntry> =
+  suspend operator fun invoke(subject: HistorySubject): Either<UpsertError, HistoryEntry> =
     txRunner.inRwTransaction { historyRepository.recordView(subject) }
 }
-

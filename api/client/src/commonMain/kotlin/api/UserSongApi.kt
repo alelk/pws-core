@@ -8,6 +8,9 @@ import io.github.alelk.pws.api.contract.song.SongSearchSuggestionDto
 import io.github.alelk.pws.api.contract.usersong.UserSongDetailDto
 import io.github.alelk.pws.api.contract.usersong.UserSongOverrideRequestDto
 import io.github.alelk.pws.api.contract.usersong.UserSongs
+import io.github.alelk.pws.domain.core.error.DeleteError
+import io.github.alelk.pws.domain.core.error.UpdateError
+import arrow.core.Either
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.resources.delete
 import io.ktor.client.plugins.resources.get
@@ -44,12 +47,12 @@ interface UserSongApi {
    * Apply override to a global song.
    * Creates or updates user's override for this song.
    */
-  suspend fun overrideSong(id: SongIdDto, request: UserSongOverrideRequestDto): ResourceUpdateResult<SongIdDto>
+  suspend fun overrideSong(id: SongIdDto, request: UserSongOverrideRequestDto): Either<UpdateError, SongIdDto>
 
   /**
    * Reset user's overrides for a song (restore to global version).
    */
-  suspend fun resetOverride(id: SongIdDto): ResourceDeleteResult<SongIdDto>
+  suspend fun resetOverride(id: SongIdDto): Either<DeleteError, SongIdDto>
 
   /**
    * Full-text search on user's songs (merged: global + user's songs).
@@ -101,18 +104,18 @@ internal class UserSongApiImpl(client: HttpClient) : BaseResourceApi(client), Us
       client.get(UserSongs(overriddenOnly = true))
     }.getOrThrow()
 
-  override suspend fun overrideSong(id: SongIdDto, request: UserSongOverrideRequestDto): ResourceUpdateResult<SongIdDto> =
+  override suspend fun overrideSong(id: SongIdDto, request: UserSongOverrideRequestDto): Either<UpdateError, SongIdDto> =
     executeUpdate<SongIdDto, SongIdDto>(resourceId = id) {
       client.patch(UserSongs.ById(id = id)) {
         header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(request)
       }
-    }.getOrThrow()
+    }
 
-  override suspend fun resetOverride(id: SongIdDto): ResourceDeleteResult<SongIdDto> =
+  override suspend fun resetOverride(id: SongIdDto): Either<DeleteError, SongIdDto> =
     executeDelete<SongIdDto>(resourceId = id) {
       client.delete(UserSongs.ById.Override(parent = UserSongs.ById(id = id)))
-    }.getOrThrow()
+    }
 
   override suspend fun search(
     query: String,

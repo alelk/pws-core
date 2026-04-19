@@ -1,13 +1,13 @@
 package io.github.alelk.pws.domain.core.result
 
-/**
- * Result of clearing all resources from a collection.
- */
-sealed interface ClearResourcesResult {
-  /** Successfully cleared. */
-  data class Success(val removedCount: Int) : ClearResourcesResult
+import arrow.core.Either
+import io.github.alelk.pws.domain.core.error.ClearError
 
-  /** Unknown error occurred. */
+/** @deprecated Use [Either]<[ClearError], Int> instead. */
+@Deprecated("Use Either<ClearError, Int> instead", level = DeprecationLevel.WARNING)
+sealed interface ClearResourcesResult {
+  @Deprecated("Use Either.Right(removedCount) instead")
+  data class Success(val removedCount: Int) : ClearResourcesResult
+  @Deprecated("Use Either.Left(ClearError.UnknownError(exception)) instead")
   data class UnknownError(val exception: Throwable?, val message: String = exception?.message ?: "Unknown error") : ClearResourcesResult
 }
-

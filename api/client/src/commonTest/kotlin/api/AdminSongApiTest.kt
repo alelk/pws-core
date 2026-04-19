@@ -1,5 +1,6 @@
 package io.github.alelk.pws.api.client.api
 
+import arrow.core.Either
 import io.github.alelk.pws.api.contract.core.LocaleDto
 import io.github.alelk.pws.api.contract.core.ResourceTypeDto
 import io.github.alelk.pws.api.contract.core.error.ErrorCodes
@@ -16,11 +17,15 @@ import io.github.alelk.pws.api.contract.song.SongUpdateRequestDto
 import io.github.alelk.pws.api.contract.tag.songtag.ReplaceAllSongTagsResultDto
 import io.github.alelk.pws.api.contract.tag.songtag.SongTagAssociationDto
 import io.github.alelk.pws.api.mapping.song.toDto
+import io.github.alelk.pws.domain.core.error.CreateError
+import io.github.alelk.pws.domain.core.error.DeleteError
+import io.github.alelk.pws.domain.core.error.UpdateError
 import io.github.alelk.pws.domain.core.ids.SongId
 import io.github.alelk.pws.domain.song.model.songDetail
 import io.github.alelk.pws.domain.song.model.songSummary
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.constant
 import io.kotest.property.arbitrary.next
@@ -65,8 +70,7 @@ class AdminSongApiTest : FunSpec({
     }
 
     val api = AdminSongApiImpl(client)
-    val res = api.list()
-    res shouldBe listOf(song1, song2)
+    api.list() shouldBe listOf(song1, song2)
   }
 
   // --- get ---
@@ -82,8 +86,7 @@ class AdminSongApiTest : FunSpec({
     }
 
     val api = AdminSongApiImpl(client)
-    val res = api.get(SongIdDto(1L))
-    res shouldBe detail
+    api.get(SongIdDto(1L)) shouldBe detail
   }
 
   test("get(id) should return null when 404") {
@@ -93,21 +96,19 @@ class AdminSongApiTest : FunSpec({
       respond(errorJson, status = HttpStatusCode.NotFound, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
     }
 
-    val api = AdminSongApiImpl(client)
-    api.get(SongIdDto(999L)) shouldBe null
+    AdminSongApiImpl(client).get(SongIdDto(999L)) shouldBe null
   }
 
   // --- create ---
 
-  test("create() should POST /v1/admin/songs and return ResourceCreateResult.Success") {
+  test("create() should POST /v1/admin/songs and return Either.Right") {
     val createReq = SongCreateRequestDto(
       id = SongIdDto(1L),
       locale = LocaleDto("en"),
       name = "New Song",
       lyric = LyricDto(listOf(LyricPartDto.Verse(setOf(1), "Line 1")))
     )
-    val created = SongIdDto(1L)
-    val responseJson = json.encodeToString(created)
+    val responseJson = json.encodeToString(SongIdDto(1L))
 
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Post
@@ -115,12 +116,10 @@ class AdminSongApiTest : FunSpec({
       respond(responseJson, status = HttpStatusCode.Created, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
     }
 
-    val api = AdminSongApiImpl(client)
-    val got = api.create(createReq)
-    got shouldBe ResourceCreateResult.Success(created)
+    AdminSongApiImpl(client).create(createReq) shouldBe Either.Right(SongIdDto(1L))
   }
 
-  test("create() should return AlreadyExists when 409") {
+  test("create() should return Either.Left(AlreadyExists) when 409") {
     val createReq = SongCreateRequestDto(
       id = SongIdDto(1L),
       locale = LocaleDto("en"),
@@ -129,16 +128,12 @@ class AdminSongApiTest : FunSpec({
     )
     val errorJson = json.encodeToString(ErrorDto.resourceAlreadyExists(ResourceTypeDto.SONG, SongIdDto(1L)))
 
-    val client = httpClientWith {
-      respond(errorJson, status = HttpStatusCode.Conflict, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
-    }
+    val client = httpClientWith { respond(errorJson, status = HttpStatusCode.Conflict, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString()))) }
 
-    val api = AdminSongApiImpl(client)
-    val got = api.create(createReq)
-    got shouldBe ResourceCreateResult.AlreadyExists(createReq.id)
+    AdminSongApiImpl(client).create(createReq).shouldBeInstanceOf<Either.Left<CreateError.AlreadyExists>>()
   }
 
-  test("create() should return ValidationError when 400") {
+  test("create() should return Either.Left(ValidationError) when 400") {
     val createReq = SongCreateRequestDto(
       id = SongIdDto(1L),
       locale = LocaleDto("en"),
@@ -147,50 +142,38 @@ class AdminSongApiTest : FunSpec({
     )
     val errorJson = json.encodeToString(ErrorDto(ErrorCodes.VALIDATION_ERROR, "Name is required"))
 
-    val client = httpClientWith {
-      respond(errorJson, status = HttpStatusCode.BadRequest, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
-    }
+    val client = httpClientWith { respond(errorJson, status = HttpStatusCode.BadRequest, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString()))) }
 
-    val api = AdminSongApiImpl(client)
-    val got = api.create(createReq)
-    got shouldBe ResourceCreateResult.ValidationError("Name is required")
+    AdminSongApiImpl(client).create(createReq) shouldBe Either.Left(CreateError.ValidationError("Name is required"))
   }
 
   // --- update ---
 
-  test("update() should PATCH /v1/admin/songs/{id} and return Success") {
+  test("update() should PATCH /v1/admin/songs/{id} and return Either.Right") {
     val songId = SongIdDto(1L)
     val updateReq = SongUpdateRequestDto(id = songId, name = "Renamed")
-    val responseJson = json.encodeToString(songId)
 
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Patch
       req.url.encodedPath shouldBe "/v1/admin/songs/1"
-      respond(responseJson, status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
+      respond(json.encodeToString(songId), status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
     }
 
-    val api = AdminSongApiImpl(client)
-    val got = api.update(songId, updateReq)
-    got shouldBe ResourceUpdateResult.Success(songId)
+    AdminSongApiImpl(client).update(songId, updateReq) shouldBe Either.Right(songId)
   }
 
-  test("update() should return NotFound when 404") {
+  test("update() should return Either.Left(NotFound) when 404") {
     val songId = SongIdDto(999L)
-    val updateReq = SongUpdateRequestDto(id = songId, name = "Renamed")
     val errorJson = json.encodeToString(ErrorDto.resourceNotFound(ResourceTypeDto.SONG, songId))
 
-    val client = httpClientWith {
-      respond(errorJson, status = HttpStatusCode.NotFound, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
-    }
+    val client = httpClientWith { respond(errorJson, status = HttpStatusCode.NotFound, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString()))) }
 
-    val api = AdminSongApiImpl(client)
-    val got = api.update(songId, updateReq)
-    got shouldBe ResourceUpdateResult.NotFound(songId)
+    AdminSongApiImpl(client).update(songId, SongUpdateRequestDto(id = songId, name = "Renamed")) shouldBe Either.Left(UpdateError.NotFound)
   }
 
   // --- delete ---
 
-  test("delete() should DELETE /v1/admin/songs/{id} and return Success") {
+  test("delete() should DELETE /v1/admin/songs/{id} and return Either.Right") {
     val songId = SongIdDto(1L)
 
     val client = httpClientWith { req ->
@@ -199,22 +182,16 @@ class AdminSongApiTest : FunSpec({
       respond("", status = HttpStatusCode.NoContent, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
     }
 
-    val api = AdminSongApiImpl(client)
-    val got = api.delete(songId)
-    got shouldBe ResourceDeleteResult.Success(songId)
+    AdminSongApiImpl(client).delete(songId) shouldBe Either.Right(songId)
   }
 
-  test("delete() should return NotFound when 404") {
+  test("delete() should return Either.Left(NotFound) when 404") {
     val songId = SongIdDto(999L)
     val errorJson = json.encodeToString(ErrorDto.resourceNotFound(ResourceTypeDto.SONG, songId))
 
-    val client = httpClientWith {
-      respond(errorJson, status = HttpStatusCode.NotFound, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
-    }
+    val client = httpClientWith { respond(errorJson, status = HttpStatusCode.NotFound, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString()))) }
 
-    val api = AdminSongApiImpl(client)
-    val got = api.delete(songId)
-    got shouldBe ResourceDeleteResult.NotFound(songId)
+    AdminSongApiImpl(client).delete(songId) shouldBe Either.Left(DeleteError.NotFound)
   }
 
   // --- listTags ---
@@ -222,17 +199,14 @@ class AdminSongApiTest : FunSpec({
   test("listTags() should GET /v1/admin/songs/{id}/tags and return tag IDs") {
     val songId = SongIdDto(1L)
     val tagIds = listOf(TagIdDto("worship"), TagIdDto("praise"))
-    val responseJson = json.encodeToString(tagIds)
 
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Get
       req.url.encodedPath shouldBe "/v1/admin/songs/1/tags"
-      respond(responseJson, status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
+      respond(json.encodeToString(tagIds), status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
     }
 
-    val api = AdminSongApiImpl(client)
-    val res = api.listTags(songId)
-    res shouldBe tagIds
+    AdminSongApiImpl(client).listTags(songId) shouldBe tagIds
   }
 
   // --- replaceTags ---
@@ -245,17 +219,13 @@ class AdminSongApiTest : FunSpec({
       unchanged = listOf(SongTagAssociationDto(songId, TagIdDto("worship"))),
       deleted = listOf(SongTagAssociationDto(songId, TagIdDto("hymn")))
     )
-    val responseJson = json.encodeToString(result)
 
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Put
       req.url.encodedPath shouldBe "/v1/admin/songs/1/tags"
-      respond(responseJson, status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
+      respond(json.encodeToString(result), status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
     }
 
-    val api = AdminSongApiImpl(client)
-    val res = api.replaceTags(songId, tagIds)
-    res shouldBe result
+    AdminSongApiImpl(client).replaceTags(songId, tagIds) shouldBe result
   }
 })
-

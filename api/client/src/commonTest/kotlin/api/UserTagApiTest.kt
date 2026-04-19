@@ -1,5 +1,6 @@
 package io.github.alelk.pws.api.client.api
 
+import arrow.core.Either
 import io.github.alelk.pws.api.contract.core.ColorDto
 import io.github.alelk.pws.api.contract.core.ResourceTypeDto
 import io.github.alelk.pws.api.contract.core.error.ErrorDto
@@ -11,8 +12,12 @@ import io.github.alelk.pws.api.contract.tag.TagCreateRequestDto
 import io.github.alelk.pws.api.contract.tag.TagDetailDto
 import io.github.alelk.pws.api.contract.tag.TagSummaryDto
 import io.github.alelk.pws.api.contract.tag.TagUpdateRequestDto
+import io.github.alelk.pws.domain.core.error.CreateError
+import io.github.alelk.pws.domain.core.error.DeleteError
+import io.github.alelk.pws.domain.core.error.UpdateError
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandler
@@ -45,219 +50,137 @@ class UserTagApiTest : FunSpec({
   test("list() should GET /v1/user/tags and return parsed tag summaries") {
     val tag1 = TagSummaryDto.Predefined(TagIdDto("worship"), "Worship", priority = 1, ColorDto("#FF0000"), edited = false)
     val tag2 = TagSummaryDto.Custom(TagIdDto("mytag"), "My Tag", priority = 5, ColorDto("#00FF00"))
-    val responseJson = json.encodeToString<List<TagSummaryDto>>(listOf(tag1, tag2))
-
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Get
       req.url.encodedPath shouldBe "/v1/user/tags"
-      respond(responseJson, status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
+      respond(json.encodeToString<List<TagSummaryDto>>(listOf(tag1, tag2)), status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
     }
-
-    val api = UserTagApiImpl(client)
-    val res = api.list()
-    res shouldBe listOf(tag1, tag2)
+    UserTagApiImpl(client).list() shouldBe listOf(tag1, tag2)
   }
 
   // --- get ---
 
   test("get(id) should GET /v1/user/tags/{id} and return parsed detail") {
     val detail = TagDetailDto.Custom(TagIdDto("mytag"), "My Tag", priority = 1, ColorDto("#00FF00"), songCount = 2)
-    val responseJson = json.encodeToString<TagDetailDto>(detail)
-
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Get
       req.url.encodedPath shouldBe "/v1/user/tags/mytag"
-      respond(responseJson, status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
+      respond(json.encodeToString<TagDetailDto>(detail), status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
     }
-
-    val api = UserTagApiImpl(client)
-    val res = api.get(TagIdDto("mytag"))
-    res shouldBe detail
+    UserTagApiImpl(client).get(TagIdDto("mytag")) shouldBe detail
   }
 
   test("get(id) should return null when 404") {
     val errorJson = json.encodeToString(ErrorDto.resourceNotFound(ResourceTypeDto.TAG, TagIdDto("missing")))
-
-    val client = httpClientWith {
-      respond(errorJson, status = HttpStatusCode.NotFound, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
-    }
-
-    val api = UserTagApiImpl(client)
-    api.get(TagIdDto("missing")) shouldBe null
+    val client = httpClientWith { respond(errorJson, status = HttpStatusCode.NotFound, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString()))) }
+    UserTagApiImpl(client).get(TagIdDto("missing")) shouldBe null
   }
 
   // --- create ---
 
-  test("create() should POST /v1/user/tags and return ResourceCreateResult.Success") {
+  test("create() should POST /v1/user/tags and return Either.Right") {
     val createReq = TagCreateRequestDto(id = TagIdDto("newtag"), name = "New Tag", color = ColorDto("#0000FF"), priority = 5)
     val created = TagDetailDto.Custom(TagIdDto("newtag"), "New Tag", priority = 5, ColorDto("#0000FF"), songCount = 0)
-    val responseJson = json.encodeToString<TagDetailDto>(created)
-
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Post
       req.url.encodedPath shouldBe "/v1/user/tags"
-      respond(responseJson, status = HttpStatusCode.Created, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
+      respond(json.encodeToString<TagDetailDto>(created), status = HttpStatusCode.Created, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
     }
-
-    val api = UserTagApiImpl(client)
-    val got = api.create(createReq)
-    got shouldBe ResourceCreateResult.Success(createReq.id)
+    UserTagApiImpl(client).create(createReq) shouldBe Either.Right(createReq.id)
   }
 
-  test("create() should return AlreadyExists when 409") {
+  test("create() should return Either.Left(AlreadyExists) when 409") {
     val createReq = TagCreateRequestDto(id = TagIdDto("existing"), name = "Existing", color = ColorDto("#FF0000"))
     val errorJson = json.encodeToString(ErrorDto.resourceAlreadyExists(ResourceTypeDto.TAG, TagIdDto("existing")))
-
-    val client = httpClientWith {
-      respond(errorJson, status = HttpStatusCode.Conflict, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
-    }
-
-    val api = UserTagApiImpl(client)
-    val got = api.create(createReq)
-    got shouldBe ResourceCreateResult.AlreadyExists(createReq.id)
+    val client = httpClientWith { respond(errorJson, status = HttpStatusCode.Conflict, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString()))) }
+    UserTagApiImpl(client).create(createReq).shouldBeInstanceOf<Either.Left<CreateError.AlreadyExists>>()
   }
 
   // --- update ---
 
-  test("update() should PUT /v1/user/tags/{id} and return Success for custom tag") {
+  test("update() should PUT /v1/user/tags/{id} and return Either.Right for custom tag") {
     val tagId = TagIdDto("mytag")
-    val updateReq = TagUpdateRequestDto(name = "Renamed")
     val updated = TagDetailDto.Custom(tagId, "Renamed", priority = 1, ColorDto("#00FF00"), songCount = 2)
-    val responseJson = json.encodeToString<TagDetailDto>(updated)
-
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Put
       req.url.encodedPath shouldBe "/v1/user/tags/mytag"
-      respond(responseJson, status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
+      respond(json.encodeToString<TagDetailDto>(updated), status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
     }
-
-    val api = UserTagApiImpl(client)
-    val got = api.update(tagId, updateReq)
-    got shouldBe ResourceUpdateResult.Success(tagId)
+    UserTagApiImpl(client).update(tagId, TagUpdateRequestDto(name = "Renamed")) shouldBe Either.Right(tagId)
   }
 
-  test("update() should PUT /v1/user/tags/{id} and return Success for predefined tag override") {
+  test("update() should PUT /v1/user/tags/{id} and return Either.Right for predefined tag override") {
     val tagId = TagIdDto("worship")
-    val updateReq = TagUpdateRequestDto(color = ColorDto("#AABBCC"))
     val updated = TagDetailDto.Predefined(tagId, "Worship", priority = 1, ColorDto("#AABBCC"), edited = true, songCount = 10)
-    val responseJson = json.encodeToString<TagDetailDto>(updated)
-
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Put
       req.url.encodedPath shouldBe "/v1/user/tags/worship"
-      respond(responseJson, status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
+      respond(json.encodeToString<TagDetailDto>(updated), status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
     }
-
-    val api = UserTagApiImpl(client)
-    val got = api.update(tagId, updateReq)
-    got shouldBe ResourceUpdateResult.Success(tagId)
+    UserTagApiImpl(client).update(tagId, TagUpdateRequestDto(color = ColorDto("#AABBCC"))) shouldBe Either.Right(tagId)
   }
 
-  test("update() should return NotFound when 404") {
+  test("update() should return Either.Left(NotFound) when 404") {
     val tagId = TagIdDto("missing")
-    val updateReq = TagUpdateRequestDto(name = "Test")
     val errorJson = json.encodeToString(ErrorDto.resourceNotFound(ResourceTypeDto.TAG, tagId))
-
-    val client = httpClientWith {
-      respond(errorJson, status = HttpStatusCode.NotFound, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
-    }
-
-    val api = UserTagApiImpl(client)
-    val got = api.update(tagId, updateReq)
-    got shouldBe ResourceUpdateResult.NotFound(tagId)
+    val client = httpClientWith { respond(errorJson, status = HttpStatusCode.NotFound, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString()))) }
+    UserTagApiImpl(client).update(tagId, TagUpdateRequestDto(name = "Test")) shouldBe Either.Left(UpdateError.NotFound)
   }
 
   // --- delete ---
 
-  test("delete() should DELETE /v1/user/tags/{id} and return Success for custom tag") {
+  test("delete() should DELETE /v1/user/tags/{id} and return Either.Right") {
     val tagId = TagIdDto("mytag")
-
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Delete
       req.url.encodedPath shouldBe "/v1/user/tags/mytag"
       respond("", status = HttpStatusCode.NoContent)
     }
-
-    val api = UserTagApiImpl(client)
-    val got = api.delete(tagId)
-    got shouldBe ResourceDeleteResult.Success(tagId)
+    UserTagApiImpl(client).delete(tagId) shouldBe Either.Right(tagId)
   }
 
-  test("delete() should DELETE /v1/user/tags/{id} and return Success for predefined tag (hides it)") {
-    val tagId = TagIdDto("worship")
-
-    val client = httpClientWith { req ->
-      req.method shouldBe HttpMethod.Delete
-      req.url.encodedPath shouldBe "/v1/user/tags/worship"
-      respond("", status = HttpStatusCode.NoContent)
-    }
-
-    val api = UserTagApiImpl(client)
-    val got = api.delete(tagId)
-    got shouldBe ResourceDeleteResult.Success(tagId)
-  }
-
-  test("delete() should return NotFound when 404") {
+  test("delete() should return Either.Left(NotFound) when 404") {
     val tagId = TagIdDto("missing")
     val errorJson = json.encodeToString(ErrorDto.resourceNotFound(ResourceTypeDto.TAG, tagId))
-
-    val client = httpClientWith {
-      respond(errorJson, status = HttpStatusCode.NotFound, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
-    }
-
-    val api = UserTagApiImpl(client)
-    val got = api.delete(tagId)
-    got shouldBe ResourceDeleteResult.NotFound(tagId)
+    val client = httpClientWith { respond(errorJson, status = HttpStatusCode.NotFound, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString()))) }
+    UserTagApiImpl(client).delete(tagId) shouldBe Either.Left(DeleteError.NotFound)
   }
 
   // --- listSongs ---
 
   test("listSongs(id) should GET /v1/user/tags/{id}/songs and return song IDs") {
     val songIds = listOf(SongIdDto(1L), SongIdDto(2L))
-    val responseJson = json.encodeToString(songIds)
-
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Get
       req.url.encodedPath shouldBe "/v1/user/tags/mytag/songs"
-      respond(responseJson, status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
+      respond(json.encodeToString(songIds), status = HttpStatusCode.OK, headers = headersOf("Content-Type", listOf(ContentType.Application.Json.toString())))
     }
-
-    val api = UserTagApiImpl(client)
-    val res = api.listSongs(TagIdDto("mytag"))
-    res shouldBe songIds
+    UserTagApiImpl(client).listSongs(TagIdDto("mytag")) shouldBe songIds
   }
 
   // --- addSongTag ---
 
-  test("addSongTag() should POST /v1/user/tags/{id}/songs/{songId} and return Success") {
+  test("addSongTag() should POST and return Either.Right") {
     val tagId = TagIdDto("mytag")
     val songId = SongIdDto(1L)
-
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Post
       req.url.encodedPath shouldBe "/v1/user/tags/mytag/songs/1"
       respond("", status = HttpStatusCode.Created)
     }
-
-    val api = UserTagApiImpl(client)
-    val got = api.addSongTag(tagId, songId)
-    got shouldBe ResourceCreateResult.Success(Unit)
+    UserTagApiImpl(client).addSongTag(tagId, songId) shouldBe Either.Right(Unit)
   }
 
   // --- removeSongTag ---
 
-  test("removeSongTag() should DELETE /v1/user/tags/{id}/songs/{songId} and return Success") {
+  test("removeSongTag() should DELETE and return Either.Right") {
     val tagId = TagIdDto("mytag")
     val songId = SongIdDto(1L)
-
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Delete
       req.url.encodedPath shouldBe "/v1/user/tags/mytag/songs/1"
       respond("", status = HttpStatusCode.NoContent)
     }
-
-    val api = UserTagApiImpl(client)
-    val got = api.removeSongTag(tagId, songId)
-    got shouldBe ResourceDeleteResult.Success(Unit)
+    UserTagApiImpl(client).removeSongTag(tagId, songId) shouldBe Either.Right(Unit)
   }
 })

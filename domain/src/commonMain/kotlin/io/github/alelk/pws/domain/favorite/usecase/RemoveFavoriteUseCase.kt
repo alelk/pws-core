@@ -1,6 +1,7 @@
 package io.github.alelk.pws.domain.favorite.usecase
 
-import io.github.alelk.pws.domain.core.result.DeleteResourceResult
+import arrow.core.Either
+import io.github.alelk.pws.domain.core.error.DeleteError
 import io.github.alelk.pws.domain.core.transaction.TransactionRunner
 import io.github.alelk.pws.domain.favorite.model.FavoriteSubject
 import io.github.alelk.pws.domain.favorite.repository.FavoriteWriteRepository
@@ -12,7 +13,6 @@ class RemoveFavoriteUseCase(
   private val favoriteRepository: FavoriteWriteRepository,
   private val txRunner: TransactionRunner
 ) {
-  suspend operator fun invoke(subject: FavoriteSubject): DeleteResourceResult<FavoriteSubject> =
+  suspend operator fun invoke(subject: FavoriteSubject): Either<DeleteError, FavoriteSubject> =
     txRunner.inRwTransaction { favoriteRepository.remove(subject) }
 }
-

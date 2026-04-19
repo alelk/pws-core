@@ -19,6 +19,7 @@ kotlin {
       api(project(":api:contract"))
       implementation(project(":api:mapping"))
       api(project(":domain"))
+      api(libs.arrow.core)
 
       api(libs.ktor.client.core)
       implementation(libs.ktor.client.auth)

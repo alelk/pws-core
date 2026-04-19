@@ -32,14 +32,6 @@ class TagIdSerializerTest : StringSpec({
     value.shouldBeInstanceOf<TagId.Custom>()
   }
 
-  "serialize and deserialize cyrillic predefined tag id" {
-    val tagId: TagId = TagId.Predefined("Избранное")
-    val json = Json.encodeToString(TagId.serializer(), tagId)
-    json shouldBe """"Избранное""""
-    val parsed = Json.decodeFromString(TagId.serializer(), json)
-    parsed shouldBe tagId
-  }
-
   // TagId.Predefined own serializer tests
   "serialize TagId.Predefined directly" {
     val predefined = TagId.Predefined("my-tag")

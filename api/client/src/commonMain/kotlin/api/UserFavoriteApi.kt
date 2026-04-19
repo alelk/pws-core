@@ -1,10 +1,13 @@
 package io.github.alelk.pws.api.client.api
 
+import arrow.core.Either
 import io.github.alelk.pws.api.contract.favorite.FavoriteDto
 import io.github.alelk.pws.api.contract.favorite.FavoriteStatusDto
 import io.github.alelk.pws.api.contract.favorite.FavoriteSubjectDto
 import io.github.alelk.pws.api.contract.favorite.FavoriteToggleResultDto
 import io.github.alelk.pws.api.contract.favorite.UserFavorites
+import io.github.alelk.pws.domain.core.error.DeleteError
+import io.github.alelk.pws.domain.core.error.UpsertError
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.resources.delete
 import io.ktor.client.plugins.resources.get
@@ -24,11 +27,11 @@ interface UserFavoriteApi {
   /** Clear all favorites. */
   suspend fun clearAll()
 
-  /** Add song to favorites. Returns the created favorite. */
-  suspend fun add(subject: FavoriteSubjectDto): ResourceUpsertResult<FavoriteDto>
+  /** Add song to favorites. Returns the created/updated favorite. */
+  suspend fun add(subject: FavoriteSubjectDto): Either<UpsertError, FavoriteDto>
 
   /** Remove song from favorites. Returns the removed subject. */
-  suspend fun remove(subject: FavoriteSubjectDto): ResourceDeleteResult<FavoriteSubjectDto>
+  suspend fun remove(subject: FavoriteSubjectDto): Either<DeleteError, FavoriteSubjectDto>
 
   /** Get favorite status for a song. */
   suspend fun getStatus(subject: FavoriteSubjectDto): FavoriteStatusDto?
@@ -46,21 +49,21 @@ internal class UserFavoriteApiImpl(client: HttpClient) : BaseResourceApi(client)
     execute<Unit> { client.delete(UserFavorites()) }.getOrThrow()
   }
 
-  override suspend fun add(subject: FavoriteSubjectDto): ResourceUpsertResult<FavoriteDto> =
+  override suspend fun add(subject: FavoriteSubjectDto): Either<UpsertError, FavoriteDto> =
     executeUpsert<FavoriteDto> {
       client.post(UserFavorites()) {
         contentType(ContentType.Application.Json)
         setBody(subject)
       }
-    }.getOrThrow()
+    }
 
-  override suspend fun remove(subject: FavoriteSubjectDto): ResourceDeleteResult<FavoriteSubjectDto> =
+  override suspend fun remove(subject: FavoriteSubjectDto): Either<DeleteError, FavoriteSubjectDto> =
     executeDelete(subject) {
       client.delete(UserFavorites.Entry()) {
         contentType(ContentType.Application.Json)
         setBody(subject)
       }
-    }.getOrThrow()
+    }
 
   override suspend fun getStatus(subject: FavoriteSubjectDto): FavoriteStatusDto? =
     executeGet<FavoriteStatusDto> {
@@ -78,4 +81,3 @@ internal class UserFavoriteApiImpl(client: HttpClient) : BaseResourceApi(client)
       }
     }.getOrThrow()
 }
-

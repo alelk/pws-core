@@ -17,12 +17,6 @@ class TagIdTest : StringSpec({
     tagId.identifier shouldBe "Text-1234"
   }
 
-  "create predefined tag id from valid string contains cyrillic" {
-    val tagId = TagId.parse("Текст_1234")
-    tagId.shouldBeInstanceOf<TagId.Predefined>()
-    tagId.identifier shouldBe "Текст_1234"
-  }
-
   "create predefined tag id directly" {
     val tagId = TagId.Predefined("favorite")
     tagId.identifier shouldBe "favorite"

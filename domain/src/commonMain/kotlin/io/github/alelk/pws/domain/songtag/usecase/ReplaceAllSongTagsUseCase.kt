@@ -1,10 +1,13 @@
 package io.github.alelk.pws.domain.songtag.usecase
 
+import arrow.core.Either
+import arrow.core.raise.either
+import io.github.alelk.pws.domain.core.error.CreateError
+import io.github.alelk.pws.domain.core.error.DeleteError
+import io.github.alelk.pws.domain.core.error.ReplaceAllError
 import io.github.alelk.pws.domain.core.ids.SongId
 import io.github.alelk.pws.domain.core.ids.TagId
-import io.github.alelk.pws.domain.core.result.CreateResourceResult
-import io.github.alelk.pws.domain.core.result.DeleteResourceResult
-import io.github.alelk.pws.domain.core.result.ReplaceAllResourcesResult
+import io.github.alelk.pws.domain.core.model.ReplaceAllSuccess
 import io.github.alelk.pws.domain.core.transaction.TransactionRunner
 import io.github.alelk.pws.domain.songtag.model.SongTagAssociation
 import io.github.alelk.pws.domain.songtag.repository.SongTagReadRepository
@@ -23,42 +26,39 @@ class ReplaceAllSongTagsUseCase<ID : TagId>(
   private val writeRepository: SongTagWriteRepository<ID>,
   private val txRunner: TransactionRunner
 ) {
-  suspend operator fun invoke(songId: SongId, tagIds: Set<ID>): ReplaceAllResourcesResult<SongTagAssociation<ID>> =
+  suspend operator fun invoke(songId: SongId, tagIds: Set<ID>): Either<ReplaceAllError, ReplaceAllSuccess<SongTagAssociation<ID>>> =
     txRunner.inRwTransaction {
-      val existingTagIds = readRepository.getTagIdsBySongId(songId)
+      either {
+        val existingTagIds = readRepository.getTagIdsBySongId(songId)
+        val unchangedTagIds = existingTagIds intersect tagIds
+        val tagIdsToDelete = existingTagIds - tagIds
+        val tagIdsToCreate = tagIds - existingTagIds
 
-      val unchangedTagIds = existingTagIds intersect tagIds
-      val tagIdsToDelete = existingTagIds - tagIds
-      val tagIdsToCreate = tagIds - existingTagIds
-
-      // Create new associations
-      for (tagId in tagIdsToCreate) {
-        val association = SongTagAssociation(songId, tagId)
-        when (val result = writeRepository.create(songId, tagId)) {
-          is CreateResourceResult.Success<*> -> continue
-          is CreateResourceResult.AlreadyExists<*> -> error("illegal state: creating song-tag already exists: $songId $tagId")
-          is CreateResourceResult.ValidationError<*> -> return@inRwTransaction ReplaceAllResourcesResult.ValidationError(association, result.message)
-          is CreateResourceResult.UnknownError<*> -> return@inRwTransaction ReplaceAllResourcesResult.UnknownError(association, result.exception, result.message)
+        for (tagId in tagIdsToCreate) {
+          writeRepository.create(songId, tagId).mapLeft { err ->
+            when (err) {
+              is CreateError.AlreadyExists -> error("illegal state: creating song-tag already exists: $songId $tagId")
+              is CreateError.ValidationError -> ReplaceAllError.ValidationError(err.message)
+              is CreateError.UnknownError -> ReplaceAllError.UnknownError(err.cause, err.message)
+            }
+          }.bind()
         }
-      }
-
-      // Delete removed associations
-      for (tagId in tagIdsToDelete) {
-        val association = SongTagAssociation(songId, tagId)
-        when (val result = writeRepository.delete(songId, tagId)) {
-          is DeleteResourceResult.Success<*> -> continue
-          is DeleteResourceResult.NotFound<*> -> error("illegal state: deleting song-tag not found: $songId $tagId")
-          is DeleteResourceResult.ValidationError<*> -> return@inRwTransaction ReplaceAllResourcesResult.ValidationError(association, result.message)
-          is DeleteResourceResult.UnknownError<*> -> return@inRwTransaction ReplaceAllResourcesResult.UnknownError(association, result.exception, result.message)
+        for (tagId in tagIdsToDelete) {
+          writeRepository.delete(songId, tagId).mapLeft { err ->
+            when (err) {
+              is DeleteError.NotFound -> error("illegal state: deleting song-tag not found: $songId $tagId")
+              is DeleteError.ValidationError -> ReplaceAllError.ValidationError(err.message)
+              is DeleteError.UnknownError -> ReplaceAllError.UnknownError(err.cause, err.message)
+            }
+          }.bind()
         }
-      }
 
-      ReplaceAllResourcesResult.Success(
-        created = tagIdsToCreate.map { tagId -> SongTagAssociation(songId, tagId) },
-        updated = emptyList(), // Song-tag has no updatable fields
-        unchanged = unchangedTagIds.map { tagId -> SongTagAssociation(songId, tagId) },
-        deleted = tagIdsToDelete.map { tagId -> SongTagAssociation(songId, tagId) }
-      )
+        ReplaceAllSuccess(
+          created = tagIdsToCreate.map { SongTagAssociation(songId, it) },
+          updated = emptyList(),
+          unchanged = unchangedTagIds.map { SongTagAssociation(songId, it) },
+          deleted = tagIdsToDelete.map { SongTagAssociation(songId, it) }
+        )
+      }
     }
 }
-

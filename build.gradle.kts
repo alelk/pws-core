@@ -31,9 +31,9 @@ subprojects {
   apply(plugin = "maven-publish")
 
   repositories {
+    // mavenLocal()
     google()
     mavenCentral()
-    mavenLocal()
   }
 
   publishing {

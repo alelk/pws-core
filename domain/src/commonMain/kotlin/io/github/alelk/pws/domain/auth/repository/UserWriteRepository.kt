@@ -1,17 +1,16 @@
 package io.github.alelk.pws.domain.auth.repository
 
+import arrow.core.Either
 import io.github.alelk.pws.domain.auth.command.CreateUserCommand
 import io.github.alelk.pws.domain.auth.command.UpdateUserCommand
+import io.github.alelk.pws.domain.core.error.CreateError
+import io.github.alelk.pws.domain.core.error.DeleteError
+import io.github.alelk.pws.domain.core.error.UpdateError
 import io.github.alelk.pws.domain.core.ids.UserId
-import io.github.alelk.pws.domain.core.result.CreateResourceResult
-import io.github.alelk.pws.domain.core.result.DeleteResourceResult
-import io.github.alelk.pws.domain.core.result.UpdateResourceResult
 
 interface UserWriteRepository {
-  suspend fun create(command: CreateUserCommand): CreateResourceResult<UserId>
-  suspend fun update(command: UpdateUserCommand): UpdateResourceResult<UserId>
-  suspend fun delete(id: UserId): DeleteResourceResult<UserId>
-
-  suspend fun linkTelegramAccount(userId: UserId, telegramProviderId: String): UpdateResourceResult<UserId>
+  suspend fun create(command: CreateUserCommand): Either<CreateError, UserId>
+  suspend fun update(command: UpdateUserCommand): Either<UpdateError, UserId>
+  suspend fun delete(id: UserId): Either<DeleteError, UserId>
+  suspend fun linkTelegramAccount(userId: UserId, telegramProviderId: String): Either<UpdateError, UserId>
 }
-

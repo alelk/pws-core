@@ -6,7 +6,7 @@ import io.github.alelk.pws.api.contract.tag.TagSummaryDto
 import io.github.alelk.pws.api.contract.tag.songtag.ReplaceAllSongTagsResultDto
 import io.github.alelk.pws.api.contract.tag.songtag.SongTagAssociationDto
 import io.github.alelk.pws.api.mapping.core.toDto
-import io.github.alelk.pws.domain.core.result.ReplaceAllResourcesResult
+import io.github.alelk.pws.domain.core.model.ReplaceAllSuccess
 import io.github.alelk.pws.domain.songtag.model.SongTagAssociation
 import io.github.alelk.pws.domain.tag.model.Tag
 import io.github.alelk.pws.domain.tag.model.TagDetail
@@ -59,7 +59,7 @@ fun SongTagAssociation<*>.toDto(): SongTagAssociationDto = SongTagAssociationDto
   tagId = tagId.toDto()
 )
 
-fun ReplaceAllResourcesResult.Success<SongTagAssociation<*>>.toDto(): ReplaceAllSongTagsResultDto =
+fun ReplaceAllSuccess<SongTagAssociation<*>>.toDto(): ReplaceAllSongTagsResultDto =
   ReplaceAllSongTagsResultDto(
     created = created.map { it.toDto() },
     unchanged = unchanged.map { it.toDto() },

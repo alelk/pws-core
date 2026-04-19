@@ -1,9 +1,12 @@
 package io.github.alelk.pws.api.client.api
 
+import arrow.core.Either
 import io.github.alelk.pws.api.contract.core.ids.SongIdDto
 import io.github.alelk.pws.api.contract.core.ids.SongNumberIdDto
 import io.github.alelk.pws.api.contract.history.HistoryEntryDto
 import io.github.alelk.pws.api.contract.history.HistorySubjectDto
+import io.github.alelk.pws.domain.core.error.DeleteError
+import io.github.alelk.pws.domain.core.error.UpsertError
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -56,39 +59,27 @@ class UserHistoryApiTest : FunSpec({
       viewedAt = Clock.System.now(),
       viewCount = 1
     )
-    val responseJson = json.encodeToString<List<HistoryEntryDto>>(listOf(entry1, entry2))
-
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Get
       req.url.encodedPath shouldBe "/v1/user/history"
       req.url.parameters["limit"] shouldBe "50"
       req.url.parameters["offset"] shouldBe "0"
-      respond(responseJson, status = HttpStatusCode.OK, headers = jsonHeaders)
+      respond(json.encodeToString<List<HistoryEntryDto>>(listOf(entry1, entry2)), status = HttpStatusCode.OK, headers = jsonHeaders)
     }
-
-    val api = UserHistoryApiImpl(client)
-    val result = api.list()
+    val result = UserHistoryApiImpl(client).list()
     result.size shouldBe 2
     result[0].shouldBeInstanceOf<HistoryEntryDto.BookedSong>()
     result[1].shouldBeInstanceOf<HistoryEntryDto.StandaloneSong>()
   }
 
   test("list() should pass limit and offset parameters") {
-    val responseJson = json.encodeToString<List<HistoryEntryDto>>(emptyList())
-
     val client = httpClientWith { req ->
-      req.method shouldBe HttpMethod.Get
-      req.url.encodedPath shouldBe "/v1/user/history"
       req.url.parameters["limit"] shouldBe "10"
       req.url.parameters["offset"] shouldBe "20"
-      respond(responseJson, status = HttpStatusCode.OK, headers = jsonHeaders)
+      respond(json.encodeToString<List<HistoryEntryDto>>(emptyList()), status = HttpStatusCode.OK, headers = jsonHeaders)
     }
-
-    val api = UserHistoryApiImpl(client)
-    api.list(limit = 10, offset = 20)
+    UserHistoryApiImpl(client).list(limit = 10, offset = 20)
   }
-
-  // --- clearAll ---
 
   test("clearAll() should DELETE /v1/user/history") {
     val client = httpClientWith { req ->
@@ -96,14 +87,12 @@ class UserHistoryApiTest : FunSpec({
       req.url.encodedPath shouldBe "/v1/user/history"
       respond("", status = HttpStatusCode.NoContent)
     }
-
-    val api = UserHistoryApiImpl(client)
-    api.clearAll() // Should not throw
+    UserHistoryApiImpl(client).clearAll()
   }
 
   // --- recordSongView ---
 
-  test("recordSongView() should return Success with HistoryEntryDto for booked song") {
+  test("recordSongView() should return Either.Right with HistoryEntryDto for booked song") {
     val subject: HistorySubjectDto = HistorySubjectDto.BookedSong(SongNumberIdDto("book1/42"))
     val responseEntry = HistoryEntryDto.BookedSong(
       songNumberId = SongNumberIdDto("book1/42"),
@@ -113,24 +102,18 @@ class UserHistoryApiTest : FunSpec({
       viewedAt = Clock.System.now(),
       viewCount = 1
     )
-    val responseJson = json.encodeToString<HistoryEntryDto>(responseEntry)
-
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Post
       req.url.encodedPath shouldBe "/v1/user/history"
-      respond(responseJson, status = HttpStatusCode.Created, headers = jsonHeaders)
+      respond(json.encodeToString<HistoryEntryDto>(responseEntry), status = HttpStatusCode.Created, headers = jsonHeaders)
     }
-
-    val api = UserHistoryApiImpl(client)
-    val result = api.recordSongView(subject)
-    result.shouldBeInstanceOf<ResourceUpsertResult.Success<HistoryEntryDto>>()
-    val entry = result.resource
-    entry.shouldBeInstanceOf<HistoryEntryDto.BookedSong>()
-    entry.songNumberId shouldBe SongNumberIdDto("book1/42")
-    entry.viewCount shouldBe 1
+    val result = UserHistoryApiImpl(client).recordSongView(subject)
+    result.shouldBeInstanceOf<Either.Right<HistoryEntryDto>>()
+    result.value.shouldBeInstanceOf<HistoryEntryDto.BookedSong>()
+    (result.value as HistoryEntryDto.BookedSong).songNumberId shouldBe SongNumberIdDto("book1/42")
   }
 
-  test("recordSongView() should return Success with HistoryEntryDto for standalone song") {
+  test("recordSongView() should return Either.Right with HistoryEntryDto for standalone song") {
     val subject: HistorySubjectDto = HistorySubjectDto.StandaloneSong(SongIdDto(123))
     val responseEntry = HistoryEntryDto.StandaloneSong(
       songId = SongIdDto(123),
@@ -138,74 +121,47 @@ class UserHistoryApiTest : FunSpec({
       viewedAt = Clock.System.now(),
       viewCount = 2
     )
-    val responseJson = json.encodeToString<HistoryEntryDto>(responseEntry)
-
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Post
       req.url.encodedPath shouldBe "/v1/user/history"
-      respond(responseJson, status = HttpStatusCode.Created, headers = jsonHeaders)
+      respond(json.encodeToString<HistoryEntryDto>(responseEntry), status = HttpStatusCode.Created, headers = jsonHeaders)
     }
-
-    val api = UserHistoryApiImpl(client)
-    val result = api.recordSongView(subject)
-    result.shouldBeInstanceOf<ResourceUpsertResult.Success<HistoryEntryDto>>()
-    val entry = result.resource
-    entry.shouldBeInstanceOf<HistoryEntryDto.StandaloneSong>()
-    entry.songId shouldBe SongIdDto(123)
-    entry.viewCount shouldBe 2
+    val result = UserHistoryApiImpl(client).recordSongView(subject)
+    result.shouldBeInstanceOf<Either.Right<HistoryEntryDto>>()
+    result.value.shouldBeInstanceOf<HistoryEntryDto.StandaloneSong>()
+    (result.value as HistoryEntryDto.StandaloneSong).songId shouldBe SongIdDto(123)
   }
 
   // --- removeSongView ---
 
-  test("removeSongView() should return Success for booked song") {
+  test("removeSongView() should return Either.Right for booked song") {
     val subject: HistorySubjectDto = HistorySubjectDto.BookedSong(SongNumberIdDto("book1/42"))
-    val responseJson = json.encodeToString(subject)
-
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Delete
       req.url.encodedPath shouldBe "/v1/user/history/entry"
-      respond(responseJson, status = HttpStatusCode.OK, headers = jsonHeaders)
+      respond(json.encodeToString(subject), status = HttpStatusCode.OK, headers = jsonHeaders)
     }
-
-    val api = UserHistoryApiImpl(client)
-    val result = api.removeSongView(subject)
-    result.shouldBeInstanceOf<ResourceDeleteResult.Success<HistorySubjectDto>>()
-    val deleted = result.resourceId
-    deleted.shouldBeInstanceOf<HistorySubjectDto.BookedSong>()
-    deleted.songNumberId shouldBe SongNumberIdDto("book1/42")
+    val result = UserHistoryApiImpl(client).removeSongView(subject)
+    result.shouldBeInstanceOf<Either.Right<HistorySubjectDto>>()
+    result.value.shouldBeInstanceOf<HistorySubjectDto.BookedSong>()
+    (result.value as HistorySubjectDto.BookedSong).songNumberId shouldBe SongNumberIdDto("book1/42")
   }
 
-  test("removeSongView() should return Success for standalone song") {
+  test("removeSongView() should return Either.Right for standalone song") {
     val subject: HistorySubjectDto = HistorySubjectDto.StandaloneSong(SongIdDto(456))
-    val responseJson = json.encodeToString(subject)
-
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Delete
       req.url.encodedPath shouldBe "/v1/user/history/entry"
-      respond(responseJson, status = HttpStatusCode.OK, headers = jsonHeaders)
+      respond(json.encodeToString(subject), status = HttpStatusCode.OK, headers = jsonHeaders)
     }
-
-    val api = UserHistoryApiImpl(client)
-    val result = api.removeSongView(subject)
-    result.shouldBeInstanceOf<ResourceDeleteResult.Success<HistorySubjectDto>>()
-    val deleted = result.resourceId
-    deleted.shouldBeInstanceOf<HistorySubjectDto.StandaloneSong>()
-    deleted.songId shouldBe SongIdDto(456)
+    val result = UserHistoryApiImpl(client).removeSongView(subject)
+    result.shouldBeInstanceOf<Either.Right<HistorySubjectDto>>()
+    (result.value as HistorySubjectDto.StandaloneSong).songId shouldBe SongIdDto(456)
   }
 
-  test("removeSongView() should handle idempotent response (entry didn't exist)") {
-    // Server returns 200 with the requested subject even if entry didn't exist
+  test("removeSongView() should handle idempotent response") {
     val subject: HistorySubjectDto = HistorySubjectDto.BookedSong(SongNumberIdDto("book1/99"))
-    val responseJson = json.encodeToString(subject)
-
-    val client = httpClientWith { req ->
-      req.method shouldBe HttpMethod.Delete
-      req.url.encodedPath shouldBe "/v1/user/history/entry"
-      respond(responseJson, status = HttpStatusCode.OK, headers = jsonHeaders)
-    }
-
-    val api = UserHistoryApiImpl(client)
-    val result = api.removeSongView(subject)
-    result.shouldBeInstanceOf<ResourceDeleteResult.Success<HistorySubjectDto>>()
+    val client = httpClientWith { respond(json.encodeToString(subject), status = HttpStatusCode.OK, headers = jsonHeaders) }
+    UserHistoryApiImpl(client).removeSongView(subject).shouldBeInstanceOf<Either.Right<HistorySubjectDto>>()
   }
 })

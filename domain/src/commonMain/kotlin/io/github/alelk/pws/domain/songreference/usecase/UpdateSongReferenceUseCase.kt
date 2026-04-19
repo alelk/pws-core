@@ -1,6 +1,7 @@
 package io.github.alelk.pws.domain.songreference.usecase
 
-import io.github.alelk.pws.domain.core.result.UpdateResourceResult
+import arrow.core.Either
+import io.github.alelk.pws.domain.core.error.UpdateError
 import io.github.alelk.pws.domain.core.transaction.TransactionRunner
 import io.github.alelk.pws.domain.songreference.command.UpdateSongReferenceCommand
 import io.github.alelk.pws.domain.songreference.model.SongReference
@@ -13,7 +14,6 @@ class UpdateSongReferenceUseCase(
   private val repository: SongReferenceWriteRepository,
   private val txRunner: TransactionRunner
 ) {
-  suspend operator fun invoke(command: UpdateSongReferenceCommand): UpdateResourceResult<SongReference> =
+  suspend operator fun invoke(command: UpdateSongReferenceCommand): Either<UpdateError, SongReference> =
     txRunner.inRwTransaction { repository.update(command) }
 }
-

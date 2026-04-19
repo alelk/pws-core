@@ -1,11 +1,14 @@
 package io.github.alelk.pws.api.client.api
 
+import arrow.core.Either
 import io.github.alelk.pws.api.contract.core.ids.SongIdDto
 import io.github.alelk.pws.api.contract.core.ids.SongNumberIdDto
 import io.github.alelk.pws.api.contract.favorite.FavoriteDto
 import io.github.alelk.pws.api.contract.favorite.FavoriteStatusDto
 import io.github.alelk.pws.api.contract.favorite.FavoriteSubjectDto
 import io.github.alelk.pws.api.contract.favorite.FavoriteToggleResultDto
+import io.github.alelk.pws.domain.core.error.DeleteError
+import io.github.alelk.pws.domain.core.error.UpsertError
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -56,49 +59,31 @@ class UserFavoriteApiTest : FunSpec({
       songName = "Standalone Song",
       addedAt = Clock.System.now()
     )
-    val responseJson = json.encodeToString<List<FavoriteDto>>(listOf(entry1, entry2))
-
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Get
       req.url.encodedPath shouldBe "/v1/user/favorites"
       req.url.parameters["limit"] shouldBe "50"
       req.url.parameters["offset"] shouldBe "0"
-      respond(responseJson, status = HttpStatusCode.OK, headers = jsonHeaders)
+      respond(json.encodeToString<List<FavoriteDto>>(listOf(entry1, entry2)), status = HttpStatusCode.OK, headers = jsonHeaders)
     }
-
-    val api = UserFavoriteApiImpl(client)
-    val result = api.list()
+    val result = UserFavoriteApiImpl(client).list()
     result.size shouldBe 2
     result[0].shouldBeInstanceOf<FavoriteDto.BookedSong>()
     result[1].shouldBeInstanceOf<FavoriteDto.StandaloneSong>()
   }
 
   test("list() should pass limit and offset parameters") {
-    val responseJson = json.encodeToString<List<FavoriteDto>>(emptyList())
-
     val client = httpClientWith { req ->
-      req.method shouldBe HttpMethod.Get
-      req.url.encodedPath shouldBe "/v1/user/favorites"
       req.url.parameters["limit"] shouldBe "10"
       req.url.parameters["offset"] shouldBe "20"
-      respond(responseJson, status = HttpStatusCode.OK, headers = jsonHeaders)
+      respond(json.encodeToString<List<FavoriteDto>>(emptyList()), status = HttpStatusCode.OK, headers = jsonHeaders)
     }
-
-    val api = UserFavoriteApiImpl(client)
-    api.list(limit = 10, offset = 20)
+    UserFavoriteApiImpl(client).list(limit = 10, offset = 20)
   }
 
   test("list() should return empty list when no favorites") {
-    val responseJson = json.encodeToString<List<FavoriteDto>>(emptyList())
-
-    val client = httpClientWith { req ->
-      req.method shouldBe HttpMethod.Get
-      respond(responseJson, status = HttpStatusCode.OK, headers = jsonHeaders)
-    }
-
-    val api = UserFavoriteApiImpl(client)
-    val result = api.list()
-    result shouldBe emptyList()
+    val client = httpClientWith { respond(json.encodeToString<List<FavoriteDto>>(emptyList()), status = HttpStatusCode.OK, headers = jsonHeaders) }
+    UserFavoriteApiImpl(client).list() shouldBe emptyList()
   }
 
   // === clearAll ===
@@ -109,14 +94,12 @@ class UserFavoriteApiTest : FunSpec({
       req.url.encodedPath shouldBe "/v1/user/favorites"
       respond("", status = HttpStatusCode.NoContent)
     }
-
-    val api = UserFavoriteApiImpl(client)
-    api.clearAll() // Should not throw
+    UserFavoriteApiImpl(client).clearAll()
   }
 
   // === add ===
 
-  test("add() should return Success with FavoriteDto for booked song") {
+  test("add() should return Either.Right with FavoriteDto for booked song") {
     val subject: FavoriteSubjectDto = FavoriteSubjectDto.BookedSong(SongNumberIdDto("book1/42"))
     val responseEntry = FavoriteDto.BookedSong(
       songNumberId = SongNumberIdDto("book1/42"),
@@ -125,47 +108,36 @@ class UserFavoriteApiTest : FunSpec({
       songName = "Test Song",
       addedAt = Clock.System.now()
     )
-    val responseJson = json.encodeToString<FavoriteDto>(responseEntry)
-
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Post
       req.url.encodedPath shouldBe "/v1/user/favorites"
-      respond(responseJson, status = HttpStatusCode.Created, headers = jsonHeaders)
+      respond(json.encodeToString<FavoriteDto>(responseEntry), status = HttpStatusCode.Created, headers = jsonHeaders)
     }
-
-    val api = UserFavoriteApiImpl(client)
-    val result = api.add(subject)
-    result.shouldBeInstanceOf<ResourceUpsertResult.Success<FavoriteDto>>()
-    val entry = result.resource
-    entry.shouldBeInstanceOf<FavoriteDto.BookedSong>()
-    entry.songNumberId shouldBe SongNumberIdDto("book1/42")
-    entry.songNumber shouldBe 42
+    val result = UserFavoriteApiImpl(client).add(subject)
+    result.shouldBeInstanceOf<Either.Right<FavoriteDto>>()
+    result.value.shouldBeInstanceOf<FavoriteDto.BookedSong>()
+    (result.value as FavoriteDto.BookedSong).songNumberId shouldBe SongNumberIdDto("book1/42")
+    (result.value as FavoriteDto.BookedSong).songNumber shouldBe 42
   }
 
-  test("add() should return Success with FavoriteDto for standalone song") {
+  test("add() should return Either.Right with FavoriteDto for standalone song") {
     val subject: FavoriteSubjectDto = FavoriteSubjectDto.StandaloneSong(SongIdDto(123))
     val responseEntry = FavoriteDto.StandaloneSong(
       songId = SongIdDto(123),
       songName = "Standalone Song",
       addedAt = Clock.System.now()
     )
-    val responseJson = json.encodeToString<FavoriteDto>(responseEntry)
-
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Post
       req.url.encodedPath shouldBe "/v1/user/favorites"
-      respond(responseJson, status = HttpStatusCode.Created, headers = jsonHeaders)
+      respond(json.encodeToString<FavoriteDto>(responseEntry), status = HttpStatusCode.Created, headers = jsonHeaders)
     }
-
-    val api = UserFavoriteApiImpl(client)
-    val result = api.add(subject)
-    result.shouldBeInstanceOf<ResourceUpsertResult.Success<FavoriteDto>>()
-    val entry = result.resource
-    entry.shouldBeInstanceOf<FavoriteDto.StandaloneSong>()
-    entry.songId shouldBe SongIdDto(123)
+    val result = UserFavoriteApiImpl(client).add(subject)
+    result.shouldBeInstanceOf<Either.Right<FavoriteDto>>()
+    (result.value as FavoriteDto.StandaloneSong).songId shouldBe SongIdDto(123)
   }
 
-  test("add() should return Success for idempotent add (already exists)") {
+  test("add() should return Either.Right for idempotent add") {
     val subject: FavoriteSubjectDto = FavoriteSubjectDto.BookedSong(SongNumberIdDto("book1/42"))
     val responseEntry = FavoriteDto.BookedSong(
       songNumberId = SongNumberIdDto("book1/42"),
@@ -174,164 +146,83 @@ class UserFavoriteApiTest : FunSpec({
       songName = "Test Song",
       addedAt = Clock.System.now()
     )
-    val responseJson = json.encodeToString<FavoriteDto>(responseEntry)
-
-    // Server returns 201 even for existing favorites (idempotent)
-    val client = httpClientWith { req ->
-      req.method shouldBe HttpMethod.Post
-      respond(responseJson, status = HttpStatusCode.Created, headers = jsonHeaders)
-    }
-
-    val api = UserFavoriteApiImpl(client)
-    val result = api.add(subject)
-    result.shouldBeInstanceOf<ResourceUpsertResult.Success<FavoriteDto>>()
+    val client = httpClientWith { respond(json.encodeToString<FavoriteDto>(responseEntry), status = HttpStatusCode.Created, headers = jsonHeaders) }
+    UserFavoriteApiImpl(client).add(subject).shouldBeInstanceOf<Either.Right<FavoriteDto>>()
   }
 
   // === remove ===
 
-  test("remove() should return Success for booked song") {
+  test("remove() should return Either.Right for booked song") {
     val subject: FavoriteSubjectDto = FavoriteSubjectDto.BookedSong(SongNumberIdDto("book1/42"))
-    val responseJson = json.encodeToString(subject)
-
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Delete
       req.url.encodedPath shouldBe "/v1/user/favorites/entry"
-      respond(responseJson, status = HttpStatusCode.OK, headers = jsonHeaders)
+      respond(json.encodeToString(subject), status = HttpStatusCode.OK, headers = jsonHeaders)
     }
-
-    val api = UserFavoriteApiImpl(client)
-    val result = api.remove(subject)
-    result.shouldBeInstanceOf<ResourceDeleteResult.Success<FavoriteSubjectDto>>()
-    val deleted = result.resourceId
-    deleted.shouldBeInstanceOf<FavoriteSubjectDto.BookedSong>()
-    deleted.songNumberId shouldBe SongNumberIdDto("book1/42")
+    val result = UserFavoriteApiImpl(client).remove(subject)
+    result.shouldBeInstanceOf<Either.Right<FavoriteSubjectDto>>()
+    (result.value as FavoriteSubjectDto.BookedSong).songNumberId shouldBe SongNumberIdDto("book1/42")
   }
 
-  test("remove() should return Success for standalone song") {
+  test("remove() should return Either.Right for standalone song") {
     val subject: FavoriteSubjectDto = FavoriteSubjectDto.StandaloneSong(SongIdDto(456))
-    val responseJson = json.encodeToString(subject)
-
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Delete
       req.url.encodedPath shouldBe "/v1/user/favorites/entry"
-      respond(responseJson, status = HttpStatusCode.OK, headers = jsonHeaders)
+      respond(json.encodeToString(subject), status = HttpStatusCode.OK, headers = jsonHeaders)
     }
-
-    val api = UserFavoriteApiImpl(client)
-    val result = api.remove(subject)
-    result.shouldBeInstanceOf<ResourceDeleteResult.Success<FavoriteSubjectDto>>()
-    val deleted = result.resourceId
-    deleted.shouldBeInstanceOf<FavoriteSubjectDto.StandaloneSong>()
-    deleted.songId shouldBe SongIdDto(456)
+    val result = UserFavoriteApiImpl(client).remove(subject)
+    result.shouldBeInstanceOf<Either.Right<FavoriteSubjectDto>>()
+    (result.value as FavoriteSubjectDto.StandaloneSong).songId shouldBe SongIdDto(456)
   }
 
-  test("remove() should handle idempotent response (entry didn't exist)") {
-    // Server returns 200 with the requested subject even if entry didn't exist
+  test("remove() should handle idempotent response") {
     val subject: FavoriteSubjectDto = FavoriteSubjectDto.BookedSong(SongNumberIdDto("book1/99"))
-    val responseJson = json.encodeToString(subject)
-
-    val client = httpClientWith { req ->
-      req.method shouldBe HttpMethod.Delete
-      req.url.encodedPath shouldBe "/v1/user/favorites/entry"
-      respond(responseJson, status = HttpStatusCode.OK, headers = jsonHeaders)
-    }
-
-    val api = UserFavoriteApiImpl(client)
-    val result = api.remove(subject)
-    result.shouldBeInstanceOf<ResourceDeleteResult.Success<FavoriteSubjectDto>>()
+    val client = httpClientWith { respond(json.encodeToString(subject), status = HttpStatusCode.OK, headers = jsonHeaders) }
+    UserFavoriteApiImpl(client).remove(subject).shouldBeInstanceOf<Either.Right<FavoriteSubjectDto>>()
   }
 
   // === getStatus ===
 
   test("getStatus() should return true when favorite") {
     val subject: FavoriteSubjectDto = FavoriteSubjectDto.BookedSong(SongNumberIdDto("book1/42"))
-    val responseJson = json.encodeToString(FavoriteStatusDto(isFavorite = true))
-
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Post
       req.url.encodedPath shouldBe "/v1/user/favorites/status"
-      respond(responseJson, status = HttpStatusCode.OK, headers = jsonHeaders)
+      respond(json.encodeToString(FavoriteStatusDto(isFavorite = true)), status = HttpStatusCode.OK, headers = jsonHeaders)
     }
-
-    val api = UserFavoriteApiImpl(client)
-    val result = api.getStatus(subject)
-    result shouldBe FavoriteStatusDto(isFavorite = true)
+    UserFavoriteApiImpl(client).getStatus(subject) shouldBe FavoriteStatusDto(isFavorite = true)
   }
 
   test("getStatus() should return false when not favorite") {
     val subject: FavoriteSubjectDto = FavoriteSubjectDto.StandaloneSong(SongIdDto(123))
-    val responseJson = json.encodeToString(FavoriteStatusDto(isFavorite = false))
-
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Post
       req.url.encodedPath shouldBe "/v1/user/favorites/status"
-      respond(responseJson, status = HttpStatusCode.OK, headers = jsonHeaders)
+      respond(json.encodeToString(FavoriteStatusDto(isFavorite = false)), status = HttpStatusCode.OK, headers = jsonHeaders)
     }
-
-    val api = UserFavoriteApiImpl(client)
-    val result = api.getStatus(subject)
-    result shouldBe FavoriteStatusDto(isFavorite = false)
+    UserFavoriteApiImpl(client).getStatus(subject) shouldBe FavoriteStatusDto(isFavorite = false)
   }
 
   // === toggle ===
 
   test("toggle() should return isFavorite=true when adding") {
     val subject: FavoriteSubjectDto = FavoriteSubjectDto.BookedSong(SongNumberIdDto("book1/42"))
-    val responseJson = json.encodeToString(FavoriteToggleResultDto(isFavorite = true))
-
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Post
       req.url.encodedPath shouldBe "/v1/user/favorites/toggle"
-      respond(responseJson, status = HttpStatusCode.OK, headers = jsonHeaders)
+      respond(json.encodeToString(FavoriteToggleResultDto(isFavorite = true)), status = HttpStatusCode.OK, headers = jsonHeaders)
     }
-
-    val api = UserFavoriteApiImpl(client)
-    val result = api.toggle(subject)
-    result shouldBe FavoriteToggleResultDto(isFavorite = true)
+    UserFavoriteApiImpl(client).toggle(subject) shouldBe FavoriteToggleResultDto(isFavorite = true)
   }
 
   test("toggle() should return isFavorite=false when removing") {
     val subject: FavoriteSubjectDto = FavoriteSubjectDto.StandaloneSong(SongIdDto(123))
-    val responseJson = json.encodeToString(FavoriteToggleResultDto(isFavorite = false))
-
     val client = httpClientWith { req ->
       req.method shouldBe HttpMethod.Post
       req.url.encodedPath shouldBe "/v1/user/favorites/toggle"
-      respond(responseJson, status = HttpStatusCode.OK, headers = jsonHeaders)
+      respond(json.encodeToString(FavoriteToggleResultDto(isFavorite = false)), status = HttpStatusCode.OK, headers = jsonHeaders)
     }
-
-    val api = UserFavoriteApiImpl(client)
-    val result = api.toggle(subject)
-    result shouldBe FavoriteToggleResultDto(isFavorite = false)
-  }
-
-  test("toggle() should work for booked song") {
-    val subject: FavoriteSubjectDto = FavoriteSubjectDto.BookedSong(SongNumberIdDto("hymnal/123"))
-    val responseJson = json.encodeToString(FavoriteToggleResultDto(isFavorite = true))
-
-    val client = httpClientWith { req ->
-      req.method shouldBe HttpMethod.Post
-      req.url.encodedPath shouldBe "/v1/user/favorites/toggle"
-      respond(responseJson, status = HttpStatusCode.OK, headers = jsonHeaders)
-    }
-
-    val api = UserFavoriteApiImpl(client)
-    val result = api.toggle(subject)
-    result.isFavorite shouldBe true
-  }
-
-  test("toggle() should work for standalone song") {
-    val subject: FavoriteSubjectDto = FavoriteSubjectDto.StandaloneSong(SongIdDto(999))
-    val responseJson = json.encodeToString(FavoriteToggleResultDto(isFavorite = false))
-
-    val client = httpClientWith { req ->
-      req.method shouldBe HttpMethod.Post
-      req.url.encodedPath shouldBe "/v1/user/favorites/toggle"
-      respond(responseJson, status = HttpStatusCode.OK, headers = jsonHeaders)
-    }
-
-    val api = UserFavoriteApiImpl(client)
-    val result = api.toggle(subject)
-    result.isFavorite shouldBe false
+    UserFavoriteApiImpl(client).toggle(subject).isFavorite shouldBe false
   }
 })

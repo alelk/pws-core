@@ -1,6 +1,5 @@
 rootProject.name = "pws-core"
 
-
 pluginManagement {
   repositories {
     gradlePluginPortal()

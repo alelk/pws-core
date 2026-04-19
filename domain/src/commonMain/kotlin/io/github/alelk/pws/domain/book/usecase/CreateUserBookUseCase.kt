@@ -1,10 +1,11 @@
 package io.github.alelk.pws.domain.book.usecase
 
+import arrow.core.Either
 import io.github.alelk.pws.domain.book.command.CreateBookCommand
 import io.github.alelk.pws.domain.book.repository.UserBookWriteRepository
+import io.github.alelk.pws.domain.core.error.CreateError
 import io.github.alelk.pws.domain.core.ids.BookId
 import io.github.alelk.pws.domain.core.ids.UserId
-import io.github.alelk.pws.domain.core.result.CreateResourceResult
 import io.github.alelk.pws.domain.core.transaction.TransactionRunner
 
 /**
@@ -14,7 +15,6 @@ class CreateUserBookUseCase(
   private val writeRepository: UserBookWriteRepository,
   private val txRunner: TransactionRunner
 ) {
-  suspend operator fun invoke(userId: UserId, command: CreateBookCommand): CreateResourceResult<BookId> =
+  suspend operator fun invoke(userId: UserId, command: CreateBookCommand): Either<CreateError, BookId> =
     txRunner.inRwTransaction { writeRepository.createBook(userId, command) }
 }
-

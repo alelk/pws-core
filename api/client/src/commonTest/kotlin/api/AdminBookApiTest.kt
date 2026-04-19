@@ -1,5 +1,6 @@
 package io.github.alelk.pws.api.client.api
 
+import arrow.core.Either
 import io.github.alelk.pws.api.contract.book.BookCreateRequestDto
 import io.github.alelk.pws.api.contract.book.BookDetailDto
 import io.github.alelk.pws.api.contract.book.BookUpdateRequestDto
@@ -17,11 +18,16 @@ import io.github.alelk.pws.api.mapping.book.toDto
 import io.github.alelk.pws.api.mapping.core.toDto
 import io.github.alelk.pws.domain.book.model.bookDetail
 import io.github.alelk.pws.domain.book.model.bookSummary
+import io.github.alelk.pws.domain.core.error.BulkCreateError
+import io.github.alelk.pws.domain.core.error.CreateError
+import io.github.alelk.pws.domain.core.error.DeleteError
+import io.github.alelk.pws.domain.core.error.UpdateError
 import io.github.alelk.pws.domain.core.ids.BookId
 import io.github.alelk.pws.domain.core.ids.SongId
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.constant
 import io.kotest.property.arbitrary.next
@@ -100,7 +106,7 @@ class AdminBookApiTest : FunSpec({
 
   // --- create ---
 
-  test("create() should POST /v1/admin/books and return ResourceCreateResult.Success") {
+  test("create() should POST /v1/admin/books and return Either.Right") {
     val createReq =
       BookCreateRequestDto(id = BookIdDto("new-book"), locales = listOf(LocaleDto("en")), name = "New", displayShortName = "N", displayName = "New Book")
     val created = BookIdDto("new-book")
@@ -114,10 +120,10 @@ class AdminBookApiTest : FunSpec({
 
     val api = AdminBookApiImpl(client)
     val got = api.create(createReq)
-    got shouldBe ResourceCreateResult.Success(created)
+    got shouldBe Either.Right(created)
   }
 
-  test("create() should return AlreadyExists when 409") {
+  test("create() should return Either.Left(AlreadyExists) when 409") {
     val createReq = BookCreateRequestDto(id = BookIdDto("existing"), locales = listOf(LocaleDto("en")), name = "Existing")
     val errorJson = json.encodeToString(ErrorDto.resourceAlreadyExists(ResourceTypeDto.BOOK, BookIdDto("existing")))
 
@@ -127,10 +133,10 @@ class AdminBookApiTest : FunSpec({
 
     val api = AdminBookApiImpl(client)
     val got = api.create(createReq)
-    got shouldBe ResourceCreateResult.AlreadyExists(createReq.id)
+    got.shouldBeInstanceOf<Either.Left<CreateError.AlreadyExists>>()
   }
 
-  test("create() should return ValidationError when 400") {
+  test("create() should return Either.Left(ValidationError) when 400") {
     val createReq = BookCreateRequestDto(id = BookIdDto("invalid"), locales = listOf(LocaleDto("en")), name = "")
     val errorJson = json.encodeToString(ErrorDto(ErrorCodes.VALIDATION_ERROR, "Name is required"))
 
@@ -140,12 +146,12 @@ class AdminBookApiTest : FunSpec({
 
     val api = AdminBookApiImpl(client)
     val got = api.create(createReq)
-    got shouldBe ResourceCreateResult.ValidationError("Name is required")
+    got shouldBe Either.Left(CreateError.ValidationError("Name is required"))
   }
 
   // --- update ---
 
-  test("update() should PATCH /v1/admin/books/{id} and return Success") {
+  test("update() should PATCH /v1/admin/books/{id} and return Either.Right") {
     val bookId = BookIdDto("book-one")
     val updateReq = BookUpdateRequestDto(name = "Renamed")
     val responseJson = json.encodeToString(bookId)
@@ -158,10 +164,10 @@ class AdminBookApiTest : FunSpec({
 
     val api = AdminBookApiImpl(client)
     val got = api.update(bookId, updateReq)
-    got shouldBe ResourceUpdateResult.Success(bookId)
+    got shouldBe Either.Right(bookId)
   }
 
-  test("update() should return NotFound when 404") {
+  test("update() should return Either.Left(NotFound) when 404") {
     val bookId = BookIdDto("missing")
     val updateReq = BookUpdateRequestDto(name = "Renamed")
     val errorJson = json.encodeToString(ErrorDto.resourceNotFound(ResourceTypeDto.BOOK, bookId))
@@ -172,12 +178,12 @@ class AdminBookApiTest : FunSpec({
 
     val api = AdminBookApiImpl(client)
     val got = api.update(bookId, updateReq)
-    got shouldBe ResourceUpdateResult.NotFound(bookId)
+    got shouldBe Either.Left(UpdateError.NotFound)
   }
 
   // --- delete ---
 
-  test("delete() should DELETE /v1/admin/books/{id} and return Success") {
+  test("delete() should DELETE /v1/admin/books/{id} and return Either.Right") {
     val bookId = BookIdDto("book-one")
 
     val client = httpClientWith { req ->
@@ -188,10 +194,10 @@ class AdminBookApiTest : FunSpec({
 
     val api = AdminBookApiImpl(client)
     val got = api.delete(bookId)
-    got shouldBe ResourceDeleteResult.Success(bookId)
+    got shouldBe Either.Right(bookId)
   }
 
-  test("delete() should return NotFound when 404") {
+  test("delete() should return Either.Left(NotFound) when 404") {
     val bookId = BookIdDto("missing")
     val errorJson = json.encodeToString(ErrorDto.resourceNotFound(ResourceTypeDto.BOOK, bookId))
 
@@ -201,7 +207,7 @@ class AdminBookApiTest : FunSpec({
 
     val api = AdminBookApiImpl(client)
     val got = api.delete(bookId)
-    got shouldBe ResourceDeleteResult.NotFound(bookId)
+    got shouldBe Either.Left(DeleteError.NotFound)
   }
 
   // --- listSongs ---
@@ -224,7 +230,7 @@ class AdminBookApiTest : FunSpec({
 
   // --- addSongs ---
 
-  test("addSongs() should POST /v1/admin/books/{id}/songs and return Success") {
+  test("addSongs() should POST /v1/admin/books/{id}/songs and return Either.Right") {
     val bookId = BookIdDto("book-one")
     val links = listOf(SongNumberLinkDto(SongId(1).toDto(), 10), SongNumberLinkDto(SongId(2).toDto(), 20))
     val responseJson = json.encodeToString(links)
@@ -237,10 +243,8 @@ class AdminBookApiTest : FunSpec({
 
     val api = AdminBookApiImpl(client)
     val got = api.addSongs(bookId, links)
-    when (got) {
-      is ResourceBatchCreateResult.Success -> got.resources shouldContainExactlyInAnyOrder links
-      else -> error("Expected Success, got $got")
-    }
+    got.shouldBeInstanceOf<Either.Right<List<SongNumberLinkDto>>>()
+    got.value shouldContainExactlyInAnyOrder links
   }
 
   // --- replaceSongs ---

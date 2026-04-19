@@ -1,12 +1,13 @@
 package io.github.alelk.pws.domain.songnumber.usecase
 
+import arrow.core.Either
+import io.github.alelk.pws.domain.core.error.CreateError
+import io.github.alelk.pws.domain.core.error.DeleteError
+import io.github.alelk.pws.domain.core.error.UpdateError
 import io.github.alelk.pws.domain.core.ids.BookId
 import io.github.alelk.pws.domain.core.ids.SongId
 import io.github.alelk.pws.domain.core.ids.SongNumberId
-import io.github.alelk.pws.domain.core.result.CreateResourceResult
-import io.github.alelk.pws.domain.core.result.DeleteResourceResult
-import io.github.alelk.pws.domain.core.result.ReplaceAllResourcesResult
-import io.github.alelk.pws.domain.core.result.UpdateResourceResult
+import io.github.alelk.pws.domain.core.model.ReplaceAllSuccess
 import io.github.alelk.pws.domain.core.transaction.NoopTransactionRunner
 import io.github.alelk.pws.domain.songnumber.model.SongNumberLink
 import io.github.alelk.pws.domain.songnumber.repository.SongNumberReadRepository
@@ -14,6 +15,7 @@ import io.github.alelk.pws.domain.songnumber.repository.SongNumberWriteRepositor
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 class ReplaceAllBookSongNumbersUseCaseTest : StringSpec({
@@ -42,27 +44,27 @@ class ReplaceAllBookSongNumbersUseCaseTest : StringSpec({
   }
 
   class InMemorySongNumberWriteRepository(private val readRepo: InMemorySongNumberReadRepository) : SongNumberWriteRepository {
-    override suspend fun create(bookId: BookId, link: SongNumberLink): CreateResourceResult<SongNumberLink> {
+    override suspend fun create(bookId: BookId, link: SongNumberLink): Either<CreateError, SongNumberLink> {
       val set = readRepo.data.getOrPut(bookId) { mutableSetOf() }
-      if (set.any { it.songId == link.songId }) return CreateResourceResult.AlreadyExists(link)
+      if (set.any { it.songId == link.songId }) return Either.Left(CreateError.AlreadyExists())
       set.add(link)
-      return CreateResourceResult.Success(link)
+      return Either.Right(link)
     }
 
-    override suspend fun update(bookId: BookId, link: SongNumberLink): UpdateResourceResult<SongNumberLink> {
-      val set = readRepo.data[bookId] ?: return UpdateResourceResult.NotFound(link)
-      val existing = set.find { it.songId == link.songId } ?: return UpdateResourceResult.NotFound(link)
+    override suspend fun update(bookId: BookId, link: SongNumberLink): Either<UpdateError, SongNumberLink> {
+      val set = readRepo.data[bookId] ?: return Either.Left(UpdateError.NotFound)
+      val existing = set.find { it.songId == link.songId } ?: return Either.Left(UpdateError.NotFound)
       set.remove(existing)
       set.add(link)
-      return UpdateResourceResult.Success(link)
+      return Either.Right(link)
     }
 
-    override suspend fun delete(bookId: BookId, songId: SongId): DeleteResourceResult<SongNumberId> {
+    override suspend fun delete(bookId: BookId, songId: SongId): Either<DeleteError, SongNumberId> {
       val id = SongNumberId(bookId, songId)
-      val set = readRepo.data[bookId] ?: return DeleteResourceResult.NotFound(id)
-      val existing = set.find { it.songId == songId } ?: return DeleteResourceResult.NotFound(id)
+      val set = readRepo.data[bookId] ?: return Either.Left(DeleteError.NotFound)
+      val existing = set.find { it.songId == songId } ?: return Either.Left(DeleteError.NotFound)
       set.remove(existing)
-      return DeleteResourceResult.Success(id)
+      return Either.Right(id)
     }
   }
 
@@ -75,11 +77,11 @@ class ReplaceAllBookSongNumbersUseCaseTest : StringSpec({
 
     val result = useCase(bookId, listOf(link1, link2, link3))
 
-    result.shouldBeInstanceOf<ReplaceAllResourcesResult.Success<SongNumberLink>>()
-    result.created shouldContainExactlyInAnyOrder listOf(link1, link2, link3)
-    result.updated shouldHaveSize 0
-    result.unchanged shouldHaveSize 0
-    result.deleted shouldHaveSize 0
+    result.shouldBeInstanceOf<Either.Right<ReplaceAllSuccess<SongNumberLink>>>()
+    result.value.created shouldContainExactlyInAnyOrder listOf(link1, link2, link3)
+    result.value.updated shouldHaveSize 0
+    result.value.unchanged shouldHaveSize 0
+    result.value.deleted shouldHaveSize 0
   }
 
   "replace all existing with empty - all deleted" {
@@ -90,11 +92,11 @@ class ReplaceAllBookSongNumbersUseCaseTest : StringSpec({
 
     val result = useCase(bookId, emptyList())
 
-    result.shouldBeInstanceOf<ReplaceAllResourcesResult.Success<SongNumberLink>>()
-    result.created shouldHaveSize 0
-    result.updated shouldHaveSize 0
-    result.unchanged shouldHaveSize 0
-    result.deleted shouldContainExactlyInAnyOrder listOf(link1, link2, link3)
+    result.shouldBeInstanceOf<Either.Right<ReplaceAllSuccess<SongNumberLink>>>()
+    result.value.created shouldHaveSize 0
+    result.value.updated shouldHaveSize 0
+    result.value.unchanged shouldHaveSize 0
+    result.value.deleted shouldContainExactlyInAnyOrder listOf(link1, link2, link3)
   }
 
   "replace with same links - all unchanged" {
@@ -105,11 +107,11 @@ class ReplaceAllBookSongNumbersUseCaseTest : StringSpec({
 
     val result = useCase(bookId, listOf(link1, link2, link3))
 
-    result.shouldBeInstanceOf<ReplaceAllResourcesResult.Success<SongNumberLink>>()
-    result.created shouldHaveSize 0
-    result.updated shouldHaveSize 0
-    result.unchanged shouldContainExactlyInAnyOrder listOf(link1, link2, link3)
-    result.deleted shouldHaveSize 0
+    result.shouldBeInstanceOf<Either.Right<ReplaceAllSuccess<SongNumberLink>>>()
+    result.value.created shouldHaveSize 0
+    result.value.updated shouldHaveSize 0
+    result.value.unchanged shouldContainExactlyInAnyOrder listOf(link1, link2, link3)
+    result.value.deleted shouldHaveSize 0
   }
 
   "replace with updated number - updated" {
@@ -122,11 +124,11 @@ class ReplaceAllBookSongNumbersUseCaseTest : StringSpec({
 
     val result = useCase(bookId, listOf(updatedLink1, link2))
 
-    result.shouldBeInstanceOf<ReplaceAllResourcesResult.Success<SongNumberLink>>()
-    result.created shouldHaveSize 0
-    result.updated shouldContainExactlyInAnyOrder listOf(updatedLink1)
-    result.unchanged shouldContainExactlyInAnyOrder listOf(link2)
-    result.deleted shouldHaveSize 0
+    result.shouldBeInstanceOf<Either.Right<ReplaceAllSuccess<SongNumberLink>>>()
+    result.value.created shouldHaveSize 0
+    result.value.updated shouldContainExactlyInAnyOrder listOf(updatedLink1)
+    result.value.unchanged shouldContainExactlyInAnyOrder listOf(link2)
+    result.value.deleted shouldHaveSize 0
   }
 
   "mixed operations - create, update, delete, unchanged" {
@@ -141,11 +143,11 @@ class ReplaceAllBookSongNumbersUseCaseTest : StringSpec({
 
     val result = useCase(bookId, listOf(updatedLink2, link3, link4))
 
-    result.shouldBeInstanceOf<ReplaceAllResourcesResult.Success<SongNumberLink>>()
-    result.created shouldContainExactlyInAnyOrder listOf(link4)
-    result.updated shouldContainExactlyInAnyOrder listOf(updatedLink2)
-    result.unchanged shouldContainExactlyInAnyOrder listOf(link3)
-    result.deleted shouldContainExactlyInAnyOrder listOf(link1)
+    result.shouldBeInstanceOf<Either.Right<ReplaceAllSuccess<SongNumberLink>>>()
+    result.value.created shouldContainExactlyInAnyOrder listOf(link4)
+    result.value.updated shouldContainExactlyInAnyOrder listOf(updatedLink2)
+    result.value.unchanged shouldContainExactlyInAnyOrder listOf(link3)
+    result.value.deleted shouldContainExactlyInAnyOrder listOf(link1)
   }
 })
 

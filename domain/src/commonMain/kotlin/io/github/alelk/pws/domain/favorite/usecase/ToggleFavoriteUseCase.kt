@@ -1,6 +1,8 @@
 package io.github.alelk.pws.domain.favorite.usecase
 
-import io.github.alelk.pws.domain.core.result.ToggleResourceResult
+import arrow.core.Either
+import io.github.alelk.pws.domain.core.error.ToggleError
+import io.github.alelk.pws.domain.core.model.ToggleResult
 import io.github.alelk.pws.domain.core.transaction.TransactionRunner
 import io.github.alelk.pws.domain.favorite.model.FavoriteSubject
 import io.github.alelk.pws.domain.favorite.repository.FavoriteWriteRepository
@@ -12,7 +14,6 @@ class ToggleFavoriteUseCase(
   private val favoriteRepository: FavoriteWriteRepository,
   private val txRunner: TransactionRunner
 ) {
-  suspend operator fun invoke(subject: FavoriteSubject): ToggleResourceResult<FavoriteSubject> =
+  suspend operator fun invoke(subject: FavoriteSubject): Either<ToggleError, ToggleResult<FavoriteSubject>> =
     txRunner.inRwTransaction { favoriteRepository.toggle(subject) }
 }
-

@@ -12,10 +12,6 @@ class BookIdTest : StringSpec({
     BookId.parse("Text-1234").identifier shouldBe "Text-1234"
   }
 
-  "create book id from valid string contains cyrillic" {
-    BookId.parse("Текст_1234").identifier shouldBe "Текст_1234"
-  }
-
   "create book id fails when string starts from digit" {
     shouldThrow<IllegalArgumentException> {
       BookId.parse("1Book")

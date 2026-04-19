@@ -21,6 +21,7 @@ kotlin {
     commonMain.dependencies {
       api(libs.kotlinx.serialization.core)
       api(libs.kotlinx.coroutines.core)
+      api(libs.arrow.core)
     }
 
     commonTest.dependencies {

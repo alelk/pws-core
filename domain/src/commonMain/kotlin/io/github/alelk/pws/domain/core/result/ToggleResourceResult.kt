@@ -1,19 +1,18 @@
 package io.github.alelk.pws.domain.core.result
 
-/**
- * Result of toggling a resource state.
- */
+import arrow.core.Either
+import io.github.alelk.pws.domain.core.error.ToggleError
+import io.github.alelk.pws.domain.core.model.ToggleResult
+
+/** @deprecated Use [Either]<[ToggleError], [ToggleResult]<R>> instead. */
+@Deprecated("Use Either<ToggleError, ToggleResult<R>> instead", level = DeprecationLevel.WARNING)
 sealed interface ToggleResourceResult<out R> {
-  /** Successfully toggled - resource is now active/added. */
+  @Deprecated("Use ToggleResult.Enabled instead")
   data class Enabled<R>(val resource: R) : ToggleResourceResult<R>
-
-  /** Successfully toggled - resource is now inactive/removed. */
+  @Deprecated("Use ToggleResult.Disabled instead")
   data class Disabled<R>(val resource: R) : ToggleResourceResult<R>
-
-  /** Resource not found. */
+  @Deprecated("Use Either.Left(ToggleError.NotFound) instead")
   data class NotFound<R>(val resource: R, val message: String = "Resource not found") : ToggleResourceResult<R>
-
-  /** Unknown error occurred. */
+  @Deprecated("Use Either.Left(ToggleError.UnknownError(exception)) instead")
   data class UnknownError(val exception: Throwable?, val message: String = exception?.message ?: "Unknown error") : ToggleResourceResult<Nothing>
 }
-

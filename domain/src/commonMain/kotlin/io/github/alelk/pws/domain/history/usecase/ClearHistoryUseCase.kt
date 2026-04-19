@@ -1,6 +1,7 @@
 package io.github.alelk.pws.domain.history.usecase
 
-import io.github.alelk.pws.domain.core.result.ClearResourcesResult
+import arrow.core.Either
+import io.github.alelk.pws.domain.core.error.ClearError
 import io.github.alelk.pws.domain.core.transaction.TransactionRunner
 import io.github.alelk.pws.domain.history.repository.HistoryWriteRepository
 
@@ -11,7 +12,6 @@ class ClearHistoryUseCase(
   private val historyRepository: HistoryWriteRepository,
   private val txRunner: TransactionRunner
 ) {
-  suspend operator fun invoke(): ClearResourcesResult =
+  suspend operator fun invoke(): Either<ClearError, Int> =
     txRunner.inRwTransaction { historyRepository.clearAll() }
 }
-

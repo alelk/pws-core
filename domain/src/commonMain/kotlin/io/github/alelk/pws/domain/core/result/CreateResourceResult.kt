@@ -1,23 +1,28 @@
+@file:Suppress("DEPRECATION")
+
 package io.github.alelk.pws.domain.core.result
 
+import arrow.core.Either
+import io.github.alelk.pws.domain.core.error.CreateError
+
+/**
+ * @deprecated Use [Either]<[CreateError], R> instead.
+ */
+@Deprecated("Use Either<CreateError, R> instead", level = DeprecationLevel.WARNING)
 sealed interface CreateResourceResult<out R : Any> {
+  @Deprecated("Use Either.Right instead")
   data class Success<out R : Any>(val resource: R) : CreateResourceResult<R>
 
-  sealed interface Failure<out R: Any> : CreateResourceResult<R> {
-    val message: String
-  }
+  @Deprecated("Use Either.Left(CreateError.AlreadyExists()) instead")
+  data class AlreadyExists<out R : Any>(val resource: R, val message: String = "Resource already exists: $resource") : CreateResourceResult<R>
 
-  // todo: nullable resource + not-null existing resource
+  @Deprecated("Use Either.Left(CreateError.ValidationError(message)) instead")
+  data class ValidationError<out R : Any>(val resource: R, val message: String) : CreateResourceResult<R>
 
-  data class AlreadyExists<out R : Any>(val resource: R, override val message: String = "Resource already exists: $resource") : Failure<R>
-
-  // todo: nullable resource
-  data class ValidationError<out R : Any>(val resource: R, override val message: String) : Failure<R>
-
-  // todo: nullable resource
+  @Deprecated("Use Either.Left(CreateError.UnknownError(exception)) instead")
   data class UnknownError<out R : Any>(
     val resource: R,
     val exception: Throwable?,
-    override val message: String = exception?.message ?: exception?.let { "Unknown error: ${it::class.simpleName}" } ?: "Unknown error"
-  ) : Failure<R>
+    val message: String = exception?.message ?: exception?.let { "Unknown error: ${it::class.simpleName}" } ?: "Unknown error"
+  ) : CreateResourceResult<R>
 }
