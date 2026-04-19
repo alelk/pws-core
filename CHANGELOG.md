@@ -1,5 +1,12 @@
 # PWS Android
 
+# [2.14.0](https://github.com/alelk/pws-core/compare/v2.13.0...v2.14.0) (2026-04-19)
+
+
+### Features
+
+* **errors:** Introduce message property in error interfaces for better error handling ([d843cbc](https://github.com/alelk/pws-core/commit/d843cbc8849c2c6a00a4be6dff343cfdfdd3ff82))
+
 # [2.13.0](https://github.com/alelk/pws-core/compare/v2.12.0...v2.13.0) (2026-04-19)
 
 
