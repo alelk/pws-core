@@ -1,5 +1,12 @@
 # PWS Android
 
+## [2.15.1](https://github.com/alelk/pws-core/compare/v2.15.0...v2.15.1) (2026-04-28)
+
+
+### Bug Fixes
+
+* Update koin to version 4.2.1 and android to version 9.1.1 ([15bdb34](https://github.com/alelk/pws-core/commit/15bdb34ce69c7cba86087194be2b4e34fedaac58))
+
 # [2.15.0](https://github.com/alelk/pws-core/compare/v2.14.0...v2.15.0) (2026-04-28)
 
 
