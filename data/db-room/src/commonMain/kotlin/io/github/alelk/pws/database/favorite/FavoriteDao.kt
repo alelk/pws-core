@@ -80,4 +80,28 @@ interface FavoriteDao {
   @Transaction
   @Query("""SELECT f.*, sn.* FROM favorites f INNER JOIN song_numbers sn on f.song_id = sn.song_id and f.book_id = sn.book_id ORDER BY position""")
   fun getAllFavoritesWithSongNumberFlow(): Flow<Map<FavoriteEntity, SongNumberEntity>>
+
+  @Query("""
+    SELECT f.book_id, f.song_id, f.position,
+           s.name as song_name, sn.number as song_number, b.display_name as book_display_name
+    FROM favorites f
+    INNER JOIN songs s ON f.song_id = s.id
+    INNER JOIN song_numbers sn ON f.book_id = sn.book_id AND f.song_id = sn.song_id
+    INNER JOIN books b ON f.book_id = b.id
+    ORDER BY f.position DESC
+  """)
+  fun getFavoriteSongsFlow(): Flow<List<FavoriteSongProjection>>
+
+  @Query("""
+    SELECT f.book_id, f.song_id, f.position,
+           s.name as song_name, sn.number as song_number, b.display_name as book_display_name
+    FROM favorites f
+    INNER JOIN songs s ON f.song_id = s.id
+    INNER JOIN song_numbers sn ON f.book_id = sn.book_id AND f.song_id = sn.song_id
+    INNER JOIN books b ON f.book_id = b.id
+    ORDER BY f.position DESC
+    LIMIT CASE WHEN :limit IS NULL THEN -1 ELSE :limit END
+    OFFSET :offset
+  """)
+  suspend fun getFavoriteSongs(limit: Int?, offset: Int): List<FavoriteSongProjection>
 }

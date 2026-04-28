@@ -2,11 +2,18 @@ plugins {
   alias(libs.plugins.kotlinMultiplatform)
   alias(libs.plugins.composeMultiplatform)
   alias(libs.plugins.composeCompiler)
+  alias(libs.plugins.androidKmpLibrary)
 }
 
 group = "io.github.alelk.pws.features"
 
 kotlin {
+  android {
+    namespace = "io.github.alelk.pws.features"
+    compileSdk = rootProject.extra["androidSdkVersion"] as Int
+    minSdk = 23
+  }
+
   jvm()
   js(IR) {
     outputModuleName = "pws-features"
@@ -16,7 +23,6 @@ kotlin {
   sourceSets {
     commonMain.dependencies {
       implementation(project(":core:navigation"))
-
       implementation(project(":domain"))
 
       implementation(compose.runtime)
@@ -41,5 +47,8 @@ kotlin {
       implementation(libs.androidx.lifecycle.runtimeCompose)
     }
     jvmMain.dependencies {}
+    androidMain.dependencies {
+      implementation(libs.koin.android)
+    }
   }
 }

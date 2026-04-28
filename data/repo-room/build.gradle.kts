@@ -1,5 +1,6 @@
 plugins {
   alias(libs.plugins.kotlinMultiplatform)
+  alias(libs.plugins.androidKmpLibrary)
   alias(libs.plugins.kotest)
   id("com.google.devtools.ksp")
 }
@@ -7,6 +8,12 @@ plugins {
 group = "io.github.alelk.pws.data"
 
 kotlin {
+  android {
+    namespace = "io.github.alelk.pws.data.repo_room"
+    compileSdk = rootProject.extra["androidSdkVersion"] as Int
+    minSdk = 23
+  }
+
   jvm()
 
   iosX64()
@@ -17,7 +24,12 @@ kotlin {
 
     commonMain.dependencies {
         api(project(":domain"))
+        implementation(project(":domain:lyric-format"))
         implementation(project(":data:db-room"))
+        implementation(libs.koin.core)
+        implementation(libs.kotlinx.coroutines.core)
+        implementation(libs.kotlinx.datetime)
+        implementation(libs.arrow.core)
       }
 
     commonTest.dependencies {
@@ -30,3 +42,8 @@ kotlin {
       }
   }
 }
+
+dependencies {
+  add("kspAndroid", libs.room.compiler)
+}
+

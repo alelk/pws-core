@@ -40,6 +40,30 @@ interface HistoryDao {
   @Query("""SELECT * FROM history ORDER BY access_timestamp DESC""")
   fun getAllFlow(): Flow<List<HistoryEntity>>
 
+  @Query("""
+    SELECT h.id, h.book_id, h.song_id, h.access_timestamp,
+           s.name as song_name, sn.number as song_number, b.display_name as book_display_name
+    FROM history h
+    INNER JOIN songs s ON h.song_id = s.id
+    INNER JOIN song_numbers sn ON h.book_id = sn.book_id AND h.song_id = sn.song_id
+    INNER JOIN books b ON h.book_id = b.id
+    ORDER BY h.access_timestamp DESC
+  """)
+  fun getHistoryEntriesFlow(): Flow<List<HistoryEntryProjection>>
+
+  @Query("""
+    SELECT h.id, h.book_id, h.song_id, h.access_timestamp,
+           s.name as song_name, sn.number as song_number, b.display_name as book_display_name
+    FROM history h
+    INNER JOIN songs s ON h.song_id = s.id
+    INNER JOIN song_numbers sn ON h.book_id = sn.book_id AND h.song_id = sn.song_id
+    INNER JOIN books b ON h.book_id = b.id
+    ORDER BY h.access_timestamp DESC
+    LIMIT CASE WHEN :limit IS NULL THEN -1 ELSE :limit END
+    OFFSET :offset
+  """)
+  suspend fun getHistoryEntries(limit: Int?, offset: Int): List<HistoryEntryProjection>
+
   @Query("DELETE FROM history")
   suspend fun deleteAll()
 }
