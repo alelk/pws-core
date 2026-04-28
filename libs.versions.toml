@@ -13,11 +13,11 @@ ktor = "3.4.1"
 composeMultiplatform = "1.10.3"
 androidx-lifecycle = "2.10.0"
 
-koin = "4.2.0"
+koin = "4.2.1"
 
 voyager = "1.1.0-beta03"
 
-android = "9.1.0"
+android = "9.1.1"
 
 room = "2.8.4"
 
