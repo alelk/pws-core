@@ -9,7 +9,7 @@ plugins {
   id("com.google.devtools.ksp") version libs.versions.ksp.get() apply false
 }
 
-val androidSdkVersion by extra(35)
+val androidSdkVersion by extra(36)
 
 val versionName by extra(
   runCatching {
