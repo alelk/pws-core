@@ -1,5 +1,17 @@
 # PWS Android
 
+# [2.15.0](https://github.com/alelk/pws-core/compare/v2.14.0...v2.15.0) (2026-04-28)
+
+
+### Bug Fixes
+
+* Update Android SDK version to 36 ([44bc637](https://github.com/alelk/pws-core/commit/44bc637c34f10b16e205d5bc3d354712a7ff96b0))
+
+
+### Features
+
+* Add Room repository implementations ([fc0331b](https://github.com/alelk/pws-core/commit/fc0331babe0d6d573ea3a4f6231c0dfb5b6d6a73))
+
 # [2.14.0](https://github.com/alelk/pws-core/compare/v2.13.0...v2.14.0) (2026-04-19)
 
 
