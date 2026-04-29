@@ -1,5 +1,12 @@
 # PWS Android
 
+# [2.19.0](https://github.com/alelk/pws-core/compare/v2.18.0...v2.19.0) (2026-04-29)
+
+
+### Features
+
+* Implement settings feature with theme selection and book management ([fc4bd48](https://github.com/alelk/pws-core/commit/fc4bd48c920ceec16796cd3b5c491fcb383b0d5e))
+
 # [2.18.0](https://github.com/alelk/pws-core/compare/v2.17.0...v2.18.0) (2026-04-29)
 
 
