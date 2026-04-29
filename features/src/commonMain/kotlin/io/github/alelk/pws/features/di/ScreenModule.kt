@@ -6,6 +6,7 @@ import io.github.alelk.pws.features.books.BooksScreen
 import io.github.alelk.pws.features.book.songs.BookSongsScreen
 import io.github.alelk.pws.features.favorites.FavoritesScreen
 import io.github.alelk.pws.features.history.HistoryScreen
+import io.github.alelk.pws.features.search.SearchResultsScreen
 import io.github.alelk.pws.features.search.SearchScreen
 import io.github.alelk.pws.features.song.detail.SongDetailScreen
 import io.github.alelk.pws.features.song.detail.SongDetailBySongIdScreen
@@ -47,9 +48,8 @@ val appScreenModule = screenModule {
     TagSongsScreen(provider.tagId)
   }
 
-  // TODO: Implement search results screen
-  // register<SharedScreens.SearchResults> { provider ->
-  //   SearchResultsScreen(provider.query)
-  // }
+  register<SharedScreens.SearchResults> { provider ->
+    SearchResultsScreen(provider.query)
+  }
 }
 

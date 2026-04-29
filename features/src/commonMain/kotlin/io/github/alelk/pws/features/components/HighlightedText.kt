@@ -1,6 +1,5 @@
 package io.github.alelk.pws.features.components
 
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -14,6 +13,35 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 
+private val LegacyOpenHighlightTags = listOf(
+  Regex("(?i)<b>\\s*<font[^>]*>"),
+  Regex("(?i)<font[^>]*>\\s*<b>"),
+  Regex("(?i)<(b|strong|em)>")
+)
+
+private val LegacyCloseHighlightTags = listOf(
+  Regex("(?i)</font>\\s*</b>"),
+  Regex("(?i)</b>\\s*</font>"),
+  Regex("(?i)</(b|strong|em)>")
+)
+
+private val UnsupportedMarkupTags = Regex("(?i)</?(?!mark\\b)[a-z][^>]*>")
+
+private fun normalizeSnippetMarkup(raw: String): String {
+  var normalized = raw
+
+  LegacyOpenHighlightTags.forEach { regex ->
+    normalized = normalized.replace(regex, "<mark>")
+  }
+
+  LegacyCloseHighlightTags.forEach { regex ->
+    normalized = normalized.replace(regex, "</mark>")
+  }
+
+  // Drop any remaining unsupported tags from new/legacy snippet formats.
+  return normalized.replace(UnsupportedMarkupTags, "")
+}
+
 /**
  * Parses text with <mark> tags and returns AnnotatedString with highlighted spans.
  */
@@ -21,14 +49,19 @@ fun parseHighlightedText(
   text: String,
   highlightStyle: SpanStyle
 ): AnnotatedString {
+  val normalizedText = normalizeSnippetMarkup(text)
+
   return buildAnnotatedString {
     var currentIndex = 0
-    val markPattern = Regex("<mark>(.*?)</mark>", RegexOption.IGNORE_CASE)
+    val markPattern = Regex(
+      pattern = "(?is)<mark\\b[^>]*>(.*?)</mark>",
+      options = setOf(RegexOption.IGNORE_CASE)
+    )
 
-    markPattern.findAll(text).forEach { match ->
+    markPattern.findAll(normalizedText).forEach { match ->
       // Append text before the match
       if (match.range.first > currentIndex) {
-        append(text.substring(currentIndex, match.range.first))
+        append(normalizedText.substring(currentIndex, match.range.first))
       }
 
       // Append highlighted text
@@ -40,8 +73,8 @@ fun parseHighlightedText(
     }
 
     // Append remaining text
-    if (currentIndex < text.length) {
-      append(text.substring(currentIndex))
+    if (currentIndex < normalizedText.length) {
+      append(normalizedText.substring(currentIndex))
     }
   }
 }
