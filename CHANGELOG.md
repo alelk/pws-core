@@ -1,5 +1,12 @@
 # PWS Android
 
+# [2.16.0](https://github.com/alelk/pws-core/compare/v2.15.2...v2.16.0) (2026-04-29)
+
+
+### Features
+
+* Enhance number input modal with live suggestions and improved search functionality ([930f571](https://github.com/alelk/pws-core/commit/930f5713355be90ddcd1d6bc7df647b9bda2f828))
+
 ## [2.15.2](https://github.com/alelk/pws-core/compare/v2.15.1...v2.15.2) (2026-04-29)
 
 
