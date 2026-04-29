@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Dialpad
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Tag
@@ -31,6 +32,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -81,6 +83,7 @@ import io.github.alelk.pws.features.resources.home_quick_tags
 import io.github.alelk.pws.features.resources.home_quick_text
 import io.github.alelk.pws.features.resources.home_recently_opened
 import io.github.alelk.pws.features.resources.home_songbooks
+import io.github.alelk.pws.features.resources.settings_open
 import io.github.alelk.pws.features.search.SearchSuggestion
 import io.github.alelk.pws.features.theme.spacing
 import org.jetbrains.compose.resources.stringResource
@@ -141,7 +144,15 @@ fun HomeContent(
       AppLargeTopBar(
         title = stringResource(Res.string.app_name),
         canNavigateBack = false,
-        scrollBehavior = scrollBehavior
+        scrollBehavior = scrollBehavior,
+        actions = {
+          IconButton(onClick = { navigator.push(ScreenRegistry.get(SharedScreens.Settings)) }) {
+            Icon(
+              imageVector = Icons.Filled.Settings,
+              contentDescription = stringResource(Res.string.settings_open)
+            )
+          }
+        }
       )
     }
   ) { innerPadding ->

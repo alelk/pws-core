@@ -2,6 +2,8 @@ package io.github.alelk.pws.features.di
 
 import io.github.alelk.pws.domain.book.repository.BookObserveRepository
 import io.github.alelk.pws.domain.book.usecase.ObserveBooksUseCase
+import io.github.alelk.pws.domain.bookstatistic.repository.BookStatisticRepository
+import io.github.alelk.pws.domain.bookstatistic.usecase.UpdateBookStatisticUseCase
 import io.github.alelk.pws.domain.core.ids.TagId
 import io.github.alelk.pws.domain.core.transaction.TransactionRunner
 import io.github.alelk.pws.domain.cross.usecase.ObserveBookWithSongsUseCase
@@ -47,6 +49,7 @@ val useCasesModule = module {
 
   // Book
   factory { ObserveBooksUseCase(get<BookObserveRepository>()) }
+  factory { UpdateBookStatisticUseCase(get<BookStatisticRepository>()) }
   factory { ObserveBookWithSongsUseCase(get<BookObserveRepository>(), get<SongObserveRepository>()) }
 
   // Song

@@ -28,6 +28,25 @@
 
     <string name="common_clear">Clear</string>
     <string name="common_close">Close</string>
+    <string name="theme_settings">Theme settings</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_black">Black AMOLED</string>
+    <string name="settings_open">Open settings</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_interface">Interface</string>
+    <string name="settings_theme_subtitle">Choose app theme</string>
+    <string name="settings_developers">Developers</string>
+    <string name="settings_developer_alex_name">Alex Elkin</string>
+    <string name="settings_developer_alex_role">App developer</string>
+    <string name="settings_developer_vera_name">Vera Elkina</string>
+    <string name="settings_developer_vera_role">Song lyrics editor</string>
+    <string name="settings_books">Songbooks</string>
+    <string name="settings_books_subtitle">Turn songbooks on or off</string>
+    <string name="settings_import_export">Import/Export</string>
+    <string name="settings_import_export_subtitle">Import or export your edited songs and categories</string>
+    <string name="settings_export">Export data</string>
+    <string name="settings_import">Import data</string>
 
     <string name="number_search_title">Search by number</string>
     <string name="number_input_placeholder">Enter number</string>
@@ -45,6 +64,10 @@
 
     <string name="book_songs_title_fallback">Songs</string>
     <string name="book_songs_go_to_number">Go to number</string>
+    <string name="book_songs_go_to_number_dialog_title">Go to song number</string>
+    <string name="book_songs_go_to_number_hint">Song number</string>
+    <string name="book_songs_go_to_number_action">Go</string>
+    <string name="book_songs_go_to_number_not_found">Song number %1$d not found in this book</string>
     <string name="book_songs_loading">Loading songs...</string>
     <string name="book_songs_error_title">Failed to load songs</string>
     <string name="books_loading">Loading songbooks...</string>

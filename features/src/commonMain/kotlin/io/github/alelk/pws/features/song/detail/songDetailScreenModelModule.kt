@@ -3,6 +3,7 @@ package io.github.alelk.pws.features.song.detail
 import io.github.alelk.pws.domain.core.ids.SongId
 import io.github.alelk.pws.domain.core.ids.SongNumberId
 import io.github.alelk.pws.domain.core.ids.TagId
+import io.github.alelk.pws.domain.book.usecase.ObserveBooksUseCase
 import io.github.alelk.pws.domain.favorite.usecase.ObserveIsFavoriteUseCase
 import io.github.alelk.pws.domain.favorite.usecase.ToggleFavoriteUseCase
 import io.github.alelk.pws.domain.history.usecase.RecordSongViewUseCase
@@ -26,6 +27,7 @@ val songDetailScreenModelModule = module {
     SongDetailScreenModel(
       songNumberId = songNumberId,
       observeSong = get<ObserveSongUseCase>(),
+      observeBooks = get<ObserveBooksUseCase>(),
       songObserveRepository = get<SongObserveRepository>(),
       recordSongView = get<RecordSongViewUseCase>(),
       observeIsFavorite = get<ObserveIsFavoriteUseCase>(),
@@ -45,10 +47,9 @@ val songDetailScreenModelModule = module {
     )
   }
 
-  // SongId is a @JvmInline value class — accept Long on Kotlin/JS to avoid unboxing issues
-  factory { (songIdRaw: Long) ->
+  factory { (songId: SongId) ->
     SongDetailBySongIdScreenModel(
-      songId = SongId(songIdRaw),
+      songId = songId,
       observeSong = get<ObserveSongUseCase>()
     )
   }

@@ -17,6 +17,9 @@ kotlin {
     namespace = "io.github.alelk.pws.features"
     compileSdk = rootProject.extra["androidSdkVersion"] as Int
     minSdk = 23
+    androidResources {
+      enable = true
+    }
   }
 
   jvm()

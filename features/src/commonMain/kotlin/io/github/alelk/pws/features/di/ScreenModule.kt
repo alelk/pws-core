@@ -8,6 +8,7 @@ import io.github.alelk.pws.features.favorites.FavoritesScreen
 import io.github.alelk.pws.features.history.HistoryScreen
 import io.github.alelk.pws.features.search.SearchResultsScreen
 import io.github.alelk.pws.features.search.SearchScreen
+import io.github.alelk.pws.features.settings.SettingsScreen
 import io.github.alelk.pws.features.song.detail.SongDetailScreen
 import io.github.alelk.pws.features.song.detail.SongDetailBySongIdScreen
 import io.github.alelk.pws.features.song.edit.SongEditScreen
@@ -24,6 +25,7 @@ val appScreenModule = screenModule {
   register<SharedScreens.Search> { SearchScreen() }
   register<SharedScreens.Favorites> { FavoritesScreen() }
   register<SharedScreens.History> { HistoryScreen() }
+  register<SharedScreens.Settings> { SettingsScreen() }
 
   // Book screens
   register<SharedScreens.BookSongs> { provider ->

@@ -1,0 +1,185 @@
+<resources>
+    <string name="app_name">Psałterz</string>
+
+    <string name="nav_home">Główna</string>
+    <string name="nav_books">Śpiewniki</string>
+    <string name="nav_tags">Kategorie</string>
+    <string name="nav_search">Szukaj</string>
+    <string name="nav_favorites">Ulubione</string>
+    <string name="nav_history">Historia</string>
+
+    <string name="home_recently_opened">Niedawno otwarte</string>
+    <string name="home_songbooks">Śpiewniki</string>
+    <string name="home_load_error_title">Nie udało się załadować</string>
+    <string name="home_load_error_message">Sprawdź połączenie i spróbuj ponownie</string>
+    <string name="home_quick_number">Po numerze</string>
+    <string name="home_quick_text">Po tekście</string>
+    <string name="home_quick_history">Historia</string>
+    <string name="home_quick_favorites">Ulubione</string>
+    <string name="home_quick_tags">Kategorie</string>
+
+    <string name="search_title">Szukaj</string>
+    <string name="search_placeholder">Szukaj pieśni...</string>
+    <string name="search_find_song_placeholder">Znajdź pieśń...</string>
+    <string name="search_loading">Wyszukiwanie...</string>
+    <string name="search_error_title">Błąd wyszukiwania</string>
+    <string name="search_idle_title">Rozpocznij wyszukiwanie</string>
+    <string name="search_idle_subtitle">Wpisz tytuł, numer lub tekst</string>
+
+    <string name="common_clear">Wyczyść</string>
+    <string name="common_close">Zamknij</string>
+    <string name="theme_settings">Ustawienia motywu</string>
+    <string name="theme_light">Jasny</string>
+    <string name="theme_dark">Ciemny</string>
+    <string name="theme_black">Czarny AMOLED</string>
+    <string name="settings_open">Otwórz ustawienia</string>
+    <string name="settings_title">Ustawienia</string>
+    <string name="settings_interface">Interfejs</string>
+    <string name="settings_theme_subtitle">Wybierz motyw aplikacji</string>
+    <string name="settings_developers">Programiści</string>
+    <string name="settings_developer_alex_name">Alex Elkin</string>
+    <string name="settings_developer_alex_role">Twórca aplikacji</string>
+    <string name="settings_developer_vera_name">Vera Elkina</string>
+    <string name="settings_developer_vera_role">Redaktorka tekstów pieśni</string>
+    <string name="settings_books">Śpiewniki</string>
+    <string name="settings_books_subtitle">Włączaj i wyłączaj śpiewniki</string>
+    <string name="settings_import_export">Import/eksport</string>
+    <string name="settings_import_export_subtitle">Importuj lub eksportuj edytowane pieśni i kategorie</string>
+    <string name="settings_export">Eksport danych</string>
+    <string name="settings_import">Import danych</string>
+
+    <string name="number_search_title">Wyszukiwanie po numerze</string>
+    <string name="number_input_placeholder">Wpisz numer</string>
+    <string name="number_hint_example">Wpisz numer pieśni, na przykład 120</string>
+    <string name="number_hint_searching">Wyszukiwanie pieśni...</string>
+    <string name="number_hint_found_count">Znaleziono: %1$d</string>
+    <string name="number_hint_not_found">Nic nie znaleziono</string>
+    <string name="number_dropdown_idle">Podpowiedzi pojawią się podczas wpisywania</string>
+    <string name="number_dropdown_no_results">Nie znaleziono pieśni o tym numerze</string>
+
+    <string name="common_back">Wstecz</string>
+    <string name="common_delete">Usuń</string>
+    <string name="common_error_title">Błąd</string>
+    <string name="common_recently">niedawno</string>
+
+    <string name="book_songs_title_fallback">Pieśni</string>
+    <string name="book_songs_go_to_number">Przejdź do numeru</string>
+    <string name="book_songs_go_to_number_dialog_title">Przejdź do numeru pieśni</string>
+    <string name="book_songs_go_to_number_hint">Numer pieśni</string>
+    <string name="book_songs_go_to_number_action">Idź</string>
+    <string name="book_songs_go_to_number_not_found">Pieśń o numerze %1$d nie została znaleziona w tym śpiewniku</string>
+    <string name="book_songs_loading">Ładowanie pieśni...</string>
+    <string name="book_songs_error_title">Nie udało się załadować pieśni</string>
+    <string name="books_loading">Ładowanie śpiewników...</string>
+    <string name="books_error_title">Nie udało się załadować śpiewników</string>
+
+    <string name="history_clear">Wyczyść historię</string>
+    <string name="history_loading">Ładowanie historii...</string>
+    <string name="history_empty_title">Historia jest pusta</string>
+    <string name="history_empty_subtitle">Tutaj pojawią się przeglądane pieśni</string>
+    <string name="history_clear_dialog_title">Wyczyścić historię?</string>
+    <string name="history_clear_dialog_message">Wszystkie wpisy historii zostaną usunięte. Tej akcji nie można cofnąć.</string>
+    <string name="history_clear_dialog_confirm">Wyczyść</string>
+    <string name="history_clear_dialog_cancel">Anuluj</string>
+
+    <string name="song_item_edited">Edytowana</string>
+    <string name="song_item_in_favorites">W ulubionych</string>
+    <string name="song_item_add_to_favorites">Dodaj do ulubionych</string>
+    <string name="song_item_remove_from_favorites">Usuń z ulubionych</string>
+
+    <string name="tags_title">Kategorie</string>
+    <string name="tags_add">Dodaj kategorię</string>
+    <string name="tags_loading">Ładowanie kategorii...</string>
+    <string name="tags_empty_title">Brak kategorii</string>
+    <string name="tags_empty_subtitle">Twórz kategorie, aby organizować pieśni</string>
+    <string name="tags_edit">Edytuj</string>
+    <string name="tags_delete">Usuń</string>
+    <string name="tags_dialog_edit_title">Edytuj kategorię</string>
+    <string name="tags_dialog_new_title">Nowa kategoria</string>
+    <string name="tags_dialog_name">Nazwa</string>
+    <string name="tags_dialog_color">Kolor</string>
+    <string name="tags_save">Zapisz</string>
+    <string name="tags_cancel">Anuluj</string>
+    <string name="tags_color_selected">Wybrano</string>
+    <string name="tags_hide_dialog_title">Ukryć kategorię?</string>
+    <string name="tags_delete_dialog_title">Usunąć kategorię?</string>
+    <string name="tags_hide_dialog_message">Kategoria "%1$s" zostanie ukryta. Będzie można ją przywrócić później.</string>
+    <string name="tags_delete_dialog_message">Kategoria "%1$s" zostanie usunięta. Pieśni nie zostaną naruszone.</string>
+    <string name="tags_hide">Ukryj</string>
+
+    <string name="tags_snackbar_updated">Kategoria zaktualizowana</string>
+    <string name="tags_snackbar_created">Kategoria utworzona</string>
+    <string name="tags_snackbar_hidden">Kategoria ukryta</string>
+    <string name="tags_snackbar_deleted">Kategoria usunięta</string>
+    <string name="tags_snackbar_error_prefix">Błąd: %1$s</string>
+
+    <string name="tag_songs_title_fallback">Pieśni według kategorii</string>
+    <string name="tag_songs_loading">Ładowanie pieśni...</string>
+    <string name="tag_songs_empty_title">Brak pieśni</string>
+    <string name="tag_songs_empty_subtitle">Do tej kategorii nie dodano jeszcze żadnej pieśni</string>
+    <string name="tag_not_found">Nie znaleziono kategorii</string>
+
+    <string name="state_nothing_found_title">Nic nie znaleziono</string>
+    <string name="state_nothing_found_subtitle">Brak wyników dla "%1$s". Spróbuj zmienić zapytanie.</string>
+    <string name="state_error_title">Coś poszło nie tak</string>
+    <string name="state_retry">Spróbuj ponownie</string>
+
+    <string name="book_songs_count">%1$d pieśni</string>
+
+    <string name="favorites_title">Ulubione</string>
+    <string name="favorites_loading">Ładowanie ulubionych...</string>
+    <string name="favorites_empty_title">Brak ulubionych pieśni</string>
+    <string name="favorites_empty_subtitle">Dodawaj pieśni do ulubionych, aby szybko je znajdować</string>
+
+    <string name="song_edit_title">Edycja</string>
+    <string name="song_edit_loading">Ładowanie...</string>
+    <string name="song_edit_label_title">Tytuł</string>
+    <string name="song_edit_label_number">Numer</string>
+    <string name="song_edit_label_tags">Kategorie</string>
+    <string name="song_edit_label_text">Tekst pieśni</string>
+    <string name="song_edit_discard_title">Odrzucić zmiany?</string>
+    <string name="song_edit_discard_message">Wszystkie niezapisane zmiany zostaną utracone.</string>
+    <string name="song_edit_discard_confirm">Odrzuć</string>
+    <string name="song_edit_discard_cancel">Kontynuuj edycję</string>
+    <string name="song_edit_error_not_found">Nie znaleziono pieśni</string>
+    <string name="song_edit_validation_title_required">Tytuł nie może być pusty</string>
+    <string name="song_edit_validation_text_required">Tekst pieśni nie może być pusty</string>
+    <string name="song_edit_save_success">Zmiany zapisane</string>
+    <string name="song_edit_save_error_prefix">Błąd zapisu: %1$s</string>
+
+    <string name="song_detail_title_fallback">Pieśń</string>
+    <string name="song_detail_prev">Poprzednia pieśń</string>
+    <string name="song_detail_next">Następna pieśń</string>
+    <string name="song_detail_text_size">Rozmiar tekstu</string>
+    <string name="song_detail_actions">Akcje</string>
+    <string name="song_detail_remove_favorite">Usuń z ulubionych</string>
+    <string name="song_detail_add_favorite">Dodaj do ulubionych</string>
+    <string name="song_detail_not_found_title">Nie znaleziono pieśni</string>
+    <string name="song_detail_not_found_message">Być może została usunięta lub przeniesiona</string>
+    <string name="song_detail_label_chorus">Refren</string>
+    <string name="song_detail_label_bridge">Bridge</string>
+    <string name="song_detail_info_title">Informacje o pieśni</string>
+    <string name="song_detail_info_author">Autor</string>
+    <string name="song_detail_info_composer">Kompozytor</string>
+    <string name="song_detail_info_translator">Tłumaczenie</string>
+    <string name="song_detail_info_year">Rok</string>
+    <string name="song_detail_info_bible">Biblia</string>
+    <string name="song_detail_see_also">Zobacz także</string>
+    <string name="song_detail_variant">Wariant (%1$d%%)</string>
+    <string name="song_detail_open">Otwórz</string>
+    <string name="song_detail_tags">Kategorie</string>
+    <string name="song_detail_action_edit">Edytuj pieśń</string>
+    <string name="song_detail_action_edit_tags">Edytuj kategorie</string>
+    <string name="song_detail_action_jump">Przejdź do numeru</string>
+    <string name="song_detail_action_share">Udostępnij</string>
+    <string name="song_detail_tags_sheet_title">Kategorie pieśni</string>
+    <string name="song_detail_tags_empty">Brak dostępnych kategorii</string>
+    <string name="song_detail_jump_empty">Wpisz liczbę</string>
+    <string name="song_detail_jump_not_found">Brak pieśni o numerze %1$d</string>
+    <string name="song_detail_jump_title">Przejdź do numeru</string>
+    <string name="song_detail_jump_number_label">Numer (%1$d-%2$d)</string>
+    <string name="song_detail_jump_clear">Wyczyść</string>
+
+    <string name="tag_chip_edit">Edytuj</string>
+</resources>
+

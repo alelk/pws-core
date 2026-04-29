@@ -1,6 +1,5 @@
 package io.github.alelk.pws.features.app
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -28,24 +27,33 @@ import io.github.alelk.pws.features.favorites.FavoritesScreen
 import io.github.alelk.pws.features.history.HistoryScreen
 import io.github.alelk.pws.features.home.HomeScreen
 import io.github.alelk.pws.features.search.SearchScreen
+import io.github.alelk.pws.features.settings.LocalSettingsExternalActions
+import io.github.alelk.pws.features.settings.SettingsExternalActions
 import io.github.alelk.pws.features.theme.AppTheme
+import io.github.alelk.pws.features.theme.LocalThemeSettings
+import io.github.alelk.pws.features.theme.ThemeMode
+import io.github.alelk.pws.features.theme.ThemeSettings
 
 /**
  * Root composable for the app with theme and main navigation.
  */
 @Composable
 fun AppRoot(
-  useDarkTheme: Boolean? = null // null = follow system
+  themeMode: ThemeMode = ThemeMode.DEFAULT,
+  onThemeModeChange: (ThemeMode) -> Unit = {},
+  settingsExternalActions: SettingsExternalActions? = null,
 ) {
-  val resolvedDark = useDarkTheme ?: isSystemInDarkTheme()
-  AppTheme(
-    useDarkTheme = resolvedDark
+  CompositionLocalProvider(
+    LocalThemeSettings provides ThemeSettings(themeMode = themeMode, onThemeModeChange = onThemeModeChange),
+    LocalSettingsExternalActions provides settingsExternalActions,
   ) {
-    Surface(
-      modifier = Modifier.fillMaxSize(),
-      color = MaterialTheme.colorScheme.background
-    ) {
-      MainScreen()
+    AppTheme(themeMode = themeMode) {
+      Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
+      ) {
+        MainScreen()
+      }
     }
   }
 }

@@ -28,6 +28,25 @@
 
     <string name="common_clear">Очистить</string>
     <string name="common_close">Закрыть</string>
+    <string name="theme_settings">Настройки темы</string>
+    <string name="theme_light">Светлая</string>
+    <string name="theme_dark">Тёмная</string>
+    <string name="theme_black">Чёрная AMOLED</string>
+    <string name="settings_open">Открыть настройки</string>
+    <string name="settings_title">Настройки</string>
+    <string name="settings_interface">Интерфейс</string>
+    <string name="settings_theme_subtitle">Выберите тему приложения</string>
+    <string name="settings_developers">Разработчики</string>
+    <string name="settings_developer_alex_name">Alex Elkin</string>
+    <string name="settings_developer_alex_role">Разработчик приложения</string>
+    <string name="settings_developer_vera_name">Vera Elkina</string>
+    <string name="settings_developer_vera_role">Редактор текстов песен</string>
+    <string name="settings_books">Сборники песен</string>
+    <string name="settings_books_subtitle">Включайте и отключайте сборники</string>
+    <string name="settings_import_export">Импорт/экспорт</string>
+    <string name="settings_import_export_subtitle">Импортируйте или экспортируйте отредактированные песни и категории</string>
+    <string name="settings_export">Экспорт данных</string>
+    <string name="settings_import">Импорт данных</string>
 
     <string name="number_search_title">Поиск по номеру</string>
     <string name="number_input_placeholder">Введите номер</string>
@@ -45,6 +64,10 @@
 
     <string name="book_songs_title_fallback">Песни</string>
     <string name="book_songs_go_to_number">Перейти по номеру</string>
+    <string name="book_songs_go_to_number_dialog_title">Перейти к номеру</string>
+    <string name="book_songs_go_to_number_hint">Номер песни</string>
+    <string name="book_songs_go_to_number_action">Перейти</string>
+    <string name="book_songs_go_to_number_not_found">Песня с номером %1$d не найдена в этом сборнике</string>
     <string name="book_songs_loading">Загрузка песен...</string>
     <string name="book_songs_error_title">Не удалось загрузить песни</string>
     <string name="books_loading">Загрузка сборников...</string>

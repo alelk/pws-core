@@ -3,6 +3,7 @@ package io.github.alelk.pws.features.books
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import io.github.alelk.pws.domain.book.model.BookSummary
+import io.github.alelk.pws.domain.book.query.BookQuery
 import io.github.alelk.pws.domain.book.usecase.ObserveBooksUseCase
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.collectLatest
@@ -18,7 +19,7 @@ class BooksScreenModel(
 
   init {
     screenModelScope.launch(context = CoroutineExceptionHandler { _, _ -> mutableState.value = BooksUiState.Error }) {
-      observeBooks().collectLatest { list: List<BookSummary> ->
+      observeBooks(query = BookQuery(enabled = true)).collectLatest { list: List<BookSummary> ->
         mutableState.value = BooksUiState.Content(list)
       }
     }

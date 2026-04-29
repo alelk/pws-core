@@ -1,5 +1,6 @@
 package io.github.alelk.pws.features.components
 
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,6 +28,7 @@ fun AppLargeTopBar(
   canNavigateBack: Boolean,
   onNavigateBack: (() -> Unit)? = null,
   scrollBehavior: TopAppBarScrollBehavior? = null,
+  actions: @Composable RowScope.() -> Unit = {},
 ) {
   LargeTopAppBar(
     title = {
@@ -45,6 +47,7 @@ fun AppLargeTopBar(
         }
       }
     },
+    actions = actions,
     scrollBehavior = scrollBehavior,
     colors = TopAppBarDefaults.topAppBarColors(
       containerColor = MaterialTheme.colorScheme.background,

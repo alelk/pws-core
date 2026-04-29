@@ -13,10 +13,7 @@ import io.github.alelk.pws.domain.tag.usecase.ObserveTagsUseCase
 import org.koin.dsl.module
 
 val songEditScreenModelModule = module {
-  // SongId is a @JvmInline value class — on Kotlin/JS it unboxes to Long when passed via parametersOf.
-  // We accept Long here and re-wrap it into SongId to avoid InstanceCreationException.
-  factory { (songIdRaw: Long) ->
-    val songId = SongId(songIdRaw)
+  factory { (songId: SongId) ->
     SongEditScreenModel(
       songId = songId,
       getSongDetailUseCase = get<GetSongDetailUseCase>(),

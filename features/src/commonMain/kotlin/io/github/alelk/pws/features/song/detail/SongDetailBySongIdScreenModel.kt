@@ -21,7 +21,9 @@ class SongDetailBySongIdScreenModel(
   init {
     screenModelScope.launch(context = CoroutineExceptionHandler { _, _ -> mutableState.value = SongDetailUiState.Error }) {
       observeSong(songId).collectLatest { detail: SongDetail? ->
-        mutableState.value = detail?.let { SongDetailUiState.Content(it) } ?: SongDetailUiState.Error
+        mutableState.value = detail?.let {
+          SongDetailUiState.Content(song = it, context = SongDetailUiState.DisplayContext())
+        } ?: SongDetailUiState.Error
       }
     }
   }

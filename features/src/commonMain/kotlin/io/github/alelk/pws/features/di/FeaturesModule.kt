@@ -6,6 +6,7 @@ import io.github.alelk.pws.features.favorites.FavoritesScreenModel
 import io.github.alelk.pws.features.history.HistoryScreenModel
 import io.github.alelk.pws.features.home.HomeScreenModel
 import io.github.alelk.pws.features.search.SearchScreenModel
+import io.github.alelk.pws.features.settings.SettingsScreenModel
 import io.github.alelk.pws.features.song.detail.SongDetailScreenModel
 import io.github.alelk.pws.features.song.detail.SongDetailBySongIdScreenModel
 import io.github.alelk.pws.features.song.edit.SongEditScreenModel
@@ -47,7 +48,7 @@ val featuresModule = module {
   // Song Detail
   factory { (songNumberId: SongNumberId) ->
     SongDetailScreenModel(
-      songNumberId, get(), get<SongObserveRepository>(), get(), get(), get(),
+      songNumberId, get(), get(), get<SongObserveRepository>(), get(), get(), get(),
       get(), get<ObserveTagsForSongUseCase<TagId>>(), get<ObserveTagsUseCase<TagId>>(), get<ReplaceAllSongTagsUseCase<TagId>>()
     )
   }
@@ -68,6 +69,9 @@ val featuresModule = module {
 
   // History
   factory { HistoryScreenModel(get(), get(), get()) }
+
+  // Settings
+  factory { SettingsScreenModel(get(), get()) }
 
   // Tags
   factory { TagsScreenModel(get<ObserveTagsUseCase<TagId>>(), get<CreateTagUseCase<TagId>>(), get<UpdateTagUseCase<TagId>>(), get<DeleteTagUseCase<TagId>>()) }

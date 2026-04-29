@@ -28,6 +28,25 @@
 
     <string name="common_clear">Очистити</string>
     <string name="common_close">Закрити</string>
+    <string name="theme_settings">Налаштування теми</string>
+    <string name="theme_light">Світла</string>
+    <string name="theme_dark">Темна</string>
+    <string name="theme_black">Чорна AMOLED</string>
+    <string name="settings_open">Відкрити налаштування</string>
+    <string name="settings_title">Налаштування</string>
+    <string name="settings_interface">Інтерфейс</string>
+    <string name="settings_theme_subtitle">Оберіть тему застосунку</string>
+    <string name="settings_developers">Розробники</string>
+    <string name="settings_developer_alex_name">Alex Elkin</string>
+    <string name="settings_developer_alex_role">Розробник застосунку</string>
+    <string name="settings_developer_vera_name">Vera Elkina</string>
+    <string name="settings_developer_vera_role">Редактор текстів пісень</string>
+    <string name="settings_books">Збірники пісень</string>
+    <string name="settings_books_subtitle">Вмикайте та вимикайте збірники</string>
+    <string name="settings_import_export">Імпорт/експорт</string>
+    <string name="settings_import_export_subtitle">Імпортуйте або експортуйте відредаговані пісні та категорії</string>
+    <string name="settings_export">Експорт даних</string>
+    <string name="settings_import">Імпорт даних</string>
 
     <string name="number_search_title">Пошук за номером</string>
     <string name="number_input_placeholder">Введіть номер</string>
@@ -45,6 +64,10 @@
 
     <string name="book_songs_title_fallback">Пісні</string>
     <string name="book_songs_go_to_number">Перейти за номером</string>
+    <string name="book_songs_go_to_number_dialog_title">Перейти до номера</string>
+    <string name="book_songs_go_to_number_hint">Номер пісні</string>
+    <string name="book_songs_go_to_number_action">Перейти</string>
+    <string name="book_songs_go_to_number_not_found">Пісня з номером %1$d не знайдена в цьому збірнику</string>
     <string name="book_songs_loading">Завантаження пісень...</string>
     <string name="book_songs_error_title">Не вдалося завантажити пісні</string>
     <string name="books_loading">Завантаження збірників...</string>

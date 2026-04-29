@@ -1,19 +1,18 @@
 package io.github.alelk.pws.features.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 
 @Composable
 fun AppTheme(
-  useDarkTheme: Boolean = isSystemInDarkTheme(),
+  themeMode: ThemeMode = ThemeMode.DEFAULT,
   content: @Composable () -> Unit
 ) {
-  val colors = if (useDarkTheme) {
-    DarkColors
-  } else {
-    LightColors
+  val colors = when (themeMode) {
+    ThemeMode.LIGHT -> LightColors
+    ThemeMode.DARK -> DarkColors
+    ThemeMode.BLACK -> BlackColors
   }
 
   CompositionLocalProvider(LocalSpacing provides Spacing()) {

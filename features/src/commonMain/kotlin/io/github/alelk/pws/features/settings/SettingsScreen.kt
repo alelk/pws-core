@@ -1,0 +1,350 @@
+package io.github.alelk.pws.features.settings
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.koin.koinScreenModel
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
+import io.github.alelk.pws.features.components.AppTopBar
+import io.github.alelk.pws.features.resources.Res
+import io.github.alelk.pws.features.resources.settings_books
+import io.github.alelk.pws.features.resources.settings_books_subtitle
+import io.github.alelk.pws.features.resources.settings_developers
+import io.github.alelk.pws.features.resources.settings_export
+import io.github.alelk.pws.features.resources.settings_import
+import io.github.alelk.pws.features.resources.settings_import_export
+import io.github.alelk.pws.features.resources.settings_import_export_subtitle
+import io.github.alelk.pws.features.resources.settings_interface
+import io.github.alelk.pws.features.resources.settings_theme_subtitle
+import io.github.alelk.pws.features.resources.settings_title
+import io.github.alelk.pws.features.theme.LocalThemeSettings
+import io.github.alelk.pws.features.theme.ThemeMode
+import io.github.alelk.pws.features.theme.spacing
+import org.jetbrains.compose.resources.stringResource
+
+class SettingsScreen : Screen {
+  @Composable
+  override fun Content() {
+    val viewModel = koinScreenModel<SettingsScreenModel>()
+    val state by viewModel.state.collectAsState()
+    val navigator = LocalNavigator.currentOrThrow
+    val themeSettings = LocalThemeSettings.current
+    val externalActions = LocalSettingsExternalActions.current
+
+    LaunchedEffect(themeSettings?.themeMode) {
+      themeSettings?.let { viewModel.onEvent(SettingsEvent.SyncTheme(it.themeMode)) }
+    }
+
+    LaunchedEffect(Unit) {
+      viewModel.effects.collect { effect ->
+        when (effect) {
+          is SettingsScreenModel.Effect.ApplyTheme -> {
+            themeSettings?.onThemeModeChange?.invoke(effect.themeMode)
+          }
+
+          is SettingsScreenModel.Effect.OpenUrl -> {
+            externalActions?.openUrl?.invoke(effect.url)
+          }
+
+          is SettingsScreenModel.Effect.SendEmail -> {
+            externalActions?.sendEmail?.invoke(effect.mailto)
+          }
+
+          SettingsScreenModel.Effect.ExportData -> {
+            externalActions?.exportBackup?.invoke()
+          }
+
+          SettingsScreenModel.Effect.ImportData -> {
+            externalActions?.importBackup?.invoke()
+          }
+
+          SettingsScreenModel.Effect.NavigateBack -> {
+            navigator.pop()
+          }
+        }
+      }
+    }
+
+    SettingsContent(
+      state = state,
+      onBack = { viewModel.onEvent(SettingsEvent.Back) },
+      onThemeSelected = { mode -> viewModel.onEvent(SettingsEvent.SetTheme(mode)) },
+      onBookToggle = { id, enabled -> viewModel.onEvent(SettingsEvent.ToggleBook(id, enabled)) },
+      onDeveloperClick = { contact -> viewModel.onEvent(SettingsEvent.OpenDeveloperContact(contact)) },
+      onExportClick = { viewModel.onEvent(SettingsEvent.ExportData) },
+      onImportClick = { viewModel.onEvent(SettingsEvent.ImportData) },
+    )
+  }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SettingsContent(
+  state: SettingsUiState,
+  onBack: () -> Unit,
+  onThemeSelected: (ThemeMode) -> Unit,
+  onBookToggle: (io.github.alelk.pws.domain.core.ids.BookId, Boolean) -> Unit,
+  onDeveloperClick: (DeveloperContact) -> Unit,
+  onExportClick: () -> Unit,
+  onImportClick: () -> Unit,
+) {
+  Scaffold(
+    topBar = {
+      AppTopBar(
+        title = stringResource(Res.string.settings_title),
+        canNavigateBack = true,
+        onNavigateBack = onBack
+      )
+    }
+  ) { innerPadding ->
+    Surface(
+      modifier = Modifier
+        .fillMaxSize()
+        .padding(innerPadding)
+    ) {
+      when (val current = state) {
+        SettingsUiState.Loading -> Unit
+        is SettingsUiState.Content -> {
+          LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.lg),
+            contentPadding = PaddingValues(MaterialTheme.spacing.screenHorizontal)
+          ) {
+            item {
+              Text(
+                text = stringResource(Res.string.settings_interface),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+              )
+            }
+            item {
+              Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
+              ) {
+                Column(
+                  modifier = Modifier.fillMaxWidth()
+                ) {
+                  Text(
+                    text = stringResource(Res.string.settings_theme_subtitle),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                  )
+                  HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                  current.themes.forEachIndexed { index, item ->
+                    ThemeRow(
+                      title = stringResource(item.titleRes),
+                      isSelected = item.themeMode == current.selectedTheme,
+                      onClick = { onThemeSelected(item.themeMode) }
+                    )
+                    if (index < current.themes.lastIndex) {
+                      HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+                      )
+                    }
+                  }
+                }
+              }
+            }
+
+            item {
+              SectionTitle(stringResource(Res.string.settings_developers))
+            }
+
+            item {
+              Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
+              ) {
+                Column {
+                  current.developers.forEachIndexed { index, dev ->
+                    Row(
+                      modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onDeveloperClick(dev.contact) }
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                      verticalAlignment = Alignment.CenterVertically
+                    ) {
+                      Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                          text = stringResource(dev.nameRes),
+                          style = MaterialTheme.typography.bodyLarge,
+                          color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                          text = stringResource(dev.roleRes),
+                          style = MaterialTheme.typography.bodyMedium,
+                          color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                      }
+                    }
+                    if (index < current.developers.lastIndex) {
+                      HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+                      )
+                    }
+                  }
+                }
+              }
+            }
+
+            item {
+              SectionTitle(stringResource(Res.string.settings_books))
+            }
+
+            item {
+              Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
+              ) {
+                Column {
+                  Text(
+                    text = stringResource(Res.string.settings_books_subtitle),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                  )
+                  HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                  current.books.forEachIndexed { index, book ->
+                    Row(
+                      modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                      horizontalArrangement = Arrangement.SpaceBetween,
+                      verticalAlignment = Alignment.CenterVertically
+                    ) {
+                      Text(
+                        text = book.title,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.weight(1f)
+                      )
+                      Switch(
+                        checked = book.enabled,
+                        onCheckedChange = { checked -> onBookToggle(book.id, checked) }
+                      )
+                    }
+                    if (index < current.books.lastIndex) {
+                      HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+                      )
+                    }
+                  }
+                }
+              }
+            }
+
+            item {
+              SectionTitle(stringResource(Res.string.settings_import_export))
+            }
+
+            item {
+              Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
+              ) {
+                Column(
+                  modifier = Modifier.padding(16.dp)
+                ) {
+                  Text(
+                    text = stringResource(Res.string.settings_import_export_subtitle),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                  )
+                  Spacer(Modifier.height(12.dp))
+                  OutlinedButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onExportClick
+                  ) {
+                    Text(stringResource(Res.string.settings_export))
+                  }
+                  Spacer(Modifier.height(8.dp))
+                  OutlinedButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onImportClick
+                  ) {
+                    Text(stringResource(Res.string.settings_import))
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@Composable
+private fun SectionTitle(text: String) {
+  Text(
+    text = text,
+    style = MaterialTheme.typography.titleMedium,
+    color = MaterialTheme.colorScheme.onSurface
+  )
+}
+
+@Composable
+private fun ThemeRow(
+  title: String,
+  isSelected: Boolean,
+  onClick: () -> Unit,
+) {
+  Row(
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(horizontal = 16.dp, vertical = 4.dp)
+      .clickable(onClick = onClick),
+    horizontalArrangement = Arrangement.SpaceBetween,
+    verticalAlignment = Alignment.CenterVertically
+  ) {
+    Text(
+      text = title,
+      style = MaterialTheme.typography.bodyLarge,
+      color = MaterialTheme.colorScheme.onSurface,
+      modifier = Modifier
+        .weight(1f)
+        .padding(vertical = 12.dp)
+    )
+    RadioButton(
+      selected = isSelected,
+      onClick = onClick
+    )
+  }
+}
+
+
+
+

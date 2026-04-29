@@ -15,10 +15,11 @@ import org.koin.core.parameter.parametersOf
  * but not the specific SongNumberId context.
  */
 class SongDetailBySongIdScreen(val songId: SongId) : Screen {
+  override val key: String = "song-detail-by-id/${songId.value}"
+
   @Composable
   override fun Content() {
-    // SongId is a @JvmInline value class — pass raw Long to avoid unboxing issues on Kotlin/JS
-    val viewModel = koinScreenModel<SongDetailBySongIdScreenModel>(parameters = { parametersOf(songId.value) })
+    val viewModel = koinScreenModel<SongDetailBySongIdScreenModel>(parameters = { parametersOf(songId) })
     val state by viewModel.state.collectAsState()
     SongDetailContent(state = state)
   }

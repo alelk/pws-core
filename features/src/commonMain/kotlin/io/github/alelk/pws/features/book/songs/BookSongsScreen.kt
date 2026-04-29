@@ -1,7 +1,7 @@
 package io.github.alelk.pws.features.book.songs
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,9 +11,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Dialpad
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -21,8 +24,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,11 +37,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.registry.rememberScreen
 import cafe.adriel.voyager.core.screen.Screen
@@ -51,6 +61,10 @@ import io.github.alelk.pws.features.components.SongListItem
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.book_songs_error_title
 import io.github.alelk.pws.features.resources.book_songs_go_to_number
+import io.github.alelk.pws.features.resources.book_songs_go_to_number_action
+import io.github.alelk.pws.features.resources.book_songs_go_to_number_dialog_title
+import io.github.alelk.pws.features.resources.book_songs_go_to_number_hint
+import io.github.alelk.pws.features.resources.book_songs_go_to_number_not_found
 import io.github.alelk.pws.features.resources.book_songs_loading
 import io.github.alelk.pws.features.resources.book_songs_title_fallback
 import io.github.alelk.pws.features.resources.common_back
@@ -59,6 +73,7 @@ import io.github.alelk.pws.features.theme.spacing
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.parameter.parametersOf
 
@@ -67,8 +82,84 @@ class BookSongsScreen(val bookId: BookId) : Screen {
   override fun Content() {
     val viewModel = koinScreenModel<BookSongsScreenModel>(parameters = { parametersOf(bookId) })
     val state by viewModel.state.collectAsState()
-    BookSongsContent(bookId = bookId, state = state)
+    val navigator = LocalNavigator.currentOrThrow
+    var showGoToNumberDialog by rememberSaveable { mutableStateOf(false) }
+
+    BookSongsContent(
+      bookId = bookId,
+      state = state,
+      onNumberInputClick = { showGoToNumberDialog = true }
+    )
+
+    if (showGoToNumberDialog && state is BookSongsUiState.Content) {
+      val songs = (state as BookSongsUiState.Content).book.songs
+      val snackbarHostState = remember { SnackbarHostState() }
+      val scope = rememberCoroutineScope()
+      val notFoundText = stringResource(Res.string.book_songs_go_to_number_not_found, 0)
+
+      GoToNumberDialog(
+        onDismiss = { showGoToNumberDialog = false },
+        onConfirm = { number ->
+          val song = songs[number]
+          if (song != null) {
+            showGoToNumberDialog = false
+            val screen = SharedScreens.Song(SongNumberId(bookId, song.id))
+            navigator.push(cafe.adriel.voyager.core.registry.ScreenRegistry.get(screen))
+          } else {
+            scope.launch {
+              snackbarHostState.showSnackbar(notFoundText.replace("0", number.toString()))
+            }
+          }
+        }
+      )
+    }
   }
+}
+
+@Composable
+private fun GoToNumberDialog(
+  onDismiss: () -> Unit,
+  onConfirm: (Int) -> Unit
+) {
+  var input by rememberSaveable { mutableStateOf("") }
+  val number = input.toIntOrNull()
+
+  val confirm = {
+    if (number != null) onConfirm(number)
+  }
+
+  AlertDialog(
+    onDismissRequest = onDismiss,
+    title = { Text(stringResource(Res.string.book_songs_go_to_number_dialog_title)) },
+    text = {
+      OutlinedTextField(
+        value = input,
+        onValueChange = { input = it.filter { c -> c.isDigit() } },
+        label = { Text(stringResource(Res.string.book_songs_go_to_number_hint)) },
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(
+          keyboardType = KeyboardType.Number,
+          imeAction = ImeAction.Go
+        ),
+        keyboardActions = KeyboardActions(onGo = { confirm() }),
+        isError = input.isNotEmpty() && number == null,
+        modifier = Modifier.fillMaxWidth()
+      )
+    },
+    confirmButton = {
+      TextButton(
+        onClick = confirm,
+        enabled = number != null
+      ) {
+        Text(stringResource(Res.string.book_songs_go_to_number_action))
+      }
+    },
+    dismissButton = {
+      TextButton(onClick = onDismiss) {
+        Text(stringResource(Res.string.common_back))
+      }
+    }
+  )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

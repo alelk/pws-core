@@ -2,6 +2,7 @@ package io.github.alelk.pws.features.home
 
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import io.github.alelk.pws.domain.book.query.BookQuery
 import io.github.alelk.pws.domain.book.usecase.ObserveBooksUseCase
 import io.github.alelk.pws.domain.song.model.SongSearchSuggestion
 import io.github.alelk.pws.domain.song.usecase.SearchSongSuggestionsUseCase
@@ -61,7 +62,7 @@ class HomeScreenModel(
   init {
     // Observe books and history
     combine(
-      observeBooksUseCase(),
+      observeBooksUseCase(query = BookQuery(enabled = true)),
       observeHistoryUseCase(limit = 10)
     ) { books, history ->
       HomeUiState.Content(

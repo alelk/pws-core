@@ -3,6 +3,7 @@ package io.github.alelk.pws.features.song.detail
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
@@ -10,11 +11,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
@@ -43,10 +47,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cafe.adriel.voyager.core.registry.ScreenRegistry
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.domain.core.SongRefReason
 import io.github.alelk.pws.domain.core.ids.SongNumberId
 import io.github.alelk.pws.domain.core.ids.TagId
@@ -70,6 +76,8 @@ import org.koin.core.parameter.parametersOf
 import kotlin.time.Duration.Companion.seconds
 
 class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
+  override val key: String = "song-detail/${songNumberId.identifier}"
+
   @Composable
   override fun Content() {
     val viewModel = koinScreenModel<SongDetailScreenModel>(parameters = { parametersOf(songNumberId) })
@@ -78,6 +86,7 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
     val bookSongNumberIds by viewModel.bookSongNumberIds.collectAsState()
     val currentSongNumberId by viewModel.currentSongNumberId.collectAsState()
     val references by viewModel.references.collectAsState()
+    val referenceBookContexts by viewModel.referenceBookContexts.collectAsState()
     val songTags by viewModel.songTags.collectAsState()
     val allTags by viewModel.allTags.collectAsState()
     val bookNumberMap by viewModel.bookNumberMap.collectAsState()
@@ -98,6 +107,8 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
         bookSongNumberIds = bookSongNumberIds,
         initialPage = initialPage,
         references = references,
+        referenceBookContexts = referenceBookContexts,
+        currentBookId = currentSongNumberId.bookId,
         songTags = songTags,
         allTags = allTags,
         bookNumberMap = bookNumberMap,
@@ -109,9 +120,10 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
     } else {
       SongDetailContent(
         state = state,
-        songNumber = songNumberId.identifier,
         isFavorite = isFavorite,
         references = references,
+        referenceBookContexts = referenceBookContexts,
+        currentBookId = currentSongNumberId.bookId,
         songTags = songTags,
         allTags = allTags,
         bookNumberMap = bookNumberMap,
@@ -138,6 +150,8 @@ private fun SongDetailPager(
   bookSongNumberIds: List<SongNumberId>,
   initialPage: Int,
   references: List<SongReferenceDetail>,
+  referenceBookContexts: Map<io.github.alelk.pws.domain.core.ids.SongId, List<SongDetailScreenModel.ReferenceBookContextUi>>,
+  currentBookId: io.github.alelk.pws.domain.core.ids.BookId,
   songTags: List<Tag<TagId>>,
   allTags: List<Tag<TagId>>,
   bookNumberMap: Map<Int, SongNumberId>,
@@ -203,17 +217,24 @@ private fun SongDetailPager(
     ) { page ->
       val animPageId = bookSongNumberIds.getOrNull(page) ?: bookSongNumberIds.first()
       val isCurrentPage = animPageId == currentSongNumberId
+      val fallbackContext = SongDetailUiState.DisplayContext(
+        songNumber = bookNumberMap.entries.firstOrNull { it.value == animPageId }?.key,
+        bookTitle = (state as? SongDetailUiState.Content)?.context?.bookTitle
+      )
+
       SongDetailContent(
         state = if (isCurrentPage) state else SongDetailUiState.Loading,
-        songNumber = animPageId.songId.value.toString(),
         isFavorite = if (isCurrentPage) isFavorite else false,
         references = if (isCurrentPage) references else emptyList(),
+        referenceBookContexts = if (isCurrentPage) referenceBookContexts else emptyMap(),
+        currentBookId = currentBookId,
         songTags = if (isCurrentPage) songTags else emptyList(),
         allTags = allTags,
         bookNumberMap = bookNumberMap,
         onFavoriteClick = onFavoriteClick,
         onSaveTags = onSaveTags,
         onJumpToNumber = onJumpToNumber,
+        displayContextOverride = if (isCurrentPage) null else fallbackContext,
         onNavigatePrev = if (page > 0) ::goToPrev else null,
         onNavigateNext = if (page < bookSongNumberIds.lastIndex) ::goToNext else null
       )
@@ -229,15 +250,17 @@ private fun SongDetailPager(
 @Composable
 fun SongDetailContent(
   state: SongDetailUiState,
-  songNumber: String? = null,
   isFavorite: Boolean = false,
   references: List<SongReferenceDetail> = emptyList(),
+  referenceBookContexts: Map<io.github.alelk.pws.domain.core.ids.SongId, List<SongDetailScreenModel.ReferenceBookContextUi>> = emptyMap(),
+  currentBookId: io.github.alelk.pws.domain.core.ids.BookId? = null,
   songTags: List<Tag<TagId>> = emptyList(),
   allTags: List<Tag<TagId>> = emptyList(),
   bookNumberMap: Map<Int, SongNumberId> = emptyMap(),
   onFavoriteClick: () -> Unit = {},
   onSaveTags: (Set<TagId>) -> Unit = {},
   onJumpToNumber: (Int) -> SongNumberId? = { null },
+  displayContextOverride: SongDetailUiState.DisplayContext? = null,
   onNavigatePrev: (() -> Unit)? = null,
   onNavigateNext: (() -> Unit)? = null,
 ) {
@@ -256,13 +279,17 @@ fun SongDetailContent(
   val jumpSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
   val songId = (state as? SongDetailUiState.Content)?.song?.id
+  val displayContext = when (state) {
+    is SongDetailUiState.Content -> state.context
+    else -> displayContextOverride ?: SongDetailUiState.DisplayContext()
+  }
 
   Scaffold(
     topBar = {
-      val title = if (state is SongDetailUiState.Content && !songNumber.isNullOrBlank()) {
-        "№ $songNumber"
-      } else {
-        stringResource(Res.string.song_detail_title_fallback)
+      val title = when {
+        displayContext.songNumber != null -> "№ ${displayContext.songNumber}"
+        state is SongDetailUiState.Content -> state.song.name.value
+        else -> stringResource(Res.string.song_detail_title_fallback)
       }
 
       AppTopBar(
@@ -321,8 +348,11 @@ fun SongDetailContent(
         is SongDetailUiState.Content -> {
           SongContent(
             song = state.song,
+            displayContext = state.context,
             fontScale = fontScale,
             references = references,
+            referenceBookContexts = referenceBookContexts,
+            currentBookId = currentBookId,
             songTags = songTags,
           )
         }
@@ -467,8 +497,11 @@ private fun TextSettingsSheet(
 @Composable
 private fun SongContent(
   song: SongDetail,
+  displayContext: SongDetailUiState.DisplayContext,
   fontScale: Float,
   references: List<SongReferenceDetail> = emptyList(),
+  referenceBookContexts: Map<io.github.alelk.pws.domain.core.ids.SongId, List<SongDetailScreenModel.ReferenceBookContextUi>> = emptyMap(),
+  currentBookId: io.github.alelk.pws.domain.core.ids.BookId? = null,
   songTags: List<Tag<TagId>> = emptyList(),
   modifier: Modifier = Modifier
 ) {
@@ -483,6 +516,13 @@ private fun SongContent(
     ),
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
+    if (displayContext.bookTitle != null || displayContext.songNumber != null) {
+      item {
+        BookContextBanner(displayContext = displayContext)
+        Spacer(Modifier.height(spacing.md))
+      }
+    }
+
     // Header
     item {
       SongHeader(song)
@@ -505,7 +545,59 @@ private fun SongContent(
 
     // Cross-references
     if (references.isNotEmpty()) {
-      item { SongReferencesSection(references = references) }
+      item {
+        SongReferencesSection(
+          references = references,
+          referenceBookContexts = referenceBookContexts,
+          currentBookId = currentBookId,
+        )
+      }
+    }
+  }
+}
+
+@Composable
+private fun BookContextBanner(
+  displayContext: SongDetailUiState.DisplayContext
+) {
+  val numberLabel = displayContext.songNumber?.let { "№ $it" }
+  val bookLabel = displayContext.bookTitle
+
+  if (bookLabel.isNullOrBlank() && numberLabel.isNullOrBlank()) return
+
+  Surface(
+    shape = RoundedCornerShape(14.dp),
+    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+    border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary.copy(alpha = 0.18f))
+  ) {
+    Row(
+      modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+      Icon(
+        imageVector = Icons.AutoMirrored.Filled.LibraryBooks,
+        contentDescription = null,
+        modifier = Modifier.size(16.dp),
+        tint = MaterialTheme.colorScheme.onSecondaryContainer
+      )
+
+      Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
+        if (!bookLabel.isNullOrBlank()) {
+          Text(
+            text = bookLabel,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSecondaryContainer
+          )
+        }
+        if (!numberLabel.isNullOrBlank()) {
+          Text(
+            text = numberLabel,
+            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
+            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.86f)
+          )
+        }
+      }
     }
   }
 }
@@ -739,9 +831,25 @@ private fun MetadataItem(label: String, value: String) {
 }
 
 @Composable
-private fun SongReferencesSection(references: List<SongReferenceDetail>) {
+private fun SongReferencesSection(
+  references: List<SongReferenceDetail>,
+  referenceBookContexts: Map<io.github.alelk.pws.domain.core.ids.SongId, List<SongDetailScreenModel.ReferenceBookContextUi>>,
+  currentBookId: io.github.alelk.pws.domain.core.ids.BookId?,
+) {
   val navigator = LocalNavigator.currentOrThrow
   val spacing = MaterialTheme.spacing
+
+  fun openBySongNumberId(target: SongNumberId) {
+    val screen = runCatching { ScreenRegistry.get(SharedScreens.Song(target)) }
+      .getOrElse { SongDetailScreen(target) }
+    navigator.push(screen)
+  }
+
+  fun openBySongId(target: io.github.alelk.pws.domain.core.ids.SongId) {
+    val screen = runCatching { ScreenRegistry.get(SharedScreens.SongById(target)) }
+      .getOrElse { SongDetailBySongIdScreen(target) }
+    navigator.push(screen)
+  }
 
   Column(
     modifier = Modifier.widthIn(max = 600.dp).fillMaxWidth()
@@ -771,9 +879,21 @@ private fun SongReferencesSection(references: List<SongReferenceDetail>) {
 
     Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
       references.forEach { ref ->
+        val contexts = referenceBookContexts[ref.refSongId].orEmpty()
+        val preferredContext = contexts.firstOrNull { it.bookId == currentBookId } ?: contexts.firstOrNull()
+
         SongReferenceItem(
           reference = ref,
-          onClick = { navigator.push(SongDetailBySongIdScreen(ref.refSongId)) }
+          contexts = contexts,
+          currentBookId = currentBookId,
+          onContextClick = { context ->
+            openBySongNumberId(context.songNumberId)
+          },
+          onClick = {
+            preferredContext?.let {
+              openBySongNumberId(it.songNumberId)
+            } ?: openBySongId(ref.refSongId)
+          }
         )
       }
     }
@@ -783,14 +903,25 @@ private fun SongReferencesSection(references: List<SongReferenceDetail>) {
 @Composable
 private fun SongReferenceItem(
   reference: SongReferenceDetail,
+  contexts: List<SongDetailScreenModel.ReferenceBookContextUi>,
+  currentBookId: io.github.alelk.pws.domain.core.ids.BookId?,
+  onContextClick: (SongDetailScreenModel.ReferenceBookContextUi) -> Unit,
   onClick: () -> Unit
 ) {
   val spacing = MaterialTheme.spacing
-  Surface(
+  val orderedContexts = remember(contexts, currentBookId) {
+    contexts.sortedWith(
+      compareByDescending<SongDetailScreenModel.ReferenceBookContextUi> { it.bookId == currentBookId }
+        .thenBy { it.bookShortTitle }
+        .thenBy { it.songNumber }
+    )
+  }
+
+  Card(
     onClick = onClick,
     shape = MaterialTheme.shapes.medium,
-    color = MaterialTheme.colorScheme.surfaceContainerLow,
-    tonalElevation = 1.dp,
+    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     modifier = Modifier.fillMaxWidth()
   ) {
     Row(
@@ -810,6 +941,52 @@ private fun SongReferenceItem(
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
           )
+        }
+
+        if (contexts.isNotEmpty()) {
+          Spacer(Modifier.height(6.dp))
+          FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+          ) {
+            orderedContexts.forEach { context ->
+              val isCurrentBook = context.bookId == currentBookId
+              val chipBorderColor by animateColorAsState(
+                targetValue = if (isCurrentBook) {
+                  MaterialTheme.colorScheme.primary.copy(alpha = 0.45f)
+                } else {
+                  MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
+                },
+                label = "refChipBorderColor"
+              )
+              val chipContainerColor by animateColorAsState(
+                targetValue = if (isCurrentBook) {
+                  MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.82f)
+                } else {
+                  MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f)
+                },
+                label = "refChipContainerColor"
+              )
+
+              AssistChip(
+                onClick = { onContextClick(context) },
+                label = {
+                  Text(
+                    text = "${context.bookShortTitle} • № ${context.songNumber}",
+                    style = MaterialTheme.typography.labelSmall
+                  )
+                },
+                border = AssistChipDefaults.assistChipBorder(
+                  enabled = true,
+                  borderColor = chipBorderColor
+                ),
+                colors = AssistChipDefaults.assistChipColors(
+                  containerColor = chipContainerColor,
+                  labelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+              )
+            }
+          }
         }
       }
       Icon(

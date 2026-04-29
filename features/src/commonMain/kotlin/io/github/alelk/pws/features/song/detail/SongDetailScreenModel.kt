@@ -2,6 +2,10 @@ package io.github.alelk.pws.features.song.detail
 
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import io.github.alelk.pws.domain.book.model.BookSummary
+import io.github.alelk.pws.domain.book.usecase.ObserveBooksUseCase
+import io.github.alelk.pws.domain.core.ids.BookId
+import io.github.alelk.pws.domain.core.ids.SongId
 import io.github.alelk.pws.domain.core.ids.SongNumberId
 import io.github.alelk.pws.domain.core.ids.TagId
 import io.github.alelk.pws.domain.favorite.model.FavoriteSubject
@@ -25,12 +29,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SongDetailScreenModel(
   val songNumberId: SongNumberId,
   private val observeSong: ObserveSongUseCase,
+  private val observeBooks: ObserveBooksUseCase,
   private val songObserveRepository: SongObserveRepository,
   private val recordSongView: RecordSongViewUseCase,
   private val observeIsFavorite: ObserveIsFavoriteUseCase,
@@ -40,6 +46,14 @@ class SongDetailScreenModel(
   private val observeAllTags: ObserveTagsUseCase<TagId>,
   private val replaceAllSongTags: ReplaceAllSongTagsUseCase<TagId>,
 ) : StateScreenModel<SongDetailUiState>(SongDetailUiState.Loading) {
+
+  data class ReferenceBookContextUi(
+    val songNumberId: SongNumberId,
+    val bookId: BookId,
+    val bookTitle: String,
+    val bookShortTitle: String,
+    val songNumber: Int,
+  )
 
   /** Currently active song number id — changes when user swipes. */
   private val _currentSongNumberId = MutableStateFlow(songNumberId)
@@ -56,9 +70,21 @@ class SongDetailScreenModel(
   private val _bookNumberMap = MutableStateFlow<Map<Int, SongNumberId>>(emptyMap())
   val bookNumberMap: StateFlow<Map<Int, SongNumberId>> = _bookNumberMap.asStateFlow()
 
+  /** Reverse index: songId -> song number inside the current book. */
+  private val songIdToNumber = MutableStateFlow<Map<io.github.alelk.pws.domain.core.ids.SongId, Int>>(emptyMap())
+
+  /** Current book display title. */
+  private val bookTitle = MutableStateFlow<String?>(null)
+
   /** Cross-references to related songs. Empty until loaded. */
   private val _references = MutableStateFlow<List<SongReferenceDetail>>(emptyList())
   val references: StateFlow<List<SongReferenceDetail>> = _references.asStateFlow()
+
+  /** Map: ref song id -> all known book contexts for opening by SongNumberId. */
+  private val _referenceBookContexts = MutableStateFlow<Map<SongId, List<ReferenceBookContextUi>>>(emptyMap())
+  val referenceBookContexts: StateFlow<Map<SongId, List<ReferenceBookContextUi>>> = _referenceBookContexts.asStateFlow()
+
+  private val booksSnapshot = MutableStateFlow<List<BookSummary>>(emptyList())
 
   /** Tags assigned to the current song. */
   private val _songTags = MutableStateFlow<List<Tag<TagId>>>(emptyList())
@@ -75,7 +101,25 @@ class SongDetailScreenModel(
         mutableState.value = SongDetailUiState.Loading
         observeSong(id.songId)
       }.collectLatest { detail: SongDetail? ->
-        mutableState.value = detail?.let { SongDetailUiState.Content(it) } ?: SongDetailUiState.Error
+        mutableState.value = detail?.let {
+          SongDetailUiState.Content(
+            song = it,
+            context = SongDetailUiState.DisplayContext(
+              songNumber = songIdToNumber.value[it.id],
+              bookTitle = bookTitle.value
+            )
+          )
+        } ?: SongDetailUiState.Error
+      }
+    }
+
+    // Observe book title to show context in header
+    screenModelScope.launch {
+      observeBooks().collectLatest { books ->
+        booksSnapshot.value = books
+        bookTitle.value = books.firstOrNull { it.id == songNumberId.bookId }?.displayName?.value
+        refreshContextIfContent()
+        refreshReferenceContexts()
       }
     }
 
@@ -94,12 +138,15 @@ class SongDetailScreenModel(
         songObserveRepository.observeAllInBook(songNumberId.bookId).collectLatest { songsMap ->
           // songsMap: Map<Int /* number */, SongSummary>
           val sorted = songsMap.entries.sortedBy { it.key }
+          val idToNum = sorted.associate { (number, summary) -> summary.id to number }
           _bookSongNumberIds.value = sorted.map { (_, summary) ->
             SongNumberId(songNumberId.bookId, summary.id)
           }
           _bookNumberMap.value = sorted.associate { (number, summary) ->
             number to SongNumberId(songNumberId.bookId, summary.id)
           }
+          songIdToNumber.value = idToNum
+          refreshContextIfContent()
         }
       } catch (_: Exception) {
         // Navigation without swipe list is acceptable
@@ -111,8 +158,10 @@ class SongDetailScreenModel(
       _currentSongNumberId.collectLatest { currentId ->
         try {
           _references.value = getSongReferences(currentId.songId)
+          refreshReferenceContexts()
         } catch (_: Exception) {
           _references.value = emptyList()
+          _referenceBookContexts.value = emptyMap()
         }
       }
     }
@@ -171,4 +220,50 @@ class SongDetailScreenModel(
    * or null if no song with that number exists.
    */
   fun resolveNumber(number: Int): SongNumberId? = _bookNumberMap.value[number]
+
+  private fun refreshContextIfContent() {
+    val current = mutableState.value as? SongDetailUiState.Content ?: return
+    mutableState.value = current.copy(
+      context = SongDetailUiState.DisplayContext(
+        songNumber = songIdToNumber.value[current.song.id],
+        bookTitle = bookTitle.value
+      )
+    )
+  }
+
+  private suspend fun refreshReferenceContexts() {
+    val references = _references.value
+    val targetSongIds = references.map { it.refSongId }.toSet()
+    if (targetSongIds.isEmpty()) {
+      _referenceBookContexts.value = emptyMap()
+      return
+    }
+
+    val bySong = linkedMapOf<SongId, MutableList<ReferenceBookContextUi>>()
+    val activeBooks = booksSnapshot.value.filter { it.enabled }
+
+    activeBooks.forEach { book ->
+      val songsMap = runCatching { songObserveRepository.observeAllInBook(book.id).first() }
+        .getOrNull() ?: return@forEach
+
+      songsMap.forEach { (number, summary) ->
+        if (summary.id !in targetSongIds) return@forEach
+
+        bySong.getOrPut(summary.id) { mutableListOf() }
+          .add(
+            ReferenceBookContextUi(
+              songNumberId = SongNumberId(book.id, summary.id),
+              bookId = book.id,
+              bookTitle = book.displayName.value,
+              bookShortTitle = book.displayShortName.value,
+              songNumber = number,
+            )
+          )
+      }
+    }
+
+    _referenceBookContexts.value = bySong.mapValues { (_, list) ->
+      list.distinctBy { it.songNumberId.identifier }.sortedWith(compareBy({ it.bookShortTitle }, { it.songNumber }))
+    }
+  }
 }
