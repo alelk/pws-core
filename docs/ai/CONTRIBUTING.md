@@ -1,250 +1,133 @@
 # Instructions for AI Agents
 
-## Quick Start
+This file describes how to implement changes in `pws-core` safely and consistently.
+Read `docs/ai/CONTEXT.md` first for project context.
 
-When working with the project:
-1. First read [CONTEXT.md](./CONTEXT.md)
-2. For understanding functionality — [FEATURES.md](../FEATURES.md)
-3. For understanding structure — [MODULES.md](../MODULES.md)
-4. For understanding architecture — [ARCHITECTURE.md](../ARCHITECTURE.md)
+## Working order
 
-## Development Principles
+1. Confirm behavior in `docs/FEATURES.md` and `docs/features/*.md`.
+2. Confirm architecture/module boundaries in `docs/ARCHITECTURE.md` and `docs/MODULES.md`.
+3. Implement changes in the correct module.
+4. Run relevant tests/checks for changed modules.
+5. Update docs if behavior/contracts changed.
 
-### Where to Place Code
+## Where code belongs
 
-| Code Type              | Module                 | Package                                          |
-|------------------------|------------------------|--------------------------------------------------|
-| Domain models          | `:domain`              | `io.github.alelk.pws.domain.{entity}.model`      |
-| Repository interface   | `:domain`              | `io.github.alelk.pws.domain.{entity}.repository` |
-| Use Case               | `:domain`              | `io.github.alelk.pws.domain.{entity}.usecase`    |
-| Lyrics parsing         | `:domain:lyric-format` | `io.github.alelk.pws.domain.lyric.format`        |
-| Remote Repository impl | `:api:client`          | `repository`                                     |
-| Local Repository impl  | `:data:repo-room`      | -                                                |
-| UI Screen              | `:features`            | `io.github.alelk.pws.features.{feature}`         |
-| ViewModel              | `:features`            | `io.github.alelk.pws.features.{feature}`         |
-| Low-level UI component | `:core:ui`             | `io.github.alelk.pws.core.ui`                    |
+| Code type | Module | Typical package/path |
+|---|---|---|
+| Domain models | `:domain` | `io.github.alelk.pws.domain.{entity}.model` |
+| Domain repository interfaces | `:domain` | `io.github.alelk.pws.domain.{entity}.repository` |
+| Domain use cases | `:domain` | `io.github.alelk.pws.domain.{entity}.usecase` |
+| Lyrics parser | `:domain:lyric-format` | `io.github.alelk.pws.domain.lyric.format` |
+| API DTOs | `:api:contract` | `io.github.alelk.pws.api.contract` |
+| DTO-domain mapping | `:api:mapping` | `io.github.alelk.pws.api.mapping` |
+| Remote repositories | `:api:client` | `api/client/src/commonMain/kotlin/repository/` |
+| Local repositories (Room) | `:data:repo-room` | `io.github.alelk.pws.data.repository.room` |
+| Feature screens/screen models | `:features` | `io.github.alelk.pws.features.{feature}` |
+| Shared UI components | `:core:ui` | `io.github.alelk.pws.core.ui` |
 
-### Naming Conventions
+## Naming conventions
 
-```kotlin
-// Use Cases
-class GetSongDetailUseCase      // Get = get single record
-class GetSongsUseCase           // plural = list
-class SearchSongsUseCase        // Search = search
-class CreateSongUseCase         // Create = creation
-class UpdateSongUseCase         // Update = update
-class DeleteSongUseCase         // Delete = deletion
-class AddFavoriteUseCase        // Add = add relation
-class RemoveFavoriteUseCase     // Remove = remove relation
-class ObserveSongUseCase        // Observe = Flow subscription
+- Use case: `{Action}{Entity}UseCase`
+- Repository interface: `{Entity}{Read|Write|Observe}Repository`
+- Screen state holder: `{Feature}ScreenModel` (Voyager `StateScreenModel`)
+- Screen entrypoint: `{Feature}Screen`
+- UI state: `{Feature}UiState`
+- Remote implementation: `Remote{Entity}{Read|Write}Repository`
 
-// Repositories
-interface SongReadRepository    // Read = read only
-interface SongObserveRepository // Read = read only (Flow)
-interface SongWriteRepository   // Write = write (CRUD)
+## Implementation patterns
 
-// Remote implementations
-class RemoteSongReadRepository
-class RemoteSongWriteRepository
-
-// ViewModels
-class SongViewModel
-class SearchViewModel
-class FavoritesViewModel
-
-// Screens (Voyager)
-class SongScreen : Screen
-class SearchScreen : Screen
-
-// UI States
-sealed interface SongUiState {
-    object Loading : SongUiState
-    data class Success(val song: SongDetail) : SongUiState
-    data class Error(val message: String) : SongUiState
-}
-```
-
-### Use Case Pattern
+### Use case with transaction boundary
 
 ```kotlin
 class GetSongDetailUseCase(
-    private val songRepository: SongReadRepository,
-    private val txRunner: TransactionRunner
+  private val readRepository: SongReadRepository,
+  private val txRunner: TransactionRunner
 ) {
-    suspend operator fun invoke(songId: Long): SongDetail? =
-        txRunner.inRoTransaction { readRepository.get(id) }
+  suspend operator fun invoke(id: SongId): SongDetail? =
+    txRunner.inRoTransaction { readRepository.get(id) }
 }
+```
 
-// Or with Flow
+### Observe use case
+
+```kotlin
 class ObserveSongUseCase(
-    private val songRepository: SongObserveRepository
+  private val observeRepository: SongObserveRepository
 ) {
-    operator fun invoke(songId: Long): Flow<SongDetail?> = songRepository.observeSong(songId)
+  operator fun invoke(id: SongId): Flow<SongDetail?> = observeRepository.observe(id)
 }
 ```
 
-Transactions at use case level, not repository level.
-
-### Repository Pattern
+### Screen + `StateScreenModel`
 
 ```kotlin
-// Interface in domain
-interface SongReadRepository {
-    suspend fun get(id: SongId): SongDetail?
-    suspend fun getMany(query: SongQuery = SongQuery.Empty, sort: SongSort = SongSort.ById): List<SongSummary>
-}
+class SongDetailScreenModel(
+  private val observeSong: ObserveSongUseCase,
+  private val songId: SongId
+) : StateScreenModel<SongDetailUiState>(SongDetailUiState.Loading) {
 
-interface SongObserveRepository {
-    fun observe(id: SongId): Flow<SongDetail?>
-}
-
-interface SongWriteRepository {
-    suspend fun create(command: CreateSongCommand): CreateResourceResult<SongId>
-    suspend fun update(command: UpdateSongCommand): UpdateResourceResult<SongId>
-    suspend fun delete(id: SongId): DeleteResourceResult<SongId>
-}
-```
-
-### Sealed Result Types
-
-Write operations return sealed results (not exceptions):
-
-```kotlin
-sealed interface CreateResourceResult<out R : Any> {
-  data class Success<out R : Any>(val resource: R) : CreateResourceResult<R>
-  data class AlreadyExists<out R : Any>(val resource: R, val message: String) : Failure<R>
-  data class ValidationError<out R : Any>(val resource: R, val message: String) : Failure<R>
-  data class UnknownError<out R : Any>(val resource: R, val exception: Throwable?) : Failure<R>
-}
-
-// Usage:
-when (val result = createSongUseCase(command)) {
-  is CreateResourceResult.Success -> handleSuccess(result.resource)
-  is CreateResourceResult.AlreadyExists -> showError(result.message)
-  is CreateResourceResult.ValidationError -> showValidation(result.message)
-  is CreateResourceResult.UnknownError -> logError(result.exception)
+  init {
+    screenModelScope.launch(
+      context = CoroutineExceptionHandler { _, _ -> mutableState.value = SongDetailUiState.Error }
+    ) {
+      observeSong(songId).collectLatest { detail ->
+        mutableState.value = detail?.let { SongDetailUiState.Content(it) } ?: SongDetailUiState.Error
+      }
+    }
+  }
 }
 ```
 
-### OptionalField for Updates
-
-Use `OptionalField` in update commands for patch semantics:
+### Update commands with patch semantics
 
 ```kotlin
 data class UpdateSongCommand(
   val id: SongId,
-  val name: NonEmptyString? = null,                    // null = unchanged
-  val author: OptionalField<Person?> = OptionalField.Unchanged  // Unchanged/Set/Clear
+  val name: NonEmptyString? = null,
+  val author: OptionalField<Person?> = OptionalField.Unchanged
 )
-
-// Clear author:
-UpdateSongCommand(id = songId, author = OptionalField.Clear)
-
-// Set author:
-UpdateSongCommand(id = songId, author = OptionalField.Set(Person("John")))
 ```
 
-### ViewModel Pattern
+## Rules that prevent regressions
 
-```kotlin
-class SongDetailScreenModel(
-    val songNumberId: SongNumberId,
-    private val observeSong: ObserveSongUseCase
-) : StateScreenModel<SongDetailUiState>(SongDetailUiState.Loading) {
+- Do not call repositories directly from UI; always go through use cases.
+- Do not add Android/iOS-specific APIs to `commonMain` domain code.
+- Keep contracts in `:api:contract` and `:api:mapping` compatible with `pws-server`.
+- Avoid cross-feature tight coupling in `:features`.
+- For behavior that depends on enabled/disabled books, use `BookQuery(enabled = true)` where appropriate.
 
-    init {
-        screenModelScope.launch(context = CoroutineExceptionHandler { _, _ -> mutableState.value = SongDetailUiState.Error }) {
-            observeSong(songNumberId.songId).collectLatest { detail: SongDetail? ->
-                mutableState.value = detail?.let { SongDetailUiState.Content(it) } ?: SongDetailUiState.Error
-            }
-        }
-    }
-}
-```
+## Common task checklists
 
-### Screen Pattern (Voyager)
+### Add a new use case
 
-```kotlin
-class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
-    @Composable
-    override fun Content() {
-        val viewModel = koinScreenModel<SongDetailScreenModel>(parameters = { parametersOf(songNumberId) })
-        val state by viewModel.state.collectAsState()
-        SongDetailContent(state = state)
-    }
-}
-```
+1. Create use case in `domain/.../usecase/`.
+2. Inject repository interfaces (not concrete implementations).
+3. Add transaction runner if it reads/writes local data.
+4. Add or update tests in the relevant module.
 
-## Testing
+### Add or change a feature screen
 
-### Test Structure
+1. Update `Screen`, `ScreenModel`, and `UiState` in `:features`.
+2. Wire dependencies in Koin module next to the feature.
+3. Keep UI passive; place business logic in use cases.
+4. Validate behavior against feature docs.
 
-```kotlin
-// Kotest Spec
-class GetSongDetailUseCaseTest : FunSpec({
+### Change API contracts
 
-    val mockRepository = mockk<SongReadRepository>()
-    val useCase = GetSongDetailUseCase(mockRepository)
+1. Update DTOs in `:api:contract`.
+2. Update mappings in `:api:mapping`.
+3. Check compatibility impact on `pws-server`.
+4. Document any migration notes.
 
-    test("should return song when exists") {
-        val song = SongDetailBuilder().build()
-        coEvery { mockRepository.getSong(1L) } returns song
+## Verification commands
 
-        val result = useCase(1L)
-
-        result shouldBe song
-    }
-})
-```
-
-### Running Tests
-
-```bash
-# Domain tests
+```shell
 ./gradlew :domain:jvmTest
-
-# Lyric format tests
-./gradlew :domain:lyric-format:jvmTest
-
-# API client tests
-./gradlew :api:client:jvmTest
-
-# Backup tests
 ./gradlew :backup:jvmTest
-
-# Room database tests
 ./gradlew :data:db-room:testDebugUnitTest :data:db-room:jvmTest
-
-# All tests
-./gradlew test
 ```
 
-## Common Tasks
+Use module-scoped tasks for touched modules first; run broader checks only when needed.
 
-### Add New Use Case
-
-1. Create class in `domain/.../usecase/`
-2. Add to Koin module in `:features` or `:api:client:di`
-3. Write tests in `domain/.../commonTest/`
-
-### Add New Screen
-
-1. Create `{Feature}Screen.kt` in `features/.../`
-2. Create `{Feature}ViewModel.kt`
-3. Create `{Feature}UiState.kt`
-4. Add ViewModel to Koin module
-5. Add navigation to `SharedScreens.kt` if needed
-
-### Add New Model
-
-1. Create data class in `domain/.../model/`
-2. If API needed — create DTO in `api/contract/`
-3. Add mapping in `api/mapping/`
-
-## Don't Do
-
-- ❌ Don't add platform-specific code to `:domain`
-- ❌ Don't create direct dependencies between features
-- ❌ Don't use Android/iOS imports in common modules
-- ❌ Don't store UI state in Domain models
-- ❌ Don't call repositories directly from UI — use Use Cases
+Last reviewed: 2026-04-29

@@ -2,311 +2,76 @@
 
 ## Overview
 
-PWS Core supports two data sources, selected at the DI level:
+`pws-core` supports two runtime data sources selected by DI in the host app:
 
-| Platform          | Data Source     | Module            |
-|-------------------|-----------------|-------------------|
-| Android/iOS       | Room Database   | `:data:repo-room` |
-| Web/TG Mini App   | Remote API      | `:api:client`     |
+| Target | Primary source | Implementation modules |
+|---|---|---|
+| Android/iOS | Room | `:data:db-room` + `:data:repo-room` |
+| Web/Telegram Mini App | Remote API | `:api:client` (+ `:api:contract`, `:api:mapping`) |
 
-## Data Flow Architecture
+## End-to-end flow
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     UI Layer                                │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │                    ViewModel                        │    │
-│  │  ┌───────────┐  ┌────────────┐  ┌────────────────┐  │    │
-│  │  │ StateFlow │  │ User Input │  │ LaunchedEffect │  │    │
-│  │  └─────┬─────┘  └─────┬──────┘  └───────┬────────┘  │    │
-│  │        │              │                 │           │    │
-│  └────────┼──────────────┼─────────────────┼───────────┘    │
-└───────────┼──────────────┼─────────────────┼────────────────┘
-            │              │                 │
-            ▼              ▼                 ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   Domain Layer                              │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │                    Use Cases                        │    │
-│  │  ┌─────────────┐  ┌───────────┐  ┌────────────────┐ │    │
-│  │  │ GetSongUC   │  │ SearchUC  │  │ AddFavoriteUC  │ │    │
-│  │  └──────┬──────┘  └─────┬─────┘  └───────┬────────┘ │    │
-│  │         │               │                │          │    │
-│  └─────────┼───────────────┼────────────────┼──────────┘    │
-└────────────┼───────────────┼────────────────┼───────────────┘
-             │               │                │
-             ▼               ▼                ▼
-┌─────────────────────────────────────────────────────────────┐
-│               Repository Interfaces                         │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │  SongReadRepository  │  SearchRepository  │  ...    │    │
-│  └─────────────────────────────────────────────────────┘    │
-└────────────────────────────┬────────────────────────────────┘
-                             │
-          ┌──────────────────┼──────────────────┐
-          ▼                                     ▼
-┌─────────────────────────┐   ┌───────────────────────────────┐
-│   Local Implementation  │   │    Remote Implementation      │
-│    (:data:repo-room)    │   │       (:api:client)           │
-│  ┌───────────────────┐  │   │  ┌─────────────────────────┐  │
-│  │ RoomSongRepository│  │   │  │ RemoteSongRepository    │  │
-│  │        ↓          │  │   │  │          ↓              │  │
-│  │   Room DAO        │  │   │  │    Ktor Client          │  │
-│  │        ↓          │  │   │  │          ↓              │  │
-│  │   SQLite DB       │  │   │  │    PWS Server API       │  │
-│  └───────────────────┘  │   │  └─────────────────────────┘  │
-│                         │   │                               │
-│  📱 Android/iOS         │   │  🌐 Web / TG Mini App         │
-└─────────────────────────┘   └───────────────────────────────┘
+```text
+Screen
+  -> StateScreenModel
+    -> UseCase
+      -> Domain repository interface
+        -> Local repo OR Remote repo
 ```
 
-## Reactive Data Flow (Flow)
+### Read flow
 
-### Data Subscription
-
-```kotlin
-// Observe repository returns Flow
-interface SongObserveRepository {
-    fun observe(id: SongId): Flow<SongDetail?>
-}
-
-// ViewModel subscribes
-class SongViewModel(observeSong: ObserveSongUseCase) : ViewModel() {
-    val song: StateFlow<SongDetail?> = observeSong(songId)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
-}
-
-// UI subscribes to StateFlow
-@Composable
-fun SongScreen() {
-    val song by viewModel.song.collectAsState()
-}
+```text
+Observe*UseCase -> Flow<T> -> ScreenModel state -> UI recomposition
 ```
 
-### Data Updates
+### Write flow
 
-```
-User Action (Add Favorite)
-       │
-       ▼
-┌─────────────┐     ┌─────────────┐     ┌──────────────┐
-│  ViewModel  │ ──▶ │  Use Case   │ ──▶ │  Repository  │
-└─────────────┘     └─────────────┘     └──────────────┘
-                                               │
-                                               ▼
-                                        ┌──────────────┐
-                                        │   DB / API   │
-                                        └──────────────┘
-                                               │
-       ┌───────────────────────────────────────┘
-       │ Flow emits new value
-       ▼
-┌─────────────┐     ┌─────────────────┐
-│  ViewModel  │ ──▶ │  UI Recomposes  │
-│ (StateFlow) │     │  automatically  │
-└─────────────┘     └─────────────────┘
+```text
+User action -> UseCase (rw transaction) -> WriteRepository -> DB/API
+                                            -> observed flows emit updated state
 ```
 
-## API Endpoints (Remote)
+## Mapping boundaries
 
-PWS Server provides REST API divided into three categories. The client uses Ktor with Resources.
+- API transport types live in `:api:contract`.
+- Conversion between DTO and domain lives in `:api:mapping`.
+- Room entities/DAO projections are internal to local storage modules.
 
-### Global Endpoints (read-only)
+Rule: domain models are source of business semantics; transport/storage models are adapters.
 
-In the target architecture — public data available without authorization or with optional authorization.
-However, in the current version, until the web application is implemented, authorization is required.
+## API contracts (source of truth)
 
-| Method | Endpoint                        | Description                                        |
-|--------|---------------------------------|----------------------------------------------------|
-| GET    | `/v1/books`                     | List of songbooks (search with filters and sorting)|
-| GET    | `/v1/books/{id}`                | Songbook details                                   |
-| GET    | `/v1/books/{id}/songs`          | Songs in songbook                                  |
-| GET    | `/v1/songs`                     | List of songs (search with filters and sorting)    |
-| GET    | `/v1/songs/{id}`                | Song details                                       |
-| GET    | `/v1/songs/search`              | Full-text search on global songs                   |
-| GET    | `/v1/songs/search/suggestions`  | Search suggestions for autocomplete                |
+Do not treat this page as a full endpoint reference. Use contract resources in:
 
-> **Note:** Search endpoints `/v1/songs/search` and `/v1/user/songs/search` have **identical interfaces** 
-> (same parameters and response format). Client can use a common adapter to switch between them.
-> Response includes `bookReferences` for navigation to song in book context.
-| GET    | `/v1/tags`                      | List of tags                                       |
-| GET    | `/v1/tags/{id}`                 | Tag details                                        |
-| GET    | `/v1/tags/{id}/songs`           | Songs by tag                                       |
+- `api/contract/src/commonMain/kotlin/book/`
+- `api/contract/src/commonMain/kotlin/song/`
+- `api/contract/src/commonMain/kotlin/tag/`
+- `api/contract/src/commonMain/kotlin/favorite/`
+- `api/contract/src/commonMain/kotlin/history/`
+- `api/contract/src/commonMain/kotlin/usersong/`
+- `api/contract/src/commonMain/kotlin/usertag/`
+- `api/contract/src/commonMain/kotlin/userbook/`
+- `api/contract/src/commonMain/kotlin/admin/`
 
-### User Endpoints (read-write)
+## Search-specific notes
 
-Authenticated user data, requires Bearer token:
+- Search use cases return domain search models (`SongSearchResponse`, `SongSearchSuggestion`).
+- Suggestions include `bookReferences` so UI can navigate with `SongNumberId` when available.
+- Screen models apply debounce before remote/local search requests.
 
-| Method | Endpoint                              | Description                                                                                                                    |
-|--------|---------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
-| GET    | `/v1/user/books`                      | Songbooks (global + user). Supports search with filters and sorting.                                                           |
-| POST   | `/v1/user/books`                      | Add user songbook.                                                                                                             |
-| PUT    | `/v1/user/books/{id}`                 | Edit songbook. Only user songbooks can be edited. Global songbooks cannot be modified.                                         |
-| GET    | `/v1/user/songs/{id}`                 | Get song with user's overrides applied (merged view).                                                                          |
-| PATCH  | `/v1/user/songs/{id}`                 | Apply override to global song. Creates or updates user's override.                                                             |
-| DELETE | `/v1/user/songs/{id}/override`        | Reset user's overrides for a song (restore to global version).                                                                 |
-| GET    | `/v1/user/songs?overriddenOnly=true`  | Get list of song IDs with user overrides.                                                                                      |
-| GET    | `/v1/user/songs/search`               | Full-text search (merged: global + user's songs).                                                                              |
-| GET    | `/v1/user/songs/search/suggestions`   | Search suggestions (merged: global + user's songs).                                                                            |
-| GET    | `/v1/user/favorites`                  | User's favorites                                                                                                               |
-| PUT    | `/v1/user/favorites/{songId}`         | Add to favorites                                                                                                               |
-| DELETE | `/v1/user/favorites/{songId}`         | Remove from favorites                                                                                                          |
-| GET    | `/v1/user/history`                    | View history                                                                                                                   |
-| GET    | `/v1/user/tags`                       | Tags (global + user).                                                                                                          |
-| POST   | `/v1/user/tags`                       | Create user tag                                                                                                                |
-| PUT    | `/v1/user/tags/{id}`                  | Update tag. If tag is global, a user override is created. The global tag itself is not changed.                                |
-| DELETE | `/v1/user/tags/{id}`                  | Delete tag. If tag is global, a user override is created (tag is marked as deleted for the current user).                      |
+## Books visibility notes
 
-### Administrative Endpoints (read-write)
+- Book visibility is priority-driven.
+- For UI lists that must hide disabled books, use `BookQuery(enabled = true)`.
 
-Global data management, requires administrator role:
+## Consistency checklist for changes
 
-| Method | Endpoint                      | Description              |
-|--------|-------------------------------|--------------------------|
-| GET    | `/v1/admin/books`             | List all songbooks       |
-| POST   | `/v1/admin/books`             | Create songbook          |
-| PUT    | `/v1/admin/books/{id}`        | Update songbook          |
-| DELETE | `/v1/admin/books/{id}`        | Delete songbook          |
-| GET    | `/v1/admin/songs`             | List all songs           |
-| POST   | `/v1/admin/songs`             | Create song              |
-| PUT    | `/v1/admin/songs/{id}`        | Update song              |
-| DELETE | `/v1/admin/songs/{id}`        | Delete song              |
-| GET    | `/v1/admin/tags`              | List all tags            |
-| POST   | `/v1/admin/tags`              | Create tag               |
-| PUT    | `/v1/admin/tags/{id}`         | Update tag               |
-| DELETE | `/v1/admin/tags/{id}`         | Delete tag               |
+When touching data flow, verify all affected layers:
 
-### Authorization (Web/TG Mini App)
+1. Domain contracts (`:domain`).
+2. API contract and mapping (`:api:contract`, `:api:mapping`) if remote shape changed.
+3. Local repo/DAO path (`:data:repo-room`, `:data:db-room`) if local behavior changed.
+4. ScreenModel usage in `:features`.
 
-```
-┌─────────────────────────────────────────────────────────┐
-│  Telegram Mini App                                      │
-│  ┌───────────────────────────────────────────────────┐  │
-│  │  initData (from Telegram WebApp)                  │  │
-│  └──────────────────────┬────────────────────────────┘  │
-└─────────────────────────┼───────────────────────────────┘
-                          │
-                          ▼ Authorization: TgWebApp {initData}
-┌─────────────────────────────────────────────────────────┐
-│  PWS Server                                             │
-│  ┌───────────────────────────────────────────────────┐  │
-│  │  1. Validate initData signature                   │  │
-│  │  2. Extract user_id                               │  │
-│  │  3. Process request with user context             │  │
-│  └───────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────┘
-```
-
-## Data Mapping
-
-### DTO ↔ Domain
-
-```
-┌─────────────────────┐     ┌─────────────────────┐
-│   API DTO           │     │   Domain Model      │
-│   (:api:contract)   │     │   (:domain)         │
-│                     │     │                     │
-│  SongDto            │ ──▶ │  SongDetail         │
-│  BookDto            │ ──▶ │  Book               │
-│  TagDto             │ ──▶ │  Tag                │
-└─────────────────────┘     └─────────────────────┘
-          │                          ▲
-          │                          │
-          └──────────────────────────┘
-                :api:mapping
-              toDto() / toDomain()
-```
-
-### Mapping Example
-
-```kotlin
-// api/mapping/.../SongMapping.kt
-fun SongDto.toDomain(): SongDetail = SongDetail(
-    id = id,
-    title = title,
-    lyric = lyric,
-    // ...
-)
-
-fun SongDetail.toDto(): SongDto = SongDto(
-    id = id,
-    title = title,
-    lyric = lyric,
-    // ...
-)
-```
-
-## Local Storage (Room)
-
-### Entity ↔ Domain
-
-```
-┌─────────────────────┐     ┌─────────────────────┐
-│   Room Entity       │     │   Domain Model      │
-│   (:data:db-room)   │     │   (:domain)         │
-│                     │     │                     │
-│  SongEntity         │ ──▶ │  SongDetail         │
-│  BookEntity         │ ──▶ │  Book               │
-│  FavoriteEntity     │ ──▶ │  Favorite           │
-└─────────────────────┘     └─────────────────────┘
-          │                          ▲
-          │                          │
-          └──────────────────────────┘
-               :data:repo-room
-              (internal mapping)
-```
-
-## Dependency Injection (Koin)
-
-### Platform Configuration
-
-```kotlin
-// Android/iOS application
-val appModule = module {
-    // Local repositories
-    single<SongReadRepository> { RoomSongReadRepository(get()) }
-    single<FavoriteWriteRepository> { RoomFavoriteWriteRepository(get()) }
-    // ...
-}
-
-// Web/TG Mini App
-val appModule = module {
-    // Remote repositories
-    single<SongReadRepository> { RemoteSongReadRepository(get()) }
-    single<FavoriteWriteRepository> { RemoteFavoriteWriteRepository(get()) }
-    // ...
-}
-
-// Use Cases — same for all platforms
-val domainModule = module {
-    factory { GetSongDetailUseCase(get()) }
-    factory { AddFavoriteUseCase(get()) }
-    // ...
-}
-```
-
-## Error Handling
-
-// not implemented
-
-## Caching (Future)
-
-Caching is planned for Web/TG Mini App:
-
-```
-┌─────────────────────────────────────────────────────────┐
-│  Request                                                │
-│     │                                                   │
-│     ▼                                                   │
-│  ┌─────────────┐   Hit    ┌─────────────┐              │
-│  │    Cache    │ ───────▶ │   Return    │              │
-│  └─────────────┘          │   cached    │              │
-│         │ Miss            └─────────────┘              │
-│         ▼                                              │
-│  ┌─────────────┐          ┌─────────────┐              │
-│  │   Network   │ ───────▶ │   Update    │              │
-│  │   Request   │          │   Cache     │              │
-│  └─────────────┘          └─────────────┘              │
-│                                                         │
-└─────────────────────────────────────────────────────────┘
-```
+Last reviewed: 2026-04-29

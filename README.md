@@ -7,104 +7,92 @@
 [![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
-## About
+Multiplatform library for PWS (Praise & Worship Songs): domain logic, Compose UI screens, API client, and local storage integration.
 
-**PWS Core** is a multiplatform library for the "Christian Songbook" application (Praise & Worship Songs).
+## What this repository contains
 
-Provides:
-- 📱 **Domain logic** — models, use cases, repository interfaces
-- 🎨 **UI components** — Compose Multiplatform screens and components
-- 🌐 **API client** — HTTP client for [pws-server](https://github.com/alelk/pws-server)
-- 💾 **Local storage** — Room database for offline support
+- Domain layer: entities, commands/queries, use cases, repository contracts.
+- Feature layer: Compose Multiplatform screens on Voyager + Koin.
+- Data/API implementations: Room-based local repositories and Ktor remote client.
+- Shared core modules: navigation contracts and reusable UI components.
 
-### Supported Platforms
+## Platforms
 
-| Platform | UI | Data Source | Offline |
-|----------|---|-------------|---------|
-| Android | ✅ | Room DB | ✅ |
-| iOS | ✅ | Room DB | ✅ |
-| Web (JS) | ✅ | Remote API | ❌ |
-| Telegram Mini App | ✅ | Remote API | ❌ |
+| Platform | UI | Data source | Offline |
+|---|---|---|---|
+| Android | Compose | Room DB | Yes |
+| iOS | Compose | Room DB | Yes |
+| Web (JS) | Compose | Remote API | No |
+| Telegram Mini App | Compose | Remote API | No |
 
-## Documentation
+## Read this first
 
-> **For AI agents**: start with [AGENTS.md](AGENTS.md)
+- For AI agents: `AGENTS.md`
+- Project context: `docs/ai/CONTEXT.md`
+- Engineering conventions: `docs/ai/CONTRIBUTING.md`
+- Architecture overview: `docs/ARCHITECTURE.md`
+- Module map: `docs/MODULES.md`
+- Feature behavior: `docs/FEATURES.md` and `docs/features/`
 
-| Document | Description |
-|----------|-------------|
-| [AGENTS.md](AGENTS.md) | Quick start for AI agents |
-| [docs/ai/CONTEXT.md](docs/ai/CONTEXT.md) | Project context |
-| [docs/ai/CONTRIBUTING.md](docs/ai/CONTRIBUTING.md) | Development guidelines |
-| [docs/GLOSSARY.md](docs/GLOSSARY.md) | Glossary of terms |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Application architecture |
-| [docs/MODULES.md](docs/MODULES.md) | Module descriptions |
-| [docs/DATA_FLOW.md](docs/DATA_FLOW.md) | Data flows and API |
-| [docs/FEATURES.md](docs/FEATURES.md) | Feature descriptions |
-| [docs/features/](docs/features/) | Detailed feature documentation |
+## Module map
 
-## Module Structure
+Top-level modules (source of truth: `settings.gradle.kts`):
 
-```
-pws-core/
-├── domain/              # 🎯 Core: models, use cases
-│   ├── lyric-format/    #    Song lyrics parsing
-│   └── test-fixtures/   #    Test data
-├── api/
-│   ├── contract/        # 📝 API DTOs
-│   ├── client/          # 🌐 Ktor HTTP client
-│   └── mapping/         # 🔄 DTO ↔ Domain mapping
-├── features/            # 🎨 UI screens (Compose)
-├── core/
-│   ├── navigation/      # 🧭 Navigation (Voyager)
-│   └── ui/              # 🎨 Shared UI components
-├── data/
-│   ├── db-room/         # 💾 Room Database
-│   └── repo-room/       # 💾 Local repositories
-└── backup/              # 📦 Backup/restore
+```text
+:domain
+:domain:domain-test-fixtures
+:domain:lyric-format
+
+:api:contract
+:api:mapping
+:api:client
+:api:client:di
+
+:core:navigation
+:core:ui
+
+:features
+
+:backup
+
+:data:db-room
+:data:db-room:db-room-test-fixtures
+:data:repo-room
 ```
 
-## Technologies
+## Tech stack
 
-- **Kotlin Multiplatform** 2.x
-- **Compose Multiplatform** (UI)
-- **Voyager** (navigation)
-- **Koin** (DI)
-- **Ktor** (HTTP)
-- **Room** (local DB)
-- **kotlinx.serialization** (serialization)
-- **Kotest** (testing)
+- Kotlin Multiplatform
+- Compose Multiplatform
+- Voyager
+- Koin
+- Ktor
+- Room
+- kotlinx.serialization
+- Kotest
 
 ## Development
 
-#### Local maven publication
+### Publish local Maven artifacts
 
-1. Specify [app version](app.version).
+1. Update `app.version`.
+2. Publish artifacts used by dependent projects:
 
-2. Publish local maven artifacts:
-   ```shell
-   ./gradlew :domain:publishToMavenLocal :domain:domain-test-fixtures:publishToMavenLocal
-   ```
+```shell
+./gradlew :domain:publishToMavenLocal :domain:domain-test-fixtures:publishToMavenLocal
+```
 
-#### Run tests
-
-*domain* module tests:
+### Run key tests
 
 ```shell
 ./gradlew :domain:jvmTest
-```
-
-*backup* module tests:
-
-```shell
 ./gradlew :backup:jvmTest
-```
-
-*data:db-room* module tests:
-
-```shell
 ./gradlew :data:db-room:testDebugUnitTest :data:db-room:jvmTest
 ```
 
+## Compatibility note
+
+When changing API contracts, keep `:api:contract` and `:api:mapping` compatible with `pws-server`.
 
 ## Contributors ✨
 
@@ -124,3 +112,5 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
+
+Last reviewed: 2026-04-29

@@ -1,434 +1,68 @@
 # PWS Core Modules
 
-## :domain
+This page lists current modules from `settings.gradle.kts` and their responsibilities.
 
-**Group**: `io.github.alelk.pws.domain`
+## Module inventory
 
-Central module with business logic. Platform-independent.
+| Module | Purpose |
+|---|---|
+| `:domain` | Business models, commands/queries, use cases, repository interfaces |
+| `:domain:lyric-format` | Lyrics parser/formatter |
+| `:domain:domain-test-fixtures` | Test data generators/helpers |
+| `:api:contract` | HTTP DTOs and Ktor `@Resource` contracts |
+| `:api:mapping` | DTO <-> domain mapping |
+| `:api:client` | Ktor API client + remote repository implementations |
+| `:api:client:di` | DI wiring for API client modules |
+| `:core:navigation` | Shared navigation contracts (`SharedScreens`) |
+| `:core:ui` | Shared UI primitives/utilities |
+| `:features` | Compose Multiplatform screens + screen models |
+| `:data:db-room` | Room schema, entities, DAOs |
+| `:data:db-room:db-room-test-fixtures` | Test helpers/fixtures for Room module |
+| `:data:repo-room` | Room-backed repository implementations |
+| `:backup` | Backup/import/export domain logic |
 
-### Structure
+## Important note about sync
 
-```
-domain/src/commonMain/kotlin/io/github/alelk/pws/domain/
-├── song/           # Songs (models, repositories, use cases, commands, queries)
-├── book/           # Songbooks
-├── bookstatistic/  # Book statistics (song counts, etc.)
-├── songnumber/     # Song numbers in songbooks
-├── tag/            # Tags/categories
-├── songtag/        # Song-tag associations
-├── favorite/       # Favorites
-├── history/        # View history
-├── cross/          # Cross-module projections and use cases
-├── songreference/  # References to similar songs
-├── auth/           # Authorization (users, tokens, access plans)
-├── payment/        # Payments (future)
-├── person/         # Person value object (author, translator, composer)
-├── tonality/       # Musical tonality enum
-└── core/           # Common utilities (ids, pagination, results, transactions)
-```
+- There is currently no standalone `:sync` module in this repository.
+- Synchronization concepts are documented in `docs/SYNC.md` as architecture/roadmap guidance.
 
-### Entity Package Organization
+## Typical dependency direction
 
-Each package is organized identically:
+```text
+:features -> :domain, :core:navigation, :core:ui
 
-```
-{entity}/
-├── model/          # Domain models (data classes)
-├── repository/     # Repository interfaces
-├── usecase/        # Use cases
-├── command/        # Command objects for writes
-└── query/          # Query objects for reads
-```
+:api:client -> :domain, :api:contract, :api:mapping
+:api:mapping -> :domain, :api:contract
 
-### Core Package Structure
+:data:repo-room -> :domain, :data:db-room
 
-The `core/` package contains foundational types:
+:domain:lyric-format -> :domain
+:domain:domain-test-fixtures -> :domain
 
-```
-core/
-├── ids/            # Typed identifiers (SongId, BookId, TagId, UserId, etc.)
-├── pagination/     # Paging, Page
-├── result/         # Sealed result types (CreateResourceResult, UpdateResourceResult, etc.)
-├── transaction/    # TransactionRunner abstraction
-├── Color.kt        # Color value object
-├── Locale.kt       # Locale value object  
-├── NonEmptyString.kt
-├── OptionalField.kt # For patch operations (Unchanged/Set/Clear)
-├── Reference.kt    # BibleRef, SongRef
-├── SongNumber.kt   # Song number in book
-├── Version.kt      # Semantic versioning
-└── Year.kt         # Year value object
+:backup -> :domain
 ```
 
-### Dependencies
+## Key code locations
 
-- `kotlinx.serialization.core`
-- `kotlinx.coroutines.core`
+- Domain root: `domain/src/commonMain/kotlin/io/github/alelk/pws/domain/`
+- Features root: `features/src/commonMain/kotlin/io/github/alelk/pws/features/`
+- API client repos: `api/client/src/commonMain/kotlin/repository/`
+- Room repos: `data/repo-room/src/commonMain/kotlin/io/github/alelk/pws/data/repository/room/`
+- API contracts: `api/contract/src/commonMain/kotlin/`
 
----
+## Feature-module conventions
 
-## :domain:domain-test-fixtures
+Typical feature package in `:features`:
 
-Test fixtures for domain models.
-
-### Contents
-
-- Kotest Arb generators for property-based testing
-- Helper functions for test data generation
-
-### Structure
-
-```
-domain-test-fixtures/src/commonMain/kotlin/io/github/alelk/pws/domain/
-├── KotestHelpers.kt      # distinctBy and other Arb extensions
-├── core/                 # Generators for core types
-│   ├── color.kt          # Arb.color()
-│   ├── locale.kt         # Arb.locale()
-│   ├── version.kt        # Arb.version()
-│   ├── year.kt           # Arb.year()
-│   ├── nonEmptyString.kt # Arb.nonEmptyString()
-│   ├── songNumber.kt     # Arb.songNumber()
-│   ├── ids/              # Arb.songId(), Arb.bookId(), etc.
-│   └── ...
-├── song/
-│   ├── model/            # Arb.songSummary(), Arb.songDetail()
-│   ├── command/          # Arb.createSongCommand()
-│   └── lyric/            # Arb.lyric(), Arb.lyricPart()
-├── book/                 # Arb.bookSummary(), Arb.bookDetail()
-├── person/               # Arb.person()
-├── songnumber/           # Arb.songNumberLink()
-└── tonality/             # Arb.tonality()
-```
-
-### Usage Example
-
-```kotlin
-class SongTest : StringSpec({
-  "should serialize and deserialize song" {
-    checkAll(Arb.songDetail()) { song ->
-      val json = Json.encodeToString(song)
-      val decoded = Json.decodeFromString<SongDetail>(json)
-      decoded shouldBe song
-    }
-  }
-})
-```
-
----
-
-## :domain:lyric-format
-
-**Group**: `io.github.alelk.pws.domain`
-
-Parsing and formatting song lyrics.
-
-### Purpose
-
-- Parsing structured song text (verses, choruses, bridges)
-- Formatting lyrics for display
-- Internationalization (i18n4k) — EN, UK, RU support
-
-### Contents
-
-```
-lyric-format/src/commonMain/kotlin/io/github/alelk/pws/domain/lyric/format/
-├── LyricParser.kt    # Text parser (Kudzu parser combinators)
-└── LyricWriter.kt    # Output formatting
-```
-
-### Dependencies
-
-- `:domain`
-- Kudzu (parser combinators)
-- i18n4k (internationalization)
-
----
-
-## :api:contract
-
-**Group**: `io.github.alelk.pws.api`
-
-DTOs (Data Transfer Objects) for API.
-
-### Purpose
-
-- Serializable models for HTTP requests/responses
-- Annotated with `@Serializable`
-- Conform to backend API contract
-
----
-
-## :api:client
-
-**Group**: `io.github.alelk.pws.api`
-
-HTTP client for backend API.
-
-### Structure
-
-```
-api/client/src/commonMain/kotlin/
-├── api/            # API endpoints
-├── client/         # Ktor client configuration
-├── config/         # Settings
-├── error/          # Error handling
-├── http/           # HTTP utilities
-└── repository/     # Remote repositories
-```
-
-### Remote Repositories
-
-Implement domain repository interfaces:
-
-| Repository | Interface |
-|------------|-----------|
-| `RemoteSongReadRepository` | `SongReadRepository` |
-| `RemoteSongWriteRepository` | `SongWriteRepository` |
-| `RemoteBookReadRepository` | `BookReadRepository` |
-| `RemoteBookWriteRepository` | `BookWriteRepository` |
-
-### Dependencies
-
-- `:domain`
-- `:api:contract`
-- `:api:mapping`
-- Ktor Client (core, auth, content-negotiation)
-
----
-
-## :api:mapping
-
-Mapping between API DTOs and Domain models.
-
-### Contents
-
-- Extension functions for conversion
-- `toDto()` and `toDomain()` functions
-
----
-
-## :features
-
-**Group**: `io.github.alelk.pws.features`
-
-UI components on Compose Multiplatform.
-
-### Structure
-
-```
-features/src/commonMain/kotlin/io/github/alelk/pws/features/
-├── app/            # App-wide components (AppBar, etc.)
-├── book/           # Songbook screen
-├── books/          # Songbooks list
-├── search/         # Search screen
-├── song/           # Song screen
-├── favorites/      # Favorites
-├── history/        # History
-├── tags/           # Tags
-├── components/     # Reusable UI components
-├── theme/          # Theme (colors, typography)
-└── di/             # Koin modules
-```
-
-### Feature Organization
-
-```
+```text
 {feature}/
-├── {Feature}Screen.kt      # Voyager Screen
-├── {Feature}ViewModel.kt   # ViewModel
-├── {Feature}UiState.kt     # UI State sealed class
-└── components/             # Feature-specific components
+  {Feature}Screen.kt
+  {Feature}ScreenModel.kt
+  {Feature}UiState.kt
+  {feature}ScreenModelModule.kt
+  {feature}ScreenModule.kt
 ```
 
-### Dependencies
+Primary presentation pattern is Voyager `Screen` + `StateScreenModel`.
 
-- `:domain`
-- `:core:navigation`
-- Compose Multiplatform
-- Voyager (navigator, koin)
-- Koin
-- Lifecycle ViewModel
-
-### TODO
-
-1. Split into modules:
-
-```
-features/
-├── feature-books/          # :features:books
-├── feature-songs/          # :features:songs  
-├── feature-favorites/      # :features:favorites
-├── feature-search/         # :features:search
-├── feature-tags/           # :features:tags
-└── common/ 
-```
-
-2. Move theme/ to :core:ui
-3. Add @Preview for each Screen
-
----
-
-## :core:navigation
-
-Shared navigation components.
-
-### Contents
-
-```kotlin
-// Navigation.kt - navigation utilities
-
-// SharedScreens.kt - screen definitions
-sealed interface SharedScreen {
-    // All possible app screens are defined here
-}
-```
-
-### Usage
-
-Features module creates Screen implementations for each SharedScreen.
-
----
-
-## :core:ui
-
-Shared UI components and utilities.
-
-### Purpose
-
-- Reusable low-level Compose components
-- UI utilities and extensions
-- Common modifiers
-
----
-
-## :data:db-room
-
-Room database for Android/iOS.
-
-### Contents
-
-- Entity classes (tables)
-- DAO interfaces
-- Database class
-- Migrations
-- Type converters
-
----
-
-## :data:repo-room
-
-Local repositories based on Room.
-
-### Purpose
-
-- Implement domain repository interfaces
-- Work with Room DAOs
-- Used in Android/iOS applications
-
----
-
-## :backup
-
-Backup functionality.
-
-### Contents
-
-- Data serialization/deserialization
-- Export/import to file
-- Data migration between versions
-
----
-
-## :sync
-
-Data synchronization between local DB and server.
-
-See [SYNC.md](SYNC.md) for details.
-
-### Structure
-
-```
-sync/
-├── core/                    # Base interfaces and SyncManager
-│   ├── SyncManager.kt
-│   ├── ConflictResolver.kt
-│   ├── PendingChange.kt
-│   └── ConnectivityObserver.kt
-├── favorites/               # Favorites synchronization
-├── history/                 # History synchronization
-├── tags/                    # Tags synchronization
-├── overrides/               # User overrides synchronization
-└── di/                      # Koin modules
-```
-
-### Purpose
-
-- Offline-first architecture for mobile applications
-- Pending changes queue for offline operation
-- Conflict resolution during synchronization
-- Background sync via WorkManager (Android)
-
-### Dependencies
-
-- `:domain` — repository interfaces
-- `:data:repo-room` — local repositories
-- `:api:client` — remote repositories
-
-## Dependency Graph
-
-```mermaid
-graph TD
-    subgraph "UI Layer"
-        features[":features"]
-        navigation[":core:navigation"]
-        coreui[":core:ui"]
-    end
-    
-    subgraph "Domain Layer"
-        domain[":domain"]
-        lyricformat[":domain:lyric-format"]
-        fixtures[":domain:domain-test-fixtures"]
-    end
-    
-    subgraph "Data Layer - Remote"
-        client[":api:client"]
-        contract[":api:contract"]
-        mapping[":api:mapping"]
-    end
-    
-    subgraph "Data Layer - Local"
-        room[":data:db-room"]
-        reporoom[":data:repo-room"]
-    end
-    
-    subgraph "Sync Layer"
-        sync[":sync"]
-    end
-    
-    backup[":backup"]
-    
-    features --> domain
-    
-    sync --> domain
-    sync --> reporoom
-    sync --> client
-    features --> lyricformat
-    features --> navigation
-    features --> coreui
-    
-    lyricformat --> domain
-    
-    client --> domain
-    client --> contract
-    client --> mapping
-    mapping --> contract
-    mapping --> domain
-    
-    reporoom --> domain
-    reporoom --> room
-    
-    backup --> domain
-    
-    fixtures --> domain
-```
-
+Last reviewed: 2026-04-29

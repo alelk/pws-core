@@ -1,119 +1,74 @@
-// ViewModel
-class SongViewModel(private val useCase: GetSongDetailUseCase) : ViewModel() {
-    private val _state = MutableStateFlow<UiState>(UiState.Loading)
-    val state: StateFlow<UiState> = _state.asStateFlow()
-# PWS Core — Guide for AI Agents
+# PWS Core - Guide for AI Agents
 
-> **Quick start**: Read [docs/ai/CONTEXT.md](docs/ai/CONTEXT.md) to understand the project.
+Use this file as a fast operational runbook.
+For detailed context and conventions, continue with `docs/ai/CONTEXT.md` and `docs/ai/CONTRIBUTING.md`.
 
-## About the Project
+## Mission and boundaries
 
-PWS (Praise & Worship Songs) — a multiplatform Christian songbook.
+- Repository role: multiplatform core library for PWS (domain + UI + API client + local data).
+- Related repos: `pws-server` (backend API), `pws-android` (Android app using this library).
+- Important contract rule: `:api:contract` and `:api:mapping` must stay compatible with `pws-server`.
 
-| Platform              | Data Source       | Offline |
-|-----------------------|-------------------|---------|
-| Android/iOS           | Local Room DB     | ✅       |
-| Web/Telegram Mini App | Remote API        | ❌       |
+## What to read for each task
 
-### Related Repositories
+- Feature behavior or business rules: `docs/FEATURES.md`, `docs/features/*.md`.
+- Architecture and dependencies: `docs/ARCHITECTURE.md`, `docs/MODULES.md`.
+- API/data flow questions: `docs/DATA_FLOW.md`, `docs/SYNC.md`.
+- Terminology: `docs/GLOSSARY.md`.
 
-| Repository          | Purpose                                                    |
-|---------------------|------------------------------------------------------------|
-| **pws-core** (this) | Multiplatform library: domain, UI, API client              |
-| **pws-server**      | Backend server (Ktor): REST API, Elasticsearch, PostgreSQL |
-| **pws-android**     | Android application (uses pws-core)                        |
+## Code navigation shortcuts
 
-> ⚠️ When working with pws-core, keep in mind that API contracts (:api:contract) must match pws-server.
+- Domain models: `domain/src/commonMain/kotlin/io/github/alelk/pws/domain/{entity}/model/`
+- Domain use cases: `domain/src/commonMain/kotlin/io/github/alelk/pws/domain/{entity}/usecase/`
+- Domain repositories: `domain/src/commonMain/kotlin/io/github/alelk/pws/domain/{entity}/repository/`
+- Features (screens/screen models): `features/src/commonMain/kotlin/io/github/alelk/pws/features/{feature}/`
+- Remote repositories: `api/client/src/commonMain/kotlin/repository/`
+- Room repositories: `data/repo-room/src/commonMain/kotlin/io/github/alelk/pws/data/repository/room/`
 
-## Documentation
-
-| File                                               | Contents                       |
-|----------------------------------------------------|--------------------------------|
-| [docs/ai/CONTEXT.md](docs/ai/CONTEXT.md)           | Brief project context          |
-| [docs/ai/CONTRIBUTING.md](docs/ai/CONTRIBUTING.md) | Development guidelines         |
-| [docs/GLOSSARY.md](docs/GLOSSARY.md)               | Glossary of terms              |
-| [docs/FEATURES.md](docs/FEATURES.md)               | Feature descriptions           |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)       | Application architecture       |
-| [docs/MODULES.md](docs/MODULES.md)                 | Module descriptions            |
-| [docs/DATA_FLOW.md](docs/DATA_FLOW.md)             | API and data flows             |
-| [docs/SYNC.md](docs/SYNC.md)                       | Data synchronization (mobile)  |
-| [docs/features/\*.md](docs/features/)              | Detailed feature documentation |
-
-## Quick Code Navigation
-
-### Domain Models
-
-```
-domain/src/commonMain/kotlin/io/github/alelk/pws/domain/{entity}/model/
-```
-
-### Use Cases
-
-```
-domain/src/commonMain/kotlin/io/github/alelk/pws/domain/{entity}/usecase/
-```
-
-### UI Screens
-
-```
-features/src/commonMain/kotlin/io/github/alelk/pws/features/{feature}/
-```
-
-### Remote Repositories
-
-```
-api/client/src/commonMain/kotlin/repository/
-```
-
-## Key Patterns
+## Core implementation patterns
 
 ```kotlin
-// Use Case with Transaction
+// Use case with transaction boundary
 class GetSongDetailUseCase(
-    private val repo: SongReadRepository,
-    private val txRunner: TransactionRunner
+  private val readRepository: SongReadRepository,
+  private val txRunner: TransactionRunner
 ) {
-    suspend operator fun invoke(id: SongId): SongDetail? =
-        txRunner.inRoTransaction { repo.get(id) }
+  suspend operator fun invoke(id: SongId): SongDetail? =
+    txRunner.inRoTransaction { readRepository.get(id) }
 }
 
-// Repository Interface (domain)
-interface SongReadRepository {
-    suspend fun get(id: SongId): SongDetail?
-    suspend fun getMany(query: SongQuery, sort: SongSort): List<SongSummary>
+// Observe use case (reactive path)
+class ObserveSongUseCase(
+  private val observeRepository: SongObserveRepository
+) {
+  operator fun invoke(id: SongId): Flow<SongDetail?> = observeRepository.observe(id)
 }
 
-// Write operations return sealed results
-interface SongWriteRepository {
-    suspend fun create(command: CreateSongCommand): CreateResourceResult<SongId>
-}
-
-// Value Objects with validation
-@JvmInline
-value class SongId(val value: Long) {
-    init { require(value >= 0) }
-}
-
-// OptionalField for patch operations
-data class UpdateSongCommand(
-    val id: SongId,
-    val name: NonEmptyString? = null,                    // null = unchanged
-    val author: OptionalField<Person?> = OptionalField.Unchanged  // Unchanged/Set/Clear
-)
-
-// ViewModel
-class SongViewModel(private val useCase: GetSongDetailUseCase) : ViewModel() {
-    private val _state = MutableStateFlow<UiState>(UiState.Loading)
-    val state: StateFlow<UiState> = _state.asStateFlow()
-}
+// Feature state holder uses Voyager ScreenModel
+class BooksScreenModel(
+  private val observeBooks: ObserveBooksUseCase
+) : StateScreenModel<BooksUiState>(BooksUiState.Loading)
 ```
 
-## Technologies
+## Working checklist (before coding)
 
-- **Kotlin Multiplatform**
-- **Compose Multiplatform** (UI)
-- **Voyager** (navigation)
-- **Koin** (DI)
-- **Ktor** (HTTP)
-- **Room** (local DB)
-- **Kotest** (testing)
+- Confirm target module and package before creating files.
+- Reuse existing commands/queries/use cases when possible.
+- Keep domain platform-agnostic (`commonMain` without Android/iOS APIs).
+- For UI changes, follow `Screen` + `StateScreenModel` + `UiState` pattern.
+
+## Working checklist (before finalizing)
+
+- Check compile/lint/test for changed modules.
+- Verify behavior changes against feature docs.
+- If API contracts changed, note required alignment with `pws-server`.
+- Keep docs updated when changing architecture, flows, or conventions.
+
+## Do not do
+
+- Do not call repositories directly from UI; go through use cases.
+- Do not add platform-specific code into `:domain`.
+- Do not introduce cross-feature tight coupling.
+- Do not rename API DTO fields without contract review.
+
+Last reviewed: 2026-04-29
