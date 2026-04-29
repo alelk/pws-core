@@ -1,5 +1,12 @@
 # PWS Android
 
+# [2.17.0](https://github.com/alelk/pws-core/compare/v2.16.0...v2.17.0) (2026-04-29)
+
+
+### Features
+
+* Enhance text highlighting by normalizing legacy markup and adding search results screen ([b576ee9](https://github.com/alelk/pws-core/commit/b576ee9c39267c782c172b93095e73ce2188ed6f))
+
 # [2.16.0](https://github.com/alelk/pws-core/compare/v2.15.2...v2.16.0) (2026-04-29)
 
 
