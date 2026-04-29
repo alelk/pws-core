@@ -1,5 +1,12 @@
 # PWS Android
 
+## [2.15.2](https://github.com/alelk/pws-core/compare/v2.15.1...v2.15.2) (2026-04-29)
+
+
+### Bug Fixes
+
+* Update Kotlin and library versions, enhance Gradle properties for performance ([c7b65f7](https://github.com/alelk/pws-core/commit/c7b65f732d007f41a5a6d599cfe0c0af8314b267))
+
 ## [2.15.1](https://github.com/alelk/pws-core/compare/v2.15.0...v2.15.1) (2026-04-28)
 
 
