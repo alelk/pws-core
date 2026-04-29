@@ -1,5 +1,12 @@
 # PWS Android
 
+# [2.18.0](https://github.com/alelk/pws-core/compare/v2.17.0...v2.18.0) (2026-04-29)
+
+
+### Features
+
+* Enhance error handling and localization across screens ([cc5f664](https://github.com/alelk/pws-core/commit/cc5f6648e2fef2e0fb1896cf69b8702e95dc9ff1))
+
 # [2.17.0](https://github.com/alelk/pws-core/compare/v2.16.0...v2.17.0) (2026-04-29)
 
 
