@@ -20,6 +20,10 @@ class TagSongsScreenModel(
   private val observeSongsByTagUseCase: ObserveSongsByTagUseCase<TagId>
 ) : StateScreenModel<TagSongsUiState>(TagSongsUiState.Loading) {
 
+  private companion object {
+    const val TAG_NOT_FOUND_CODE = "TAG_NOT_FOUND"
+  }
+
   init {
     loadTagSongs()
   }
@@ -29,7 +33,7 @@ class TagSongsScreenModel(
       try {
         val tag = getTagDetailUseCase(tagId)
         if (tag == null) {
-          mutableState.value = TagSongsUiState.Error("Тег не найден")
+          mutableState.value = TagSongsUiState.Error(TAG_NOT_FOUND_CODE)
           return@launch
         }
         observeSongsByTagUseCase(tagId).collect { songs ->
@@ -40,7 +44,7 @@ class TagSongsScreenModel(
           }
         }
       } catch (e: Exception) {
-        mutableState.value = TagSongsUiState.Error("Ошибка загрузки: ${e.message}")
+        mutableState.value = TagSongsUiState.Error(e.message ?: "Unknown error")
       }
     }
   }

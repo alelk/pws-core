@@ -57,7 +57,7 @@ class FavoritesScreenModel(
           }
         }
       } catch (e: Exception) {
-        mutableState.value = FavoritesUiState.Error("Ошибка загрузки: ${e.message}")
+        mutableState.value = FavoritesUiState.Error(e.message ?: "Unknown error")
       }
     }
   }

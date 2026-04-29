@@ -61,9 +61,11 @@ import io.github.alelk.pws.features.components.AppModalBottomSheet
 import io.github.alelk.pws.features.components.AppTopBar
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
+import io.github.alelk.pws.features.resources.*
 import io.github.alelk.pws.features.song.edit.SongEditScreen
 import io.github.alelk.pws.features.theme.spacing
 import kotlinx.coroutines.delay
+import org.jetbrains.compose.resources.stringResource
 import org.koin.core.parameter.parametersOf
 import kotlin.time.Duration.Companion.seconds
 
@@ -260,7 +262,7 @@ fun SongDetailContent(
       val title = if (state is SongDetailUiState.Content && !songNumber.isNullOrBlank()) {
         "№ $songNumber"
       } else {
-        "Песня"
+        stringResource(Res.string.song_detail_title_fallback)
       }
 
       AppTopBar(
@@ -270,21 +272,21 @@ fun SongDetailContent(
         actions = {
           if (onNavigatePrev != null) {
             IconButton(onClick = onNavigatePrev) {
-              Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Предыдущая песня")
+              Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.song_detail_prev))
             }
           }
           if (onNavigateNext != null) {
             IconButton(onClick = onNavigateNext) {
-              Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Следующая песня")
+              Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = stringResource(Res.string.song_detail_next))
             }
           }
           IconButton(onClick = { showTextSettingsSheet = true }) {
-            Icon(Icons.Filled.FormatSize, contentDescription = "Размер текста")
+            Icon(Icons.Filled.FormatSize, contentDescription = stringResource(Res.string.song_detail_text_size))
           }
           // "More actions" button — visible only when content loaded
           if (state is SongDetailUiState.Content) {
             IconButton(onClick = { showActionsSheet = true }) {
-              Icon(Icons.Filled.MoreVert, contentDescription = "Действия")
+              Icon(Icons.Filled.MoreVert, contentDescription = stringResource(Res.string.song_detail_actions))
             }
           }
         }
@@ -302,7 +304,7 @@ fun SongDetailContent(
         ) {
           Icon(
             imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-            contentDescription = if (isFavorite) "Убрать из избранного" else "Добавить в избранное"
+            contentDescription = if (isFavorite) stringResource(Res.string.song_detail_remove_favorite) else stringResource(Res.string.song_detail_add_favorite)
           )
         }
       }
@@ -325,8 +327,8 @@ fun SongDetailContent(
           )
         }
         SongDetailUiState.Error -> ErrorContent(
-          title = "Песня не найдена",
-          message = "Возможно, она была удалена или перемещена"
+          title = stringResource(Res.string.song_detail_not_found_title),
+          message = stringResource(Res.string.song_detail_not_found_message)
         )
       }
     }
@@ -424,7 +426,7 @@ private fun TextSettingsSheet(
       .padding(WindowInsets.navigationBars.asPaddingValues())
   ) {
     Text(
-      text = "Размер текста",
+      text = stringResource(Res.string.song_detail_text_size),
       style = MaterialTheme.typography.titleMedium,
       color = MaterialTheme.colorScheme.onSurface
     )
@@ -587,7 +589,7 @@ private fun LyricPartView(
         ) {
           IntrinsicChorusView(
             text = part.text,
-            label = "Припев",
+            label = stringResource(Res.string.song_detail_label_chorus),
             fontSize = baseFontSize,
             lineHeight = lineHeight,
             accentColor = MaterialTheme.colorScheme.primary
@@ -603,7 +605,7 @@ private fun LyricPartView(
         ) {
           IntrinsicChorusView(
             text = part.text,
-            label = "Бридж",
+            label = stringResource(Res.string.song_detail_label_bridge),
             fontSize = baseFontSize,
             lineHeight = lineHeight,
             accentColor = MaterialTheme.colorScheme.tertiary
@@ -696,7 +698,7 @@ private fun SongMetadata(song: SongDetail) {
         )
         Spacer(Modifier.width(spacing.sm))
         Text(
-          text = "Информация о песне",
+          text = stringResource(Res.string.song_detail_info_title),
           style = MaterialTheme.typography.labelLarge,
           color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -704,12 +706,12 @@ private fun SongMetadata(song: SongDetail) {
 
       Spacer(Modifier.height(spacing.sm))
 
-      if (song.author != null) MetadataItem("Автор", song.author!!.name)
-      if (song.composer != null) MetadataItem("Композитор", song.composer!!.name)
-      if (song.translator != null) MetadataItem("Перевод", song.translator!!.name)
-      if (song.year != null) MetadataItem("Год", song.year.toString())
+      if (song.author != null) MetadataItem(stringResource(Res.string.song_detail_info_author), song.author!!.name)
+      if (song.composer != null) MetadataItem(stringResource(Res.string.song_detail_info_composer), song.composer!!.name)
+      if (song.translator != null) MetadataItem(stringResource(Res.string.song_detail_info_translator), song.translator!!.name)
+      if (song.year != null) MetadataItem(stringResource(Res.string.song_detail_info_year), song.year.toString())
       if (hasBibleRef) {
-        MetadataItem("Библия", bibleRefText)
+        MetadataItem(stringResource(Res.string.song_detail_info_bible), bibleRefText)
       }
     }
   }
@@ -759,7 +761,7 @@ private fun SongReferencesSection(references: List<SongReferenceDetail>) {
       )
       Spacer(Modifier.width(spacing.sm))
       Text(
-        text = "Смотрите также",
+        text = stringResource(Res.string.song_detail_see_also),
         style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.onSurfaceVariant
       )
@@ -804,7 +806,7 @@ private fun SongReferenceItem(
         )
         if (reference.reason == SongRefReason.Variation) {
           Text(
-            text = "Вариант (${reference.volume}%)",
+            text = stringResource(Res.string.song_detail_variant, reference.volume),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
           )
@@ -812,7 +814,7 @@ private fun SongReferenceItem(
       }
       Icon(
         Icons.AutoMirrored.Filled.ArrowForward,
-        contentDescription = "Открыть",
+        contentDescription = stringResource(Res.string.song_detail_open),
         modifier = Modifier.size(16.dp),
         tint = MaterialTheme.colorScheme.onSurfaceVariant
       )
@@ -845,7 +847,7 @@ private fun SongTagsSection(tags: List<Tag<TagId>>) {
       )
       Spacer(Modifier.width(spacing.sm))
       Text(
-        text = "Теги",
+        text = stringResource(Res.string.song_detail_tags),
         style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.onSurfaceVariant
       )
@@ -916,7 +918,7 @@ private fun SongActionsSheet(
       .padding(WindowInsets.navigationBars.asPaddingValues())
   ) {
     Text(
-      text = "Действия",
+      text = stringResource(Res.string.song_detail_actions),
       style = MaterialTheme.typography.titleSmall,
       color = MaterialTheme.colorScheme.onSurfaceVariant,
       modifier = Modifier.padding(horizontal = spacing.lg, vertical = spacing.sm)
@@ -924,24 +926,24 @@ private fun SongActionsSheet(
 
     ActionItem(
       icon = { Icon(Icons.Filled.Edit, contentDescription = null) },
-      label = "Редактировать песню",
+      label = stringResource(Res.string.song_detail_action_edit),
       onClick = onEditSong
     )
     ActionItem(
       icon = { Icon(Icons.AutoMirrored.Filled.Label, contentDescription = null) },
-      label = "Изменить теги",
+      label = stringResource(Res.string.song_detail_action_edit_tags),
       onClick = onEditTags
     )
     if (showJump) {
       ActionItem(
         icon = { Icon(Icons.Filled.Search, contentDescription = null) },
-        label = "Перейти к номеру",
+        label = stringResource(Res.string.song_detail_action_jump),
         onClick = onJumpToNumber
       )
     }
     ActionItem(
       icon = { Icon(Icons.Filled.Share, contentDescription = null) },
-      label = "Поделиться",
+      label = stringResource(Res.string.song_detail_action_share),
       onClick = onShare
     )
 
@@ -1001,7 +1003,7 @@ private fun TagEditorSheet(
       .padding(WindowInsets.navigationBars.asPaddingValues())
   ) {
     Text(
-      text = "Теги песни",
+      text = stringResource(Res.string.song_detail_tags_sheet_title),
       style = MaterialTheme.typography.titleMedium,
       color = MaterialTheme.colorScheme.onSurface
     )
@@ -1009,7 +1011,7 @@ private fun TagEditorSheet(
 
     if (allTags.isEmpty()) {
       Text(
-        text = "Нет доступных тегов",
+        text = stringResource(Res.string.song_detail_tags_empty),
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant
       )
@@ -1051,9 +1053,9 @@ private fun TagEditorSheet(
       horizontalArrangement = Arrangement.End,
       verticalAlignment = Alignment.CenterVertically
     ) {
-      TextButton(onClick = onDismiss) { Text("Отмена") }
+      TextButton(onClick = onDismiss) { Text(stringResource(Res.string.tags_cancel)) }
       Spacer(Modifier.width(spacing.sm))
-      Button(onClick = { onSave(selected) }) { Text("Сохранить") }
+      Button(onClick = { onSave(selected) }) { Text(stringResource(Res.string.tags_save)) }
     }
   }
 }
@@ -1073,15 +1075,23 @@ private fun JumpToNumberSheet(
   val maxNumber = remember(bookNumberMap) { bookNumberMap.keys.maxOrNull() ?: 1 }
 
   var input by remember { mutableStateOf("") }
-  var errorText by remember { mutableStateOf<String?>(null) }
+  var invalidInput by remember { mutableStateOf(false) }
+  var missingSongNumber by remember { mutableStateOf<Int?>(null) }
 
   fun tryJump() {
     val number = input.trim().toIntOrNull()
     when {
-      number == null -> errorText = "Введите число"
-      number !in bookNumberMap -> errorText = "Нет песни с номером $number"
+      number == null -> {
+        invalidInput = true
+        missingSongNumber = null
+      }
+      number !in bookNumberMap -> {
+        invalidInput = false
+        missingSongNumber = number
+      }
       else -> {
-        errorText = null
+        invalidInput = false
+        missingSongNumber = null
         onNavigate(bookNumberMap.getValue(number))
       }
     }
@@ -1094,7 +1104,7 @@ private fun JumpToNumberSheet(
       .padding(WindowInsets.navigationBars.asPaddingValues())
   ) {
     Text(
-      text = "Перейти к номеру",
+      text = stringResource(Res.string.song_detail_jump_title),
       style = MaterialTheme.typography.titleMedium,
       color = MaterialTheme.colorScheme.onSurface
     )
@@ -1107,13 +1117,32 @@ private fun JumpToNumberSheet(
         // allow only digits
         if (v.all { it.isDigit() }) {
           input = v
-          errorText = null
+          invalidInput = false
+          missingSongNumber = null
         }
       },
-      label = { Text("Номер ($minNumber – $maxNumber)") },
+      label = { Text(stringResource(Res.string.song_detail_jump_number_label, minNumber, maxNumber)) },
       placeholder = { Text("$minNumber – $maxNumber", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)) },
-      isError = errorText != null,
-      supportingText = errorText?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+      isError = invalidInput || missingSongNumber != null,
+      supportingText = when {
+        invalidInput -> {
+          {
+            Text(
+              stringResource(Res.string.song_detail_jump_empty),
+              color = MaterialTheme.colorScheme.error
+            )
+          }
+        }
+        missingSongNumber != null -> {
+          {
+            Text(
+              stringResource(Res.string.song_detail_jump_not_found, missingSongNumber!!),
+              color = MaterialTheme.colorScheme.error
+            )
+          }
+        }
+        else -> null
+      },
       singleLine = true,
       keyboardOptions = KeyboardOptions(
         keyboardType = KeyboardType.Number,
@@ -1125,8 +1154,12 @@ private fun JumpToNumberSheet(
       modifier = Modifier.fillMaxWidth(),
       trailingIcon = {
         if (input.isNotEmpty()) {
-          IconButton(onClick = { input = ""; errorText = null }) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Очистить",
+          IconButton(onClick = {
+            input = ""
+            invalidInput = false
+            missingSongNumber = null
+          }) {
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.song_detail_jump_clear),
               modifier = Modifier.size(18.dp))
           }
         }
@@ -1140,13 +1173,13 @@ private fun JumpToNumberSheet(
       horizontalArrangement = Arrangement.End,
       verticalAlignment = Alignment.CenterVertically
     ) {
-      TextButton(onClick = onDismiss) { Text("Отмена") }
+      TextButton(onClick = onDismiss) { Text(stringResource(Res.string.tags_cancel)) }
       Spacer(Modifier.width(spacing.sm))
       Button(
         onClick = ::tryJump,
         enabled = input.isNotEmpty()
       ) {
-        Text("Перейти")
+        Text(stringResource(Res.string.song_detail_action_jump))
       }
     }
   }

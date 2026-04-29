@@ -49,7 +49,15 @@ import io.github.alelk.pws.features.components.HighlightedText
 import io.github.alelk.pws.features.components.LoadingContent
 import io.github.alelk.pws.features.components.SearchEmptyContent
 import io.github.alelk.pws.features.components.SearchField
+import io.github.alelk.pws.features.resources.Res
+import io.github.alelk.pws.features.resources.search_error_title
+import io.github.alelk.pws.features.resources.search_idle_subtitle
+import io.github.alelk.pws.features.resources.search_idle_title
+import io.github.alelk.pws.features.resources.search_loading
+import io.github.alelk.pws.features.resources.search_placeholder
+import io.github.alelk.pws.features.resources.search_title
 import io.github.alelk.pws.features.theme.spacing
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Search screen without initial query.
@@ -115,7 +123,7 @@ fun SearchContent(
   Scaffold(
     topBar = {
       AppTopBar(
-        title = "Поиск",
+        title = stringResource(Res.string.search_title),
         canNavigateBack = navigator.canPop,
         onNavigateBack = { navigator.pop() }
       )
@@ -136,7 +144,7 @@ fun SearchContent(
           .padding(horizontal = MaterialTheme.spacing.screenHorizontal)
           .padding(bottom = MaterialTheme.spacing.md)
           .focusRequester(focusRequester),
-        placeholder = "Поиск песен..."
+        placeholder = stringResource(Res.string.search_placeholder)
       )
 
       // Content based on state
@@ -146,7 +154,7 @@ fun SearchContent(
         }
 
         SearchUiState.Loading -> {
-          LoadingContent(message = "Поиск...")
+          LoadingContent(message = stringResource(Res.string.search_loading))
         }
 
         is SearchUiState.Suggestions -> {
@@ -170,7 +178,7 @@ fun SearchContent(
 
         is SearchUiState.Error -> {
           ErrorContent(
-            title = "Ошибка поиска",
+            title = stringResource(Res.string.search_error_title),
             message = state.message
           )
         }
@@ -183,8 +191,8 @@ fun SearchContent(
 private fun SearchIdleContent() {
   EmptyContent(
     icon = Icons.Outlined.Search,
-    title = "Начните поиск",
-    subtitle = "Введите название песни, номер или текст"
+    title = stringResource(Res.string.search_idle_title),
+    subtitle = stringResource(Res.string.search_idle_subtitle)
   )
 }
 

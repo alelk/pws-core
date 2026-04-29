@@ -54,7 +54,28 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import io.github.alelk.pws.domain.core.ids.SongId
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
+import io.github.alelk.pws.features.resources.Res
+import io.github.alelk.pws.features.resources.common_close
+import io.github.alelk.pws.features.resources.common_error_title
+import io.github.alelk.pws.features.resources.song_edit_discard_cancel
+import io.github.alelk.pws.features.resources.song_edit_discard_confirm
+import io.github.alelk.pws.features.resources.song_edit_discard_message
+import io.github.alelk.pws.features.resources.song_edit_discard_title
+import io.github.alelk.pws.features.resources.song_edit_error_not_found
+import io.github.alelk.pws.features.resources.song_edit_label_number
+import io.github.alelk.pws.features.resources.song_edit_label_tags
+import io.github.alelk.pws.features.resources.song_edit_label_text
+import io.github.alelk.pws.features.resources.song_edit_label_title
+import io.github.alelk.pws.features.resources.song_edit_loading
+import io.github.alelk.pws.features.resources.song_edit_save_error_prefix
+import io.github.alelk.pws.features.resources.song_edit_save_success
+import io.github.alelk.pws.features.resources.song_edit_title
+import io.github.alelk.pws.features.resources.song_edit_validation_text_required
+import io.github.alelk.pws.features.resources.song_edit_validation_title_required
+import io.github.alelk.pws.features.resources.tags_save
 import io.github.alelk.pws.features.theme.spacing
+import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.stringResource
 import org.koin.core.parameter.parametersOf
 
 class SongEditScreen(val songId: SongId) : Screen {
@@ -72,8 +93,12 @@ class SongEditScreen(val songId: SongId) : Screen {
       viewModel.effects.collect { effect ->
         when (effect) {
           is SongEditScreenModel.Effect.NavigateBack -> navigator.pop()
-          is SongEditScreenModel.Effect.ShowSnackbar ->
-            scope.launch { snackbarHostState.showSnackbar(effect.message) }
+          is SongEditScreenModel.Effect.ShowSnackbar -> {
+            val message = when (effect.message) {
+              SongEditSnackbarMessage.Saved -> getString(Res.string.song_edit_save_success)
+            }
+            scope.launch { snackbarHostState.showSnackbar(message) }
+          }
         }
       }
     }
@@ -101,10 +126,10 @@ fun SongEditContent(
     snackbarHost = { SnackbarHost(snackbarHostState) },
     topBar = {
       TopAppBar(
-        title = { Text("Редактирование") },
+        title = { Text(stringResource(Res.string.song_edit_title)) },
         navigationIcon = {
           IconButton(onClick = { onEvent(SongEditEvent.CancelClicked) }) {
-            Icon(Icons.Default.Close, contentDescription = "Отмена")
+            Icon(Icons.Default.Close, contentDescription = stringResource(Res.string.common_close))
           }
         },
         actions = {
@@ -119,7 +144,7 @@ fun SongEditContent(
                 onClick = { onEvent(SongEditEvent.SaveClicked) },
                 enabled = state.hasUnsavedChanges
               ) {
-                Icon(Icons.Default.Check, contentDescription = "Сохранить")
+                Icon(Icons.Default.Check, contentDescription = stringResource(Res.string.tags_save))
               }
             }
           }
@@ -134,7 +159,7 @@ fun SongEditContent(
       SongEditUiState.Loading -> {
         LoadingContent(
           modifier = Modifier.padding(innerPadding),
-          message = "Загрузка..."
+          message = stringResource(Res.string.song_edit_loading)
         )
       }
 
@@ -147,10 +172,15 @@ fun SongEditContent(
       }
 
       is SongEditUiState.Error -> {
+        val message = if (state.message == "SONG_NOT_FOUND") {
+          stringResource(Res.string.song_edit_error_not_found)
+        } else {
+          state.message
+        }
         ErrorContent(
           modifier = Modifier.padding(innerPadding),
-          title = "Ошибка",
-          message = state.message
+          title = stringResource(Res.string.common_error_title),
+          message = message
         )
       }
     }
@@ -181,8 +211,15 @@ private fun EditForm(
       .imePadding()
       .padding(MaterialTheme.spacing.screenHorizontal)
   ) {
+  val validationErrorText = when (val m = state.validationMessage) {
+    SongEditValidationMessage.TitleRequired -> stringResource(Res.string.song_edit_validation_title_required)
+    SongEditValidationMessage.TextRequired -> stringResource(Res.string.song_edit_validation_text_required)
+    is SongEditValidationMessage.SaveError -> stringResource(Res.string.song_edit_save_error_prefix, m.details ?: "")
+    null -> null
+  }
+
     // Error message
-    state.validationError?.let { error ->
+    validationErrorText?.let { error ->
       Text(
         text = error,
         style = MaterialTheme.typography.bodySmall,
@@ -195,10 +232,10 @@ private fun EditForm(
     OutlinedTextField(
       value = state.title,
       onValueChange = { onEvent(SongEditEvent.TitleChanged(it)) },
-      label = { Text("Название") },
+      label = { Text(stringResource(Res.string.song_edit_label_title)) },
       modifier = Modifier.fillMaxWidth(),
       singleLine = true,
-      isError = state.validationError != null && state.title.isBlank()
+      isError = state.validationMessage != null && state.title.isBlank()
     )
 
     Spacer(Modifier.height(MaterialTheme.spacing.md))
@@ -207,7 +244,7 @@ private fun EditForm(
     OutlinedTextField(
       value = state.number,
       onValueChange = { onEvent(SongEditEvent.NumberChanged(it)) },
-      label = { Text("Номер") },
+      label = { Text(stringResource(Res.string.song_edit_label_number)) },
       modifier = Modifier.fillMaxWidth(),
       singleLine = true
     )
@@ -217,7 +254,7 @@ private fun EditForm(
     // Tags section
     if (state.allTags.isNotEmpty()) {
       Text(
-        text = "Теги",
+        text = stringResource(Res.string.song_edit_label_tags),
         style = MaterialTheme.typography.labelMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant
       )
@@ -263,11 +300,11 @@ private fun EditForm(
     OutlinedTextField(
       value = state.text,
       onValueChange = { onEvent(SongEditEvent.TextChanged(it)) },
-      label = { Text("Текст песни") },
+      label = { Text(stringResource(Res.string.song_edit_label_text)) },
       modifier = Modifier
         .fillMaxWidth()
         .height(300.dp),
-      isError = state.validationError != null && state.text.isBlank()
+      isError = state.validationMessage != null && state.text.isBlank()
     )
 
     Spacer(Modifier.height(MaterialTheme.spacing.xxl))
@@ -281,16 +318,16 @@ private fun DiscardChangesDialog(
 ) {
   AlertDialog(
     onDismissRequest = onDismiss,
-    title = { Text("Отменить изменения?") },
-    text = { Text("Все несохранённые изменения будут потеряны.") },
+    title = { Text(stringResource(Res.string.song_edit_discard_title)) },
+    text = { Text(stringResource(Res.string.song_edit_discard_message)) },
     confirmButton = {
       TextButton(onClick = onConfirm) {
-        Text("Отменить", color = MaterialTheme.colorScheme.error)
+        Text(stringResource(Res.string.song_edit_discard_confirm), color = MaterialTheme.colorScheme.error)
       }
     },
     dismissButton = {
       TextButton(onClick = onDismiss) {
-        Text("Продолжить редактирование")
+        Text(stringResource(Res.string.song_edit_discard_cancel))
       }
     }
   )

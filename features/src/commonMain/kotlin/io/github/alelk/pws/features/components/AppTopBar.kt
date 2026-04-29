@@ -13,6 +13,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.style.TextOverflow
+import io.github.alelk.pws.features.resources.Res
+import io.github.alelk.pws.features.resources.common_back
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * A consistent top app bar for screens.
@@ -45,7 +48,7 @@ fun AppTopBar(
         IconButton(onClick = onNavigateBack) {
           Icon(
             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-            contentDescription = "Назад"
+            contentDescription = stringResource(Res.string.common_back)
           )
         }
       }

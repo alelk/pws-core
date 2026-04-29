@@ -1,0 +1,166 @@
+<resources>
+    <string name="app_name">Psalmist</string>
+
+    <string name="nav_home">Home</string>
+    <string name="nav_books">Books</string>
+    <string name="nav_tags">Tags</string>
+    <string name="nav_search">Search</string>
+    <string name="nav_favorites">Favorites</string>
+    <string name="nav_history">History</string>
+
+    <string name="home_recently_opened">Recently opened</string>
+    <string name="home_songbooks">Songbooks</string>
+    <string name="home_load_error_title">Failed to load</string>
+    <string name="home_load_error_message">Check your connection and try again</string>
+    <string name="home_quick_number">By number</string>
+    <string name="home_quick_text">By text</string>
+    <string name="home_quick_history">History</string>
+    <string name="home_quick_favorites">Favorites</string>
+    <string name="home_quick_tags">Tags</string>
+
+    <string name="search_title">Search</string>
+    <string name="search_placeholder">Search songs...</string>
+    <string name="search_find_song_placeholder">Find a song...</string>
+    <string name="search_loading">Searching...</string>
+    <string name="search_error_title">Search error</string>
+    <string name="search_idle_title">Start searching</string>
+    <string name="search_idle_subtitle">Enter title, number, or lyrics</string>
+
+    <string name="common_clear">Clear</string>
+    <string name="common_close">Close</string>
+
+    <string name="number_search_title">Search by number</string>
+    <string name="number_input_placeholder">Enter number</string>
+    <string name="number_hint_example">Enter song number, for example 120</string>
+    <string name="number_hint_searching">Searching songs...</string>
+    <string name="number_hint_found_count">Found: %1$d</string>
+    <string name="number_hint_not_found">Nothing found</string>
+    <string name="number_dropdown_idle">Suggestions will appear while typing</string>
+    <string name="number_dropdown_no_results">No songs found with this number</string>
+
+    <string name="common_back">Back</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_error_title">Error</string>
+    <string name="common_recently">Recently</string>
+
+    <string name="book_songs_title_fallback">Songs</string>
+    <string name="book_songs_go_to_number">Go to number</string>
+    <string name="book_songs_loading">Loading songs...</string>
+    <string name="book_songs_error_title">Failed to load songs</string>
+    <string name="books_loading">Loading songbooks...</string>
+    <string name="books_error_title">Failed to load songbooks</string>
+
+    <string name="history_clear">Clear history</string>
+    <string name="history_loading">Loading history...</string>
+    <string name="history_empty_title">History is empty</string>
+    <string name="history_empty_subtitle">Viewed songs will appear here</string>
+    <string name="history_clear_dialog_title">Clear history?</string>
+    <string name="history_clear_dialog_message">All history entries will be deleted. This action cannot be undone.</string>
+    <string name="history_clear_dialog_confirm">Clear</string>
+    <string name="history_clear_dialog_cancel">Cancel</string>
+
+    <string name="song_item_edited">Edited</string>
+    <string name="song_item_in_favorites">In favorites</string>
+    <string name="song_item_add_to_favorites">Add to favorites</string>
+    <string name="song_item_remove_from_favorites">Remove from favorites</string>
+
+    <string name="tags_title">Tags</string>
+    <string name="tags_add">Add tag</string>
+    <string name="tags_loading">Loading tags...</string>
+    <string name="tags_empty_title">No tags</string>
+    <string name="tags_empty_subtitle">Create tags to organize songs</string>
+    <string name="tags_edit">Edit</string>
+    <string name="tags_delete">Delete</string>
+    <string name="tags_dialog_edit_title">Edit tag</string>
+    <string name="tags_dialog_new_title">New tag</string>
+    <string name="tags_dialog_name">Name</string>
+    <string name="tags_dialog_color">Color</string>
+    <string name="tags_save">Save</string>
+    <string name="tags_cancel">Cancel</string>
+    <string name="tags_color_selected">Selected</string>
+    <string name="tags_hide_dialog_title">Hide tag?</string>
+    <string name="tags_delete_dialog_title">Delete tag?</string>
+    <string name="tags_hide_dialog_message">Tag "%1$s" will be hidden. You can restore it later.</string>
+    <string name="tags_delete_dialog_message">Tag "%1$s" will be deleted. Songs will not be affected.</string>
+    <string name="tags_hide">Hide</string>
+
+    <string name="tags_snackbar_updated">Tag updated</string>
+    <string name="tags_snackbar_created">Tag created</string>
+    <string name="tags_snackbar_hidden">Tag hidden</string>
+    <string name="tags_snackbar_deleted">Tag deleted</string>
+    <string name="tags_snackbar_error_prefix">Error: %1$s</string>
+
+    <string name="tag_songs_title_fallback">Songs by tag</string>
+    <string name="tag_songs_loading">Loading songs...</string>
+    <string name="tag_songs_empty_title">No songs</string>
+    <string name="tag_songs_empty_subtitle">No songs have been added to this tag yet</string>
+    <string name="tag_not_found">Tag not found</string>
+
+    <string name="state_nothing_found_title">Nothing found</string>
+    <string name="state_nothing_found_subtitle">No results for "%1$s". Try changing your search query.</string>
+    <string name="state_error_title">Something went wrong</string>
+    <string name="state_retry">Retry</string>
+
+    <string name="book_songs_count">%1$d songs</string>
+
+    <string name="favorites_title">Favorites</string>
+    <string name="favorites_loading">Loading favorites...</string>
+    <string name="favorites_empty_title">No favorite songs</string>
+    <string name="favorites_empty_subtitle">Add songs to favorites to find them quickly</string>
+
+    <string name="song_edit_title">Edit</string>
+    <string name="song_edit_loading">Loading...</string>
+    <string name="song_edit_label_title">Title</string>
+    <string name="song_edit_label_number">Number</string>
+    <string name="song_edit_label_tags">Tags</string>
+    <string name="song_edit_label_text">Song text</string>
+    <string name="song_edit_discard_title">Discard changes?</string>
+    <string name="song_edit_discard_message">All unsaved changes will be lost.</string>
+    <string name="song_edit_discard_confirm">Discard</string>
+    <string name="song_edit_discard_cancel">Continue editing</string>
+    <string name="song_edit_error_not_found">Song not found</string>
+    <string name="song_edit_validation_title_required">Title cannot be empty</string>
+    <string name="song_edit_validation_text_required">Song text cannot be empty</string>
+    <string name="song_edit_save_success">Changes saved</string>
+    <string name="song_edit_save_error_prefix">Save error: %1$s</string>
+
+    <string name="song_detail_title_fallback">Song</string>
+    <string name="song_detail_prev">Previous song</string>
+    <string name="song_detail_next">Next song</string>
+    <string name="song_detail_text_size">Text size</string>
+    <string name="song_detail_actions">Actions</string>
+    <string name="song_detail_remove_favorite">Remove from favorites</string>
+    <string name="song_detail_add_favorite">Add to favorites</string>
+    <string name="song_detail_not_found_title">Song not found</string>
+    <string name="song_detail_not_found_message">It may have been deleted or moved</string>
+    <string name="song_detail_label_chorus">Chorus</string>
+    <string name="song_detail_label_bridge">Bridge</string>
+    <string name="song_detail_info_title">Song information</string>
+    <string name="song_detail_info_author">Author</string>
+    <string name="song_detail_info_composer">Composer</string>
+    <string name="song_detail_info_translator">Translator</string>
+    <string name="song_detail_info_year">Year</string>
+    <string name="song_detail_info_bible">Bible</string>
+    <string name="song_detail_see_also">See also</string>
+    <string name="song_detail_variant">Variant (%1$d%%)</string>
+    <string name="song_detail_open">Open</string>
+    <string name="song_detail_tags">Tags</string>
+    <string name="song_detail_action_edit">Edit song</string>
+    <string name="song_detail_action_edit_tags">Edit tags</string>
+    <string name="song_detail_action_jump">Jump to number</string>
+    <string name="song_detail_action_share">Share</string>
+    <string name="song_detail_tags_sheet_title">Song tags</string>
+    <string name="song_detail_tags_empty">No tags available</string>
+    <string name="song_detail_jump_empty">Enter a number</string>
+    <string name="song_detail_jump_not_found">No song with number %1$d</string>
+    <string name="song_detail_jump_title">Jump to number</string>
+    <string name="song_detail_jump_number_label">Number (%1$d-%2$d)</string>
+    <string name="song_detail_jump_clear">Clear</string>
+
+    <string name="tag_chip_edit">Edit</string>
+</resources>
+
+
+
+
+

@@ -76,7 +76,7 @@ class HistoryScreenModel(
           }
         }
       } catch (e: Exception) {
-        mutableState.value = HistoryUiState.Error("Ошибка загрузки: ${e.message}")
+        mutableState.value = HistoryUiState.Error(e.message ?: "Unknown error")
       }
     }
   }

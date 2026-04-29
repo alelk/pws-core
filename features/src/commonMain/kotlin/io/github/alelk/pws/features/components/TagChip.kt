@@ -29,7 +29,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import io.github.alelk.pws.features.resources.Res
+import io.github.alelk.pws.features.resources.book_songs_count
+import io.github.alelk.pws.features.resources.common_delete
+import io.github.alelk.pws.features.resources.tag_chip_edit
 import io.github.alelk.pws.features.theme.spacing
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Tag chip for display in song view and other places.
@@ -150,7 +155,7 @@ fun RemovableTagChip(
       ) {
         Icon(
           imageVector = Icons.Default.Close,
-          contentDescription = "Удалить",
+          contentDescription = stringResource(Res.string.common_delete),
           modifier = Modifier.size(16.dp),
           tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -219,7 +224,7 @@ fun TagListItem(
       )
 
       Text(
-        text = pluralizeSongsShort(songCount),
+        text = stringResource(Res.string.book_songs_count, songCount),
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant
       )
@@ -229,7 +234,7 @@ fun TagListItem(
         IconButton(onClick = onEditClick) {
           Icon(
             imageVector = Icons.Default.Close,
-            contentDescription = "Редактировать",
+            contentDescription = stringResource(Res.string.tag_chip_edit),
             tint = MaterialTheme.colorScheme.onSurfaceVariant
           )
         }
@@ -238,15 +243,4 @@ fun TagListItem(
   }
 }
 
-private fun pluralizeSongsShort(count: Int): String {
-  val lastTwo = count % 100
-  val lastOne = count % 10
-  val word = when {
-    lastTwo in 11..19 -> "песен"
-    lastOne == 1 -> "песня"
-    lastOne in 2..4 -> "песни"
-    else -> "песен"
-  }
-  return "$count $word"
-}
 

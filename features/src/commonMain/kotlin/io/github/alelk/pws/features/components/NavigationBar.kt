@@ -23,49 +23,58 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import cafe.adriel.voyager.navigator.tab.Tab
+import io.github.alelk.pws.features.resources.Res
+import io.github.alelk.pws.features.resources.nav_books
+import io.github.alelk.pws.features.resources.nav_favorites
+import io.github.alelk.pws.features.resources.nav_history
+import io.github.alelk.pws.features.resources.nav_home
+import io.github.alelk.pws.features.resources.nav_search
+import io.github.alelk.pws.features.resources.nav_tags
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Navigation destinations for the app.
  */
 enum class NavDestination(
   val route: String,
-  val label: String,
+  val labelRes: StringResource,
   val selectedIcon: ImageVector,
   val unselectedIcon: ImageVector
 ) {
   Home(
     route = "home",
-    label = "Главная",
+    labelRes = Res.string.nav_home,
     selectedIcon = Icons.Filled.Home,
     unselectedIcon = Icons.Outlined.Home
   ),
   Books(
     route = "books",
-    label = "Сборники",
+    labelRes = Res.string.nav_books,
     selectedIcon = Icons.AutoMirrored.Filled.LibraryBooks,
     unselectedIcon = Icons.AutoMirrored.Outlined.LibraryBooks
   ),
   Tags(
     route = "tags",
-    label = "Категории",
+    labelRes = Res.string.nav_tags,
     selectedIcon = Icons.Filled.Tag,
     unselectedIcon = Icons.Outlined.Tag
   ),
   Search(
     route = "search",
-    label = "Поиск",
+    labelRes = Res.string.nav_search,
     selectedIcon = Icons.Filled.Search,
     unselectedIcon = Icons.Outlined.Search
   ),
   Favorites(
     route = "favorites",
-    label = "Избранное",
+    labelRes = Res.string.nav_favorites,
     selectedIcon = Icons.Filled.Favorite,
     unselectedIcon = Icons.Outlined.FavoriteBorder
   ),
   History(
     route = "history",
-    label = "История",
+    labelRes = Res.string.nav_history,
     selectedIcon = Icons.Filled.History,
     unselectedIcon = Icons.Outlined.History
   )
@@ -89,9 +98,8 @@ fun AppNavigationBar(
     containerColor = MaterialTheme.colorScheme.surfaceContainer
   ) {
     tabs.forEach { tab ->
-      val title = tab.options.title
-      val destination = NavDestination.entries.firstOrNull { it.label == title }
-        ?: if (title == NavDestination.Home.label) NavDestination.Home else null
+      val destination = NavDestination.entries.firstOrNull { it.route == tab.options.title }
+      val label = destination?.let { stringResource(it.labelRes) } ?: tab.options.title
 
       val selected = currentTab.options.index == tab.options.index
 
@@ -109,12 +117,12 @@ fun AppNavigationBar(
           Icon(
             imageVector = if (selected) (icons?.selectedIcon ?: NavDestination.Home.selectedIcon)
             else (icons?.unselectedIcon ?: NavDestination.Home.unselectedIcon),
-            contentDescription = title
+            contentDescription = label
           )
         },
         label = {
           Text(
-            text = title,
+            text = label,
             style = MaterialTheme.typography.labelSmall
           )
         },

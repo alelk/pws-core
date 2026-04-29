@@ -25,8 +25,12 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
+import io.github.alelk.pws.features.resources.Res
+import io.github.alelk.pws.features.resources.common_clear
+import io.github.alelk.pws.features.resources.search_find_song_placeholder
 import io.github.alelk.pws.features.search.SearchSuggestion
 import io.github.alelk.pws.features.theme.spacing
+import org.jetbrains.compose.resources.stringResource
 
 
 /**
@@ -52,8 +56,9 @@ fun SearchBarWithSuggestions(
   showSuggestions: Boolean = false,
   autoFocus: Boolean = false,
   modifier: Modifier = Modifier,
-  placeholder: String = "Найти песню..."
+  placeholder: String? = null
 ) {
+  val resolvedPlaceholder = placeholder ?: stringResource(Res.string.search_find_song_placeholder)
   val focusRequester = remember { FocusRequester() }
   val expanded = showSuggestions && (suggestions.isNotEmpty() || isLoading)
 
@@ -73,7 +78,7 @@ fun SearchBarWithSuggestions(
       onSearch = onSearch,
       isLoading = isLoading,
       focusRequester = focusRequester,
-      placeholder = placeholder
+      placeholder = resolvedPlaceholder
     )
 
     // DropdownMenu for suggestions - renders as overlay
@@ -152,7 +157,7 @@ private fun SearchInputField(
           IconButton(onClick = { onQueryChange("") }) {
             Icon(
               imageVector = Icons.Default.Clear,
-              contentDescription = "Очистить",
+              contentDescription = stringResource(Res.string.common_clear),
               tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
           }

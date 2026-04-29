@@ -69,8 +69,21 @@ import io.github.alelk.pws.features.components.clickableWithScaleAndClip
 import io.github.alelk.pws.features.components.generateBookColor
 import io.github.alelk.pws.features.components.getInitials
 import io.github.alelk.pws.features.components.shimmerEffect
+import io.github.alelk.pws.features.resources.Res
+import io.github.alelk.pws.features.resources.app_name
+import io.github.alelk.pws.features.resources.book_songs_count
+import io.github.alelk.pws.features.resources.home_load_error_message
+import io.github.alelk.pws.features.resources.home_load_error_title
+import io.github.alelk.pws.features.resources.home_quick_favorites
+import io.github.alelk.pws.features.resources.home_quick_history
+import io.github.alelk.pws.features.resources.home_quick_number
+import io.github.alelk.pws.features.resources.home_quick_tags
+import io.github.alelk.pws.features.resources.home_quick_text
+import io.github.alelk.pws.features.resources.home_recently_opened
+import io.github.alelk.pws.features.resources.home_songbooks
 import io.github.alelk.pws.features.search.SearchSuggestion
 import io.github.alelk.pws.features.theme.spacing
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Home Screen - Main entry point with search focus.
@@ -126,7 +139,7 @@ fun HomeContent(
     modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
     topBar = {
       AppLargeTopBar(
-        title = "Псаломщик",
+        title = stringResource(Res.string.app_name),
         canNavigateBack = false,
         scrollBehavior = scrollBehavior
       )
@@ -215,7 +228,7 @@ fun HomeContent(
             item(span = { GridItemSpan(maxLineSpan) }) {
               Spacer(Modifier.height(MaterialTheme.spacing.md))
               Text(
-                text = "Недавно открытые",
+                text = stringResource(Res.string.home_recently_opened),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onBackground
               )
@@ -248,7 +261,7 @@ fun HomeContent(
           item(span = { GridItemSpan(maxLineSpan) }) {
             Spacer(Modifier.height(MaterialTheme.spacing.sm))
             Text(
-              text = "Сборники песен",
+              text = stringResource(Res.string.home_songbooks),
               style = MaterialTheme.typography.titleMedium,
               color = MaterialTheme.colorScheme.onBackground
             )
@@ -276,8 +289,8 @@ fun HomeContent(
       HomeUiState.Error -> {
         ErrorContent(
           modifier = Modifier.padding(innerPadding),
-          title = "Не удалось загрузить",
-          message = "Проверьте подключение и попробуйте снова"
+          title = stringResource(Res.string.home_load_error_title),
+          message = stringResource(Res.string.home_load_error_message)
         )
       }
     }
@@ -322,19 +335,19 @@ private fun QuickActionsRow(
   ) {
     QuickActionChip(
       icon = Icons.Default.Dialpad,
-      label = "По номеру",
+      label = stringResource(Res.string.home_quick_number),
       onClick = onNumberSearchClick,
       modifier = Modifier.weight(1f)
     )
     QuickActionChip(
       icon = Icons.Default.TextFields,
-      label = "По тексту",
+      label = stringResource(Res.string.home_quick_text),
       onClick = onTextSearchClick,
       modifier = Modifier.weight(1f)
     )
     QuickActionChip(
       icon = Icons.Default.History,
-      label = "История",
+      label = stringResource(Res.string.home_quick_history),
       onClick = onHistoryClick,
       modifier = Modifier.weight(1f)
     )
@@ -355,13 +368,13 @@ private fun QuickActionsRowSecondary(
   ) {
     QuickActionChip(
       icon = Icons.Outlined.FavoriteBorder,
-      label = "Избранное",
+      label = stringResource(Res.string.home_quick_favorites),
       onClick = onFavoritesClick,
       modifier = Modifier.weight(1f)
     )
     QuickActionChip(
       icon = Icons.Outlined.Tag,
-      label = "Категории",
+      label = stringResource(Res.string.home_quick_tags),
       onClick = onTagsClick,
       modifier = Modifier.weight(1f)
     )
@@ -466,7 +479,7 @@ private fun HomeBookCard(
         )
         Spacer(Modifier.height(2.dp))
         Text(
-          text = "${book.countSongs} песен",
+          text = stringResource(Res.string.book_songs_count, book.countSongs),
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.onSurfaceVariant
         )

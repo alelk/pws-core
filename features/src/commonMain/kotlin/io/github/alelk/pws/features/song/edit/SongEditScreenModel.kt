@@ -32,9 +32,13 @@ class SongEditScreenModel(
   private val replaceAllSongTagsUseCase: ReplaceAllSongTagsUseCase<TagId>,
 ) : StateScreenModel<SongEditUiState>(SongEditUiState.Loading) {
 
+  private companion object {
+    const val SONG_NOT_FOUND_CODE = "SONG_NOT_FOUND"
+  }
+
   sealed interface Effect {
     data object NavigateBack : Effect
-    data class ShowSnackbar(val message: String) : Effect
+    data class ShowSnackbar(val message: SongEditSnackbarMessage) : Effect
   }
 
   private val _effects = MutableSharedFlow<Effect>()
@@ -69,7 +73,7 @@ class SongEditScreenModel(
       try {
         val song = getSongDetailUseCase(songId)
         if (song == null) {
-          mutableState.value = SongEditUiState.Error("Песня не найдена")
+          mutableState.value = SongEditUiState.Error(SONG_NOT_FOUND_CODE)
           return@launch
         }
 
@@ -98,7 +102,7 @@ class SongEditScreenModel(
           }
         )
       } catch (e: Exception) {
-        mutableState.value = SongEditUiState.Error("Ошибка загрузки: ${e.message}")
+        mutableState.value = SongEditUiState.Error(e.message ?: "Unknown error")
       }
     }
   }
@@ -136,16 +140,16 @@ class SongEditScreenModel(
     val currentState = mutableState.value as? SongEditUiState.Content ?: return
 
     if (currentState.title.isBlank()) {
-      updateContent { it.copy(validationError = "Название не может быть пустым") }
+      updateContent { it.copy(validationMessage = SongEditValidationMessage.TitleRequired) }
       return
     }
     if (currentState.text.isBlank()) {
-      updateContent { it.copy(validationError = "Текст песни не может быть пустым") }
+      updateContent { it.copy(validationMessage = SongEditValidationMessage.TextRequired) }
       return
     }
 
     screenModelScope.launch {
-      updateContent { it.copy(isSaving = true, validationError = null) }
+      updateContent { it.copy(isSaving = true, validationMessage = null) }
       try {
         val command = UpdateSongCommand(
           id = songId,
@@ -156,10 +160,15 @@ class SongEditScreenModel(
         val selectedTagIds = currentState.allTags.filter { it.isSelected }.map { it.id }.toSet()
         replaceAllSongTagsUseCase(songId, selectedTagIds)
 
-        _effects.emit(Effect.ShowSnackbar("Изменения сохранены"))
+        _effects.emit(Effect.ShowSnackbar(SongEditSnackbarMessage.Saved))
         _effects.emit(Effect.NavigateBack)
       } catch (e: Exception) {
-        updateContent { it.copy(isSaving = false, validationError = "Ошибка сохранения: ${e.message}") }
+        updateContent {
+          it.copy(
+            isSaving = false,
+            validationMessage = SongEditValidationMessage.SaveError(e.message)
+          )
+        }
       }
     }
   }

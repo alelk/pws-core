@@ -1,12 +1,10 @@
 package io.github.alelk.pws.features.components
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,14 +23,19 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import io.github.alelk.pws.features.resources.Res
+import io.github.alelk.pws.features.resources.state_error_title
+import io.github.alelk.pws.features.resources.state_nothing_found_subtitle
+import io.github.alelk.pws.features.resources.state_nothing_found_title
+import io.github.alelk.pws.features.resources.state_retry
 import io.github.alelk.pws.features.theme.spacing
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Full-screen loading indicator with fade animation.
@@ -126,8 +129,8 @@ fun SearchEmptyContent(
   EmptyContent(
     modifier = modifier,
     icon = Icons.Outlined.SearchOff,
-    title = "Ничего не найдено",
-    subtitle = "По запросу \"$query\" ничего не найдено. Попробуйте изменить поисковый запрос."
+    title = stringResource(Res.string.state_nothing_found_title),
+    subtitle = stringResource(Res.string.state_nothing_found_subtitle, query)
   )
 }
 
@@ -137,10 +140,12 @@ fun SearchEmptyContent(
 @Composable
 fun ErrorContent(
   modifier: Modifier = Modifier,
-  title: String = "Произошла ошибка",
+  title: String? = null,
   message: String? = null,
   onRetry: (() -> Unit)? = null
 ) {
+  val resolvedTitle = title ?: stringResource(Res.string.state_error_title)
+
   Box(
     modifier = modifier.fillMaxSize().padding(MaterialTheme.spacing.xl),
     contentAlignment = Alignment.Center
@@ -157,7 +162,7 @@ fun ErrorContent(
       )
       Spacer(Modifier.height(MaterialTheme.spacing.lg))
       Text(
-        text = title,
+        text = resolvedTitle,
         style = MaterialTheme.typography.titleMedium,
         color = MaterialTheme.colorScheme.onSurface,
         textAlign = TextAlign.Center
@@ -174,7 +179,7 @@ fun ErrorContent(
       if (onRetry != null) {
         Spacer(Modifier.height(MaterialTheme.spacing.xl))
         Button(onClick = onRetry) {
-          Text("Повторить")
+          Text(stringResource(Res.string.state_retry))
         }
       }
     }

@@ -30,7 +30,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.alelk.pws.features.resources.Res
+import io.github.alelk.pws.features.resources.book_songs_count
 import io.github.alelk.pws.features.theme.spacing
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Generates a stable color from a string (e.g., book name) using a predefined palette.
@@ -133,7 +136,7 @@ fun BookCard(
         )
         Spacer(Modifier.height(MaterialTheme.spacing.xs))
         Text(
-          text = pluralizeSongs(songCount),
+          text = stringResource(Res.string.book_songs_count, songCount),
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -204,7 +207,7 @@ fun BookListItem(
           color = MaterialTheme.colorScheme.onSurface
         )
         Text(
-          text = pluralizeSongs(songCount),
+          text = stringResource(Res.string.book_songs_count, songCount),
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -213,17 +216,3 @@ fun BookListItem(
   }
 }
 
-/**
- * Russian pluralization for songs count.
- */
-private fun pluralizeSongs(count: Int): String {
-  val lastTwo = count % 100
-  val lastOne = count % 10
-  val word = when {
-    lastTwo in 11..19 -> "песен"
-    lastOne == 1 -> "песня"
-    lastOne in 2..4 -> "песни"
-    else -> "песен"
-  }
-  return "$count $word"
-}

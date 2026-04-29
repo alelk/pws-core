@@ -48,10 +48,18 @@ import io.github.alelk.pws.domain.song.model.SongSummary
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
 import io.github.alelk.pws.features.components.SongListItem
+import io.github.alelk.pws.features.resources.Res
+import io.github.alelk.pws.features.resources.book_songs_error_title
+import io.github.alelk.pws.features.resources.book_songs_go_to_number
+import io.github.alelk.pws.features.resources.book_songs_loading
+import io.github.alelk.pws.features.resources.book_songs_title_fallback
+import io.github.alelk.pws.features.resources.common_back
+import io.github.alelk.pws.features.resources.home_load_error_message
 import io.github.alelk.pws.features.theme.spacing
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
+import org.jetbrains.compose.resources.stringResource
 import org.koin.core.parameter.parametersOf
 
 class BookSongsScreen(val bookId: BookId) : Screen {
@@ -81,7 +89,7 @@ fun BookSongsContent(
           Text(
             text = when (state) {
               is BookSongsUiState.Content -> state.book.book.displayName.value
-              else -> "Песни"
+              else -> stringResource(Res.string.book_songs_title_fallback)
             },
             style = MaterialTheme.typography.headlineSmall
           )
@@ -90,7 +98,7 @@ fun BookSongsContent(
           IconButton(onClick = { navigator.pop() }) {
             Icon(
               Icons.AutoMirrored.Filled.ArrowBack,
-              contentDescription = "Назад"
+              contentDescription = stringResource(Res.string.common_back)
             )
           }
         },
@@ -110,7 +118,7 @@ fun BookSongsContent(
         ) {
           Icon(
             imageVector = Icons.Default.Dialpad,
-            contentDescription = "Перейти по номеру"
+            contentDescription = stringResource(Res.string.book_songs_go_to_number)
           )
         }
       }
@@ -120,7 +128,7 @@ fun BookSongsContent(
       BookSongsUiState.Loading -> {
         LoadingContent(
           modifier = Modifier.padding(innerPadding),
-          message = "Загрузка песен..."
+          message = stringResource(Res.string.book_songs_loading)
         )
       }
 
@@ -135,8 +143,8 @@ fun BookSongsContent(
       BookSongsUiState.Error -> {
         ErrorContent(
           modifier = Modifier.padding(innerPadding),
-          title = "Не удалось загрузить песни",
-          message = "Проверьте подключение и попробуйте снова"
+          title = stringResource(Res.string.book_songs_error_title),
+          message = stringResource(Res.string.home_load_error_message)
         )
       }
     }

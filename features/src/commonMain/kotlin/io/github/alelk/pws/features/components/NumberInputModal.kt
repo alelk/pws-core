@@ -46,8 +46,20 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import io.github.alelk.pws.features.resources.Res
+import io.github.alelk.pws.features.resources.common_clear
+import io.github.alelk.pws.features.resources.common_close
+import io.github.alelk.pws.features.resources.number_dropdown_idle
+import io.github.alelk.pws.features.resources.number_dropdown_no_results
+import io.github.alelk.pws.features.resources.number_hint_example
+import io.github.alelk.pws.features.resources.number_hint_found_count
+import io.github.alelk.pws.features.resources.number_hint_not_found
+import io.github.alelk.pws.features.resources.number_hint_searching
+import io.github.alelk.pws.features.resources.number_input_placeholder
+import io.github.alelk.pws.features.resources.number_search_title
 import io.github.alelk.pws.features.search.SearchSuggestion
 import io.github.alelk.pws.features.theme.spacing
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Modal for entering song number with custom numpad and live suggestions.
@@ -117,14 +129,14 @@ fun NumberInputModal(
           verticalAlignment = Alignment.CenterVertically
         ) {
           Text(
-            text = "Поиск по номеру",
+            text = stringResource(Res.string.number_search_title),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface
           )
           IconButton(onClick = onDismiss) {
             Icon(
               imageVector = Icons.Default.Close,
-              contentDescription = "Закрыть",
+              contentDescription = stringResource(Res.string.common_close),
               tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
           }
@@ -190,7 +202,7 @@ private fun NumberInputField(
       .focusRequester(focusRequester),
     singleLine = true,
     textStyle = MaterialTheme.typography.headlineSmall,
-    placeholder = { Text("Введите номер") },
+    placeholder = { Text(stringResource(Res.string.number_input_placeholder)) },
     leadingIcon = {
       Icon(
         imageVector = Icons.Default.Dialpad,
@@ -204,7 +216,7 @@ private fun NumberInputField(
         value.isNotEmpty() -> IconButton(onClick = onClear) {
           Icon(
             imageVector = Icons.Default.Clear,
-            contentDescription = "Очистить"
+            contentDescription = stringResource(Res.string.common_clear)
           )
         }
       }
@@ -234,10 +246,10 @@ private fun SuggestionsHint(
   modifier: Modifier = Modifier
 ) {
   val hint = when {
-    query.isBlank() -> "Введите номер песни, например 120"
-    isSearching -> "Ищем песни..."
-    suggestionsCount > 0 -> "Найдено: $suggestionsCount"
-    else -> "Ничего не найдено"
+    query.isBlank() -> stringResource(Res.string.number_hint_example)
+    isSearching -> stringResource(Res.string.number_hint_searching)
+    suggestionsCount > 0 -> stringResource(Res.string.number_hint_found_count, suggestionsCount)
+    else -> stringResource(Res.string.number_hint_not_found)
   }
 
   Text(
@@ -264,7 +276,7 @@ private fun SuggestionsDropdown(
   ) {
     when {
       query.isBlank() -> {
-        EmptyDropdownState(text = "Подсказки появятся во время ввода")
+        EmptyDropdownState(text = stringResource(Res.string.number_dropdown_idle))
       }
       isSearching -> {
         Box(
@@ -277,7 +289,7 @@ private fun SuggestionsDropdown(
         }
       }
       suggestions.isEmpty() -> {
-        EmptyDropdownState(text = "Песни с таким номером не найдены")
+        EmptyDropdownState(text = stringResource(Res.string.number_dropdown_no_results))
       }
       else -> {
         LazyColumn(modifier = Modifier.fillMaxWidth()) {

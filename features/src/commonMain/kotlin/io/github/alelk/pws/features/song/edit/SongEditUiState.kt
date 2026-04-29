@@ -13,6 +13,16 @@ data class EditableTagUi(
   val isSelected: Boolean
 )
 
+sealed interface SongEditValidationMessage {
+  data object TitleRequired : SongEditValidationMessage
+  data object TextRequired : SongEditValidationMessage
+  data class SaveError(val details: String?) : SongEditValidationMessage
+}
+
+sealed interface SongEditSnackbarMessage {
+  data object Saved : SongEditSnackbarMessage
+}
+
 sealed interface SongEditUiState {
   data object Loading : SongEditUiState
 
@@ -25,7 +35,7 @@ sealed interface SongEditUiState {
     val allTags: List<EditableTagUi>,
     val isSaving: Boolean = false,
     val hasUnsavedChanges: Boolean = false,
-    val validationError: String? = null
+    val validationMessage: SongEditValidationMessage? = null
   ) : SongEditUiState
 
   data class Error(val message: String) : SongEditUiState

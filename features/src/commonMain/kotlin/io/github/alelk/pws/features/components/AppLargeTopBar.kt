@@ -13,6 +13,9 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import io.github.alelk.pws.features.resources.Res
+import io.github.alelk.pws.features.resources.common_back
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * iOS-like large title top bar (good for Home / primary destinations).
@@ -38,7 +41,7 @@ fun AppLargeTopBar(
     navigationIcon = {
       if (canNavigateBack && onNavigateBack != null) {
         IconButton(onClick = onNavigateBack) {
-          Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+          Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.common_back))
         }
       }
     },

@@ -38,8 +38,22 @@ import io.github.alelk.pws.features.components.EmptyContent
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
 import io.github.alelk.pws.features.components.SwipeableSongItem
+import io.github.alelk.pws.features.resources.Res
+import io.github.alelk.pws.features.resources.common_back
+import io.github.alelk.pws.features.resources.common_error_title
+import io.github.alelk.pws.features.resources.common_recently
+import io.github.alelk.pws.features.resources.history_clear
+import io.github.alelk.pws.features.resources.history_clear_dialog_cancel
+import io.github.alelk.pws.features.resources.history_clear_dialog_confirm
+import io.github.alelk.pws.features.resources.history_clear_dialog_message
+import io.github.alelk.pws.features.resources.history_clear_dialog_title
+import io.github.alelk.pws.features.resources.history_empty_subtitle
+import io.github.alelk.pws.features.resources.history_empty_title
+import io.github.alelk.pws.features.resources.history_loading
+import io.github.alelk.pws.features.resources.nav_history
 import io.github.alelk.pws.features.theme.spacing
 import kotlin.time.ExperimentalTime
+import org.jetbrains.compose.resources.stringResource
 
 class HistoryScreen : Screen {
   @Composable
@@ -83,14 +97,14 @@ fun HistoryContent(
             IconButton(onClick = { navigator.pop() }) {
               Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Назад"
+                contentDescription = stringResource(Res.string.common_back)
               )
             }
           }
         },
         title = {
           Text(
-            text = "История",
+            text = stringResource(Res.string.nav_history),
             style = MaterialTheme.typography.headlineMedium
           )
         },
@@ -99,7 +113,7 @@ fun HistoryContent(
             IconButton(onClick = onClearAll) {
               Icon(
                 imageVector = Icons.Outlined.DeleteSweep,
-                contentDescription = "Очистить историю"
+                contentDescription = stringResource(Res.string.history_clear)
               )
             }
           }
@@ -116,7 +130,7 @@ fun HistoryContent(
       HistoryUiState.Loading -> {
         LoadingContent(
           modifier = Modifier.padding(innerPadding),
-          message = "Загрузка истории..."
+          message = stringResource(Res.string.history_loading)
         )
       }
 
@@ -124,8 +138,8 @@ fun HistoryContent(
         EmptyContent(
           modifier = Modifier.padding(innerPadding),
           icon = Icons.Outlined.History,
-          title = "История пуста",
-          subtitle = "Здесь будут отображаться просмотренные песни"
+          title = stringResource(Res.string.history_empty_title),
+          subtitle = stringResource(Res.string.history_empty_subtitle)
         )
       }
 
@@ -140,7 +154,7 @@ fun HistoryContent(
       is HistoryUiState.Error -> {
         ErrorContent(
           modifier = Modifier.padding(innerPadding),
-          title = "Ошибка",
+          title = stringResource(Res.string.common_error_title),
           message = state.message
         )
       }
@@ -164,6 +178,7 @@ private fun HistoryList(
   onRemove: (HistoryItemUi) -> Unit
 ) {
   val navigator = LocalNavigator.currentOrThrow
+  val recentlyText = stringResource(Res.string.common_recently)
 
   LazyColumn(
     modifier = modifier.fillMaxSize(),
@@ -179,7 +194,7 @@ private fun HistoryList(
           SwipeableSongItem(
             number = item.songNumber,
             title = item.songName,
-            subtitle = "${item.bookDisplayName} • ${formatTime(item.viewedAt.toEpochMilliseconds())}",
+            subtitle = "${item.bookDisplayName} • ${formatTime(item.viewedAt.toEpochMilliseconds(), recentlyText)}",
             onClick = { navigator.push(songScreen) },
             onDelete = { onRemove(item) }
           )
@@ -189,7 +204,7 @@ private fun HistoryList(
           SwipeableSongItem(
             number = null,
             title = item.songName,
-            subtitle = formatTime(item.viewedAt.toEpochMilliseconds()),
+            subtitle = formatTime(item.viewedAt.toEpochMilliseconds(), recentlyText),
             onClick = { navigator.push(songScreen) },
             onDelete = { onRemove(item) }
           )
@@ -224,26 +239,26 @@ private fun ClearHistoryDialog(
       )
     },
     title = {
-      Text("Очистить историю?")
+      Text(stringResource(Res.string.history_clear_dialog_title))
     },
     text = {
-      Text("Все записи истории будут удалены. Это действие нельзя отменить.")
+      Text(stringResource(Res.string.history_clear_dialog_message))
     },
     confirmButton = {
       TextButton(onClick = onConfirm) {
-        Text("Очистить")
+        Text(stringResource(Res.string.history_clear_dialog_confirm))
       }
     },
     dismissButton = {
       TextButton(onClick = onDismiss) {
-        Text("Отмена")
+        Text(stringResource(Res.string.history_clear_dialog_cancel))
       }
     }
   )
 }
 
-private fun formatTime(timestamp: Long): String {
+private fun formatTime(timestamp: Long, recentlyText: String): String {
   // Simple relative time formatting
   // In production, use kotlinx-datetime for proper KMP time handling
-  return "недавно"
+  return recentlyText
 }

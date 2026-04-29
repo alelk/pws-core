@@ -55,7 +55,7 @@ private object HomeTab : Tab {
     @Composable get() {
       return TabOptions(
         index = 0u,
-        title = "Главная",
+        title = NavDestination.Home.route,
         icon = androidx.compose.ui.graphics.vector.rememberVectorPainter(Icons.Outlined.Home)
       )
     }
@@ -76,7 +76,7 @@ private object BooksTab : Tab {
       val icon = NavDestination.Books.unselectedIcon
       return TabOptions(
         index = 1u,
-        title = NavDestination.Books.label,
+        title = NavDestination.Books.route,
         icon = androidx.compose.ui.graphics.vector.rememberVectorPainter(icon)
       )
     }
@@ -97,7 +97,7 @@ private object SearchTab : Tab {
       val icon = NavDestination.Search.unselectedIcon
       return TabOptions(
         index = 2u,
-        title = NavDestination.Search.label,
+        title = NavDestination.Search.route,
         icon = androidx.compose.ui.graphics.vector.rememberVectorPainter(icon)
       )
     }
@@ -118,7 +118,7 @@ private object FavoritesTab : Tab {
       val icon = NavDestination.Favorites.unselectedIcon
       return TabOptions(
         index = 3u,
-        title = NavDestination.Favorites.label,
+        title = NavDestination.Favorites.route,
         icon = androidx.compose.ui.graphics.vector.rememberVectorPainter(icon)
       )
     }
@@ -139,7 +139,7 @@ private object HistoryTab : Tab {
       val icon = NavDestination.History.unselectedIcon
       return TabOptions(
         index = 4u,
-        title = NavDestination.History.label,
+        title = NavDestination.History.route,
         icon = androidx.compose.ui.graphics.vector.rememberVectorPainter(icon)
       )
     }

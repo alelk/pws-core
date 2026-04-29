@@ -29,8 +29,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import io.github.alelk.pws.features.resources.Res
+import io.github.alelk.pws.features.resources.common_delete
+import io.github.alelk.pws.features.resources.song_item_add_to_favorites
+import io.github.alelk.pws.features.resources.song_item_edited
+import io.github.alelk.pws.features.resources.song_item_in_favorites
+import io.github.alelk.pws.features.resources.song_item_remove_from_favorites
 import io.github.alelk.pws.features.theme.NumberBadgeTextStyle
 import io.github.alelk.pws.features.theme.spacing
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Song list item with number badge, title, and optional indicators.
@@ -90,7 +97,7 @@ fun SongListItem(
                 tint = MaterialTheme.colorScheme.primary
               )
               Text(
-                text = "Редактирована",
+                text = stringResource(Res.string.song_item_edited),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary
               )
@@ -102,7 +109,7 @@ fun SongListItem(
         if (isFavorite) {
           Icon(
             imageVector = Icons.Default.Favorite,
-            contentDescription = "В избранном",
+            contentDescription = stringResource(Res.string.song_item_in_favorites),
             modifier = Modifier.size(MaterialTheme.spacing.iconSm),
             tint = MaterialTheme.colorScheme.tertiary
           )
@@ -211,7 +218,11 @@ fun SwipeableSongItem(
           IconButton(onClick = onFavoriteToggle) {
             Icon(
               imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-              contentDescription = if (isFavorite) "Удалить из избранного" else "Добавить в избранное",
+              contentDescription = if (isFavorite) {
+                stringResource(Res.string.song_item_remove_from_favorites)
+              } else {
+                stringResource(Res.string.song_item_add_to_favorites)
+              },
               tint = if (isFavorite) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant
             )
           }
@@ -222,7 +233,7 @@ fun SwipeableSongItem(
           IconButton(onClick = onDelete) {
             Icon(
               imageVector = Icons.Outlined.Delete,
-              contentDescription = "Удалить",
+              contentDescription = stringResource(Res.string.common_delete),
               tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
           }

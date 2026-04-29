@@ -5,6 +5,11 @@ plugins {
   alias(libs.plugins.androidKmpLibrary)
 }
 
+compose.resources {
+  publicResClass = true
+  packageOfResClass = "io.github.alelk.pws.features.resources"
+}
+
 group = "io.github.alelk.pws.features"
 
 kotlin {

@@ -38,7 +38,15 @@ import io.github.alelk.pws.features.components.EmptyContent
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
 import io.github.alelk.pws.features.components.SwipeableSongItem
+import io.github.alelk.pws.features.resources.Res
+import io.github.alelk.pws.features.resources.common_back
+import io.github.alelk.pws.features.resources.common_error_title
+import io.github.alelk.pws.features.resources.favorites_empty_subtitle
+import io.github.alelk.pws.features.resources.favorites_empty_title
+import io.github.alelk.pws.features.resources.favorites_loading
+import io.github.alelk.pws.features.resources.favorites_title
 import io.github.alelk.pws.features.theme.spacing
+import org.jetbrains.compose.resources.stringResource
 
 class FavoritesScreen : Screen {
   @Composable
@@ -74,14 +82,14 @@ fun FavoritesContent(
             IconButton(onClick = { navigator.pop() }) {
               Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Назад"
+                contentDescription = stringResource(Res.string.common_back)
               )
             }
           }
         },
         title = {
           Text(
-            text = "Избранное",
+            text = stringResource(Res.string.favorites_title),
             style = MaterialTheme.typography.headlineMedium
           )
         },
@@ -98,7 +106,7 @@ fun FavoritesContent(
       FavoritesUiState.Loading -> {
         LoadingContent(
           modifier = Modifier.padding(innerPadding),
-          message = "Загрузка избранного..."
+          message = stringResource(Res.string.favorites_loading)
         )
       }
 
@@ -106,8 +114,8 @@ fun FavoritesContent(
         EmptyContent(
           modifier = Modifier.padding(innerPadding),
           icon = Icons.Outlined.FavoriteBorder,
-          title = "Нет избранных песен",
-          subtitle = "Добавляйте песни в избранное, чтобы быстро находить их"
+          title = stringResource(Res.string.favorites_empty_title),
+          subtitle = stringResource(Res.string.favorites_empty_subtitle)
         )
       }
 
@@ -122,7 +130,7 @@ fun FavoritesContent(
       is FavoritesUiState.Error -> {
         ErrorContent(
           modifier = Modifier.padding(innerPadding),
-          title = "Ошибка",
+          title = stringResource(Res.string.common_error_title),
           message = state.message
         )
       }

@@ -27,9 +27,17 @@ class TagsScreenModel(
   private val deleteTagUseCase: DeleteTagUseCase<TagId>
 ) : StateScreenModel<TagsUiState>(TagsUiState.Loading) {
 
+  sealed interface SnackbarMessage {
+    data object Updated : SnackbarMessage
+    data object Created : SnackbarMessage
+    data object Hidden : SnackbarMessage
+    data object Deleted : SnackbarMessage
+    data class Error(val details: String?) : SnackbarMessage
+  }
+
   sealed interface Effect {
     data class NavigateToTagSongs(val tag: TagUi) : Effect
-    data class ShowSnackbar(val message: String) : Effect
+    data class ShowSnackbar(val message: SnackbarMessage) : Effect
   }
 
   private val _effects = MutableSharedFlow<Effect>()
@@ -109,7 +117,7 @@ class TagsScreenModel(
           }
         }
       } catch (e: Exception) {
-        mutableState.value = TagsUiState.Error("Ошибка загрузки: ${e.message}")
+        mutableState.value = TagsUiState.Error(e.message ?: "Unknown error")
       }
     }
   }
@@ -131,7 +139,7 @@ class TagsScreenModel(
             color = domainColor
           )
           updateTagUseCase(command)
-          _effects.emit(Effect.ShowSnackbar("Категория обновлена"))
+          _effects.emit(Effect.ShowSnackbar(SnackbarMessage.Updated))
         } else {
           // Create new tag - use TagId.Custom for user-created tags
           val tagId = TagId.Custom.random()
@@ -141,7 +149,7 @@ class TagsScreenModel(
             color = domainColor
           )
           createTagUseCase(command)
-          _effects.emit(Effect.ShowSnackbar("Категория создана"))
+          _effects.emit(Effect.ShowSnackbar(SnackbarMessage.Created))
         }
 
         updateState { state ->
@@ -150,7 +158,7 @@ class TagsScreenModel(
           } else state
         }
       } catch (e: Exception) {
-        _effects.emit(Effect.ShowSnackbar("Ошибка: ${e.message}"))
+        _effects.emit(Effect.ShowSnackbar(SnackbarMessage.Error(e.message)))
       }
     }
   }
@@ -164,10 +172,10 @@ class TagsScreenModel(
             state.copy(showDeleteConfirmation = null)
           } else state
         }
-        val message = if (tag.isPredefined) "Категория скрыта" else "Категория удалена"
+        val message = if (tag.isPredefined) SnackbarMessage.Hidden else SnackbarMessage.Deleted
         _effects.emit(Effect.ShowSnackbar(message))
       } catch (e: Exception) {
-        _effects.emit(Effect.ShowSnackbar("Ошибка: ${e.message}"))
+        _effects.emit(Effect.ShowSnackbar(SnackbarMessage.Error(e.message)))
       }
     }
   }

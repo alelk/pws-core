@@ -44,7 +44,16 @@ import io.github.alelk.pws.features.components.EmptyContent
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
 import io.github.alelk.pws.features.components.SongListItem
+import io.github.alelk.pws.features.resources.Res
+import io.github.alelk.pws.features.resources.common_back
+import io.github.alelk.pws.features.resources.common_error_title
+import io.github.alelk.pws.features.resources.tag_not_found
+import io.github.alelk.pws.features.resources.tag_songs_empty_subtitle
+import io.github.alelk.pws.features.resources.tag_songs_empty_title
+import io.github.alelk.pws.features.resources.tag_songs_loading
+import io.github.alelk.pws.features.resources.tag_songs_title_fallback
 import io.github.alelk.pws.features.theme.spacing
+import org.jetbrains.compose.resources.stringResource
 import org.koin.core.parameter.parametersOf
 
 class TagSongsScreen(val tagId: TagId) : Screen {
@@ -84,14 +93,14 @@ fun TagSongsContent(state: TagSongsUiState) {
                 )
               }
             }
-            else -> Text("Песни по тегу")
+            else -> Text(stringResource(Res.string.tag_songs_title_fallback))
           }
         },
         navigationIcon = {
           IconButton(onClick = { navigator.pop() }) {
             Icon(
               Icons.AutoMirrored.Filled.ArrowBack,
-              contentDescription = "Назад"
+              contentDescription = stringResource(Res.string.common_back)
             )
           }
         },
@@ -107,7 +116,7 @@ fun TagSongsContent(state: TagSongsUiState) {
       TagSongsUiState.Loading -> {
         LoadingContent(
           modifier = Modifier.padding(innerPadding),
-          message = "Загрузка песен..."
+          message = stringResource(Res.string.tag_songs_loading)
         )
       }
 
@@ -115,8 +124,8 @@ fun TagSongsContent(state: TagSongsUiState) {
         EmptyContent(
           modifier = Modifier.padding(innerPadding),
           icon = Icons.Outlined.MusicOff,
-          title = "Нет песен",
-          subtitle = "К этому тегу пока не добавлено ни одной песни"
+          title = stringResource(Res.string.tag_songs_empty_title),
+          subtitle = stringResource(Res.string.tag_songs_empty_subtitle)
         )
       }
 
@@ -128,10 +137,15 @@ fun TagSongsContent(state: TagSongsUiState) {
       }
 
       is TagSongsUiState.Error -> {
+        val message = if (state.message == "TAG_NOT_FOUND") {
+          stringResource(Res.string.tag_not_found)
+        } else {
+          state.message
+        }
         ErrorContent(
           modifier = Modifier.padding(innerPadding),
-          title = "Ошибка",
-          message = state.message
+          title = stringResource(Res.string.common_error_title),
+          message = message
         )
       }
     }

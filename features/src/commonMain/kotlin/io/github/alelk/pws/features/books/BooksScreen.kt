@@ -34,7 +34,13 @@ import io.github.alelk.pws.domain.book.model.BookSummary
 import io.github.alelk.pws.features.components.BookCard
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
+import io.github.alelk.pws.features.resources.Res
+import io.github.alelk.pws.features.resources.books_error_title
+import io.github.alelk.pws.features.resources.books_loading
+import io.github.alelk.pws.features.resources.home_load_error_message
+import io.github.alelk.pws.features.resources.home_songbooks
 import io.github.alelk.pws.features.theme.spacing
+import org.jetbrains.compose.resources.stringResource
 
 class BooksScreen : Screen {
   @Composable
@@ -60,7 +66,7 @@ fun BooksContent(state: BooksUiState) {
       BooksUiState.Loading -> {
         LoadingContent(
           modifier = Modifier.padding(innerPadding),
-          message = "Загрузка сборников..."
+          message = stringResource(Res.string.books_loading)
         )
       }
       is BooksUiState.Content -> {
@@ -72,8 +78,8 @@ fun BooksContent(state: BooksUiState) {
       BooksUiState.Error -> {
         ErrorContent(
           modifier = Modifier.padding(innerPadding),
-          title = "Не удалось загрузить сборники",
-          message = "Проверьте подключение и попробуйте снова"
+          title = stringResource(Res.string.books_error_title),
+          message = stringResource(Res.string.home_load_error_message)
         )
       }
     }
@@ -88,7 +94,7 @@ private fun BooksTopBar(
   LargeTopAppBar(
     title = {
       Text(
-        text = "Сборники песен",
+        text = stringResource(Res.string.home_songbooks),
         style = MaterialTheme.typography.headlineMedium
       )
     },

@@ -1,0 +1,166 @@
+<resources>
+    <string name="app_name">Псаломник</string>
+
+    <string name="nav_home">Головна</string>
+    <string name="nav_books">Збірники</string>
+    <string name="nav_tags">Категорії</string>
+    <string name="nav_search">Пошук</string>
+    <string name="nav_favorites">Обране</string>
+    <string name="nav_history">Історія</string>
+
+    <string name="home_recently_opened">Нещодавно відкриті</string>
+    <string name="home_songbooks">Збірники пісень</string>
+    <string name="home_load_error_title">Не вдалося завантажити</string>
+    <string name="home_load_error_message">Перевірте з'єднання та спробуйте знову</string>
+    <string name="home_quick_number">За номером</string>
+    <string name="home_quick_text">За текстом</string>
+    <string name="home_quick_history">Історія</string>
+    <string name="home_quick_favorites">Обране</string>
+    <string name="home_quick_tags">Категорії</string>
+
+    <string name="search_title">Пошук</string>
+    <string name="search_placeholder">Пошук пісень...</string>
+    <string name="search_find_song_placeholder">Знайти пісню...</string>
+    <string name="search_loading">Пошук...</string>
+    <string name="search_error_title">Помилка пошуку</string>
+    <string name="search_idle_title">Почніть пошук</string>
+    <string name="search_idle_subtitle">Введіть назву пісні, номер або текст</string>
+
+    <string name="common_clear">Очистити</string>
+    <string name="common_close">Закрити</string>
+
+    <string name="number_search_title">Пошук за номером</string>
+    <string name="number_input_placeholder">Введіть номер</string>
+    <string name="number_hint_example">Введіть номер пісні, наприклад 120</string>
+    <string name="number_hint_searching">Шукаємо пісні...</string>
+    <string name="number_hint_found_count">Знайдено: %1$d</string>
+    <string name="number_hint_not_found">Нічого не знайдено</string>
+    <string name="number_dropdown_idle">Підказки з'являться під час введення</string>
+    <string name="number_dropdown_no_results">Пісні з таким номером не знайдено</string>
+
+    <string name="common_back">Назад</string>
+    <string name="common_delete">Видалити</string>
+    <string name="common_error_title">Помилка</string>
+    <string name="common_recently">нещодавно</string>
+
+    <string name="book_songs_title_fallback">Пісні</string>
+    <string name="book_songs_go_to_number">Перейти за номером</string>
+    <string name="book_songs_loading">Завантаження пісень...</string>
+    <string name="book_songs_error_title">Не вдалося завантажити пісні</string>
+    <string name="books_loading">Завантаження збірників...</string>
+    <string name="books_error_title">Не вдалося завантажити збірники</string>
+
+    <string name="history_clear">Очистити історію</string>
+    <string name="history_loading">Завантаження історії...</string>
+    <string name="history_empty_title">Історія порожня</string>
+    <string name="history_empty_subtitle">Тут будуть відображатися переглянуті пісні</string>
+    <string name="history_clear_dialog_title">Очистити історію?</string>
+    <string name="history_clear_dialog_message">Усі записи історії буде видалено. Цю дію не можна скасувати.</string>
+    <string name="history_clear_dialog_confirm">Очистити</string>
+    <string name="history_clear_dialog_cancel">Скасувати</string>
+
+    <string name="song_item_edited">Відредагована</string>
+    <string name="song_item_in_favorites">В обраному</string>
+    <string name="song_item_add_to_favorites">Додати в обране</string>
+    <string name="song_item_remove_from_favorites">Видалити з обраного</string>
+
+    <string name="tags_title">Категорії</string>
+    <string name="tags_add">Додати категорію</string>
+    <string name="tags_loading">Завантаження категорій...</string>
+    <string name="tags_empty_title">Немає категорій</string>
+    <string name="tags_empty_subtitle">Створюйте категорії для впорядкування пісень</string>
+    <string name="tags_edit">Редагувати</string>
+    <string name="tags_delete">Видалити</string>
+    <string name="tags_dialog_edit_title">Редагувати категорію</string>
+    <string name="tags_dialog_new_title">Нова категорія</string>
+    <string name="tags_dialog_name">Назва</string>
+    <string name="tags_dialog_color">Колір</string>
+    <string name="tags_save">Зберегти</string>
+    <string name="tags_cancel">Скасувати</string>
+    <string name="tags_color_selected">Вибрано</string>
+    <string name="tags_hide_dialog_title">Приховати категорію?</string>
+    <string name="tags_delete_dialog_title">Видалити категорію?</string>
+    <string name="tags_hide_dialog_message">Категорію "%1$s" буде приховано. Ви зможете відновити її пізніше.</string>
+    <string name="tags_delete_dialog_message">Категорію "%1$s" буде видалено. Пісні не будуть зачеплені.</string>
+    <string name="tags_hide">Приховати</string>
+
+    <string name="tags_snackbar_updated">Категорію оновлено</string>
+    <string name="tags_snackbar_created">Категорію створено</string>
+    <string name="tags_snackbar_hidden">Категорію приховано</string>
+    <string name="tags_snackbar_deleted">Категорію видалено</string>
+    <string name="tags_snackbar_error_prefix">Помилка: %1$s</string>
+
+    <string name="tag_songs_title_fallback">Пісні за тегом</string>
+    <string name="tag_songs_loading">Завантаження пісень...</string>
+    <string name="tag_songs_empty_title">Немає пісень</string>
+    <string name="tag_songs_empty_subtitle">До цього тегу ще не додано жодної пісні</string>
+    <string name="tag_not_found">Тег не знайдено</string>
+
+    <string name="state_nothing_found_title">Нічого не знайдено</string>
+    <string name="state_nothing_found_subtitle">За запитом "%1$s" нічого не знайдено. Спробуйте змінити пошуковий запит.</string>
+    <string name="state_error_title">Сталася помилка</string>
+    <string name="state_retry">Повторити</string>
+
+    <string name="book_songs_count">%1$d пісень</string>
+
+    <string name="favorites_title">Обране</string>
+    <string name="favorites_loading">Завантаження обраного...</string>
+    <string name="favorites_empty_title">Немає обраних пісень</string>
+    <string name="favorites_empty_subtitle">Додавайте пісні в обране, щоб швидко знаходити їх</string>
+
+    <string name="song_edit_title">Редагування</string>
+    <string name="song_edit_loading">Завантаження...</string>
+    <string name="song_edit_label_title">Назва</string>
+    <string name="song_edit_label_number">Номер</string>
+    <string name="song_edit_label_tags">Теги</string>
+    <string name="song_edit_label_text">Текст пісні</string>
+    <string name="song_edit_discard_title">Скасувати зміни?</string>
+    <string name="song_edit_discard_message">Усі незбережені зміни буде втрачено.</string>
+    <string name="song_edit_discard_confirm">Скасувати</string>
+    <string name="song_edit_discard_cancel">Продовжити редагування</string>
+    <string name="song_edit_error_not_found">Пісню не знайдено</string>
+    <string name="song_edit_validation_title_required">Назва не може бути порожньою</string>
+    <string name="song_edit_validation_text_required">Текст пісні не може бути порожнім</string>
+    <string name="song_edit_save_success">Зміни збережено</string>
+    <string name="song_edit_save_error_prefix">Помилка збереження: %1$s</string>
+
+    <string name="song_detail_title_fallback">Пісня</string>
+    <string name="song_detail_prev">Попередня пісня</string>
+    <string name="song_detail_next">Наступна пісня</string>
+    <string name="song_detail_text_size">Розмір тексту</string>
+    <string name="song_detail_actions">Дії</string>
+    <string name="song_detail_remove_favorite">Прибрати з обраного</string>
+    <string name="song_detail_add_favorite">Додати в обране</string>
+    <string name="song_detail_not_found_title">Пісню не знайдено</string>
+    <string name="song_detail_not_found_message">Можливо, її було видалено або переміщено</string>
+    <string name="song_detail_label_chorus">Приспів</string>
+    <string name="song_detail_label_bridge">Бридж</string>
+    <string name="song_detail_info_title">Інформація про пісню</string>
+    <string name="song_detail_info_author">Автор</string>
+    <string name="song_detail_info_composer">Композитор</string>
+    <string name="song_detail_info_translator">Переклад</string>
+    <string name="song_detail_info_year">Рік</string>
+    <string name="song_detail_info_bible">Біблія</string>
+    <string name="song_detail_see_also">Дивіться також</string>
+    <string name="song_detail_variant">Варіант (%1$d%%)</string>
+    <string name="song_detail_open">Відкрити</string>
+    <string name="song_detail_tags">Теги</string>
+    <string name="song_detail_action_edit">Редагувати пісню</string>
+    <string name="song_detail_action_edit_tags">Змінити теги</string>
+    <string name="song_detail_action_jump">Перейти до номера</string>
+    <string name="song_detail_action_share">Поділитися</string>
+    <string name="song_detail_tags_sheet_title">Теги пісні</string>
+    <string name="song_detail_tags_empty">Немає доступних тегів</string>
+    <string name="song_detail_jump_empty">Введіть число</string>
+    <string name="song_detail_jump_not_found">Немає пісні з номером %1$d</string>
+    <string name="song_detail_jump_title">Перейти до номера</string>
+    <string name="song_detail_jump_number_label">Номер (%1$d-%2$d)</string>
+    <string name="song_detail_jump_clear">Очистити</string>
+
+    <string name="tag_chip_edit">Редагувати</string>
+</resources>
+
+
+
+
+

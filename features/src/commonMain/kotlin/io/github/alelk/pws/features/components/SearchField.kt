@@ -22,7 +22,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
+import io.github.alelk.pws.features.resources.Res
+import io.github.alelk.pws.features.resources.common_clear
+import io.github.alelk.pws.features.resources.search_placeholder
 import io.github.alelk.pws.features.theme.spacing
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Modern search field with clear button.
@@ -33,9 +37,11 @@ fun SearchField(
   onQueryChange: (String) -> Unit,
   onSearch: () -> Unit,
   modifier: Modifier = Modifier,
-  placeholder: String = "Поиск...",
+  placeholder: String? = null,
   enabled: Boolean = true
 ) {
+  val resolvedPlaceholder = placeholder ?: stringResource(Res.string.search_placeholder)
+
   TextField(
     value = query,
     onValueChange = onQueryChange,
@@ -43,7 +49,7 @@ fun SearchField(
     enabled = enabled,
     placeholder = {
       Text(
-        text = placeholder,
+        text = resolvedPlaceholder,
         style = MaterialTheme.typography.bodyLarge
       )
     },
@@ -63,7 +69,7 @@ fun SearchField(
         IconButton(onClick = { onQueryChange("") }) {
           Icon(
             imageVector = Icons.Default.Clear,
-            contentDescription = "Очистить",
+            contentDescription = stringResource(Res.string.common_clear),
             tint = MaterialTheme.colorScheme.onSurfaceVariant
           )
         }
@@ -93,9 +99,11 @@ fun OutlinedSearchField(
   onQueryChange: (String) -> Unit,
   onSearch: () -> Unit,
   modifier: Modifier = Modifier,
-  placeholder: String = "Поиск...",
+  placeholder: String? = null,
   enabled: Boolean = true
 ) {
+  val resolvedPlaceholder = placeholder ?: stringResource(Res.string.search_placeholder)
+
   OutlinedTextField(
     value = query,
     onValueChange = onQueryChange,
@@ -103,7 +111,7 @@ fun OutlinedSearchField(
     enabled = enabled,
     placeholder = {
       Text(
-        text = placeholder,
+        text = resolvedPlaceholder,
         style = MaterialTheme.typography.bodyLarge
       )
     },
@@ -123,7 +131,7 @@ fun OutlinedSearchField(
         IconButton(onClick = { onQueryChange("") }) {
           Icon(
             imageVector = Icons.Default.Clear,
-            contentDescription = "Очистить",
+            contentDescription = stringResource(Res.string.common_clear),
             tint = MaterialTheme.colorScheme.onSurfaceVariant
           )
         }

@@ -56,7 +56,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.registry.ScreenRegistry
-import cafe.adriel.voyager.core.registry.rememberScreen
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -65,7 +64,36 @@ import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.features.components.EmptyContent
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
+import io.github.alelk.pws.features.resources.Res
+import io.github.alelk.pws.features.resources.common_delete
+import io.github.alelk.pws.features.resources.common_error_title
+import io.github.alelk.pws.features.resources.tags_add
+import io.github.alelk.pws.features.resources.tags_cancel
+import io.github.alelk.pws.features.resources.tags_color_selected
+import io.github.alelk.pws.features.resources.tags_delete
+import io.github.alelk.pws.features.resources.tags_delete_dialog_message
+import io.github.alelk.pws.features.resources.tags_delete_dialog_title
+import io.github.alelk.pws.features.resources.tags_dialog_color
+import io.github.alelk.pws.features.resources.tags_dialog_edit_title
+import io.github.alelk.pws.features.resources.tags_dialog_name
+import io.github.alelk.pws.features.resources.tags_dialog_new_title
+import io.github.alelk.pws.features.resources.tags_edit
+import io.github.alelk.pws.features.resources.tags_empty_subtitle
+import io.github.alelk.pws.features.resources.tags_empty_title
+import io.github.alelk.pws.features.resources.tags_hide
+import io.github.alelk.pws.features.resources.tags_hide_dialog_message
+import io.github.alelk.pws.features.resources.tags_hide_dialog_title
+import io.github.alelk.pws.features.resources.tags_loading
+import io.github.alelk.pws.features.resources.tags_save
+import io.github.alelk.pws.features.resources.tags_snackbar_created
+import io.github.alelk.pws.features.resources.tags_snackbar_deleted
+import io.github.alelk.pws.features.resources.tags_snackbar_error_prefix
+import io.github.alelk.pws.features.resources.tags_snackbar_hidden
+import io.github.alelk.pws.features.resources.tags_snackbar_updated
+import io.github.alelk.pws.features.resources.tags_title
 import io.github.alelk.pws.features.theme.spacing
+import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.stringResource
 
 // Predefined color palette for tags
 private val tagColors = listOf(
@@ -98,7 +126,17 @@ class TagsScreen : Screen {
             navigator.push(screen)
           }
           is TagsScreenModel.Effect.ShowSnackbar -> {
-            snackbarHostState.showSnackbar(effect.message)
+            val message = when (val m = effect.message) {
+              TagsScreenModel.SnackbarMessage.Updated -> getString(Res.string.tags_snackbar_updated)
+              TagsScreenModel.SnackbarMessage.Created -> getString(Res.string.tags_snackbar_created)
+              TagsScreenModel.SnackbarMessage.Hidden -> getString(Res.string.tags_snackbar_hidden)
+              TagsScreenModel.SnackbarMessage.Deleted -> getString(Res.string.tags_snackbar_deleted)
+              is TagsScreenModel.SnackbarMessage.Error -> {
+                val details = m.details ?: ""
+                getString(Res.string.tags_snackbar_error_prefix, details)
+              }
+            }
+            snackbarHostState.showSnackbar(message)
           }
         }
       }
@@ -127,7 +165,7 @@ fun TagsContent(
       LargeTopAppBar(
         title = {
           Text(
-            text = "Категории",
+            text = stringResource(Res.string.tags_title),
             style = MaterialTheme.typography.headlineMedium
           )
         },
@@ -145,7 +183,7 @@ fun TagsContent(
         ) {
           Icon(
             imageVector = Icons.Default.Add,
-            contentDescription = "Добавить категорию"
+            contentDescription = stringResource(Res.string.tags_add)
           )
         }
       }
@@ -156,7 +194,7 @@ fun TagsContent(
       TagsUiState.Loading -> {
         LoadingContent(
           modifier = Modifier.padding(innerPadding),
-          message = "Загрузка категорий..."
+          message = stringResource(Res.string.tags_loading)
         )
       }
 
@@ -164,8 +202,8 @@ fun TagsContent(
         EmptyContent(
           modifier = Modifier.padding(innerPadding),
           icon = Icons.Outlined.Tag,
-          title = "Нет категорий",
-          subtitle = "Создавайте категории для организации песен"
+          title = stringResource(Res.string.tags_empty_title),
+          subtitle = stringResource(Res.string.tags_empty_subtitle)
         )
       }
 
@@ -200,7 +238,7 @@ fun TagsContent(
       is TagsUiState.Error -> {
         ErrorContent(
           modifier = Modifier.padding(innerPadding),
-          title = "Ошибка",
+          title = stringResource(Res.string.common_error_title),
           message = state.message
         )
       }
@@ -297,14 +335,14 @@ private fun TagListItem(
       IconButton(onClick = onEditClick) {
         Icon(
           imageVector = Icons.Outlined.Edit,
-          contentDescription = "Редактировать",
+          contentDescription = stringResource(Res.string.tags_edit),
           tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
       }
       IconButton(onClick = onDeleteClick) {
         Icon(
           imageVector = Icons.Outlined.Delete,
-          contentDescription = "Удалить",
+          contentDescription = stringResource(Res.string.tags_delete),
           tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
       }
@@ -327,14 +365,20 @@ private fun TagDialog(
   AlertDialog(
     onDismissRequest = onDismiss,
     title = {
-      Text(if (editingTag != null) "Редактировать категорию" else "Новая категория")
+      Text(
+        if (editingTag != null) {
+          stringResource(Res.string.tags_dialog_edit_title)
+        } else {
+          stringResource(Res.string.tags_dialog_new_title)
+        }
+      )
     },
     text = {
       Column {
         OutlinedTextField(
           value = name,
           onValueChange = { name = it },
-          label = { Text("Название") },
+          label = { Text(stringResource(Res.string.tags_dialog_name)) },
           singleLine = true,
           modifier = Modifier.fillMaxWidth()
         )
@@ -342,7 +386,7 @@ private fun TagDialog(
         Spacer(Modifier.height(MaterialTheme.spacing.lg))
 
         Text(
-          text = "Цвет",
+          text = stringResource(Res.string.tags_dialog_color),
           style = MaterialTheme.typography.labelMedium,
           color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -368,12 +412,12 @@ private fun TagDialog(
         onClick = { onSave(name, selectedColor) },
         enabled = name.isNotBlank()
       ) {
-        Text("Сохранить")
+        Text(stringResource(Res.string.tags_save))
       }
     },
     dismissButton = {
       TextButton(onClick = onDismiss) {
-        Text("Отмена")
+        Text(stringResource(Res.string.tags_cancel))
       }
     }
   )
@@ -401,7 +445,7 @@ private fun ColorOption(
     if (isSelected) {
       Icon(
         imageVector = Icons.Default.Check,
-        contentDescription = "Выбрано",
+        contentDescription = stringResource(Res.string.tags_color_selected),
         tint = Color.White,
         modifier = Modifier.size(20.dp)
       )
@@ -416,13 +460,17 @@ private fun DeleteTagDialog(
   onDismiss: () -> Unit
 ) {
   val isPredefined = tag.isPredefined
-  val title = if (isPredefined) "Скрыть категорию?" else "Удалить категорию?"
-  val message = if (isPredefined) {
-    "Категория \"${tag.name}\" будет скрыта. Вы сможете восстановить её позже."
+  val title = if (isPredefined) {
+    stringResource(Res.string.tags_hide_dialog_title)
   } else {
-    "Категория \"${tag.name}\" будет удалена. Песни не будут затронуты."
+    stringResource(Res.string.tags_delete_dialog_title)
   }
-  val confirmText = if (isPredefined) "Скрыть" else "Удалить"
+  val message = if (isPredefined) {
+    stringResource(Res.string.tags_hide_dialog_message, tag.name)
+  } else {
+    stringResource(Res.string.tags_delete_dialog_message, tag.name)
+  }
+  val confirmText = if (isPredefined) stringResource(Res.string.tags_hide) else stringResource(Res.string.common_delete)
 
   AlertDialog(
     onDismissRequest = onDismiss,
@@ -446,21 +494,10 @@ private fun DeleteTagDialog(
     },
     dismissButton = {
       TextButton(onClick = onDismiss) {
-        Text("Отмена")
+        Text(stringResource(Res.string.tags_cancel))
       }
     }
   )
 }
 
-private fun pluralizeSongs(count: Int): String {
-  val lastTwo = count % 100
-  val lastOne = count % 10
-  val word = when {
-    lastTwo in 11..19 -> "песен"
-    lastOne == 1 -> "песня"
-    lastOne in 2..4 -> "песни"
-    else -> "песен"
-  }
-  return "$count $word"
-}
 
