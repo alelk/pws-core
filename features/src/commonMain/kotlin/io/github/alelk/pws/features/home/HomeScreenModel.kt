@@ -45,7 +45,18 @@ class HomeScreenModel(
   private val _isSearching = MutableStateFlow(false)
   val isSearching: StateFlow<Boolean> = _isSearching.asStateFlow()
 
+  // Number search state
+  private val _numberQuery = MutableStateFlow("")
+  val numberQuery: StateFlow<String> = _numberQuery.asStateFlow()
+
+  private val _numberSuggestions = MutableStateFlow<List<SearchSuggestion>>(emptyList())
+  val numberSuggestions: StateFlow<List<SearchSuggestion>> = _numberSuggestions.asStateFlow()
+
+  private val _isNumberSearching = MutableStateFlow(false)
+  val isNumberSearching: StateFlow<Boolean> = _isNumberSearching.asStateFlow()
+
   private var searchJob: Job? = null
+  private var numberSearchJob: Job? = null
 
   init {
     // Observe books and history
@@ -79,6 +90,20 @@ class HomeScreenModel(
         }
       }
       .launchIn(screenModelScope)
+
+    // Debounced number search
+    _numberQuery
+      .debounce(200)
+      .distinctUntilChanged()
+      .onEach { query ->
+        if (query.isBlank()) {
+          _numberSuggestions.value = emptyList()
+          _isNumberSearching.value = false
+        } else {
+          performNumberSearch(query)
+        }
+      }
+      .launchIn(screenModelScope)
   }
 
   fun onSearchQueryChange(query: String) {
@@ -97,6 +122,41 @@ class HomeScreenModel(
     _isSearching.value = false
   }
 
+  fun onNumberQueryChange(query: String) {
+    val normalized = query.filter { it.isDigit() }.take(4)
+    _numberQuery.value = normalized
+
+    if (normalized.isBlank()) {
+      numberSearchJob?.cancel()
+      _numberSuggestions.value = emptyList()
+      _isNumberSearching.value = false
+    } else {
+      _isNumberSearching.value = true
+    }
+  }
+
+  fun onClearNumberSearch() {
+    _numberQuery.value = ""
+    _numberSuggestions.value = emptyList()
+    _isNumberSearching.value = false
+    numberSearchJob?.cancel()
+  }
+
+  private fun performNumberSearch(query: String) {
+    numberSearchJob?.cancel()
+    numberSearchJob = screenModelScope.launch {
+      try {
+        _isNumberSearching.value = true
+        val results = searchSuggestionsUseCase(query, limit = 15)
+        _numberSuggestions.value = results.map { it.toUi() }
+      } catch (_: Exception) {
+        _numberSuggestions.value = emptyList()
+      } finally {
+        _isNumberSearching.value = false
+      }
+    }
+  }
+
   private fun performSearch(query: String) {
     searchJob?.cancel()
     searchJob = screenModelScope.launch {
@@ -104,7 +164,7 @@ class HomeScreenModel(
         _isSearching.value = true
         val results = searchSuggestionsUseCase(query)
         _suggestions.value = results.map { it.toUi() }
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         _suggestions.value = emptyList()
       } finally {
         _isSearching.value = false

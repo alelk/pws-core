@@ -61,7 +61,6 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.domain.book.model.BookSummary
 import io.github.alelk.pws.domain.history.model.HistorySubject
-import io.github.alelk.pws.features.book.songs.BookSongsScreen
 import io.github.alelk.pws.features.components.AppLargeTopBar
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.NumberInputModal
@@ -84,6 +83,9 @@ class HomeScreen : Screen {
     val searchQuery by viewModel.searchQuery.collectAsState()
     val suggestions by viewModel.suggestions.collectAsState()
     val isSearching by viewModel.isSearching.collectAsState()
+    val numberQuery by viewModel.numberQuery.collectAsState()
+    val numberSuggestions by viewModel.numberSuggestions.collectAsState()
+    val isNumberSearching by viewModel.isNumberSearching.collectAsState()
 
     HomeContent(
       state = state,
@@ -91,7 +93,12 @@ class HomeScreen : Screen {
       suggestions = suggestions,
       isSearching = isSearching,
       onSearchQueryChange = viewModel::onSearchQueryChange,
-      onClearSearch = viewModel::onClearSearch
+      onClearSearch = viewModel::onClearSearch,
+      numberQuery = numberQuery,
+      numberSuggestions = numberSuggestions,
+      isNumberSearching = isNumberSearching,
+      onNumberQueryChange = viewModel::onNumberQueryChange,
+      onClearNumberSearch = viewModel::onClearNumberSearch
     )
   }
 }
@@ -104,7 +111,12 @@ fun HomeContent(
   suggestions: List<SearchSuggestion>,
   isSearching: Boolean,
   onSearchQueryChange: (String) -> Unit,
-  onClearSearch: () -> Unit
+  onClearSearch: () -> Unit,
+  numberQuery: String = "",
+  numberSuggestions: List<SearchSuggestion> = emptyList(),
+  isNumberSearching: Boolean = false,
+  onNumberQueryChange: (String) -> Unit = {},
+  onClearNumberSearch: () -> Unit = {}
 ) {
   val navigator = LocalNavigator.currentOrThrow
   var showNumberInput by remember { mutableStateOf(false) }
@@ -272,13 +284,25 @@ fun HomeContent(
   }
 
   // Number input modal
-  if (showNumberInput && state is HomeUiState.Content) {
+  if (showNumberInput) {
     NumberInputModal(
-      books = state.books,
-      onDismiss = { showNumberInput = false },
-      onConfirm = { bookId, _ ->
+      numberQuery = numberQuery,
+      suggestions = numberSuggestions,
+      isSearching = isNumberSearching,
+      onNumberChange = onNumberQueryChange,
+      onDismiss = {
         showNumberInput = false
-        navigator.push(BookSongsScreen(bookId))
+        onClearNumberSearch()
+      },
+      onSuggestionClick = { suggestion ->
+        showNumberInput = false
+        onClearNumberSearch()
+        val screen = suggestion.bookReferences.firstOrNull()?.let { ref ->
+          ScreenRegistry.get(
+            SharedScreens.Song(io.github.alelk.pws.domain.core.ids.SongNumberId(ref.bookId, suggestion.songId))
+          )
+        } ?: ScreenRegistry.get(SharedScreens.SongById(suggestion.songId))
+        navigator.push(screen)
       }
     )
   }

@@ -10,70 +10,70 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Backspace
-import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Dialpad
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import io.github.alelk.pws.domain.book.model.BookSummary
-import io.github.alelk.pws.domain.core.ids.BookId
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import io.github.alelk.pws.features.search.SearchSuggestion
 import io.github.alelk.pws.features.theme.spacing
 
 /**
- * Modal for entering song number with custom numpad.
+ * Modal for entering song number with custom numpad and live suggestions.
  *
- * @param books List of available books
- * @param selectedBook Initially selected book (or first from list)
+ * @param numberQuery Current number input string
+ * @param suggestions List of song suggestions for the current number
+ * @param isSearching Whether search is in progress
+ * @param onNumberChange Called when user presses a digit or backspace
  * @param onDismiss Called when modal should be dismissed
- * @param onConfirm Called with selected BookId and song number when user confirms
+ * @param onSuggestionClick Called when user taps a suggestion
  */
 @Composable
 fun NumberInputModal(
-  books: List<BookSummary>,
-  selectedBook: BookSummary? = null,
+  numberQuery: String,
+  suggestions: List<SearchSuggestion>,
+  isSearching: Boolean,
+  onNumberChange: (String) -> Unit,
   onDismiss: () -> Unit,
-  onConfirm: (bookId: BookId, songNumber: Int) -> Unit,
+  onSuggestionClick: (SearchSuggestion) -> Unit,
   modifier: Modifier = Modifier
 ) {
-  var currentBook by remember { mutableStateOf(selectedBook ?: books.firstOrNull()) }
-  var inputValue by remember { mutableStateOf("") }
+  val focusRequester = FocusRequester()
+  val normalizedQuery = numberQuery.filter { it.isDigit() }.take(4)
 
-  val maxNumber by remember(currentBook) {
-    derivedStateOf { currentBook?.countSongs ?: 999 }
-  }
-
-  val isValid by remember(inputValue, maxNumber) {
-    derivedStateOf {
-      inputValue.isNotEmpty() &&
-        inputValue.toIntOrNull()?.let { it in 1..maxNumber } == true
-    }
+  LaunchedEffect(Unit) {
+    focusRequester.requestFocus()
   }
 
   // Full screen overlay
@@ -88,7 +88,7 @@ fun NumberInputModal(
     Surface(
       modifier = Modifier
         .fillMaxWidth()
-        .clickable(enabled = false) { }, // Prevent clicks through
+        .clickable(enabled = false) { },
       shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
       color = MaterialTheme.colorScheme.surface,
       tonalElevation = 2.dp
@@ -97,7 +97,7 @@ fun NumberInputModal(
         modifier = Modifier
           .fillMaxWidth()
           .padding(MaterialTheme.spacing.lg),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.Start
       ) {
         // Handle bar
         Box(
@@ -117,7 +117,7 @@ fun NumberInputModal(
           verticalAlignment = Alignment.CenterVertically
         ) {
           Text(
-            text = "Введите номер песни",
+            text = "Поиск по номеру",
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface
           )
@@ -130,321 +130,239 @@ fun NumberInputModal(
           }
         }
 
-        // Book selector
-        if (books.size > 1) {
-          Spacer(Modifier.height(MaterialTheme.spacing.md))
-          BookSelector(
-            books = books,
-            selectedBook = currentBook,
-            onBookSelected = {
-              currentBook = it
-              // Reset input if exceeds new max
-              inputValue.toIntOrNull()?.let { num ->
-                if (num > (it.countSongs)) {
-                  inputValue = ""
-                }
-              }
-            }
-          )
-        }
+        Spacer(Modifier.height(MaterialTheme.spacing.md))
 
-        Spacer(Modifier.height(MaterialTheme.spacing.lg))
-
-        // Range hint
-        Text(
-          text = "от 1 до $maxNumber",
-          style = MaterialTheme.typography.bodySmall,
-          color = MaterialTheme.colorScheme.onSurfaceVariant
+        NumberInputField(
+          value = normalizedQuery,
+          isSearching = isSearching,
+          focusRequester = focusRequester,
+          onValueChange = onNumberChange,
+          onClear = { onNumberChange("") },
+          onDone = {
+            suggestions.firstOrNull()?.let(onSuggestionClick)
+          }
         )
 
         Spacer(Modifier.height(MaterialTheme.spacing.sm))
 
-        // Number display
-        NumberDisplay(
-          value = inputValue,
-          isValid = isValid || inputValue.isEmpty()
+        SuggestionsHint(
+          query = normalizedQuery,
+          suggestionsCount = suggestions.size,
+          isSearching = isSearching
         )
 
-        Spacer(Modifier.height(MaterialTheme.spacing.xl))
+        Spacer(Modifier.height(MaterialTheme.spacing.sm))
 
-        // Numpad
-        NumberPad(
-          onDigit = { digit ->
-            val newValue = inputValue + digit
-            // Limit to reasonable length and max value
-            if (newValue.length <= 4) {
-              inputValue = newValue
-            }
-          },
-          onBackspace = {
-            if (inputValue.isNotEmpty()) {
-              inputValue = inputValue.dropLast(1)
-            }
-          },
-          onConfirm = {
-            if (isValid && currentBook != null) {
-              val number = inputValue.toInt()
-              onConfirm(currentBook!!.id, number)
-            }
-          },
-          isConfirmEnabled = isValid
+        SuggestionsDropdown(
+          modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 180.dp, max = 300.dp),
+          query = normalizedQuery,
+          suggestions = suggestions,
+          isSearching = isSearching,
+          onSuggestionClick = onSuggestionClick
         )
 
-        Spacer(Modifier.height(MaterialTheme.spacing.lg))
+        Spacer(Modifier.height(MaterialTheme.spacing.md))
+      }
+    }
+  }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun NumberInputField(
+  value: String,
+  isSearching: Boolean,
+  focusRequester: FocusRequester,
+  onValueChange: (String) -> Unit,
+  onClear: () -> Unit,
+  onDone: () -> Unit,
+  modifier: Modifier = Modifier
+) {
+  OutlinedTextField(
+    value = value,
+    onValueChange = { input ->
+      onValueChange(input.filter { it.isDigit() }.take(4))
+    },
+    modifier = modifier
+      .fillMaxWidth()
+      .focusRequester(focusRequester),
+    singleLine = true,
+    textStyle = MaterialTheme.typography.headlineSmall,
+    placeholder = { Text("Введите номер") },
+    leadingIcon = {
+      Icon(
+        imageVector = Icons.Default.Dialpad,
+        contentDescription = null,
+        tint = MaterialTheme.colorScheme.onSurfaceVariant
+      )
+    },
+    trailingIcon = {
+      when {
+        isSearching -> CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+        value.isNotEmpty() -> IconButton(onClick = onClear) {
+          Icon(
+            imageVector = Icons.Default.Clear,
+            contentDescription = "Очистить"
+          )
+        }
+      }
+    },
+    keyboardOptions = KeyboardOptions(
+      keyboardType = KeyboardType.Number,
+      imeAction = ImeAction.Done
+    ),
+    keyboardActions = KeyboardActions(
+      onDone = { onDone() }
+    ),
+    shape = RoundedCornerShape(16.dp),
+    colors = TextFieldDefaults.colors(
+      focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+      unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+      focusedIndicatorColor = Color.Transparent,
+      unfocusedIndicatorColor = Color.Transparent
+    )
+  )
+}
+
+@Composable
+private fun SuggestionsHint(
+  query: String,
+  suggestionsCount: Int,
+  isSearching: Boolean,
+  modifier: Modifier = Modifier
+) {
+  val hint = when {
+    query.isBlank() -> "Введите номер песни, например 120"
+    isSearching -> "Ищем песни..."
+    suggestionsCount > 0 -> "Найдено: $suggestionsCount"
+    else -> "Ничего не найдено"
+  }
+
+  Text(
+    text = hint,
+    style = MaterialTheme.typography.bodySmall,
+    color = MaterialTheme.colorScheme.onSurfaceVariant,
+    modifier = modifier
+  )
+}
+
+@Composable
+private fun SuggestionsDropdown(
+  query: String,
+  suggestions: List<SearchSuggestion>,
+  isSearching: Boolean,
+  onSuggestionClick: (SearchSuggestion) -> Unit,
+  modifier: Modifier = Modifier
+) {
+  Surface(
+    modifier = modifier,
+    shape = RoundedCornerShape(14.dp),
+    color = MaterialTheme.colorScheme.surface,
+    tonalElevation = 2.dp
+  ) {
+    when {
+      query.isBlank() -> {
+        EmptyDropdownState(text = "Подсказки появятся во время ввода")
+      }
+      isSearching -> {
+        Box(
+          modifier = Modifier
+            .fillMaxWidth()
+            .height(180.dp),
+          contentAlignment = Alignment.Center
+        ) {
+          CircularProgressIndicator(modifier = Modifier.size(28.dp), strokeWidth = 2.dp)
+        }
+      }
+      suggestions.isEmpty() -> {
+        EmptyDropdownState(text = "Песни с таким номером не найдены")
+      }
+      else -> {
+        LazyColumn(modifier = Modifier.fillMaxWidth()) {
+          items(suggestions, key = { it.songId.value }) { suggestion ->
+            NumberSuggestionItem(
+              suggestion = suggestion,
+              onClick = { onSuggestionClick(suggestion) }
+            )
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f))
+          }
+        }
       }
     }
   }
 }
 
 @Composable
-private fun BookSelector(
-  books: List<BookSummary>,
-  selectedBook: BookSummary?,
-  onBookSelected: (BookSummary) -> Unit,
+private fun EmptyDropdownState(
+  text: String,
   modifier: Modifier = Modifier
 ) {
-  LazyRow(
-    modifier = modifier.fillMaxWidth(),
-    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sm)
-  ) {
-    items(books, key = { it.id.toString() }) { book ->
-      val isSelected = book.id == selectedBook?.id
-      FilterChip(
-        selected = isSelected,
-        onClick = { onBookSelected(book) },
-        label = {
-          Text(
-            text = book.displayShortName.value,
-            style = MaterialTheme.typography.labelMedium
-          )
-        },
-        colors = FilterChipDefaults.filterChipColors(
-          selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-          selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-        )
-      )
-    }
-  }
-}
-
-@Composable
-private fun NumberDisplay(
-  value: String,
-  isValid: Boolean,
-  modifier: Modifier = Modifier
-) {
-  val displayColor = when {
-    value.isEmpty() -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-    isValid -> MaterialTheme.colorScheme.onSurface
-    else -> MaterialTheme.colorScheme.error
-  }
-
-  Surface(
+  Box(
     modifier = modifier
       .fillMaxWidth()
-      .padding(horizontal = MaterialTheme.spacing.xl),
-    shape = RoundedCornerShape(16.dp),
-    color = MaterialTheme.colorScheme.surfaceContainerHigh
+      .height(180.dp)
+      .padding(MaterialTheme.spacing.lg),
+    contentAlignment = Alignment.Center
   ) {
     Text(
-      text = value.ifEmpty { "—" },
-      style = MaterialTheme.typography.displayMedium.copy(
-        fontWeight = FontWeight.Light,
-        letterSpacing = 8.sp
-      ),
-      color = displayColor,
-      textAlign = TextAlign.Center,
-      modifier = Modifier
-        .fillMaxWidth()
-        .padding(vertical = MaterialTheme.spacing.lg)
+      text = text,
+      style = MaterialTheme.typography.bodyMedium,
+      color = MaterialTheme.colorScheme.onSurfaceVariant
     )
   }
 }
 
 @Composable
-private fun NumberPad(
-  onDigit: (Char) -> Unit,
-  onBackspace: () -> Unit,
-  onConfirm: () -> Unit,
-  isConfirmEnabled: Boolean,
-  modifier: Modifier = Modifier
-) {
-  Column(
-    modifier = modifier.fillMaxWidth(),
-    horizontalAlignment = Alignment.CenterHorizontally,
-    verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sm)
-  ) {
-    // Row 1: 1, 2, 3
-    NumberPadRow(
-      buttons = listOf(
-        NumPadButton.Digit('1'),
-        NumPadButton.Digit('2'),
-        NumPadButton.Digit('3')
-      ),
-      onDigit = onDigit,
-      onBackspace = onBackspace,
-      onConfirm = onConfirm,
-      isConfirmEnabled = isConfirmEnabled
-    )
-
-    // Row 2: 4, 5, 6
-    NumberPadRow(
-      buttons = listOf(
-        NumPadButton.Digit('4'),
-        NumPadButton.Digit('5'),
-        NumPadButton.Digit('6')
-      ),
-      onDigit = onDigit,
-      onBackspace = onBackspace,
-      onConfirm = onConfirm,
-      isConfirmEnabled = isConfirmEnabled
-    )
-
-    // Row 3: 7, 8, 9
-    NumberPadRow(
-      buttons = listOf(
-        NumPadButton.Digit('7'),
-        NumPadButton.Digit('8'),
-        NumPadButton.Digit('9')
-      ),
-      onDigit = onDigit,
-      onBackspace = onBackspace,
-      onConfirm = onConfirm,
-      isConfirmEnabled = isConfirmEnabled
-    )
-
-    // Row 4: Backspace, 0, Confirm
-    NumberPadRow(
-      buttons = listOf(
-        NumPadButton.Backspace,
-        NumPadButton.Digit('0'),
-        NumPadButton.Confirm
-      ),
-      onDigit = onDigit,
-      onBackspace = onBackspace,
-      onConfirm = onConfirm,
-      isConfirmEnabled = isConfirmEnabled
-    )
-  }
-}
-
-private sealed interface NumPadButton {
-  data class Digit(val char: Char) : NumPadButton
-  data object Backspace : NumPadButton
-  data object Confirm : NumPadButton
-}
-
-@Composable
-private fun NumberPadRow(
-  buttons: List<NumPadButton>,
-  onDigit: (Char) -> Unit,
-  onBackspace: () -> Unit,
-  onConfirm: () -> Unit,
-  isConfirmEnabled: Boolean,
+private fun NumberSuggestionItem(
+  suggestion: SearchSuggestion,
+  onClick: () -> Unit,
   modifier: Modifier = Modifier
 ) {
   Row(
-    modifier = modifier,
-    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)
-  ) {
-    buttons.forEach { button ->
-      when (button) {
-        is NumPadButton.Digit -> {
-          NumPadDigitButton(
-            digit = button.char,
-            onClick = { onDigit(button.char) }
-          )
-        }
-        NumPadButton.Backspace -> {
-          NumPadActionButton(
-            icon = {
-              Icon(
-                imageVector = Icons.AutoMirrored.Filled.Backspace,
-                contentDescription = "Удалить",
-                modifier = Modifier.size(24.dp)
-              )
-            },
-            onClick = onBackspace,
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            contentColor = MaterialTheme.colorScheme.onSurface
-          )
-        }
-        NumPadButton.Confirm -> {
-          NumPadActionButton(
-            icon = {
-              Icon(
-                imageVector = Icons.Default.Check,
-                contentDescription = "Подтвердить",
-                modifier = Modifier.size(28.dp)
-              )
-            },
-            onClick = onConfirm,
-            enabled = isConfirmEnabled,
-            containerColor = if (isConfirmEnabled)
-              MaterialTheme.colorScheme.primary
-            else
-              MaterialTheme.colorScheme.surfaceContainerHigh,
-            contentColor = if (isConfirmEnabled)
-              MaterialTheme.colorScheme.onPrimary
-            else
-              MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-          )
-        }
-      }
-    }
-  }
-}
-
-@Composable
-private fun NumPadDigitButton(
-  digit: Char,
-  onClick: () -> Unit,
-  modifier: Modifier = Modifier
-) {
-  Surface(
     modifier = modifier
-      .size(72.dp)
-      .clip(CircleShape)
-      .clickable(onClick = onClick),
-    shape = CircleShape,
-    color = MaterialTheme.colorScheme.surfaceContainerHigh
+      .fillMaxWidth()
+      .clickable(onClick = onClick)
+      .padding(horizontal = MaterialTheme.spacing.md, vertical = MaterialTheme.spacing.sm),
+    verticalAlignment = Alignment.CenterVertically
   ) {
-    Box(
-      contentAlignment = Alignment.Center
+    val primaryRef = suggestion.bookReferences.firstOrNull()
+
+    Surface(
+      shape = RoundedCornerShape(10.dp),
+      color = MaterialTheme.colorScheme.primaryContainer
     ) {
       Text(
-        text = digit.toString(),
-        style = MaterialTheme.typography.headlineMedium.copy(
-          fontWeight = FontWeight.Medium
-        ),
-        color = MaterialTheme.colorScheme.onSurface
+        text = primaryRef?.songNumber?.toString() ?: "-",
+        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+        color = MaterialTheme.colorScheme.onPrimaryContainer,
+        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
       )
     }
-  }
-}
 
-@Composable
-private fun NumPadActionButton(
-  icon: @Composable () -> Unit,
-  onClick: () -> Unit,
-  containerColor: Color,
-  contentColor: Color,
-  modifier: Modifier = Modifier,
-  enabled: Boolean = true
-) {
-  Surface(
-    modifier = modifier
-      .size(72.dp)
-      .clip(CircleShape)
-      .clickable(enabled = enabled, onClick = onClick),
-    shape = CircleShape,
-    color = containerColor,
-    contentColor = contentColor
-  ) {
-    Box(
-      contentAlignment = Alignment.Center
-    ) {
-      icon()
+    Spacer(Modifier.width(MaterialTheme.spacing.md))
+
+    Column(modifier = Modifier.weight(1f)) {
+      Text(
+        text = suggestion.songName,
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.onSurface,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
+      )
+
+      if (suggestion.bookReferences.isNotEmpty()) {
+        Text(
+          text = suggestion.bookReferences
+            .take(3)
+            .joinToString("  ") { it.displayShortName },
+          style = MaterialTheme.typography.bodySmall,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis
+        )
+      }
     }
   }
 }

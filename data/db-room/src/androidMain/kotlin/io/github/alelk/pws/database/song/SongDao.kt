@@ -76,7 +76,7 @@ actual interface SongDao : SongDaoBase {
       sn.song_id AS songId,
       s.name AS songName,
       sn.number AS songNumber,
-      b.display_name AS bookDisplayName,
+      b.display_short_name AS bookDisplayName,
       substr(s.lyric, 1, 100) AS snippet
     FROM books AS b
     INNER JOIN book_statistic AS bs ON b.id = bs.id
@@ -96,7 +96,7 @@ actual interface SongDao : SongDaoBase {
       sn.song_id AS songId,
       s.name AS songName,
       sn.number AS songNumber,
-      b.display_name AS bookDisplayName,
+      b.display_short_name AS bookDisplayName,
       snippet(songs_fts, '<b><font color=#247b34>', '</font></b>', '...') as snippet,
       matchinfo(songs_fts, 'x') as matchinfo
     FROM books AS b
