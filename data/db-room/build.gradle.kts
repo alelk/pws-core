@@ -1,10 +1,11 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 
 plugins {
   id("com.google.devtools.ksp")
-  alias(libs.plugins.androidKmpLibrary)
   alias(libs.plugins.kotlinMultiplatform)
+  alias(libs.plugins.androidKmpLibrary)
   alias(libs.plugins.kotest)
 }
 
@@ -19,7 +20,7 @@ kotlin {
     compilations.configureEach {
       compileTaskProvider.configure {
         compilerOptions {
-          jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+          jvmTarget.set(JVM_21)
         }
       }
     }

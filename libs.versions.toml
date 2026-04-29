@@ -1,38 +1,38 @@
 [versions]
 
-kotlin = "2.3.20"
-kotlinx-coroutines = "1.10.2"
-kotlinx-serialization = "1.10.0"
-kotlinx-datetime = "0.7.1"
-ksp = "2.3.5" # https://central.sonatype.com/artifact/com.google.devtools.ksp/com.google.devtools.ksp.gradle.plugin/versions
+kotlin = "2.3.21" # https://github.com/JetBrains/kotlin/releases
+kotlinx-coroutines = "1.10.2" # https://github.com/Kotlin/kotlinx.coroutines/releases
+kotlinx-serialization = "1.11.0" # https://github.com/Kotlin/kotlinx.serialization/releases
+kotlinx-datetime = "0.7.1" # https://github.com/Kotlin/kotlinx-datetime/releases
+ksp = "2.3.7" # https://central.sonatype.com/artifact/com.google.devtools.ksp/com.google.devtools.ksp.gradle.plugin/versions
 
-kaml = "0.104.0"
+kaml = "0.104.0" # https://github.com/charleskorn/kaml/releases
 
-ktor = "3.4.1"
+ktor = "3.4.3" # https://github.com/ktorio/ktor/releases
 
-composeMultiplatform = "1.10.3"
-androidx-lifecycle = "2.10.0"
+composeMultiplatform = "1.10.3" # https://github.com/JetBrains/compose-multiplatform/releases
+androidx-lifecycle = "2.10.0" # https://developer.android.com/jetpack/androidx/releases/lifecycle
 
-koin = "4.2.1"
+koin = "4.2.1" # https://github.com/InsertKoinIO/koin/releases
 
-voyager = "1.1.0-beta03"
+voyager = "1.1.0-beta03" # https://github.com/adrielcafe/voyager/releases
 
-android = "9.1.1"
+android = "9.1.1" # https://developer.android.com/build/releases/gradle-plugin
 
-room = "2.8.4"
+room = "2.8.4" # https://developer.android.com/jetpack/androidx/releases/room
 
-kotest = "6.1.8"
-kotest-property-datetime = "2.0.0"
-kotest-runner-android = "1.2.2"
-kotest-extensions-android = "0.1.9"
-kotest-multiplatform = "6.0.0.M4"
+kotest = "6.1.11" # https://github.com/kotest/kotest/releases
+kotest-property-datetime = "2.0.0" # https://github.com/kotest/kotest-extensions-datetime/releases
+kotest-runner-android = "1.2.2" # https://search.maven.org/artifact/br.com.colman/kotest-runner-android
+kotest-extensions-android = "0.1.9" # https://search.maven.org/artifact/br.com.colman/kotest-extensions-android
+kotest-multiplatform = "6.0.0.M4" # https://github.com/kotest/kotest/releases
 
-arrow = "2.1.2"
+arrow = "2.2.2.1" # https://github.com/arrow-kt/arrow/releases
 
-kudzu = "6.1.0"
-i18n4k = "0.11.1"
-robolectric = "4.16.1"
-sqlite-bundled = "2.6.2"
+kudzu = "6.1.0" # https://github.com/copper-leaf/kudzu/releases
+i18n4k = "0.11.2" # https://github.com/comahe-de/i18n4k/releases
+robolectric = "4.16.1" # https://github.com/robolectric/robolectric/releases
+sqlite-bundled = "2.6.2" # https://developer.android.com/jetpack/androidx/releases/sqlite
 
 [libraries]
 
