@@ -1,5 +1,12 @@
 # PWS Android
 
+# [2.20.0](https://github.com/alelk/pws-core/compare/v2.19.0...v2.20.0) (2026-04-30)
+
+
+### Features
+
+* Add cross-platform song pager, lyric keyword highlighting, and UI accessibility improvements ([5b31f36](https://github.com/alelk/pws-core/commit/5b31f36cb7c132dbf7d1fe041695e45908b2ca19))
+
 # [2.19.0](https://github.com/alelk/pws-core/compare/v2.18.0...v2.19.0) (2026-04-29)
 
 
