@@ -16,6 +16,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -30,10 +34,14 @@ fun RecentSongCard(
   onClick: () -> Unit,
   modifier: Modifier = Modifier
 ) {
+  val haptic = LocalHapticFeedback.current
   Card(
     modifier = modifier
       .width(140.dp)
-      .clickableWithScaleAndClip(shape = MaterialTheme.shapes.medium, onClick = onClick),
+      .clickableWithScaleAndClip(shape = MaterialTheme.shapes.medium, onClick = {
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        onClick()
+      }),
     shape = MaterialTheme.shapes.medium,
     colors = CardDefaults.cardColors(
       containerColor = MaterialTheme.colorScheme.surfaceContainer
@@ -41,7 +49,12 @@ fun RecentSongCard(
     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
   ) {
     Column(
-      modifier = Modifier.padding(MaterialTheme.spacing.md)
+      modifier = Modifier
+        .padding(MaterialTheme.spacing.md)
+        .semantics(mergeDescendants = true) {
+          val numberPart = song.songNumber?.let { "number $it, " } ?: ""
+          contentDescription = "Recently viewed: $numberPart${song.songName}${song.bookDisplayName?.let { ", from $it" } ?: ""}"
+        }
     ) {
       // Song Number Badge (only for booked songs)
       val songNumber = song.songNumber

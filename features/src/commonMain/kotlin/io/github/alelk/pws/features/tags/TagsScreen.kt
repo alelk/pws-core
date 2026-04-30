@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Tag
@@ -53,7 +54,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.registry.ScreenRegistry
 import cafe.adriel.voyager.core.screen.Screen
@@ -91,6 +96,7 @@ import io.github.alelk.pws.features.resources.tags_snackbar_error_prefix
 import io.github.alelk.pws.features.resources.tags_snackbar_hidden
 import io.github.alelk.pws.features.resources.tags_snackbar_updated
 import io.github.alelk.pws.features.resources.tags_title
+import io.github.alelk.pws.features.resources.settings_open
 import io.github.alelk.pws.features.theme.spacing
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
@@ -158,6 +164,8 @@ fun TagsContent(
   onEvent: (TagsEvent) -> Unit
 ) {
   val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+  val navigator = LocalNavigator.currentOrThrow
+  val haptic = LocalHapticFeedback.current
 
   Scaffold(
     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -166,8 +174,17 @@ fun TagsContent(
         title = {
           Text(
             text = stringResource(Res.string.tags_title),
-            style = MaterialTheme.typography.headlineMedium
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.semantics { heading() }
           )
+        },
+        actions = {
+          IconButton(onClick = { navigator.push(ScreenRegistry.get(SharedScreens.Settings)) }) {
+            Icon(
+              imageVector = Icons.Filled.Settings,
+              contentDescription = stringResource(Res.string.settings_open)
+            )
+          }
         },
         scrollBehavior = scrollBehavior,
         colors = TopAppBarDefaults.topAppBarColors(
@@ -179,7 +196,10 @@ fun TagsContent(
     floatingActionButton = {
       if (state is TagsUiState.Content || state is TagsUiState.Empty) {
         FloatingActionButton(
-          onClick = { onEvent(TagsEvent.AddTagClicked) }
+          onClick = { 
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            onEvent(TagsEvent.AddTagClicked) 
+          }
         ) {
           Icon(
             imageVector = Icons.Default.Add,
@@ -290,10 +310,14 @@ private fun TagListItem(
   onEditClick: () -> Unit,
   onDeleteClick: () -> Unit
 ) {
+  val haptic = LocalHapticFeedback.current
   Surface(
     modifier = Modifier
       .fillMaxWidth()
-      .clickable(onClick = onClick),
+      .clickable(onClick = {
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        onClick()
+      }),
     color = MaterialTheme.colorScheme.surface
   ) {
     Row(
@@ -332,14 +356,20 @@ private fun TagListItem(
       )
 
       // Actions for all tags (API handles user overrides for predefined tags)
-      IconButton(onClick = onEditClick) {
+      IconButton(onClick = {
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        onEditClick()
+      }) {
         Icon(
           imageVector = Icons.Outlined.Edit,
           contentDescription = stringResource(Res.string.tags_edit),
           tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
       }
-      IconButton(onClick = onDeleteClick) {
+      IconButton(onClick = {
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        onDeleteClick()
+      }) {
         Icon(
           imageVector = Icons.Outlined.Delete,
           contentDescription = stringResource(Res.string.tags_delete),
@@ -361,6 +391,7 @@ private fun TagDialog(
   var selectedColor by remember(editingTag) {
     mutableStateOf(editingTag?.color ?: tagColors.first())
   }
+  val haptic = LocalHapticFeedback.current
 
   AlertDialog(
     onDismissRequest = onDismiss,
@@ -401,7 +432,10 @@ private fun TagDialog(
             ColorOption(
               color = color,
               isSelected = color == selectedColor,
-              onClick = { selectedColor = color }
+              onClick = { 
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                selectedColor = color 
+              }
             )
           }
         }
@@ -409,7 +443,10 @@ private fun TagDialog(
     },
     confirmButton = {
       TextButton(
-        onClick = { onSave(name, selectedColor) },
+        onClick = { 
+          haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+          onSave(name, selectedColor) 
+        },
         enabled = name.isNotBlank()
       ) {
         Text(stringResource(Res.string.tags_save))
@@ -471,6 +508,7 @@ private fun DeleteTagDialog(
     stringResource(Res.string.tags_delete_dialog_message, tag.name)
   }
   val confirmText = if (isPredefined) stringResource(Res.string.tags_hide) else stringResource(Res.string.common_delete)
+  val haptic = LocalHapticFeedback.current
 
   AlertDialog(
     onDismissRequest = onDismiss,
@@ -488,7 +526,10 @@ private fun DeleteTagDialog(
       Text(message)
     },
     confirmButton = {
-      TextButton(onClick = onConfirm) {
+      TextButton(onClick = {
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        onConfirm()
+      }) {
         Text(confirmText, color = MaterialTheme.colorScheme.error)
       }
     },
@@ -499,5 +540,3 @@ private fun DeleteTagDialog(
     }
   )
 }
-
-

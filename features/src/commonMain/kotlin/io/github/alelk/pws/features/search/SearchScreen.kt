@@ -17,9 +17,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MusicNote
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -33,9 +35,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.registry.rememberScreen
+import cafe.adriel.voyager.core.registry.ScreenRegistry
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -56,6 +63,7 @@ import io.github.alelk.pws.features.resources.search_idle_title
 import io.github.alelk.pws.features.resources.search_loading
 import io.github.alelk.pws.features.resources.search_placeholder
 import io.github.alelk.pws.features.resources.search_title
+import io.github.alelk.pws.features.resources.settings_open
 import io.github.alelk.pws.features.theme.spacing
 import org.jetbrains.compose.resources.stringResource
 
@@ -125,7 +133,15 @@ fun SearchContent(
       AppTopBar(
         title = stringResource(Res.string.search_title),
         canNavigateBack = navigator.canPop,
-        onNavigateBack = { navigator.pop() }
+        onNavigateBack = { navigator.pop() },
+        actions = {
+          IconButton(onClick = { navigator.push(ScreenRegistry.get(SharedScreens.Settings)) }) {
+            Icon(
+              imageVector = Icons.Filled.Settings,
+              contentDescription = stringResource(Res.string.settings_open)
+            )
+          }
+        }
       )
     }
   ) { innerPadding ->
@@ -232,11 +248,15 @@ private fun SearchSuggestionItem(
   onClick: () -> Unit
 ) {
   val booksByNumber = suggestion.booksByNumber
+  val haptic = LocalHapticFeedback.current
 
   Surface(
     modifier = Modifier
       .fillMaxWidth()
-      .clickable(onClick = onClick),
+      .clickable(onClick = {
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        onClick()
+      }),
     color = MaterialTheme.colorScheme.surface
   ) {
     Row(

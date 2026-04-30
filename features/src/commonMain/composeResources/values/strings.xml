@@ -32,17 +32,23 @@
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
     <string name="theme_black">Black AMOLED</string>
+    <string name="theme_system">System</string>
     <string name="settings_open">Open settings</string>
     <string name="settings_title">Settings</string>
     <string name="settings_interface">Interface</string>
     <string name="settings_theme_subtitle">Choose app theme</string>
     <string name="settings_developers">Developers</string>
+    <string name="settings_project_page_name">PWS project page</string>
+    <string name="settings_project_page_role">Open website</string>
     <string name="settings_developer_alex_name">Alex Elkin</string>
     <string name="settings_developer_alex_role">App developer</string>
     <string name="settings_developer_vera_name">Vera Elkina</string>
     <string name="settings_developer_vera_role">Song lyrics editor</string>
     <string name="settings_books">Songbooks</string>
     <string name="settings_books_subtitle">Turn songbooks on or off</string>
+    <string name="settings_about">About</string>
+    <string name="settings_version">Version %1$s</string>
+    <string name="settings_license">License</string>
     <string name="settings_import_export">Import/Export</string>
     <string name="settings_import_export_subtitle">Import or export your edited songs and categories</string>
     <string name="settings_export">Export data</string>
@@ -130,12 +136,18 @@
     <string name="favorites_loading">Loading favorites...</string>
     <string name="favorites_empty_title">No favorite songs</string>
     <string name="favorites_empty_subtitle">Add songs to favorites to find them quickly</string>
+    <string name="favorites_sort">Sort favorites</string>
+    <string name="favorites_sort_direction">Toggle sort direction</string>
+    <string name="favorites_sort_added_date">By added date</string>
+    <string name="favorites_sort_song_number">By song number</string>
+    <string name="favorites_sort_song_name">By song name</string>
 
     <string name="song_edit_title">Edit</string>
     <string name="song_edit_loading">Loading...</string>
     <string name="song_edit_label_title">Title</string>
     <string name="song_edit_label_number">Number</string>
     <string name="song_edit_label_tags">Tags</string>
+    <string name="song_edit_label_tonalities">Tonalities</string>
     <string name="song_edit_label_text">Song text</string>
     <string name="song_edit_discard_title">Discard changes?</string>
     <string name="song_edit_discard_message">All unsaved changes will be lost.</string>
@@ -144,6 +156,7 @@
     <string name="song_edit_error_not_found">Song not found</string>
     <string name="song_edit_validation_title_required">Title cannot be empty</string>
     <string name="song_edit_validation_text_required">Song text cannot be empty</string>
+    <string name="song_edit_validation_text_format_invalid">Invalid text format: %1$s</string>
     <string name="song_edit_save_success">Changes saved</string>
     <string name="song_edit_save_error_prefix">Save error: %1$s</string>
 
@@ -172,6 +185,8 @@
     <string name="song_detail_action_edit_tags">Edit tags</string>
     <string name="song_detail_action_jump">Jump to number</string>
     <string name="song_detail_action_share">Share</string>
+    <string name="song_detail_action_copy">Copy text</string>
+    <string name="song_detail_expand_text">Expanded text</string>
     <string name="song_detail_tags_sheet_title">Song tags</string>
     <string name="song_detail_tags_empty">No tags available</string>
     <string name="song_detail_jump_empty">Enter a number</string>
@@ -181,6 +196,36 @@
     <string name="song_detail_jump_clear">Clear</string>
 
     <string name="tag_chip_edit">Edit</string>
+    <string name="tonality_a_major">A major</string>
+    <string name="tonality_a_minor">A minor</string>
+    <string name="tonality_a_flat_major">A-flat major</string>
+    <string name="tonality_a_flat_minor">A-flat minor</string>
+    <string name="tonality_a_sharp_minor">A-sharp minor</string>
+    <string name="tonality_b_major">B major</string>
+    <string name="tonality_b_minor">B minor</string>
+    <string name="tonality_b_flat_major">B-flat major</string>
+    <string name="tonality_b_flat_minor">B-flat minor</string>
+    <string name="tonality_c_major">C major</string>
+    <string name="tonality_c_minor">C minor</string>
+    <string name="tonality_c_flat_major">C-flat major</string>
+    <string name="tonality_c_sharp_major">C-sharp major</string>
+    <string name="tonality_c_sharp_minor">C-sharp minor</string>
+    <string name="tonality_d_major">D major</string>
+    <string name="tonality_d_minor">D minor</string>
+    <string name="tonality_d_flat_major">D-flat major</string>
+    <string name="tonality_d_sharp_minor">D-sharp minor</string>
+    <string name="tonality_e_major">E major</string>
+    <string name="tonality_e_minor">E minor</string>
+    <string name="tonality_e_flat_major">E-flat major</string>
+    <string name="tonality_e_flat_minor">E-flat minor</string>
+    <string name="tonality_f_major">F major</string>
+    <string name="tonality_f_minor">F minor</string>
+    <string name="tonality_f_sharp_major">F-sharp major</string>
+    <string name="tonality_f_sharp_minor">F-sharp minor</string>
+    <string name="tonality_g_major">G major</string>
+    <string name="tonality_g_minor">G minor</string>
+    <string name="tonality_g_flat_major">G-flat major</string>
+    <string name="tonality_g_sharp_minor">G-sharp minor</string>
 </resources>
 
 

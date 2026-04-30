@@ -8,13 +8,17 @@ import io.github.alelk.pws.domain.bookstatistic.command.UpdateBookStatisticComma
 import io.github.alelk.pws.domain.bookstatistic.usecase.UpdateBookStatisticUseCase
 import io.github.alelk.pws.domain.core.ids.BookId
 import io.github.alelk.pws.features.resources.Res
+import io.github.alelk.pws.features.resources.app_name
 import io.github.alelk.pws.features.resources.settings_developer_alex_name
 import io.github.alelk.pws.features.resources.settings_developer_alex_role
 import io.github.alelk.pws.features.resources.settings_developer_vera_name
 import io.github.alelk.pws.features.resources.settings_developer_vera_role
+import io.github.alelk.pws.features.resources.settings_open
 import io.github.alelk.pws.features.resources.theme_black
 import io.github.alelk.pws.features.resources.theme_dark
 import io.github.alelk.pws.features.resources.theme_light
+import io.github.alelk.pws.features.resources.theme_system
+import io.github.alelk.pws.features.app.PwsAppInfo
 import io.github.alelk.pws.features.theme.ThemeMode
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -25,6 +29,7 @@ import kotlinx.coroutines.sync.withLock
 class SettingsScreenModel(
   observeBooksUseCase: ObserveBooksUseCase,
   private val updateBookStatisticUseCase: UpdateBookStatisticUseCase,
+  private val appInfo: PwsAppInfo?,
 ) : StateScreenModel<SettingsUiState>(SettingsUiState.Loading) {
 
   companion object {
@@ -47,12 +52,18 @@ class SettingsScreenModel(
   private val lastKnownPriorities = mutableMapOf<BookId, Int>()
 
   private val themeItems = listOf(
+    ThemeItemUi(ThemeMode.SYSTEM, Res.string.theme_system),
     ThemeItemUi(ThemeMode.LIGHT, Res.string.theme_light),
     ThemeItemUi(ThemeMode.DARK, Res.string.theme_dark),
     ThemeItemUi(ThemeMode.BLACK, Res.string.theme_black),
   )
 
   private val developerItems = listOf(
+    DeveloperItemUi(
+      nameRes = Res.string.app_name,
+      roleRes = Res.string.settings_open,
+      contact = DeveloperContact.Web(url = "https://alelk.github.io")
+    ),
     DeveloperItemUi(
       nameRes = Res.string.settings_developer_alex_name,
       roleRes = Res.string.settings_developer_alex_role,
@@ -71,6 +82,7 @@ class SettingsScreenModel(
       themes = themeItems,
       developers = developerItems,
       books = emptyList(),
+      appVersion = appInfo?.version ?: ""
     )
 
     screenModelScope.launch {
@@ -151,6 +163,7 @@ class SettingsScreenModel(
         themes = themeItems,
         developers = developerItems,
         books = emptyList(),
+        appVersion = appInfo?.version ?: ""
       )
     }
   }

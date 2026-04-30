@@ -13,7 +13,8 @@ sealed interface SettingsUiState {
     val selectedTheme: ThemeMode,
     val themes: List<ThemeItemUi>,
     val developers: List<DeveloperItemUi>,
-    val books: List<BookToggleUi>
+    val books: List<BookToggleUi>,
+    val appVersion: String = ""
   ) : SettingsUiState
 }
 

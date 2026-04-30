@@ -27,6 +27,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.alelk.pws.features.resources.Res
@@ -99,7 +101,8 @@ fun EmptyContent(
         text = title,
         style = MaterialTheme.typography.titleMedium,
         color = MaterialTheme.colorScheme.onSurface,
-        textAlign = TextAlign.Center
+        textAlign = TextAlign.Center,
+        modifier = Modifier.semantics { heading() }
       )
       if (subtitle != null) {
         Spacer(Modifier.height(MaterialTheme.spacing.sm))
@@ -165,7 +168,8 @@ fun ErrorContent(
         text = resolvedTitle,
         style = MaterialTheme.typography.titleMedium,
         color = MaterialTheme.colorScheme.onSurface,
-        textAlign = TextAlign.Center
+        textAlign = TextAlign.Center,
+        modifier = Modifier.semantics { heading() }
       )
       if (message != null) {
         Spacer(Modifier.height(MaterialTheme.spacing.sm))
@@ -204,4 +208,3 @@ fun AnimatedContent(
     content()
   }
 }
-

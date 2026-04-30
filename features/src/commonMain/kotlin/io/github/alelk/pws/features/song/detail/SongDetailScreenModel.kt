@@ -16,6 +16,7 @@ import io.github.alelk.pws.domain.history.usecase.RecordSongViewUseCase
 import io.github.alelk.pws.domain.song.model.SongDetail
 import io.github.alelk.pws.domain.song.repository.SongObserveRepository
 import io.github.alelk.pws.domain.song.usecase.ObserveSongUseCase
+import io.github.alelk.pws.domain.songnumber.repository.SongNumberReadRepository
 import io.github.alelk.pws.domain.songreference.usecase.GetSongReferencesWithDetailsUseCase
 import io.github.alelk.pws.domain.songreference.usecase.SongReferenceDetail
 import io.github.alelk.pws.domain.songtag.usecase.ObserveTagsForSongUseCase
@@ -24,8 +25,10 @@ import io.github.alelk.pws.domain.tag.model.Tag
 import io.github.alelk.pws.domain.tag.usecase.ObserveTagsUseCase
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapLatest
@@ -42,6 +45,7 @@ class SongDetailScreenModel(
   private val observeIsFavorite: ObserveIsFavoriteUseCase,
   private val toggleFavorite: ToggleFavoriteUseCase,
   private val getSongReferences: GetSongReferencesWithDetailsUseCase,
+  private val songNumberReadRepository: SongNumberReadRepository,
   private val observeTagsForSong: ObserveTagsForSongUseCase<TagId>,
   private val observeAllTags: ObserveTagsUseCase<TagId>,
   private val replaceAllSongTags: ReplaceAllSongTagsUseCase<TagId>,
@@ -93,6 +97,13 @@ class SongDetailScreenModel(
   /** All available tags (for the tag editor). */
   private val _allTags = MutableStateFlow<List<Tag<TagId>>>(emptyList())
   val allTags: StateFlow<List<Tag<TagId>>> = _allTags.asStateFlow()
+
+  sealed interface Effect {
+    data class ShowError(val message: String) : Effect
+  }
+
+  private val _effects = MutableSharedFlow<Effect>()
+  val effects = _effects.asSharedFlow()
 
   init {
     // Observe currently displayed song content
@@ -209,9 +220,9 @@ class SongDetailScreenModel(
   /** Save the selected set of tags for the current song. */
   fun onSaveTags(selectedTagIds: Set<TagId>) {
     screenModelScope.launch {
-      try {
-        replaceAllSongTags(_currentSongNumberId.value.songId, selectedTagIds)
-      } catch (_: Exception) {}
+      replaceAllSongTags(_currentSongNumberId.value.songId, selectedTagIds).mapLeft { error ->
+        _effects.emit(Effect.ShowError(error.message))
+      }
     }
   }
 
@@ -240,30 +251,34 @@ class SongDetailScreenModel(
     }
 
     val bySong = linkedMapOf<SongId, MutableList<ReferenceBookContextUi>>()
-    val activeBooks = booksSnapshot.value.filter { it.enabled }
+    val activeBooks = booksSnapshot.value.filter { it.enabled }.associateBy { it.id }
 
-    activeBooks.forEach { book ->
-      val songsMap = runCatching { songObserveRepository.observeAllInBook(book.id).first() }
-        .getOrNull() ?: return@forEach
-
-      songsMap.forEach { (number, summary) ->
-        if (summary.id !in targetSongIds) return@forEach
-
-        bySong.getOrPut(summary.id) { mutableListOf() }
+    targetSongIds.forEach { songId ->
+      val songNumbers = songNumberReadRepository.getAllBySongId(songId)
+      songNumbers.forEach { sn ->
+        val book = activeBooks[sn.bookId] ?: return@forEach
+        bySong.getOrPut(songId) { mutableListOf() }
           .add(
             ReferenceBookContextUi(
-              songNumberId = SongNumberId(book.id, summary.id),
+              songNumberId = SongNumberId(book.id, songId),
               bookId = book.id,
               bookTitle = book.displayName.value,
               bookShortTitle = book.displayShortName.value,
-              songNumber = number,
+              songNumber = sn.number,
             )
           )
       }
     }
 
+    val bookPriority = activeBooks.mapValues { it.value.priority }
+
     _referenceBookContexts.value = bySong.mapValues { (_, list) ->
-      list.distinctBy { it.songNumberId.identifier }.sortedWith(compareBy({ it.bookShortTitle }, { it.songNumber }))
+      list.distinctBy { it.songNumberId.identifier }
+        .sortedWith(
+          compareByDescending<ReferenceBookContextUi> { bookPriority[it.bookId] ?: 0 }
+            .thenBy { it.bookShortTitle }
+            .thenBy { it.songNumber }
+        )
     }
   }
 }

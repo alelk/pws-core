@@ -11,7 +11,11 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -22,8 +26,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.registry.ScreenRegistry
 import cafe.adriel.voyager.core.registry.rememberScreen
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
@@ -39,6 +48,7 @@ import io.github.alelk.pws.features.resources.books_error_title
 import io.github.alelk.pws.features.resources.books_loading
 import io.github.alelk.pws.features.resources.home_load_error_message
 import io.github.alelk.pws.features.resources.home_songbooks
+import io.github.alelk.pws.features.resources.settings_open
 import io.github.alelk.pws.features.theme.spacing
 import org.jetbrains.compose.resources.stringResource
 
@@ -55,11 +65,15 @@ class BooksScreen : Screen {
 @Composable
 fun BooksContent(state: BooksUiState) {
   val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+  val navigator = LocalNavigator.currentOrThrow
 
   Scaffold(
     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
     topBar = {
-      BooksTopBar(scrollBehavior = scrollBehavior)
+      BooksTopBar(
+        scrollBehavior = scrollBehavior,
+        onOpenSettings = { navigator.push(ScreenRegistry.get(SharedScreens.Settings)) }
+      )
     }
   ) { innerPadding ->
     when (state) {
@@ -89,14 +103,24 @@ fun BooksContent(state: BooksUiState) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BooksTopBar(
-  scrollBehavior: TopAppBarScrollBehavior
+  scrollBehavior: TopAppBarScrollBehavior,
+  onOpenSettings: () -> Unit,
 ) {
   LargeTopAppBar(
     title = {
       Text(
         text = stringResource(Res.string.home_songbooks),
-        style = MaterialTheme.typography.headlineMedium
+        style = MaterialTheme.typography.headlineMedium,
+        modifier = Modifier.semantics { heading() }
       )
+    },
+    actions = {
+      IconButton(onClick = onOpenSettings) {
+        Icon(
+          imageVector = Icons.Filled.Settings,
+          contentDescription = stringResource(Res.string.settings_open)
+        )
+      }
     },
     scrollBehavior = scrollBehavior,
     colors = TopAppBarDefaults.topAppBarColors(
@@ -112,6 +136,7 @@ private fun BooksGrid(
   modifier: Modifier = Modifier
 ) {
   val navigator = LocalNavigator.currentOrThrow
+  val haptic = LocalHapticFeedback.current
 
   LazyVerticalGrid(
     columns = GridCells.Adaptive(minSize = 160.dp),
@@ -131,7 +156,10 @@ private fun BooksGrid(
       BookCard(
         displayName = book.displayName.value,
         songCount = book.countSongs,
-        onClick = { navigator.push(bookSongsScreen) }
+        onClick = { 
+          haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+          navigator.push(bookSongsScreen) 
+        }
       )
     }
 

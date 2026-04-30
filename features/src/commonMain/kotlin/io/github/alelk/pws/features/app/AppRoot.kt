@@ -27,8 +27,15 @@ import io.github.alelk.pws.features.favorites.FavoritesScreen
 import io.github.alelk.pws.features.history.HistoryScreen
 import io.github.alelk.pws.features.home.HomeScreen
 import io.github.alelk.pws.features.search.SearchScreen
+import io.github.alelk.pws.features.tags.TagsScreen
 import io.github.alelk.pws.features.settings.LocalSettingsExternalActions
 import io.github.alelk.pws.features.settings.SettingsExternalActions
+import io.github.alelk.pws.features.song.detail.FavoritesDisplaySettings
+import io.github.alelk.pws.features.song.detail.LocalFavoritesDisplaySettings
+import io.github.alelk.pws.features.song.detail.LocalSongDetailDisplaySettings
+import io.github.alelk.pws.features.song.detail.LocalSongDetailExternalActions
+import io.github.alelk.pws.features.song.detail.SongDetailDisplaySettings
+import io.github.alelk.pws.features.song.detail.SongDetailExternalActions
 import io.github.alelk.pws.features.theme.AppTheme
 import io.github.alelk.pws.features.theme.LocalThemeSettings
 import io.github.alelk.pws.features.theme.ThemeMode
@@ -40,12 +47,20 @@ import io.github.alelk.pws.features.theme.ThemeSettings
 @Composable
 fun AppRoot(
   themeMode: ThemeMode = ThemeMode.DEFAULT,
+  appVersion: String? = null,
   onThemeModeChange: (ThemeMode) -> Unit = {},
   settingsExternalActions: SettingsExternalActions? = null,
+  songDetailExternalActions: SongDetailExternalActions? = null,
+  songDetailDisplaySettings: SongDetailDisplaySettings? = null,
+  favoritesDisplaySettings: FavoritesDisplaySettings? = null,
 ) {
   CompositionLocalProvider(
     LocalThemeSettings provides ThemeSettings(themeMode = themeMode, onThemeModeChange = onThemeModeChange),
+    LocalPwsAppInfo provides appVersion?.let { PwsAppInfo(it) },
     LocalSettingsExternalActions provides settingsExternalActions,
+    LocalSongDetailExternalActions provides songDetailExternalActions,
+    LocalSongDetailDisplaySettings provides songDetailDisplaySettings,
+    LocalFavoritesDisplaySettings provides favoritesDisplaySettings,
   ) {
     AppTheme(themeMode = themeMode) {
       Surface(
@@ -120,12 +135,33 @@ private object SearchTab : Tab {
   }
 }
 
+private object TagsTab : Tab {
+  override val options: TabOptions
+    @Composable get() {
+      val icon = NavDestination.Tags.unselectedIcon
+      return TabOptions(
+        index = 3u,
+        title = NavDestination.Tags.route,
+        icon = androidx.compose.ui.graphics.vector.rememberVectorPainter(icon)
+      )
+    }
+
+  @Composable
+  override fun Content() {
+    val holder = LocalTabNavigatorsHolder.currentOrThrow
+    Navigator(TagsScreen()) { navigator ->
+      holder.navigators[this] = navigator
+      SlideTransition(navigator)
+    }
+  }
+}
+
 private object FavoritesTab : Tab {
   override val options: TabOptions
     @Composable get() {
       val icon = NavDestination.Favorites.unselectedIcon
       return TabOptions(
-        index = 3u,
+        index = 4u,
         title = NavDestination.Favorites.route,
         icon = androidx.compose.ui.graphics.vector.rememberVectorPainter(icon)
       )
@@ -146,7 +182,7 @@ private object HistoryTab : Tab {
     @Composable get() {
       val icon = NavDestination.History.unselectedIcon
       return TabOptions(
-        index = 4u,
+        index = 5u,
         title = NavDestination.History.route,
         icon = androidx.compose.ui.graphics.vector.rememberVectorPainter(icon)
       )
@@ -167,6 +203,7 @@ private val mainTabs: List<Tab> = listOf(
   HomeTab,
   BooksTab,
   SearchTab,
+  TagsTab,
   FavoritesTab,
   HistoryTab
 )

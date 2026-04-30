@@ -28,6 +28,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.book_songs_count
@@ -46,8 +48,12 @@ fun TagChip(
   onClick: () -> Unit,
   modifier: Modifier = Modifier
 ) {
+  val haptic = LocalHapticFeedback.current
   Surface(
-    modifier = modifier.clickable(onClick = onClick),
+    modifier = modifier.clickable(onClick = {
+      haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+      onClick()
+    }),
     shape = MaterialTheme.shapes.small,
     color = color.copy(alpha = 0.15f)
   ) {
@@ -85,10 +91,14 @@ fun SelectableTagChip(
   onClick: () -> Unit,
   modifier: Modifier = Modifier
 ) {
+  val haptic = LocalHapticFeedback.current
   FilterChip(
     modifier = modifier,
     selected = selected,
-    onClick = onClick,
+    onClick = {
+      haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+      onClick()
+    },
     label = {
       Row(verticalAlignment = Alignment.CenterVertically) {
         Box(
@@ -123,6 +133,7 @@ fun RemovableTagChip(
   onRemove: () -> Unit,
   modifier: Modifier = Modifier
 ) {
+  val haptic = LocalHapticFeedback.current
   Surface(
     modifier = modifier,
     shape = MaterialTheme.shapes.small,
@@ -150,7 +161,10 @@ fun RemovableTagChip(
         color = MaterialTheme.colorScheme.onSurface
       )
       IconButton(
-        onClick = onRemove,
+        onClick = {
+          haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+          onRemove()
+        },
         modifier = Modifier.size(24.dp)
       ) {
         Icon(
@@ -195,8 +209,12 @@ fun TagListItem(
   modifier: Modifier = Modifier,
   isPredefined: Boolean = false
 ) {
+  val haptic = LocalHapticFeedback.current
   Surface(
-    modifier = modifier.clickable(onClick = onClick),
+    modifier = modifier.clickable(onClick = {
+      haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+      onClick()
+    }),
     color = MaterialTheme.colorScheme.surface
   ) {
     Row(
@@ -231,7 +249,10 @@ fun TagListItem(
 
       if (!isPredefined) {
         Spacer(Modifier.width(MaterialTheme.spacing.sm))
-        IconButton(onClick = onEditClick) {
+        IconButton(onClick = {
+          haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+          onEditClick()
+        }) {
           Icon(
             imageVector = Icons.Default.Close,
             contentDescription = stringResource(Res.string.tag_chip_edit),
@@ -242,5 +263,3 @@ fun TagListItem(
     }
   }
 }
-
-

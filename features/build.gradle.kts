@@ -23,6 +23,9 @@ kotlin {
   }
 
   jvm()
+  iosX64()
+  iosArm64()
+  iosSimulatorArm64()
   js(IR) {
     outputModuleName = "pws-features"
     browser()
@@ -32,6 +35,7 @@ kotlin {
     commonMain.dependencies {
       implementation(project(":core:navigation"))
       implementation(project(":domain"))
+      implementation(project(":domain:lyric-format"))
 
       implementation(compose.runtime)
       implementation(compose.foundation)
@@ -54,7 +58,21 @@ kotlin {
       implementation(libs.androidx.lifecycle.viewmodelCompose)
       implementation(libs.androidx.lifecycle.runtimeCompose)
     }
-    jvmMain.dependencies {}
+
+    val mobileMain by creating {
+      dependsOn(commonMain.get())
+    }
+    androidMain.get().dependsOn(mobileMain)
+    iosX64Main.get().dependsOn(mobileMain)
+    iosArm64Main.get().dependsOn(mobileMain)
+    iosSimulatorArm64Main.get().dependsOn(mobileMain)
+
+    val skikoMain by creating {
+      dependsOn(commonMain.get())
+    }
+    jvmMain.get().dependsOn(skikoMain)
+    jsMain.get().dependsOn(skikoMain)
+
     androidMain.dependencies {
       implementation(libs.koin.android)
     }

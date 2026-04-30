@@ -22,8 +22,11 @@ import io.github.alelk.pws.domain.history.usecase.RemoveHistoryEntryUseCase
 import io.github.alelk.pws.domain.song.repository.SongObserveRepository
 import io.github.alelk.pws.domain.song.repository.SongReadRepository
 import io.github.alelk.pws.domain.song.repository.SongSearchRepository
+import io.github.alelk.pws.domain.song.repository.SongWriteRepository
+import io.github.alelk.pws.domain.song.usecase.GetSongDetailUseCase
 import io.github.alelk.pws.domain.song.usecase.ObserveSongUseCase
 import io.github.alelk.pws.domain.song.usecase.SearchSongSuggestionsUseCase
+import io.github.alelk.pws.domain.song.usecase.UpdateSongUseCase
 import io.github.alelk.pws.domain.songtag.repository.SongTagObserveRepository
 import io.github.alelk.pws.domain.songtag.repository.SongTagReadRepository
 import io.github.alelk.pws.domain.songtag.repository.SongTagWriteRepository
@@ -54,6 +57,8 @@ val useCasesModule = module {
 
   // Song
   factory { ObserveSongUseCase(get<SongObserveRepository>()) }
+  factory { GetSongDetailUseCase(get<SongReadRepository>(), get<TransactionRunner>()) }
+  factory { UpdateSongUseCase(get<SongWriteRepository>(), get<TransactionRunner>()) }
   factory { SearchSongSuggestionsUseCase(get<SongSearchRepository>(), get<TransactionRunner>()) }
 
   // Favorite

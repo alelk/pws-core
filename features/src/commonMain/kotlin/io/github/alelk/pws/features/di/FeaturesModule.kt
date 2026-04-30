@@ -12,11 +12,20 @@ import io.github.alelk.pws.features.song.detail.SongDetailBySongIdScreenModel
 import io.github.alelk.pws.features.song.edit.SongEditScreenModel
 import io.github.alelk.pws.features.tags.TagsScreenModel
 import io.github.alelk.pws.features.tags.songs.TagSongsScreenModel
+import io.github.alelk.pws.domain.book.usecase.ObserveBooksUseCase
 import io.github.alelk.pws.domain.core.ids.BookId
 import io.github.alelk.pws.domain.core.ids.SongId
 import io.github.alelk.pws.domain.core.ids.SongNumberId
 import io.github.alelk.pws.domain.core.ids.TagId
+import io.github.alelk.pws.domain.favorite.usecase.ObserveIsFavoriteUseCase
+import io.github.alelk.pws.domain.favorite.usecase.ToggleFavoriteUseCase
+import io.github.alelk.pws.domain.history.usecase.RecordSongViewUseCase
 import io.github.alelk.pws.domain.song.repository.SongObserveRepository
+import io.github.alelk.pws.domain.song.repository.SongReadRepository
+import io.github.alelk.pws.domain.song.usecase.ObserveSongUseCase
+import io.github.alelk.pws.domain.songnumber.repository.SongNumberReadRepository
+import io.github.alelk.pws.domain.songreference.repository.SongReferenceReadRepository
+import io.github.alelk.pws.domain.songreference.usecase.GetSongReferencesWithDetailsUseCase
 import io.github.alelk.pws.domain.songtag.usecase.ObserveSongsByTagUseCase
 import io.github.alelk.pws.domain.songtag.usecase.ObserveTagsForSongUseCase
 import io.github.alelk.pws.domain.songtag.usecase.GetSongTagIdsUseCase
@@ -26,7 +35,6 @@ import io.github.alelk.pws.domain.tag.usecase.DeleteTagUseCase
 import io.github.alelk.pws.domain.tag.usecase.GetTagDetailUseCase
 import io.github.alelk.pws.domain.tag.usecase.ObserveTagsUseCase
 import io.github.alelk.pws.domain.tag.usecase.UpdateTagUseCase
-import io.github.alelk.pws.domain.songreference.usecase.GetSongReferencesWithDetailsUseCase
 import org.koin.dsl.module
 
 /**
@@ -48,17 +56,49 @@ val featuresModule = module {
   // Song Detail
   factory { (songNumberId: SongNumberId) ->
     SongDetailScreenModel(
-      songNumberId, get(), get(), get<SongObserveRepository>(), get(), get(), get(),
-      get(), get<ObserveTagsForSongUseCase<TagId>>(), get<ObserveTagsUseCase<TagId>>(), get<ReplaceAllSongTagsUseCase<TagId>>()
+      songNumberId = songNumberId,
+      observeSong = get<ObserveSongUseCase>(),
+      observeBooks = get<ObserveBooksUseCase>(),
+      songObserveRepository = get<SongObserveRepository>(),
+      recordSongView = get<RecordSongViewUseCase>(),
+      observeIsFavorite = get<ObserveIsFavoriteUseCase>(),
+      toggleFavorite = get<ToggleFavoriteUseCase>(),
+      getSongReferences = get<GetSongReferencesWithDetailsUseCase>(),
+      songNumberReadRepository = get<SongNumberReadRepository>(),
+      observeTagsForSong = get<ObserveTagsForSongUseCase<TagId>>(),
+      observeAllTags = get<ObserveTagsUseCase<TagId>>(),
+      replaceAllSongTags = get<ReplaceAllSongTagsUseCase<TagId>>(),
     )
   }
 
   // Song Detail by SongId (for search results navigation)
-  factory { (songId: SongId) -> SongDetailBySongIdScreenModel(songId, get()) }
+  factory { (songId: SongId) ->
+    SongDetailBySongIdScreenModel(
+      songId = songId,
+      observeSong = get<ObserveSongUseCase>(),
+      observeBooks = get<ObserveBooksUseCase>(),
+      songObserveRepository = get<SongObserveRepository>(),
+      recordSongView = get<RecordSongViewUseCase>(),
+      observeIsFavorite = get<ObserveIsFavoriteUseCase>(),
+      toggleFavorite = get<ToggleFavoriteUseCase>(),
+      getSongReferences = get<GetSongReferencesWithDetailsUseCase>(),
+      songNumberReadRepository = get<SongNumberReadRepository>(),
+      observeTagsForSong = get<ObserveTagsForSongUseCase<TagId>>(),
+      observeAllTags = get<ObserveTagsUseCase<TagId>>(),
+      replaceAllSongTags = get<ReplaceAllSongTagsUseCase<TagId>>(),
+    )
+  }
 
   // Song Edit
   factory { (songId: SongId) ->
-    SongEditScreenModel(songId, get(), get(), get<ObserveTagsUseCase<TagId>>(), get<GetSongTagIdsUseCase<TagId>>(), get<ReplaceAllSongTagsUseCase<TagId>>())
+    SongEditScreenModel(
+      songId = songId,
+      getSongDetailUseCase = get(),
+      updateSongUseCase = get(),
+      observeTagsUseCase = get<ObserveTagsUseCase<TagId>>(),
+      getSongTagIdsUseCase = get<GetSongTagIdsUseCase<TagId>>(),
+      replaceAllSongTagsUseCase = get<ReplaceAllSongTagsUseCase<TagId>>()
+    )
   }
 
   // Search
@@ -71,7 +111,7 @@ val featuresModule = module {
   factory { HistoryScreenModel(get(), get(), get()) }
 
   // Settings
-  factory { SettingsScreenModel(get(), get()) }
+  factory { SettingsScreenModel(get(), get(), getOrNull()) }
 
   // Tags
   factory { TagsScreenModel(get<ObserveTagsUseCase<TagId>>(), get<CreateTagUseCase<TagId>>(), get<UpdateTagUseCase<TagId>>(), get<DeleteTagUseCase<TagId>>()) }
@@ -79,4 +119,3 @@ val featuresModule = module {
   // Tag Songs
   factory { (tagId: TagId) -> TagSongsScreenModel(tagId, get<GetTagDetailUseCase<TagId>>(), get<ObserveSongsByTagUseCase<TagId>>()) }
 }
-

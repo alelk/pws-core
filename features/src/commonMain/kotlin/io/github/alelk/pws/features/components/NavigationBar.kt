@@ -22,6 +22,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import cafe.adriel.voyager.navigator.tab.Tab
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.nav_books
@@ -93,6 +95,7 @@ fun AppNavigationBar(
   onReselectCurrentTab: () -> Unit,
   modifier: Modifier = Modifier
 ) {
+  val haptic = LocalHapticFeedback.current
   NavigationBar(
     modifier = modifier,
     containerColor = MaterialTheme.colorScheme.surfaceContainer
@@ -106,6 +109,7 @@ fun AppNavigationBar(
       NavigationBarItem(
         selected = selected,
         onClick = {
+          haptic.performHapticFeedback(HapticFeedbackType.LongPress)
           if (selected) {
             onReselectCurrentTab()
           } else {

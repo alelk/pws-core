@@ -2,6 +2,7 @@ package io.github.alelk.pws.domain.songtag.usecase
 
 import arrow.core.Either
 import arrow.core.raise.either
+import arrow.core.getOrElse
 import io.github.alelk.pws.domain.core.error.CreateError
 import io.github.alelk.pws.domain.core.error.DeleteError
 import io.github.alelk.pws.domain.core.error.ReplaceAllError
@@ -26,39 +27,61 @@ class ReplaceAllSongTagsUseCase<ID : TagId>(
   private val writeRepository: SongTagWriteRepository<ID>,
   private val txRunner: TransactionRunner
 ) {
-  suspend operator fun invoke(songId: SongId, tagIds: Set<ID>): Either<ReplaceAllError, ReplaceAllSuccess<SongTagAssociation<ID>>> =
-    txRunner.inRwTransaction {
-      either {
-        val existingTagIds = readRepository.getTagIdsBySongId(songId)
-        val unchangedTagIds = existingTagIds intersect tagIds
-        val tagIdsToDelete = existingTagIds - tagIds
-        val tagIdsToCreate = tagIds - existingTagIds
+  private class RollbackException(val error: ReplaceAllError) : Exception()
 
-        for (tagId in tagIdsToCreate) {
-          writeRepository.create(songId, tagId).mapLeft { err ->
-            when (err) {
-              is CreateError.AlreadyExists -> error("illegal state: creating song-tag already exists: $songId $tagId")
+  suspend operator fun invoke(songId: SongId, tagIds: Set<ID>): Either<ReplaceAllError, ReplaceAllSuccess<SongTagAssociation<ID>>> =
+    try {
+      txRunner.inRwTransaction {
+        val existingTagIds = readRepository.getTagIdsBySongId(songId)
+        val existingTagIdsMap = existingTagIds.associateBy { it.identifier }
+        val newTagIdsMap = tagIds.associateBy { it.identifier }
+
+        val tagIdsToDelete = existingTagIdsMap.keys - newTagIdsMap.keys
+        val tagIdsToCreate = newTagIdsMap.keys - existingTagIdsMap.keys
+        val unchangedTagIds = existingTagIdsMap.keys intersect newTagIdsMap.keys
+
+        val created = mutableListOf<SongTagAssociation<ID>>()
+        for (tagIdStr in tagIdsToCreate) {
+          val tagId = newTagIdsMap.getValue(tagIdStr)
+          val res = writeRepository.create(songId, tagId).getOrElse { err ->
+            val replaceAllError = when (err) {
+              is CreateError.AlreadyExists -> ReplaceAllError.UnknownError(message = "illegal state: creating song-tag already exists: $songId $tagId")
               is CreateError.ValidationError -> ReplaceAllError.ValidationError(err.message)
               is CreateError.UnknownError -> ReplaceAllError.UnknownError(err.cause, err.message)
             }
-          }.bind()
+            throw RollbackException(replaceAllError)
+          }
+          created.add(res)
         }
-        for (tagId in tagIdsToDelete) {
-          writeRepository.delete(songId, tagId).mapLeft { err ->
-            when (err) {
-              is DeleteError.NotFound -> error("illegal state: deleting song-tag not found: $songId $tagId")
+
+        val deleted = mutableListOf<SongTagAssociation<ID>>()
+        for (tagIdStr in tagIdsToDelete) {
+          val tagId = existingTagIdsMap.getValue(tagIdStr)
+          val res = writeRepository.delete(songId, tagId).getOrElse { err ->
+            val replaceAllError = when (err) {
+              is DeleteError.NotFound -> ReplaceAllError.UnknownError(message = "illegal state: deleting song-tag not found: $songId $tagId")
               is DeleteError.ValidationError -> ReplaceAllError.ValidationError(err.message)
               is DeleteError.UnknownError -> ReplaceAllError.UnknownError(err.cause, err.message)
             }
-          }.bind()
+            throw RollbackException(replaceAllError)
+          }
+          deleted.add(res)
         }
 
-        ReplaceAllSuccess(
-          created = tagIdsToCreate.map { SongTagAssociation(songId, it) },
-          updated = emptyList(),
-          unchanged = unchangedTagIds.map { SongTagAssociation(songId, it) },
-          deleted = tagIdsToDelete.map { SongTagAssociation(songId, it) }
+        val unchanged = unchangedTagIds.map { SongTagAssociation(songId, existingTagIdsMap.getValue(it)) }
+
+        Either.Right(
+          ReplaceAllSuccess(
+            created = created,
+            updated = emptyList(),
+            unchanged = unchanged,
+            deleted = deleted
+          )
         )
       }
+    } catch (e: RollbackException) {
+      Either.Left(e.error)
+    } catch (e: Exception) {
+      Either.Left(ReplaceAllError.UnknownError(e, e.message ?: "Unknown error"))
     }
 }

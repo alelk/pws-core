@@ -49,7 +49,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -135,6 +139,7 @@ fun HomeContent(
   onClearNumberSearch: () -> Unit = {}
 ) {
   val navigator = LocalNavigator.currentOrThrow
+  val haptic = LocalHapticFeedback.current
   var showNumberInput by remember { mutableStateOf(false) }
   val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
@@ -208,13 +213,16 @@ fun HomeContent(
           // Quick action chips - scrollable row
           item(span = { GridItemSpan(maxLineSpan) }) {
             QuickActionsRow(
-              onNumberSearchClick = { showNumberInput = true },
+              onNumberSearchClick = { 
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                showNumberInput = true 
+              },
               onTextSearchClick = {
-                // Focus search bar? Or navigate to search screen?
-                // For now let's make it more useful - navigate to text search directly (which is conceptually 'Search')
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 navigator.push(ScreenRegistry.get(SharedScreens.Search))
               },
               onHistoryClick = {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 navigator.push(ScreenRegistry.get(SharedScreens.History))
               }
             )
@@ -224,11 +232,11 @@ fun HomeContent(
           item(span = { GridItemSpan(maxLineSpan) }) {
             QuickActionsRowSecondary(
               onFavoritesClick = {
-                // Navigate to favorites screen
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 navigator.push(ScreenRegistry.get(SharedScreens.Favorites))
               },
               onTagsClick = {
-                // Navigate to tags screen
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 navigator.push(ScreenRegistry.get(SharedScreens.Tags))
               }
             )
@@ -241,7 +249,8 @@ fun HomeContent(
               Text(
                 text = stringResource(Res.string.home_recently_opened),
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onBackground
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.semantics { heading() }
               )
             }
 
@@ -261,7 +270,10 @@ fun HomeContent(
                   }
                   RecentSongCard(
                     song = song,
-                    onClick = { navigator.push(songScreen) }
+                    onClick = { 
+                      haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                      navigator.push(songScreen) 
+                    }
                   )
                 }
               }
@@ -274,7 +286,8 @@ fun HomeContent(
             Text(
               text = stringResource(Res.string.home_songbooks),
               style = MaterialTheme.typography.titleMedium,
-              color = MaterialTheme.colorScheme.onBackground
+              color = MaterialTheme.colorScheme.onBackground,
+              modifier = Modifier.semantics { heading() }
             )
           }
 
@@ -286,7 +299,10 @@ fun HomeContent(
             val bookSongsScreen = rememberScreen(SharedScreens.BookSongs(book.id))
             HomeBookCard(
               book = book,
-              onClick = { navigator.push(bookSongsScreen) }
+              onClick = { 
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                navigator.push(bookSongsScreen) 
+              }
             )
           }
 

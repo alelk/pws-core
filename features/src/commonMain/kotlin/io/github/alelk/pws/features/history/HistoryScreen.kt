@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.DeleteSweep
 import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -26,9 +27,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.registry.rememberScreen
+import cafe.adriel.voyager.core.registry.ScreenRegistry
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -51,6 +55,7 @@ import io.github.alelk.pws.features.resources.history_empty_subtitle
 import io.github.alelk.pws.features.resources.history_empty_title
 import io.github.alelk.pws.features.resources.history_loading
 import io.github.alelk.pws.features.resources.nav_history
+import io.github.alelk.pws.features.resources.settings_open
 import io.github.alelk.pws.features.theme.spacing
 import kotlin.time.ExperimentalTime
 import org.jetbrains.compose.resources.stringResource
@@ -85,6 +90,7 @@ fun HistoryContent(
 ) {
   val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
   val navigator = LocalNavigator.currentOrThrow
+  val haptic = LocalHapticFeedback.current
 
   Scaffold(
     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -109,8 +115,17 @@ fun HistoryContent(
           )
         },
         actions = {
+          IconButton(onClick = { navigator.push(ScreenRegistry.get(SharedScreens.Settings)) }) {
+            Icon(
+              imageVector = Icons.Filled.Settings,
+              contentDescription = stringResource(Res.string.settings_open)
+            )
+          }
           if (state is HistoryUiState.Content && state.canClearAll) {
-            IconButton(onClick = onClearAll) {
+            IconButton(onClick = {
+              haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+              onClearAll()
+            }) {
               Icon(
                 imageVector = Icons.Outlined.DeleteSweep,
                 contentDescription = stringResource(Res.string.history_clear)
@@ -164,7 +179,10 @@ fun HistoryContent(
   // Clear confirmation dialog
   if (showClearDialog) {
     ClearHistoryDialog(
-      onConfirm = onConfirmClear,
+      onConfirm = {
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        onConfirmClear()
+      },
       onDismiss = onDismissClear
     )
   }

@@ -94,6 +94,15 @@ Top-level modules (source of truth: `settings.gradle.kts`):
 
 When changing API contracts, keep `:api:contract` and `:api:mapping` compatible with `pws-server`.
 
+## License
+
+This project is licensed under the **PolyForm Noncommercial License 1.0.0**. 
+
+- **Non-commercial use only**: You are free to use, modify, and distribute this software for personal, educational, or other non-commercial purposes.
+- **Commercial use**: Any commercial use requires a separate license from the author. If you are interested in using PWS Core for commercial purposes, please contact the maintainers.
+
+See the [LICENSE](LICENSE) file for the full text.
+
 ## Contributors ✨
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):

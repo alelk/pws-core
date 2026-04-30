@@ -8,6 +8,9 @@ group = "io.github.alelk.pws.core"
 
 kotlin {
     jvm()
+    iosX64()
+    iosArm64()
+    iosSimulatorArm64()
 
     js(IR) {
         outputModuleName = "pws-core-ui"

@@ -27,6 +27,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.alelk.pws.features.resources.Res
@@ -52,10 +56,14 @@ fun SongListItem(
   isFavorite: Boolean = false,
   showChevron: Boolean = true
 ) {
+  val haptic = LocalHapticFeedback.current
   Surface(
     modifier = modifier
       .fillMaxWidth()
-      .clickableWithScale(onClick = onClick),
+      .clickableWithScale(onClick = {
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        onClick()
+      }),
     color = MaterialTheme.colorScheme.surfaceContainerLow
   ) {
     Column {
@@ -87,6 +95,7 @@ fun SongListItem(
 
           if (isEdited) {
             Row(
+              modifier = Modifier.semantics(mergeDescendants = true) { },
               verticalAlignment = Alignment.CenterVertically,
               horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.xs)
             ) {
@@ -145,7 +154,8 @@ fun NumberBadge(
     modifier = modifier
       .size(40.dp)
       .clip(RoundedCornerShape(8.dp))
-      .background(MaterialTheme.colorScheme.primaryContainer),
+      .background(MaterialTheme.colorScheme.primaryContainer)
+      .semantics { contentDescription = "Song number $number" },
     contentAlignment = Alignment.Center
   ) {
     Text(
@@ -170,10 +180,14 @@ fun SwipeableSongItem(
   isFavorite: Boolean = false,
   subtitle: String? = null
 ) {
+  val haptic = LocalHapticFeedback.current
   Surface(
     modifier = modifier
       .fillMaxWidth()
-      .clickableWithScale(onClick = onClick),
+      .clickableWithScale(onClick = {
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        onClick()
+      }),
     color = MaterialTheme.colorScheme.surfaceContainerLow
   ) {
     Column {
@@ -215,7 +229,10 @@ fun SwipeableSongItem(
 
         // Favorite toggle
         if (onFavoriteToggle != null) {
-          IconButton(onClick = onFavoriteToggle) {
+          IconButton(onClick = {
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            onFavoriteToggle()
+          }) {
             Icon(
               imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
               contentDescription = if (isFavorite) {
@@ -230,7 +247,10 @@ fun SwipeableSongItem(
 
         // Delete button
         if (onDelete != null) {
-          IconButton(onClick = onDelete) {
+          IconButton(onClick = {
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            onDelete()
+          }) {
             Icon(
               imageVector = Icons.Outlined.Delete,
               contentDescription = stringResource(Res.string.common_delete),

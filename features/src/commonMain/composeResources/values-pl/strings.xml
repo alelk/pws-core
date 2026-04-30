@@ -37,6 +37,8 @@
     <string name="settings_interface">Interfejs</string>
     <string name="settings_theme_subtitle">Wybierz motyw aplikacji</string>
     <string name="settings_developers">Programiści</string>
+    <string name="settings_project_page_name">Strona projektu PWS</string>
+    <string name="settings_project_page_role">Otwórz stronę</string>
     <string name="settings_developer_alex_name">Alex Elkin</string>
     <string name="settings_developer_alex_role">Twórca aplikacji</string>
     <string name="settings_developer_vera_name">Vera Elkina</string>
@@ -130,6 +132,11 @@
     <string name="favorites_loading">Ładowanie ulubionych...</string>
     <string name="favorites_empty_title">Brak ulubionych pieśni</string>
     <string name="favorites_empty_subtitle">Dodawaj pieśni do ulubionych, aby szybko je znajdować</string>
+    <string name="favorites_sort">Sortowanie ulubionych</string>
+    <string name="favorites_sort_direction">Zmień kierunek sortowania</string>
+    <string name="favorites_sort_added_date">Według daty dodania</string>
+    <string name="favorites_sort_song_number">Według numeru pieśni</string>
+    <string name="favorites_sort_song_name">Według nazwy pieśni</string>
 
     <string name="song_edit_title">Edycja</string>
     <string name="song_edit_loading">Ładowanie...</string>
@@ -172,6 +179,8 @@
     <string name="song_detail_action_edit_tags">Edytuj kategorie</string>
     <string name="song_detail_action_jump">Przejdź do numeru</string>
     <string name="song_detail_action_share">Udostępnij</string>
+    <string name="song_detail_action_copy">Kopiuj tekst</string>
+    <string name="song_detail_expand_text">Rozwinięty tekst</string>
     <string name="song_detail_tags_sheet_title">Kategorie pieśni</string>
     <string name="song_detail_tags_empty">Brak dostępnych kategorii</string>
     <string name="song_detail_jump_empty">Wpisz liczbę</string>

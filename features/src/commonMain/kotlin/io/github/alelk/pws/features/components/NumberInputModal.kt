@@ -37,6 +37,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.input.ImeAction
@@ -332,10 +334,14 @@ private fun NumberSuggestionItem(
   onClick: () -> Unit,
   modifier: Modifier = Modifier
 ) {
+  val haptic = LocalHapticFeedback.current
   Row(
     modifier = modifier
       .fillMaxWidth()
-      .clickable(onClick = onClick)
+      .clickable(onClick = {
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        onClick()
+      })
       .padding(horizontal = MaterialTheme.spacing.md, vertical = MaterialTheme.spacing.sm),
     verticalAlignment = Alignment.CenterVertically
   ) {

@@ -44,15 +44,25 @@ sealed interface FavoritesUiState {
 
   @Immutable
   data class Content(
-    val songs: List<FavoriteSongUi>
+    val songs: List<FavoriteSongUi>,
+    val sortMode: FavoriteSortMode,
+    val ascending: Boolean,
   ) : FavoritesUiState
 
   data object Empty : FavoritesUiState
   data class Error(val message: String) : FavoritesUiState
 }
 
+enum class FavoriteSortMode {
+  ADDED_DATE,
+  SONG_NUMBER,
+  SONG_NAME,
+}
+
 sealed interface FavoritesEvent {
   data class SongClicked(val song: FavoriteSongUi) : FavoritesEvent
   data class RemoveFromFavorites(val song: FavoriteSongUi) : FavoritesEvent
+  data class ChangeSortMode(val mode: FavoriteSortMode) : FavoritesEvent
+  data object ToggleSortDirection : FavoritesEvent
 }
 

@@ -15,6 +15,8 @@ For detailed context and conventions, continue with `docs/ai/CONTEXT.md` and `do
 - Architecture and dependencies: `docs/ARCHITECTURE.md`, `docs/MODULES.md`.
 - API/data flow questions: `docs/DATA_FLOW.md`, `docs/SYNC.md`.
 - Terminology: `docs/GLOSSARY.md`.
+- Active execution plans (if present): `docs/ai/plans/*.md`.
+- Plan format for new initiatives: `docs/ai/TASK_PLAN_TEMPLATE.md`.
 
 ## Code navigation shortcuts
 

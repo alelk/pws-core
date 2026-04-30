@@ -21,6 +21,10 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -84,7 +88,7 @@ fun SearchBarWithSuggestions(
     // DropdownMenu for suggestions - renders as overlay
     DropdownMenu(
       expanded = expanded,
-      onDismissRequest = { /* Dismiss logic should be handled by parent or by clicking outside which is what this callback is for */ },
+      onDismissRequest = { /* Dismiss logic should be handled by parent */ },
       properties = PopupProperties(focusable = false), // Allow typing while menu is open
       modifier = Modifier
         .fillMaxWidth(0.95f)
@@ -180,151 +184,11 @@ private fun SearchInputField(
 }
 
 @Composable
-private fun SuggestionsDropdown(
-  suggestions: List<SearchSuggestion>,
-  onSuggestionClick: (SearchSuggestion) -> Unit,
-  isLoading: Boolean
-) {
-  Card(
-    modifier = Modifier
-      .fillMaxWidth()
-      .padding(top = 4.dp)
-      .shadow(
-        elevation = 12.dp,
-        shape = MaterialTheme.shapes.medium,
-        clip = false
-      ),
-    shape = MaterialTheme.shapes.medium,
-    colors = CardDefaults.cardColors(
-      containerColor = MaterialTheme.colorScheme.surface
-    ),
-    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-  ) {
-    LazyColumn(
-      modifier = Modifier
-        .fillMaxWidth()
-        .heightIn(max = 350.dp)
-    ) {
-      items(
-        items = suggestions,
-        key = { it.songId.value }
-      ) { suggestion ->
-        SuggestionItemRow(
-          suggestion = suggestion,
-          onClick = { onSuggestionClick(suggestion) }
-        )
-        if (suggestion != suggestions.last()) {
-          HorizontalDivider(
-            modifier = Modifier.padding(start = 56.dp),
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-          )
-        }
-      }
-
-      if (isLoading && suggestions.isEmpty()) {
-        item {
-          Box(
-            modifier = Modifier
-              .fillMaxWidth()
-              .padding(MaterialTheme.spacing.lg),
-            contentAlignment = Alignment.Center
-          ) {
-            CircularProgressIndicator(modifier = Modifier.size(24.dp))
-          }
-        }
-      }
-    }
-  }
-}
-
-@Composable
-private fun SuggestionItemRow(
-  suggestion: SearchSuggestion,
-  onClick: () -> Unit
-) {
-  val booksByNumber = suggestion.booksByNumber
-
-  Surface(
-    modifier = Modifier
-      .fillMaxWidth()
-      .clickable(onClick = onClick),
-    color = Color.Transparent
-  ) {
-    Row(
-      modifier = Modifier
-        .fillMaxWidth()
-        .padding(horizontal = 16.dp, vertical = 12.dp),
-      verticalAlignment = Alignment.Top
-    ) {
-      // Song number badge (from first book reference)
-      suggestion.primarySongNumber?.let { number ->
-        Text(
-          text = number.toString(),
-          style = MaterialTheme.typography.titleMedium,
-          color = MaterialTheme.colorScheme.primary,
-          modifier = Modifier.widthIn(min = 36.dp).padding(end = 12.dp)
-        )
-      } ?: run {
-        // Fallback icon when no book reference
-        Icon(
-          imageVector = Icons.Outlined.MusicNote,
-          contentDescription = null,
-          modifier = Modifier.size(24.dp).padding(end = 12.dp),
-          tint = MaterialTheme.colorScheme.primary
-        )
-      }
-
-      Column(modifier = Modifier.weight(1f)) {
-        // Song name
-        Text(
-          text = suggestion.songName,
-          style = MaterialTheme.typography.bodyMedium,
-          maxLines = 1,
-          overflow = TextOverflow.Ellipsis,
-          color = MaterialTheme.colorScheme.onSurface
-        )
-
-        // Books grouped by number
-        if (booksByNumber.isNotEmpty()) {
-          if (booksByNumber.size == 1) {
-            // All books have the same number - show them together
-            Text(
-              text = suggestion.booksDisplayTextForNumber(booksByNumber.first().first),
-              style = MaterialTheme.typography.bodySmall,
-              color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-          } else {
-            // Different numbers in different books - show primary book only
-            // (other numbers will be shown as separate suggestions if needed)
-            suggestion.bookReferences.firstOrNull()?.let { ref ->
-              Text(
-                text = ref.displayShortName,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-              )
-            }
-          }
-        }
-
-        // Snippet with highlighting
-        suggestion.snippet?.let { snippet ->
-          HighlightedText(
-            text = snippet,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-          )
-        }
-      }
-    }
-  }
-}
-
-@Composable
 private fun SuggestionDropdownItem(
   suggestion: SearchSuggestion,
   onClick: () -> Unit
 ) {
+  val haptic = LocalHapticFeedback.current
   DropdownMenuItem(
     text = {
       Row(
@@ -376,6 +240,9 @@ private fun SuggestionDropdownItem(
         }
       }
     },
-    onClick = onClick
+    onClick = {
+      haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+      onClick()
+    }
   )
 }

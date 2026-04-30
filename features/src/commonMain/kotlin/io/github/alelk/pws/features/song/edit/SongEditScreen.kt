@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -46,6 +47,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
@@ -57,6 +62,13 @@ import io.github.alelk.pws.features.components.LoadingContent
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.common_close
 import io.github.alelk.pws.features.resources.common_error_title
+import io.github.alelk.pws.features.resources.song_detail_info_author
+import io.github.alelk.pws.features.resources.song_detail_info_bible
+import io.github.alelk.pws.features.resources.song_detail_info_composer
+import io.github.alelk.pws.features.resources.song_detail_info_translator
+import io.github.alelk.pws.features.resources.song_detail_info_year
+import io.github.alelk.pws.features.resources.song_detail_tags
+import io.github.alelk.pws.features.resources.label
 import io.github.alelk.pws.features.resources.song_edit_discard_cancel
 import io.github.alelk.pws.features.resources.song_edit_discard_confirm
 import io.github.alelk.pws.features.resources.song_edit_discard_message
@@ -64,6 +76,7 @@ import io.github.alelk.pws.features.resources.song_edit_discard_title
 import io.github.alelk.pws.features.resources.song_edit_error_not_found
 import io.github.alelk.pws.features.resources.song_edit_label_number
 import io.github.alelk.pws.features.resources.song_edit_label_tags
+import io.github.alelk.pws.features.resources.song_edit_label_tonalities
 import io.github.alelk.pws.features.resources.song_edit_label_text
 import io.github.alelk.pws.features.resources.song_edit_label_title
 import io.github.alelk.pws.features.resources.song_edit_loading
@@ -72,6 +85,7 @@ import io.github.alelk.pws.features.resources.song_edit_save_success
 import io.github.alelk.pws.features.resources.song_edit_title
 import io.github.alelk.pws.features.resources.song_edit_validation_text_required
 import io.github.alelk.pws.features.resources.song_edit_validation_title_required
+import io.github.alelk.pws.features.resources.song_edit_validation_text_format_invalid
 import io.github.alelk.pws.features.resources.tags_save
 import io.github.alelk.pws.features.theme.spacing
 import org.jetbrains.compose.resources.getString
@@ -121,11 +135,12 @@ fun SongEditContent(
   onEvent: (SongEditEvent) -> Unit,
   onNavigateBack: () -> Unit
 ) {
+  val haptic = LocalHapticFeedback.current
   Scaffold(
     snackbarHost = { SnackbarHost(snackbarHostState) },
     topBar = {
       TopAppBar(
-        title = { Text(stringResource(Res.string.song_edit_title)) },
+        title = { Text(stringResource(Res.string.song_edit_title), modifier = Modifier.semantics { heading() }) },
         navigationIcon = {
           IconButton(onClick = { onEvent(SongEditEvent.CancelClicked) }) {
             Icon(Icons.Default.Close, contentDescription = stringResource(Res.string.common_close))
@@ -140,7 +155,10 @@ fun SongEditContent(
               )
             } else {
               IconButton(
-                onClick = { onEvent(SongEditEvent.SaveClicked) },
+                onClick = { 
+                  haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                  onEvent(SongEditEvent.SaveClicked) 
+                },
                 enabled = state.hasUnsavedChanges
               ) {
                 Icon(Icons.Default.Check, contentDescription = stringResource(Res.string.tags_save))
@@ -188,7 +206,10 @@ fun SongEditContent(
   // Discard changes dialog
   if (showDiscardDialog) {
     DiscardChangesDialog(
-      onConfirm = { onEvent(SongEditEvent.DiscardChangesConfirmed) },
+      onConfirm = { 
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        onEvent(SongEditEvent.DiscardChangesConfirmed) 
+      },
       onDismiss = { onEvent(SongEditEvent.DismissDiscardDialog) }
     )
   }
@@ -202,6 +223,11 @@ private fun EditForm(
   modifier: Modifier = Modifier
 ) {
   val scrollState = rememberScrollState()
+  val haptic = LocalHapticFeedback.current
+  val highlightColor = MaterialTheme.colorScheme.primary
+  val visualTransformation = remember(state.locale, highlightColor) {
+    LyricVisualTransformation(state.locale, highlightColor)
+  }
 
   Column(
     modifier = modifier
@@ -210,12 +236,13 @@ private fun EditForm(
       .imePadding()
       .padding(MaterialTheme.spacing.screenHorizontal)
   ) {
-  val validationErrorText = when (val m = state.validationMessage) {
-    SongEditValidationMessage.TitleRequired -> stringResource(Res.string.song_edit_validation_title_required)
-    SongEditValidationMessage.TextRequired -> stringResource(Res.string.song_edit_validation_text_required)
-    is SongEditValidationMessage.SaveError -> stringResource(Res.string.song_edit_save_error_prefix, m.details ?: "")
-    null -> null
-  }
+    val validationErrorText = when (val m = state.validationMessage) {
+      SongEditValidationMessage.TitleRequired -> stringResource(Res.string.song_edit_validation_title_required)
+      SongEditValidationMessage.TextRequired -> stringResource(Res.string.song_edit_validation_text_required)
+      is SongEditValidationMessage.InvalidTextFormat -> stringResource(Res.string.song_edit_validation_text_format_invalid, m.details ?: "")
+      is SongEditValidationMessage.SaveError -> stringResource(Res.string.song_edit_save_error_prefix, m.details ?: "")
+      null -> null
+    }
 
     // Error message
     validationErrorText?.let { error ->
@@ -239,16 +266,77 @@ private fun EditForm(
 
     Spacer(Modifier.height(MaterialTheme.spacing.md))
 
-    // Number field
+    // Author
     OutlinedTextField(
-      value = state.number,
-      onValueChange = { onEvent(SongEditEvent.NumberChanged(it)) },
-      label = { Text(stringResource(Res.string.song_edit_label_number)) },
+      value = state.author,
+      onValueChange = { onEvent(SongEditEvent.AuthorChanged(it)) },
+      label = { Text(stringResource(Res.string.song_detail_info_author)) },
       modifier = Modifier.fillMaxWidth(),
       singleLine = true
     )
 
     Spacer(Modifier.height(MaterialTheme.spacing.md))
+
+    // Composer
+    OutlinedTextField(
+      value = state.composer,
+      onValueChange = { onEvent(SongEditEvent.ComposerChanged(it)) },
+      label = { Text(stringResource(Res.string.song_detail_info_composer)) },
+      modifier = Modifier.fillMaxWidth(),
+      singleLine = true
+    )
+
+    Spacer(Modifier.height(MaterialTheme.spacing.md))
+
+    // Translator
+    OutlinedTextField(
+      value = state.translator,
+      onValueChange = { onEvent(SongEditEvent.TranslatorChanged(it)) },
+      label = { Text(stringResource(Res.string.song_detail_info_translator)) },
+      modifier = Modifier.fillMaxWidth(),
+      singleLine = true
+    )
+
+    Spacer(Modifier.height(MaterialTheme.spacing.md))
+
+    Row(
+      modifier = Modifier.fillMaxWidth(),
+      horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)
+    ) {
+      // Year
+      OutlinedTextField(
+        value = state.year,
+        onValueChange = { onEvent(SongEditEvent.YearChanged(it)) },
+        label = { Text(stringResource(Res.string.song_detail_info_year)) },
+        modifier = Modifier.weight(1f),
+        singleLine = true
+      )
+
+      // Bible Ref
+      OutlinedTextField(
+        value = state.bibleRef,
+        onValueChange = { onEvent(SongEditEvent.BibleRefChanged(it)) },
+        label = { Text(stringResource(Res.string.song_detail_info_bible)) },
+        modifier = Modifier.weight(1f),
+        singleLine = true
+      )
+    }
+
+    Spacer(Modifier.height(MaterialTheme.spacing.md))
+
+    // Text field
+    OutlinedTextField(
+      value = state.text,
+      onValueChange = { onEvent(SongEditEvent.TextChanged(it)) },
+      label = { Text(stringResource(Res.string.song_edit_label_text)) },
+      modifier = Modifier
+        .fillMaxWidth()
+        .height(400.dp),
+      isError = state.validationMessage != null && state.text.isBlank(),
+      visualTransformation = visualTransformation
+    )
+
+    Spacer(Modifier.height(MaterialTheme.spacing.lg))
 
     // Tags section
     if (state.allTags.isNotEmpty()) {
@@ -267,7 +355,10 @@ private fun EditForm(
         state.allTags.forEach { tag ->
           FilterChip(
             selected = tag.isSelected,
-            onClick = { onEvent(SongEditEvent.TagToggled(tag.id)) },
+            onClick = { 
+              haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+              onEvent(SongEditEvent.TagToggled(tag.id)) 
+            },
             label = {
               Text(tag.name)
             },
@@ -295,16 +386,44 @@ private fun EditForm(
       Spacer(Modifier.height(MaterialTheme.spacing.lg))
     }
 
-    // Text field
-    OutlinedTextField(
-      value = state.text,
-      onValueChange = { onEvent(SongEditEvent.TextChanged(it)) },
-      label = { Text(stringResource(Res.string.song_edit_label_text)) },
-      modifier = Modifier
-        .fillMaxWidth()
-        .height(300.dp),
-      isError = state.validationMessage != null && state.text.isBlank()
+    // Tonalities section
+    Text(
+      text = stringResource(Res.string.song_edit_label_tonalities),
+      style = MaterialTheme.typography.labelMedium,
+      color = MaterialTheme.colorScheme.onSurfaceVariant
     )
+
+    Spacer(Modifier.height(MaterialTheme.spacing.sm))
+
+    FlowRow(
+      horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sm),
+      verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sm)
+    ) {
+      io.github.alelk.pws.domain.tonality.Tonality.entries.forEach { tonality ->
+        val isSelected = tonality in state.tonalities
+        FilterChip(
+          selected = isSelected,
+          onClick = {
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            onEvent(SongEditEvent.TonalityToggled(tonality))
+          },
+          label = {
+            Text(stringResource(tonality.label))
+          },
+          trailingIcon = if (isSelected) {
+            {
+              Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = null,
+                modifier = Modifier.size(FilterChipDefaults.IconSize)
+              )
+            }
+          } else null
+        )
+      }
+    }
+
+    Spacer(Modifier.height(MaterialTheme.spacing.lg))
 
     Spacer(Modifier.height(MaterialTheme.spacing.xxl))
   }
@@ -331,4 +450,3 @@ private fun DiscardChangesDialog(
     }
   )
 }
-

@@ -9,7 +9,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -20,15 +25,24 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.registry.rememberScreen
+import cafe.adriel.voyager.core.registry.ScreenRegistry
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -44,7 +58,14 @@ import io.github.alelk.pws.features.resources.common_error_title
 import io.github.alelk.pws.features.resources.favorites_empty_subtitle
 import io.github.alelk.pws.features.resources.favorites_empty_title
 import io.github.alelk.pws.features.resources.favorites_loading
+import io.github.alelk.pws.features.resources.favorites_sort
+import io.github.alelk.pws.features.resources.favorites_sort_added_date
+import io.github.alelk.pws.features.resources.favorites_sort_direction
+import io.github.alelk.pws.features.resources.favorites_sort_song_name
+import io.github.alelk.pws.features.resources.favorites_sort_song_number
 import io.github.alelk.pws.features.resources.favorites_title
+import io.github.alelk.pws.features.resources.settings_open
+import io.github.alelk.pws.features.song.detail.LocalFavoritesDisplaySettings
 import io.github.alelk.pws.features.theme.spacing
 import org.jetbrains.compose.resources.stringResource
 
@@ -54,11 +75,18 @@ class FavoritesScreen : Screen {
     val viewModel = koinScreenModel<FavoritesScreenModel>()
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val displaySettings = LocalFavoritesDisplaySettings.current
+
+    LaunchedEffect(displaySettings) {
+      displaySettings?.let { viewModel.setDisplaySettings(it) }
+    }
 
     FavoritesContent(
       state = state,
       snackbarHostState = snackbarHostState,
-      onRemove = { viewModel.onEvent(FavoritesEvent.RemoveFromFavorites(it)) }
+      onRemove = { viewModel.onEvent(FavoritesEvent.RemoveFromFavorites(it)) },
+      onSortModeChange = { viewModel.onEvent(FavoritesEvent.ChangeSortMode(it)) },
+      onSortDirectionToggle = { viewModel.onEvent(FavoritesEvent.ToggleSortDirection) },
     )
   }
 }
@@ -68,10 +96,14 @@ class FavoritesScreen : Screen {
 fun FavoritesContent(
   state: FavoritesUiState,
   snackbarHostState: SnackbarHostState,
-  onRemove: (FavoriteSongUi) -> Unit
+  onRemove: (FavoriteSongUi) -> Unit,
+  onSortModeChange: (FavoriteSortMode) -> Unit,
+  onSortDirectionToggle: () -> Unit,
 ) {
   val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
   val navigator = LocalNavigator.currentOrThrow
+  val haptic = LocalHapticFeedback.current
+  var showSortDialog by remember { mutableStateOf(false) }
 
   Scaffold(
     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -90,8 +122,37 @@ fun FavoritesContent(
         title = {
           Text(
             text = stringResource(Res.string.favorites_title),
-            style = MaterialTheme.typography.headlineMedium
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.semantics { heading() }
           )
+        },
+        actions = {
+          IconButton(onClick = { navigator.push(ScreenRegistry.get(SharedScreens.Settings)) }) {
+            Icon(
+              imageVector = Icons.Filled.Settings,
+              contentDescription = stringResource(Res.string.settings_open)
+            )
+          }
+          if (state is FavoritesUiState.Content) {
+            IconButton(onClick = { 
+              haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+              showSortDialog = true 
+            }) {
+              Icon(
+                imageVector = Icons.Filled.Sort,
+                contentDescription = stringResource(Res.string.favorites_sort)
+              )
+            }
+            IconButton(onClick = {
+              haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+              onSortDirectionToggle()
+            }) {
+              Icon(
+                imageVector = if (state.ascending) Icons.Filled.ArrowUpward else Icons.Filled.ArrowDownward,
+                contentDescription = stringResource(Res.string.favorites_sort_direction)
+              )
+            }
+          }
         },
         scrollBehavior = scrollBehavior,
         colors = TopAppBarDefaults.topAppBarColors(
@@ -135,6 +196,60 @@ fun FavoritesContent(
         )
       }
     }
+  }
+
+  if (showSortDialog && state is FavoritesUiState.Content) {
+    AlertDialog(
+      onDismissRequest = { showSortDialog = false },
+      title = { Text(stringResource(Res.string.favorites_sort)) },
+      text = {
+        androidx.compose.foundation.layout.Column {
+          SortOptionRow(
+            label = stringResource(Res.string.favorites_sort_added_date),
+            selected = state.sortMode == FavoriteSortMode.ADDED_DATE,
+            onClick = {
+              haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+              onSortModeChange(FavoriteSortMode.ADDED_DATE)
+              showSortDialog = false
+            }
+          )
+          SortOptionRow(
+            label = stringResource(Res.string.favorites_sort_song_number),
+            selected = state.sortMode == FavoriteSortMode.SONG_NUMBER,
+            onClick = {
+              haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+              onSortModeChange(FavoriteSortMode.SONG_NUMBER)
+              showSortDialog = false
+            }
+          )
+          SortOptionRow(
+            label = stringResource(Res.string.favorites_sort_song_name),
+            selected = state.sortMode == FavoriteSortMode.SONG_NAME,
+            onClick = {
+              haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+              onSortModeChange(FavoriteSortMode.SONG_NAME)
+              showSortDialog = false
+            }
+          )
+        }
+      },
+      confirmButton = {},
+      dismissButton = {}
+    )
+  }
+}
+
+@Composable
+private fun SortOptionRow(
+  label: String,
+  selected: Boolean,
+  onClick: () -> Unit,
+) {
+  TextButton(onClick = onClick) {
+    Text(
+      text = if (selected) "\u2713 $label" else label,
+      style = MaterialTheme.typography.bodyLarge
+    )
   }
 }
 

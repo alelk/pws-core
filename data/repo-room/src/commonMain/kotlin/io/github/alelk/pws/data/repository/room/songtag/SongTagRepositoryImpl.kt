@@ -74,17 +74,25 @@ class SongTagRepositoryImpl(
 
   override suspend fun create(songId: SongId, tagId: TagId): Either<CreateError, SongTagAssociation<TagId>> =
     runCatching {
+      println("SongTagRepositoryImpl: creating association $songId - $tagId")
       songTagDao.insert(SongTagEntity(songId = songId, tagId = tagId))
       Either.Right(SongTagAssociation(songId, tagId))
-    }.getOrElse { Either.Left(CreateError.UnknownError(it)) }
+    }.getOrElse {
+      println("SongTagRepositoryImpl: error creating association: ${it.message}")
+      Either.Left(CreateError.UnknownError(it))
+    }
 
   override suspend fun delete(songId: SongId, tagId: TagId): Either<DeleteError, SongTagAssociation<TagId>> =
     runCatching {
+      println("SongTagRepositoryImpl: deleting association $songId - $tagId")
       val entity = songTagDao.getById(songId, tagId)
         ?: return Either.Left(DeleteError.NotFound)
       songTagDao.delete(entity)
       Either.Right(SongTagAssociation(songId, tagId))
-    }.getOrElse { Either.Left(DeleteError.UnknownError(it)) }
+    }.getOrElse {
+      println("SongTagRepositoryImpl: error deleting association: ${it.message}")
+      Either.Left(DeleteError.UnknownError(it))
+    }
 }
 
 

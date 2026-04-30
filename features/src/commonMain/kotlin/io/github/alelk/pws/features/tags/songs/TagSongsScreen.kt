@@ -31,7 +31,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.registry.rememberScreen
 import cafe.adriel.voyager.core.screen.Screen
@@ -79,7 +83,10 @@ fun TagSongsContent(state: TagSongsUiState) {
         title = {
           when (state) {
             is TagSongsUiState.Content -> {
-              Row(verticalAlignment = Alignment.CenterVertically) {
+              Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.semantics { heading() }
+              ) {
                 Box(
                   modifier = Modifier
                     .size(12.dp)
@@ -93,7 +100,7 @@ fun TagSongsContent(state: TagSongsUiState) {
                 )
               }
             }
-            else -> Text(stringResource(Res.string.tag_songs_title_fallback))
+            else -> Text(stringResource(Res.string.tag_songs_title_fallback), modifier = Modifier.semantics { heading() })
           }
         },
         navigationIcon = {
@@ -188,4 +195,3 @@ private fun TagSongsList(
     }
   }
 }
-

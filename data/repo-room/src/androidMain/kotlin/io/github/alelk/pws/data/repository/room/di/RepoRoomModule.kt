@@ -25,6 +25,7 @@ import io.github.alelk.pws.domain.history.repository.HistoryReadRepository
 import io.github.alelk.pws.domain.history.repository.HistoryWriteRepository
 import io.github.alelk.pws.domain.song.repository.SongObserveRepository
 import io.github.alelk.pws.domain.song.repository.SongReadRepository
+import io.github.alelk.pws.domain.song.repository.SongWriteRepository
 import io.github.alelk.pws.domain.song.repository.SongSearchRepository
 import io.github.alelk.pws.domain.songnumber.repository.SongNumberReadRepository
 import io.github.alelk.pws.domain.songnumber.repository.SongNumberWriteRepository
@@ -60,7 +61,7 @@ val repoRoomModule = module {
   // Song
   single {
     SongRepositoryImpl(get<PwsDatabase>().songDao(), get<PwsDatabase>().songNumberDao())
-  } binds arrayOf(SongReadRepository::class, SongObserveRepository::class)
+  } binds arrayOf(SongReadRepository::class, SongObserveRepository::class, SongWriteRepository::class)
 
   // Song Search
   single {

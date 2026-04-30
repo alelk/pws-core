@@ -42,7 +42,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -83,12 +87,16 @@ class BookSongsScreen(val bookId: BookId) : Screen {
     val viewModel = koinScreenModel<BookSongsScreenModel>(parameters = { parametersOf(bookId) })
     val state by viewModel.state.collectAsState()
     val navigator = LocalNavigator.currentOrThrow
+    val haptic = LocalHapticFeedback.current
     var showGoToNumberDialog by rememberSaveable { mutableStateOf(false) }
 
     BookSongsContent(
       bookId = bookId,
       state = state,
-      onNumberInputClick = { showGoToNumberDialog = true }
+      onNumberInputClick = { 
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        showGoToNumberDialog = true 
+      }
     )
 
     if (showGoToNumberDialog && state is BookSongsUiState.Content) {
@@ -102,6 +110,7 @@ class BookSongsScreen(val bookId: BookId) : Screen {
         onConfirm = { number ->
           val song = songs[number]
           if (song != null) {
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             showGoToNumberDialog = false
             val screen = SharedScreens.Song(SongNumberId(bookId, song.id))
             navigator.push(cafe.adriel.voyager.core.registry.ScreenRegistry.get(screen))
@@ -182,7 +191,8 @@ fun BookSongsContent(
               is BookSongsUiState.Content -> state.book.book.displayName.value
               else -> stringResource(Res.string.book_songs_title_fallback)
             },
-            style = MaterialTheme.typography.headlineSmall
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.semantics { heading() }
           )
         },
         navigationIcon = {
@@ -324,4 +334,3 @@ private fun SongsList(
     }
   }
 }
-

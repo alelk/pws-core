@@ -32,17 +32,23 @@
     <string name="theme_light">Светлая</string>
     <string name="theme_dark">Тёмная</string>
     <string name="theme_black">Чёрная AMOLED</string>
+    <string name="theme_system">Системная</string>
     <string name="settings_open">Открыть настройки</string>
     <string name="settings_title">Настройки</string>
     <string name="settings_interface">Интерфейс</string>
     <string name="settings_theme_subtitle">Выберите тему приложения</string>
     <string name="settings_developers">Разработчики</string>
+    <string name="settings_project_page_name">Страница проекта PWS</string>
+    <string name="settings_project_page_role">Открыть сайт</string>
     <string name="settings_developer_alex_name">Alex Elkin</string>
     <string name="settings_developer_alex_role">Разработчик приложения</string>
     <string name="settings_developer_vera_name">Vera Elkina</string>
     <string name="settings_developer_vera_role">Редактор текстов песен</string>
     <string name="settings_books">Сборники песен</string>
     <string name="settings_books_subtitle">Включайте и отключайте сборники</string>
+    <string name="settings_about">О приложении</string>
+    <string name="settings_version">Версия %1$s</string>
+    <string name="settings_license">Лицензия</string>
     <string name="settings_import_export">Импорт/экспорт</string>
     <string name="settings_import_export_subtitle">Импортируйте или экспортируйте отредактированные песни и категории</string>
     <string name="settings_export">Экспорт данных</string>
@@ -130,12 +136,18 @@
     <string name="favorites_loading">Загрузка избранного...</string>
     <string name="favorites_empty_title">Нет избранных песен</string>
     <string name="favorites_empty_subtitle">Добавляйте песни в избранное, чтобы быстро находить их</string>
+    <string name="favorites_sort">Сортировка избранного</string>
+    <string name="favorites_sort_direction">Сменить направление сортировки</string>
+    <string name="favorites_sort_added_date">По дате добавления</string>
+    <string name="favorites_sort_song_number">По номеру песни</string>
+    <string name="favorites_sort_song_name">По названию песни</string>
 
     <string name="song_edit_title">Редактирование</string>
     <string name="song_edit_loading">Загрузка...</string>
     <string name="song_edit_label_title">Название</string>
     <string name="song_edit_label_number">Номер</string>
     <string name="song_edit_label_tags">Теги</string>
+    <string name="song_edit_label_tonalities">Тональности</string>
     <string name="song_edit_label_text">Текст песни</string>
     <string name="song_edit_discard_title">Отменить изменения?</string>
     <string name="song_edit_discard_message">Все несохранённые изменения будут потеряны.</string>
@@ -144,6 +156,7 @@
     <string name="song_edit_error_not_found">Песня не найдена</string>
     <string name="song_edit_validation_title_required">Название не может быть пустым</string>
     <string name="song_edit_validation_text_required">Текст песни не может быть пустым</string>
+    <string name="song_edit_validation_text_format_invalid">Неверный формат текста: %1$s</string>
     <string name="song_edit_save_success">Изменения сохранены</string>
     <string name="song_edit_save_error_prefix">Ошибка сохранения: %1$s</string>
 
@@ -172,6 +185,8 @@
     <string name="song_detail_action_edit_tags">Изменить теги</string>
     <string name="song_detail_action_jump">Перейти к номеру</string>
     <string name="song_detail_action_share">Поделиться</string>
+    <string name="song_detail_action_copy">Скопировать текст</string>
+    <string name="song_detail_expand_text">Развернутый текст</string>
     <string name="song_detail_tags_sheet_title">Теги песни</string>
     <string name="song_detail_tags_empty">Нет доступных тегов</string>
     <string name="song_detail_jump_empty">Введите число</string>
@@ -181,6 +196,36 @@
     <string name="song_detail_jump_clear">Очистить</string>
 
     <string name="tag_chip_edit">Редактировать</string>
+    <string name="tonality_a_major">Ля мажор (A-dur)</string>
+    <string name="tonality_a_minor">Ля минор (a-moll)</string>
+    <string name="tonality_a_flat_major">Ля-бемоль мажор (As-dur)</string>
+    <string name="tonality_a_flat_minor">Ля-бемоль минор (as-moll)</string>
+    <string name="tonality_a_sharp_minor">Ля-диез минор (ais-moll)</string>
+    <string name="tonality_b_major">Си мажор (H-dur)</string>
+    <string name="tonality_b_minor">Си минор (h-moll)</string>
+    <string name="tonality_b_flat_major">Си-бемоль мажор (B-dur)</string>
+    <string name="tonality_b_flat_minor">Си-бемоль минор (b-moll)</string>
+    <string name="tonality_c_major">До мажор (C-dur)</string>
+    <string name="tonality_c_minor">До минор (c-moll)</string>
+    <string name="tonality_c_flat_major">До-бемоль мажор (Ces-dur)</string>
+    <string name="tonality_c_sharp_major">До-диез мажор (Cis-dur)</string>
+    <string name="tonality_c_sharp_minor">До-диез минор (cis-moll)</string>
+    <string name="tonality_d_major">Ре мажор (D-dur)</string>
+    <string name="tonality_d_minor">Ре минор (d-moll)</string>
+    <string name="tonality_d_flat_major">Ре-бемоль мажор (Des-dur)</string>
+    <string name="tonality_d_sharp_minor">Ре-диез минор (dis-moll)</string>
+    <string name="tonality_e_major">Ми мажор (E-dur)</string>
+    <string name="tonality_e_minor">Ми минор (e-moll)</string>
+    <string name="tonality_e_flat_major">Ми-бемоль мажор (Es-dur)</string>
+    <string name="tonality_e_flat_minor">Ми-бемоль минор (es-moll)</string>
+    <string name="tonality_f_major">Фа мажор (F-dur)</string>
+    <string name="tonality_f_minor">Фа минор (f-moll)</string>
+    <string name="tonality_f_sharp_major">Фа-диез мажор (Fis-dur)</string>
+    <string name="tonality_f_sharp_minor">Фа-диез минор (fis-moll)</string>
+    <string name="tonality_g_major">Соль мажор (G-dur)</string>
+    <string name="tonality_g_minor">Соль минор (g-moll)</string>
+    <string name="tonality_g_flat_major">Соль-бемоль мажор (Ges-dur)</string>
+    <string name="tonality_g_sharp_minor">Соль-диез минор (gis-moll)</string>
 </resources>
 
 

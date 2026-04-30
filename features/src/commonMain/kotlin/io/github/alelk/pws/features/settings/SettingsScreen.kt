@@ -1,7 +1,10 @@
 package io.github.alelk.pws.features.settings
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -22,12 +25,23 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
@@ -37,6 +51,9 @@ import io.github.alelk.pws.features.components.AppTopBar
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.settings_books
 import io.github.alelk.pws.features.resources.settings_books_subtitle
+import io.github.alelk.pws.features.resources.settings_about
+import io.github.alelk.pws.features.resources.settings_version
+import io.github.alelk.pws.features.resources.settings_license
 import io.github.alelk.pws.features.resources.settings_developers
 import io.github.alelk.pws.features.resources.settings_export
 import io.github.alelk.pws.features.resources.settings_import
@@ -45,6 +62,7 @@ import io.github.alelk.pws.features.resources.settings_import_export_subtitle
 import io.github.alelk.pws.features.resources.settings_interface
 import io.github.alelk.pws.features.resources.settings_theme_subtitle
 import io.github.alelk.pws.features.resources.settings_title
+import io.github.alelk.pws.features.resources.common_close
 import io.github.alelk.pws.features.theme.LocalThemeSettings
 import io.github.alelk.pws.features.theme.ThemeMode
 import io.github.alelk.pws.features.theme.spacing
@@ -116,6 +134,9 @@ private fun SettingsContent(
   onExportClick: () -> Unit,
   onImportClick: () -> Unit,
 ) {
+  val haptic = LocalHapticFeedback.current
+  var showLicenseDialog by remember { mutableStateOf(false) }
+
   Scaffold(
     topBar = {
       AppTopBar(
@@ -142,7 +163,8 @@ private fun SettingsContent(
               Text(
                 text = stringResource(Res.string.settings_interface),
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.semantics { heading() }
               )
             }
             item {
@@ -164,7 +186,10 @@ private fun SettingsContent(
                     ThemeRow(
                       title = stringResource(item.titleRes),
                       isSelected = item.themeMode == current.selectedTheme,
-                      onClick = { onThemeSelected(item.themeMode) }
+                      onClick = { 
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onThemeSelected(item.themeMode) 
+                      }
                     )
                     if (index < current.themes.lastIndex) {
                       HorizontalDivider(
@@ -191,7 +216,10 @@ private fun SettingsContent(
                     Row(
                       modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onDeveloperClick(dev.contact) }
+                        .clickable { 
+                          haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                          onDeveloperClick(dev.contact) 
+                        }
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                       verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -252,7 +280,10 @@ private fun SettingsContent(
                       )
                       Switch(
                         checked = book.enabled,
-                        onCheckedChange = { checked -> onBookToggle(book.id, checked) }
+                        onCheckedChange = { checked -> 
+                          haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                          onBookToggle(book.id, checked) 
+                        }
                       )
                     }
                     if (index < current.books.lastIndex) {
@@ -286,16 +317,73 @@ private fun SettingsContent(
                   Spacer(Modifier.height(12.dp))
                   OutlinedButton(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = onExportClick
+                    onClick = {
+                      haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                      onExportClick()
+                    }
                   ) {
                     Text(stringResource(Res.string.settings_export))
                   }
                   Spacer(Modifier.height(8.dp))
                   OutlinedButton(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = onImportClick
+                    onClick = {
+                      haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                      onImportClick()
+                    }
                   ) {
                     Text(stringResource(Res.string.settings_import))
+                  }
+                }
+              }
+            }
+
+            item {
+              SectionTitle(stringResource(Res.string.settings_about))
+            }
+
+            item {
+              Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
+              ) {
+                Column {
+                  // Version
+                  if (state is SettingsUiState.Content && state.appVersion.isNotBlank()) {
+                    Row(
+                      modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                      verticalAlignment = Alignment.CenterVertically
+                    ) {
+                      Text(
+                        text = stringResource(Res.string.settings_version, state.appVersion),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                      )
+                    }
+                    HorizontalDivider(
+                      modifier = Modifier.padding(horizontal = 16.dp),
+                      color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+                    )
+                  }
+
+                  // License
+                  Row(
+                    modifier = Modifier
+                      .fillMaxWidth()
+                      .clickable {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        showLicenseDialog = true
+                      }
+                      .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                  ) {
+                    Text(
+                      text = stringResource(Res.string.settings_license),
+                      style = MaterialTheme.typography.bodyLarge,
+                      color = MaterialTheme.colorScheme.onSurface
+                    )
                   }
                 }
               }
@@ -305,6 +393,43 @@ private fun SettingsContent(
       }
     }
   }
+
+  if (showLicenseDialog) {
+    LicenseDialog(onDismiss = { showLicenseDialog = false })
+  }
+}
+
+@Composable
+private fun LicenseDialog(onDismiss: () -> Unit) {
+  var licenseText by remember { mutableStateOf<String?>(null) }
+  LaunchedEffect(Unit) {
+    runCatching {
+      // In Compose Resources, files are accessed via Res.readBytes
+      io.github.alelk.pws.features.resources.Res.readBytes("files/LICENSE.txt").decodeToString()
+    }.onSuccess {
+      licenseText = it
+    }.onFailure {
+      licenseText = "Failed to load license text: ${it.message}"
+    }
+  }
+
+  androidx.compose.material3.AlertDialog(
+    onDismissRequest = onDismiss,
+    title = { Text(stringResource(Res.string.settings_license)) },
+    text = {
+      Box(modifier = Modifier.height(400.dp).verticalScroll(rememberScrollState())) {
+        Text(
+          text = licenseText ?: "Loading...",
+          style = MaterialTheme.typography.bodySmall
+        )
+      }
+    },
+    confirmButton = {
+      TextButton(onClick = onDismiss) {
+        Text(stringResource(Res.string.common_close))
+      }
+    }
+  )
 }
 
 @Composable
@@ -312,7 +437,8 @@ private fun SectionTitle(text: String) {
   Text(
     text = text,
     style = MaterialTheme.typography.titleMedium,
-    color = MaterialTheme.colorScheme.onSurface
+    color = MaterialTheme.colorScheme.onSurface,
+    modifier = Modifier.semantics { heading() }
   )
 }
 
@@ -344,7 +470,3 @@ private fun ThemeRow(
     )
   }
 }
-
-
-
-

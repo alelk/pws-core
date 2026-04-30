@@ -32,17 +32,23 @@
     <string name="theme_light">Світла</string>
     <string name="theme_dark">Темна</string>
     <string name="theme_black">Чорна AMOLED</string>
+    <string name="theme_system">Системна</string>
     <string name="settings_open">Відкрити налаштування</string>
     <string name="settings_title">Налаштування</string>
     <string name="settings_interface">Інтерфейс</string>
     <string name="settings_theme_subtitle">Оберіть тему застосунку</string>
     <string name="settings_developers">Розробники</string>
+    <string name="settings_project_page_name">Сторінка проєкту PWS</string>
+    <string name="settings_project_page_role">Відкрити сайт</string>
     <string name="settings_developer_alex_name">Alex Elkin</string>
     <string name="settings_developer_alex_role">Розробник застосунку</string>
     <string name="settings_developer_vera_name">Vera Elkina</string>
     <string name="settings_developer_vera_role">Редактор текстів пісень</string>
     <string name="settings_books">Збірники пісень</string>
     <string name="settings_books_subtitle">Вмикайте та вимикайте збірники</string>
+    <string name="settings_about">Про застосунок</string>
+    <string name="settings_version">Версія %1$s</string>
+    <string name="settings_license">Ліцензія</string>
     <string name="settings_import_export">Імпорт/експорт</string>
     <string name="settings_import_export_subtitle">Імпортуйте або експортуйте відредаговані пісні та категорії</string>
     <string name="settings_export">Експорт даних</string>
@@ -130,12 +136,18 @@
     <string name="favorites_loading">Завантаження обраного...</string>
     <string name="favorites_empty_title">Немає обраних пісень</string>
     <string name="favorites_empty_subtitle">Додавайте пісні в обране, щоб швидко знаходити їх</string>
+    <string name="favorites_sort">Сортування обраного</string>
+    <string name="favorites_sort_direction">Змінити напрям сортування</string>
+    <string name="favorites_sort_added_date">За датою додавання</string>
+    <string name="favorites_sort_song_number">За номером пісні</string>
+    <string name="favorites_sort_song_name">За назвою пісні</string>
 
     <string name="song_edit_title">Редагування</string>
     <string name="song_edit_loading">Завантаження...</string>
     <string name="song_edit_label_title">Назва</string>
     <string name="song_edit_label_number">Номер</string>
     <string name="song_edit_label_tags">Теги</string>
+    <string name="song_edit_label_tonalities">Тональності</string>
     <string name="song_edit_label_text">Текст пісні</string>
     <string name="song_edit_discard_title">Скасувати зміни?</string>
     <string name="song_edit_discard_message">Усі незбережені зміни буде втрачено.</string>
@@ -172,6 +184,8 @@
     <string name="song_detail_action_edit_tags">Змінити теги</string>
     <string name="song_detail_action_jump">Перейти до номера</string>
     <string name="song_detail_action_share">Поділитися</string>
+    <string name="song_detail_action_copy">Скопіювати текст</string>
+    <string name="song_detail_expand_text">Розгорнутий текст</string>
     <string name="song_detail_tags_sheet_title">Теги пісні</string>
     <string name="song_detail_tags_empty">Немає доступних тегів</string>
     <string name="song_detail_jump_empty">Введіть число</string>
@@ -181,6 +195,36 @@
     <string name="song_detail_jump_clear">Очистити</string>
 
     <string name="tag_chip_edit">Редагувати</string>
+    <string name="tonality_a_major">Ля мажор (A-dur)</string>
+    <string name="tonality_a_minor">Ля мінор (a-moll)</string>
+    <string name="tonality_a_flat_major">Ля-бемоль мажор (As-dur)</string>
+    <string name="tonality_a_flat_minor">Ля-бемоль мінор (as-moll)</string>
+    <string name="tonality_a_sharp_minor">Ля-дієз мінор (ais-moll)</string>
+    <string name="tonality_b_major">Си мажор (H-dur)</string>
+    <string name="tonality_b_minor">Си мінор (h-moll)</string>
+    <string name="tonality_b_flat_major">Си-бемоль мажор (B-dur)</string>
+    <string name="tonality_b_flat_minor">Си-бемоль мінор (b-moll)</string>
+    <string name="tonality_c_major">До мажор (C-dur)</string>
+    <string name="tonality_c_minor">До мінор (c-moll)</string>
+    <string name="tonality_c_flat_major">До-бемоль мажор (Ces-dur)</string>
+    <string name="tonality_c_sharp_major">До-дієз мажор (Cis-dur)</string>
+    <string name="tonality_c_sharp_minor">До-дієз мінор (cis-moll)</string>
+    <string name="tonality_d_major">Ре мажор (D-dur)</string>
+    <string name="tonality_d_minor">Ре мінор (d-moll)</string>
+    <string name="tonality_d_flat_major">Ре-бемоль мажор (Des-dur)</string>
+    <string name="tonality_d_sharp_minor">Ре-дієз мінор (dis-moll)</string>
+    <string name="tonality_e_major">Мі мажор (E-dur)</string>
+    <string name="tonality_e_minor">Мі мінор (e-moll)</string>
+    <string name="tonality_e_flat_major">Мі-бемоль мажор (Es-dur)</string>
+    <string name="tonality_e_flat_minor">Мі-бемоль мінор (es-moll)</string>
+    <string name="tonality_f_major">Фа мажор (F-dur)</string>
+    <string name="tonality_f_minor">Фа мінор (f-moll)</string>
+    <string name="tonality_f_sharp_major">Фа-дієз мажор (Fis-dur)</string>
+    <string name="tonality_f_sharp_minor">Фа-дієз мінор (fis-moll)</string>
+    <string name="tonality_g_major">Соль мажор (G-dur)</string>
+    <string name="tonality_g_minor">Соль мінор (g-moll)</string>
+    <string name="tonality_g_flat_major">Соль-бемоль мажор (Ges-dur)</string>
+    <string name="tonality_g_sharp_minor">Соль-дієз мінор (gis-moll)</string>
 </resources>
 
 

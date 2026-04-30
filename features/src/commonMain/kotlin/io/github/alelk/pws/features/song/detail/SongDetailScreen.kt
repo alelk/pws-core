@@ -2,12 +2,10 @@ package io.github.alelk.pws.features.song.detail
 
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -20,6 +18,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material.icons.automirrored.filled.Label
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FormatSize
@@ -39,12 +38,20 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.key.*
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.registry.ScreenRegistry
@@ -98,9 +105,19 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
       }
     }
 
+    val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(Unit) {
+      viewModel.effects.collect { effect ->
+        when (effect) {
+          is SongDetailScreenModel.Effect.ShowError -> snackbarHostState.showSnackbar(effect.message)
+        }
+      }
+    }
+
     if (bookSongNumberIds.size > 1) {
-      val initialPage = bookSongNumberIds.indexOf(songNumberId).coerceAtLeast(0)
+      val initialPage = bookSongNumberIds.indexOf(currentSongNumberId).coerceAtLeast(0)
       SongDetailPager(
+        snackbarHostState = snackbarHostState,
         state = state,
         isFavorite = isFavorite,
         currentSongNumberId = currentSongNumberId,
@@ -119,6 +136,7 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
       )
     } else {
       SongDetailContent(
+        snackbarHostState = snackbarHostState,
         state = state,
         isFavorite = isFavorite,
         references = references,
@@ -137,13 +155,14 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
 
 // ---------------------------------------------------------------------------
 // Pager — navigate left/right between all songs in the book
-// HorizontalPager is intentionally NOT used here: on Kotlin/JS (Skiko canvas)
-// touch/mouse-drag events are not delivered to the pager, so we use
-// AnimatedContent + explicit nav buttons + keyboard arrow keys instead.
+// Uses [SongPager] which adapts to the platform:
+// - Mobile: [HorizontalPager] for native swipe support.
+// - Desktop/Web: [AnimatedContent] for stability (no swipe).
 // ---------------------------------------------------------------------------
 
 @Composable
 private fun SongDetailPager(
+  snackbarHostState: SnackbarHostState,
   state: SongDetailUiState,
   isFavorite: Boolean,
   currentSongNumberId: SongNumberId,
@@ -161,7 +180,6 @@ private fun SongDetailPager(
   onPageChanged: (SongNumberId) -> Unit
 ) {
   var currentPage by remember { mutableIntStateOf(initialPage.coerceIn(0, bookSongNumberIds.lastIndex)) }
-  var navigatingForward by remember { mutableStateOf(true) }
   val focusRequester = remember { FocusRequester() }
 
   // Sync page → ScreenModel
@@ -170,75 +188,66 @@ private fun SongDetailPager(
     onPageChanged(id)
   }
 
+  // Sync ScreenModel → page (ensure pager matches current ID from VM)
+  LaunchedEffect(currentSongNumberId) {
+    val index = bookSongNumberIds.indexOf(currentSongNumberId)
+    if (index >= 0 && index != currentPage) {
+      currentPage = index
+    }
+  }
+
   // Request focus so that keyboard arrow keys are captured
   LaunchedEffect(Unit) {
     focusRequester.requestFocus()
   }
 
-  fun goToPrev() {
-    if (currentPage > 0) {
-      navigatingForward = false
-      currentPage--
-    }
-  }
-
-  fun goToNext() {
-    if (currentPage < bookSongNumberIds.lastIndex) {
-      navigatingForward = true
-      currentPage++
-    }
-  }
-
-  Box(
+  SongPager(
+    pageCount = bookSongNumberIds.size,
+    currentPage = currentPage,
+    onPageChanged = { currentPage = it },
     modifier = Modifier
       .fillMaxSize()
       .focusRequester(focusRequester)
       .onKeyEvent { event ->
         if (event.type == KeyEventType.KeyDown) {
           when (event.key) {
-            Key.DirectionLeft, Key.NavigatePrevious -> { goToPrev(); true }
-            Key.DirectionRight, Key.NavigateNext -> { goToNext(); true }
+            Key.DirectionLeft, Key.NavigatePrevious -> {
+              if (currentPage > 0) currentPage--
+              true
+            }
+            Key.DirectionRight, Key.NavigateNext -> {
+              if (currentPage < bookSongNumberIds.lastIndex) currentPage++
+              true
+            }
             else -> false
           }
         } else false
       }
-  ) {
+  ) { page, onNavigatePrev, onNavigateNext ->
+    val animPageId = bookSongNumberIds.getOrNull(page) ?: bookSongNumberIds.first()
+    val isCurrentPage = animPageId == currentSongNumberId
+    val fallbackContext = SongDetailUiState.DisplayContext(
+      songNumber = bookNumberMap.entries.firstOrNull { it.value == animPageId }?.key,
+      bookTitle = (state as? SongDetailUiState.Content)?.context?.bookTitle
+    )
 
-    AnimatedContent(
-      targetState = currentPage,
-      transitionSpec = {
-        if (navigatingForward) {
-          slideInHorizontally { it } togetherWith slideOutHorizontally { -it }
-        } else {
-          slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
-        }
-      },
-      modifier = Modifier.fillMaxSize()
-    ) { page ->
-      val animPageId = bookSongNumberIds.getOrNull(page) ?: bookSongNumberIds.first()
-      val isCurrentPage = animPageId == currentSongNumberId
-      val fallbackContext = SongDetailUiState.DisplayContext(
-        songNumber = bookNumberMap.entries.firstOrNull { it.value == animPageId }?.key,
-        bookTitle = (state as? SongDetailUiState.Content)?.context?.bookTitle
-      )
-
-      SongDetailContent(
-        state = if (isCurrentPage) state else SongDetailUiState.Loading,
-        isFavorite = if (isCurrentPage) isFavorite else false,
-        references = if (isCurrentPage) references else emptyList(),
-        referenceBookContexts = if (isCurrentPage) referenceBookContexts else emptyMap(),
-        currentBookId = currentBookId,
-        songTags = if (isCurrentPage) songTags else emptyList(),
-        allTags = allTags,
-        bookNumberMap = bookNumberMap,
-        onFavoriteClick = onFavoriteClick,
-        onSaveTags = onSaveTags,
-        onJumpToNumber = onJumpToNumber,
-        displayContextOverride = if (isCurrentPage) null else fallbackContext,
-        onNavigatePrev = if (page > 0) ::goToPrev else null,
-        onNavigateNext = if (page < bookSongNumberIds.lastIndex) ::goToNext else null
-      )
-    }
+    SongDetailContent(
+      snackbarHostState = snackbarHostState,
+      state = if (isCurrentPage) state else SongDetailUiState.Loading,
+      isFavorite = if (isCurrentPage) isFavorite else false,
+      references = if (isCurrentPage) references else emptyList(),
+      referenceBookContexts = if (isCurrentPage) referenceBookContexts else emptyMap(),
+      currentBookId = currentBookId,
+      songTags = if (isCurrentPage) songTags else emptyList(),
+      allTags = allTags,
+      bookNumberMap = bookNumberMap,
+      onFavoriteClick = onFavoriteClick,
+      onSaveTags = onSaveTags,
+      onJumpToNumber = onJumpToNumber,
+      displayContextOverride = if (isCurrentPage) null else fallbackContext,
+      onNavigatePrev = onNavigatePrev,
+      onNavigateNext = onNavigateNext
+    )
   }
 }
 
@@ -250,6 +259,7 @@ private fun SongDetailPager(
 @Composable
 fun SongDetailContent(
   state: SongDetailUiState,
+  snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
   isFavorite: Boolean = false,
   references: List<SongReferenceDetail> = emptyList(),
   referenceBookContexts: Map<io.github.alelk.pws.domain.core.ids.SongId, List<SongDetailScreenModel.ReferenceBookContextUi>> = emptyMap(),
@@ -265,7 +275,19 @@ fun SongDetailContent(
   onNavigateNext: (() -> Unit)? = null,
 ) {
   val navigator = LocalNavigator.currentOrThrow
-  var fontScale by remember { mutableFloatStateOf(1f) }
+  val clipboardManager = LocalClipboardManager.current
+  val haptic = LocalHapticFeedback.current
+  val externalActions = LocalSongDetailExternalActions.current
+  val displaySettings = LocalSongDetailDisplaySettings.current
+  var fontScale by remember { mutableFloatStateOf(displaySettings?.fontScale ?: 1f) }
+  var expandedText by remember { mutableStateOf(displaySettings?.expandedText ?: true) }
+
+  LaunchedEffect(displaySettings?.fontScale) {
+    displaySettings?.let { fontScale = it.fontScale }
+  }
+  LaunchedEffect(displaySettings?.expandedText) {
+    displaySettings?.let { expandedText = it.expandedText }
+  }
 
   // Sheet visibility state
   var showTextSettingsSheet by remember { mutableStateOf(false) }
@@ -285,6 +307,7 @@ fun SongDetailContent(
   }
 
   Scaffold(
+    snackbarHost = { SnackbarHost(snackbarHostState) },
     topBar = {
       val title = when {
         displayContext.songNumber != null -> "№ ${displayContext.songNumber}"
@@ -323,7 +346,10 @@ fun SongDetailContent(
       if (state is SongDetailUiState.Content) {
         val bottomInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
         FloatingActionButton(
-          onClick = onFavoriteClick,
+          onClick = {
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            onFavoriteClick()
+          },
           containerColor = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
           contentColor = if (isFavorite) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
           elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation(),
@@ -350,6 +376,7 @@ fun SongDetailContent(
             song = state.song,
             displayContext = state.context,
             fontScale = fontScale,
+            expandedText = expandedText,
             references = references,
             referenceBookContexts = referenceBookContexts,
             currentBookId = currentBookId,
@@ -372,7 +399,15 @@ fun SongDetailContent(
       ) {
         TextSettingsSheet(
           fontScale = fontScale,
-          onFontScaleChange = { fontScale = it }
+          expandedText = expandedText,
+          onFontScaleChange = {
+            fontScale = it
+            displaySettings?.onFontScaleChange?.invoke(it)
+          },
+          onExpandedTextChange = {
+            expandedText = it
+            displaySettings?.onExpandedTextChange?.invoke(it)
+          }
         )
       }
     }
@@ -398,7 +433,15 @@ fun SongDetailContent(
             showActionsSheet = false
             showJumpSheet = true
           },
-          onShare = { /* TODO */ },
+          onShare = {
+            val shareSong = (state as? SongDetailUiState.Content)?.song ?: return@SongActionsSheet
+            externalActions?.shareText?.invoke(buildShareText(shareSong))
+          },
+          onCopy = {
+            val copySong = (state as? SongDetailUiState.Content)?.song ?: return@SongActionsSheet
+            clipboardManager.setText(AnnotatedString(buildShareText(copySong)))
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+          }
         )
       }
     }
@@ -445,7 +488,9 @@ fun SongDetailContent(
 @Composable
 private fun TextSettingsSheet(
   fontScale: Float,
-  onFontScaleChange: (Float) -> Unit
+  expandedText: Boolean,
+  onFontScaleChange: (Float) -> Unit,
+  onExpandedTextChange: (Boolean) -> Unit,
 ) {
   val spacing = MaterialTheme.spacing
   Column(
@@ -490,6 +535,22 @@ private fun TextSettingsSheet(
         tint = MaterialTheme.colorScheme.onSurface
       )
     }
+    Spacer(Modifier.height(spacing.md))
+    Row(
+      modifier = Modifier.fillMaxWidth(),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+      Text(
+        text = stringResource(Res.string.song_detail_expand_text),
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.onSurface
+      )
+      Switch(
+        checked = expandedText,
+        onCheckedChange = onExpandedTextChange
+      )
+    }
     Spacer(Modifier.height(spacing.lg))
   }
 }
@@ -499,6 +560,7 @@ private fun SongContent(
   song: SongDetail,
   displayContext: SongDetailUiState.DisplayContext,
   fontScale: Float,
+  expandedText: Boolean,
   references: List<SongReferenceDetail> = emptyList(),
   referenceBookContexts: Map<io.github.alelk.pws.domain.core.ids.SongId, List<SongDetailScreenModel.ReferenceBookContextUi>> = emptyMap(),
   currentBookId: io.github.alelk.pws.domain.core.ids.BookId? = null,
@@ -506,6 +568,7 @@ private fun SongContent(
   modifier: Modifier = Modifier
 ) {
   val spacing = MaterialTheme.spacing
+  val verses = remember(song.lyric) { song.lyric.filterIsInstance<Verse>() }
   LazyColumn(
     modifier = modifier.fillMaxSize(),
     contentPadding = PaddingValues(
@@ -531,7 +594,13 @@ private fun SongContent(
 
     // Lyrics
     items(song.lyric) { part ->
-      LyricPartView(part = part, fontScale = fontScale)
+      val verseNumber = if (part is Verse) verses.indexOf(part) + 1 else null
+      LyricPartView(
+        part = part,
+        verseNumber = verseNumber,
+        fontScale = fontScale,
+        expandedText = expandedText
+      )
       Spacer(Modifier.height(spacing.lg))
     }
 
@@ -571,7 +640,11 @@ private fun BookContextBanner(
     border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary.copy(alpha = 0.18f))
   ) {
     Row(
-      modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+      modifier = Modifier
+        .padding(horizontal = 12.dp, vertical = 8.dp)
+        .semantics(mergeDescendants = true) {
+          contentDescription = "${bookLabel ?: ""}, $numberLabel"
+        },
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
@@ -616,7 +689,8 @@ private fun SongHeader(song: SongDetail) {
         letterSpacing = (-0.5).sp
       ),
       color = MaterialTheme.colorScheme.onBackground,
-      textAlign = TextAlign.Center
+      textAlign = TextAlign.Center,
+      modifier = Modifier.semantics { heading() }
     )
 
     val tonalities = song.tonalities
@@ -626,8 +700,12 @@ private fun SongHeader(song: SongDetail) {
         color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
         shape = CircleShape,
       ) {
+        val tonalityLabels = mutableListOf<String>()
+        for (tonality in tonalities) {
+          tonalityLabels.add(stringResource(tonality.label))
+        }
         Text(
-          text = tonalities.joinToString(" • ") { it.identifier },
+          text = tonalityLabels.joinToString(" • "),
           style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium),
           color = MaterialTheme.colorScheme.onSecondaryContainer,
           modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
@@ -640,7 +718,9 @@ private fun SongHeader(song: SongDetail) {
 @Composable
 private fun LyricPartView(
   part: LyricPart,
-  fontScale: Float
+  verseNumber: Int?,
+  fontScale: Float,
+  expandedText: Boolean,
 ) {
   val baseFontSize = 18.sp * fontScale
   val lineHeight = baseFontSize * 1.7f
@@ -649,9 +729,9 @@ private fun LyricPartView(
     when (part) {
       is Verse -> {
         Row(modifier = Modifier.fillMaxWidth()) {
-          if (part.numbers.isNotEmpty()) {
+          if (verseNumber != null) {
             Text(
-              text = part.numbers.first().toString(),
+              text = verseNumber.toString(),
               style = MaterialTheme.typography.titleMedium.copy(
                 fontSize = baseFontSize * 0.78f,
                 fontWeight = FontWeight.SemiBold
@@ -668,7 +748,9 @@ private fun LyricPartView(
               lineHeight = lineHeight,
               color = MaterialTheme.colorScheme.onBackground
             ),
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            maxLines = if (expandedText) Int.MAX_VALUE else 4,
+            overflow = TextOverflow.Ellipsis,
           )
         }
       }
@@ -1086,6 +1168,7 @@ private fun SongActionsSheet(
   onEditTags: () -> Unit,
   onJumpToNumber: () -> Unit,
   onShare: () -> Unit,
+  onCopy: () -> Unit,
 ) {
   val spacing = MaterialTheme.spacing
   Column(
@@ -1123,6 +1206,11 @@ private fun SongActionsSheet(
       label = stringResource(Res.string.song_detail_action_share),
       onClick = onShare
     )
+    ActionItem(
+      icon = { Icon(Icons.Filled.ContentCopy, contentDescription = null) },
+      label = stringResource(Res.string.song_detail_action_copy),
+      onClick = onCopy
+    )
 
     Spacer(Modifier.height(spacing.md))
   }
@@ -1155,6 +1243,11 @@ private fun ActionItem(
       )
     }
   }
+}
+
+private fun buildShareText(song: SongDetail): String {
+  val lyric = song.lyric.joinToString("\n\n") { it.text.trim() }
+  return "${song.name.value}\n\n$lyric"
 }
 
 // ---------------------------------------------------------------------------
@@ -1194,6 +1287,9 @@ private fun TagEditorSheet(
       )
     } else {
       FlowRow(
+        modifier = Modifier
+          .weight(1f, fill = false)
+          .verticalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(spacing.sm),
         verticalArrangement = Arrangement.spacedBy(spacing.sm)
       ) {
@@ -1277,6 +1373,7 @@ private fun JumpToNumberSheet(
   Column(
     modifier = Modifier
       .fillMaxWidth()
+      .verticalScroll(rememberScrollState())
       .padding(spacing.lg)
       .padding(WindowInsets.navigationBars.asPaddingValues())
   ) {
@@ -1361,4 +1458,3 @@ private fun JumpToNumberSheet(
     }
   }
 }
-
