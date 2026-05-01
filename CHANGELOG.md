@@ -1,5 +1,12 @@
 # PWS Android
 
+# [2.21.0](https://github.com/alelk/pws-core/compare/v2.20.0...v2.21.0) (2026-05-01)
+
+
+### Features
+
+* Add deleteById methods for Song and Tag repositories, enhance error handling in use cases ([b5c8031](https://github.com/alelk/pws-core/commit/b5c80319477048378c7d605598779839cfa7e64d))
+
 # [2.20.0](https://github.com/alelk/pws-core/compare/v2.19.0...v2.20.0) (2026-04-30)
 
 
