@@ -35,6 +35,14 @@ class TagRepositoryImpl(
     return entities.map { it.toTag() }.sortedWith(sort.comparator())
   }
 
+  override suspend fun exists(id: TagId): Boolean =
+    tagDao.getById(id) != null
+
+  override suspend fun existsByName(name: String, excludeId: TagId?): Boolean {
+    val entities = tagDao.getAll(Int.MAX_VALUE, 0)
+    return entities.any { it.name == name && (excludeId == null || it.id != excludeId) }
+  }
+
   override fun observeAll(sort: TagSort): Flow<List<Tag<TagId>>> =
     tagDao.getAllFlow().map { list ->
       list.map { it.toTag() }.sortedWith(sort.comparator())
@@ -55,8 +63,7 @@ class TagRepositoryImpl(
 
   override suspend fun update(command: UpdateTagCommand<TagId>): Either<UpdateError, TagId> =
     runCatching {
-      val existing = tagDao.getById(command.id)
-        ?: return Either.Left(UpdateError.NotFound)
+      val existing = tagDao.getById(command.id) ?: return Either.Left(UpdateError.NotFound)
       val updated = existing.copy(
         name = command.name ?: existing.name,
         color = command.color ?: existing.color,
@@ -68,9 +75,7 @@ class TagRepositoryImpl(
 
   override suspend fun delete(id: TagId): Either<DeleteError, TagId> =
     runCatching {
-      val existing = tagDao.getById(id)
-        ?: return Either.Left(DeleteError.NotFound)
-      tagDao.delete(existing)
+      tagDao.deleteById(id)
       Either.Right(id)
     }.getOrElse { Either.Left(DeleteError.UnknownError(it)) }
 

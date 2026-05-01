@@ -76,6 +76,9 @@ interface TagDao : Pageable<TagEntity> {
   @Delete
   suspend fun delete(tags: List<TagEntity>)
 
+  @Query("DELETE FROM tags WHERE id = :id")
+  suspend fun deleteById(id: TagId): Int
+
   @Query("DELETE FROM tags")
   suspend fun deleteAll()
 

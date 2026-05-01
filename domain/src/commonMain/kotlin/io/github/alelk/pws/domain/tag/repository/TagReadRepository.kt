@@ -12,5 +12,7 @@ import io.github.alelk.pws.domain.tag.query.TagSort
 interface TagReadRepository<ID : TagId> {
   suspend fun get(id: ID): TagDetail<ID>?
   suspend fun getAll(sort: TagSort = TagSort.ByPriority): List<Tag<ID>>
+  suspend fun exists(id: ID): Boolean
+  suspend fun existsByName(name: String, excludeId: ID? = null): Boolean
 }
 

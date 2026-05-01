@@ -35,8 +35,9 @@ class OverrideSongUseCase(
 
     return txRunner.inRwTransaction {
       overrideWriteRepository.overrideSong(userId, command).flatMap {
-        getMergedSongDetail(userId, command.songId)?.let { Either.Right(it) }
-          ?: Either.Left(UpdateError.UnknownError(null, "Failed to get merged song after override"))
+        getMergedSongDetail(userId, command.songId).mapLeft {
+          UpdateError.UnknownError(null, "Failed to get merged song after override: ${it.message}")
+        }
       }
     }
   }

@@ -168,7 +168,10 @@ class SongDetailScreenModel(
     screenModelScope.launch {
       _currentSongNumberId.collectLatest { currentId ->
         try {
-          _references.value = getSongReferences(currentId.songId)
+          _references.value = getSongReferences(currentId.songId).fold(
+            ifLeft = { emptyList() },
+            ifRight = { it }
+          )
           refreshReferenceContexts()
         } catch (_: Exception) {
           _references.value = emptyList()
@@ -220,9 +223,10 @@ class SongDetailScreenModel(
   /** Save the selected set of tags for the current song. */
   fun onSaveTags(selectedTagIds: Set<TagId>) {
     screenModelScope.launch {
-      replaceAllSongTags(_currentSongNumberId.value.songId, selectedTagIds).mapLeft { error ->
-        _effects.emit(Effect.ShowError(error.message))
-      }
+      replaceAllSongTags(_currentSongNumberId.value.songId, selectedTagIds).fold(
+        ifLeft = { error -> _effects.emit(Effect.ShowError(error.message)) },
+        ifRight = { }
+      )
     }
   }
 

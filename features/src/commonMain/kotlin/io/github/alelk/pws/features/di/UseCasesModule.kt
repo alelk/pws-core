@@ -58,7 +58,7 @@ val useCasesModule = module {
   // Song
   factory { ObserveSongUseCase(get<SongObserveRepository>()) }
   factory { GetSongDetailUseCase(get<SongReadRepository>(), get<TransactionRunner>()) }
-  factory { UpdateSongUseCase(get<SongWriteRepository>(), get<TransactionRunner>()) }
+  factory { UpdateSongUseCase(get<SongReadRepository>(), get<SongWriteRepository>(), get<TransactionRunner>()) }
   factory { SearchSongSuggestionsUseCase(get<SongSearchRepository>(), get<TransactionRunner>()) }
 
   // Favorite
@@ -76,9 +76,9 @@ val useCasesModule = module {
   // Tag (generic over TagId)
   factory<ObserveTagsUseCase<TagId>> { ObserveTagsUseCase(get<TagObserveRepository<TagId>>()) }
   factory<GetTagDetailUseCase<TagId>> { GetTagDetailUseCase(get<TagReadRepository<TagId>>(), get<TransactionRunner>()) }
-  factory<CreateTagUseCase<TagId>> { CreateTagUseCase(get<TagWriteRepository<TagId>>(), get<TransactionRunner>()) }
-  factory<UpdateTagUseCase<TagId>> { UpdateTagUseCase(get<TagWriteRepository<TagId>>(), get<TransactionRunner>()) }
-  factory<DeleteTagUseCase<TagId>> { DeleteTagUseCase(get<TagWriteRepository<TagId>>(), get<TransactionRunner>()) }
+  factory<CreateTagUseCase<TagId>> { CreateTagUseCase(get<TagReadRepository<TagId>>(), get<TagWriteRepository<TagId>>(), get<TransactionRunner>()) }
+  factory<UpdateTagUseCase<TagId>> { UpdateTagUseCase(get<TagReadRepository<TagId>>(), get<TagWriteRepository<TagId>>(), get<TransactionRunner>()) }
+  factory<DeleteTagUseCase<TagId>> { DeleteTagUseCase(get<TagReadRepository<TagId>>(), get<TagWriteRepository<TagId>>(), get<TransactionRunner>()) }
 
   // SongTag (generic over TagId)
   factory<ObserveTagsForSongUseCase<TagId>> { ObserveTagsForSongUseCase(get<SongTagObserveRepository<TagId>>()) }

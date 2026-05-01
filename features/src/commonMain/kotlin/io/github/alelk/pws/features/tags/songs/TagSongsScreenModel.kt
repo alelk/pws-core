@@ -31,11 +31,13 @@ class TagSongsScreenModel(
   private fun loadTagSongs() {
     screenModelScope.launch {
       try {
-        val tag = getTagDetailUseCase(tagId)
-        if (tag == null) {
-          mutableState.value = TagSongsUiState.Error(TAG_NOT_FOUND_CODE)
-          return@launch
-        }
+        val tag = getTagDetailUseCase(tagId).fold(
+          ifLeft = {
+            mutableState.value = TagSongsUiState.Error(TAG_NOT_FOUND_CODE)
+            return@launch
+          },
+          ifRight = { it }
+        )
         observeSongsByTagUseCase(tagId).collect { songs ->
           mutableState.value = if (songs.isEmpty()) {
             TagSongsUiState.Empty

@@ -9,5 +9,6 @@ import io.github.alelk.pws.domain.song.query.SongSort
 interface SongReadRepository {
   suspend fun get(id: SongId): SongDetail?
   suspend fun getMany(query: SongQuery = SongQuery.Empty, sort: SongSort = SongSort.ById): List<SongSummary>
+  suspend fun exists(id: SongId): Boolean
 }
 

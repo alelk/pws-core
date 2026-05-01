@@ -149,7 +149,10 @@ class HomeScreenModel(
       try {
         _isNumberSearching.value = true
         val results = searchSuggestionsUseCase(query, limit = 15)
-        _numberSuggestions.value = results.map { it.toUi() }
+        _numberSuggestions.value = results.fold(
+          ifLeft = { emptyList() },
+          ifRight = { list -> list.map { it.toUi() } }
+        )
       } catch (_: Exception) {
         _numberSuggestions.value = emptyList()
       } finally {
@@ -164,7 +167,10 @@ class HomeScreenModel(
       try {
         _isSearching.value = true
         val results = searchSuggestionsUseCase(query)
-        _suggestions.value = results.map { it.toUi() }
+        _suggestions.value = results.fold(
+          ifLeft = { emptyList() },
+          ifRight = { list -> list.map { it.toUi() } }
+        )
       } catch (_: Exception) {
         _suggestions.value = emptyList()
       } finally {

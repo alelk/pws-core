@@ -1,5 +1,8 @@
 package io.github.alelk.pws.domain.song.usecase
 
+import arrow.core.Either
+import arrow.core.right
+import io.github.alelk.pws.domain.core.error.ReadError
 import io.github.alelk.pws.domain.song.model.SongSummary
 import io.github.alelk.pws.domain.song.query.SongQuery
 import io.github.alelk.pws.domain.song.query.SongSort
@@ -17,6 +20,7 @@ class GetSongsUseCase(
   suspend operator fun invoke(
     query: SongQuery = SongQuery.Empty,
     sort: SongSort = SongSort.ById
-  ): List<SongSummary> = txRunner.inRoTransaction { readRepository.getMany(query, sort) }
+  ): Either<ReadError, List<SongSummary>> =
+    txRunner.inRoTransaction { readRepository.getMany(query, sort).right() }
 }
 

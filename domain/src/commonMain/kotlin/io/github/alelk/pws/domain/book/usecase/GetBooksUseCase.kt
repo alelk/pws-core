@@ -1,5 +1,8 @@
 package io.github.alelk.pws.domain.book.usecase
 
+import arrow.core.Either
+import arrow.core.right
+import io.github.alelk.pws.domain.core.error.ReadError
 import io.github.alelk.pws.domain.book.model.BookSummary
 import io.github.alelk.pws.domain.book.query.BookQuery
 import io.github.alelk.pws.domain.book.query.BookSort
@@ -17,5 +20,6 @@ class GetBooksUseCase(
   suspend operator fun invoke(
     query: BookQuery = BookQuery.Empty,
     sort: BookSort = BookSort.ByPriorityDesc
-  ): List<BookSummary> = txRunner.inRoTransaction { readRepository.getMany(query, sort) }
+  ): Either<ReadError, List<BookSummary>> =
+    txRunner.inRoTransaction { readRepository.getMany(query, sort).right() }
 }

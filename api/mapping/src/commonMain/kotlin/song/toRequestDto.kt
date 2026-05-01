@@ -6,6 +6,7 @@ import io.github.alelk.pws.api.mapping.core.toDto
 import io.github.alelk.pws.domain.core.getOrElse
 import io.github.alelk.pws.domain.song.command.CreateSongCommand
 import io.github.alelk.pws.domain.song.command.UpdateSongCommand
+import io.github.alelk.pws.domain.song.model.SongDetail
 
 fun CreateSongCommand.toRequestDto(): SongCreateRequestDto =
   SongCreateRequestDto(
@@ -37,4 +38,19 @@ fun UpdateSongCommand.toRequestDto(): SongUpdateRequestDto =
     year = year.getOrElse { null }?.toDto(),
     bibleRef = bibleRef.getOrElse { null }?.text,
     expectedVersion = expectVersion?.toDto()
+  )
+
+fun SongDetail.toRequestDto(): SongUpdateRequestDto =
+  SongUpdateRequestDto(
+    id = id.toDto(),
+    locale = locale.toDto(),
+    name = name.value,
+    lyric = lyric.toDto(),
+    author = author?.toDto(),
+    translator = translator?.toDto(),
+    composer = composer?.toDto(),
+    tonalities = tonalities?.map { it.toDto() },
+    year = year?.toDto(),
+    bibleRef = bibleRef?.text,
+    expectedVersion = version.toDto()
   )

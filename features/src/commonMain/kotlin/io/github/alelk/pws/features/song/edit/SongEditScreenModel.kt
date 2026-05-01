@@ -90,14 +90,19 @@ class SongEditScreenModel(
   private fun loadSong() {
     screenModelScope.launch {
       try {
-        val song = getSongDetailUseCase(songId)
-        if (song == null) {
-          mutableState.value = SongEditUiState.Error(SONG_NOT_FOUND_CODE)
-          return@launch
-        }
+        val song = getSongDetailUseCase(songId).fold(
+          ifLeft = {
+            mutableState.value = SongEditUiState.Error(SONG_NOT_FOUND_CODE)
+            return@launch
+          },
+          ifRight = { it }
+        )
 
         val allTags = observeTagsUseCase().first()
-        val songTagIds = getSongTagIdsUseCase(songId)
+        val songTagIds = getSongTagIdsUseCase(songId).fold(
+          ifLeft = { emptySet() },
+          ifRight = { it }
+        )
 
         originalTitle = song.name.value
         originalText = song.lyric.toText(song.locale)
@@ -250,10 +255,34 @@ class SongEditScreenModel(
             OptionalField.Set(currentState.tonalities.takeIf { it.isNotEmpty() })
           } else OptionalField.Unchanged,
         )
-        updateSongUseCase(command)
+        val updateError = updateSongUseCase(command).fold(
+          ifLeft = { it },
+          ifRight = { null }
+        )
+        if (updateError != null) {
+          updateContent {
+            it.copy(
+              isSaving = false,
+              validationMessage = SongEditValidationMessage.SaveError(updateError.message)
+            )
+          }
+          return@launch
+        }
 
         val selectedTagIds = currentState.allTags.filter { it.isSelected }.map { it.id }.toSet()
-        replaceAllSongTagsUseCase(songId, selectedTagIds)
+        val replaceError = replaceAllSongTagsUseCase(songId, selectedTagIds).fold(
+          ifLeft = { it },
+          ifRight = { null }
+        )
+        if (replaceError != null) {
+          updateContent {
+            it.copy(
+              isSaving = false,
+              validationMessage = SongEditValidationMessage.SaveError(replaceError.message)
+            )
+          }
+          return@launch
+        }
 
         _effects.emit(Effect.ShowSnackbar(SongEditSnackbarMessage.Saved))
         _effects.emit(Effect.NavigateBack)

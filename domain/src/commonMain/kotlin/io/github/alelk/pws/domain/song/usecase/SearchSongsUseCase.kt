@@ -1,5 +1,8 @@
 package io.github.alelk.pws.domain.song.usecase
 
+import arrow.core.Either
+import arrow.core.right
+import io.github.alelk.pws.domain.core.error.ReadError
 import io.github.alelk.pws.domain.core.ids.BookId
 import io.github.alelk.pws.domain.core.ids.UserId
 import io.github.alelk.pws.domain.core.transaction.TransactionRunner
@@ -26,12 +29,12 @@ class SearchSongsUseCase(
     searchQuery: SearchQuery,
     userId: UserId? = null,
     bookId: BookId? = null
-  ): SongSearchResponse = txRunner.inRoTransaction {
+  ): Either<ReadError, SongSearchResponse> = txRunner.inRoTransaction {
     // If scope is USER_BOOKS but no userId, return empty result
     if (searchQuery.scope == SearchScope.USER_BOOKS && userId == null)
-      SongSearchResponse(emptyList(), 0, false)
+      SongSearchResponse(emptyList(), 0, false).right()
     else
-      searchRepository.search(searchQuery, userId, bookId)
+      searchRepository.search(searchQuery, userId, bookId).right()
   }
 }
 

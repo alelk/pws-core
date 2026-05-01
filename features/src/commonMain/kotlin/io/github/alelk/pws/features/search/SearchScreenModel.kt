@@ -94,7 +94,10 @@ class SearchScreenModel(
     searchJob = screenModelScope.launch {
       try {
         val results = searchSuggestionsUseCase(query)
-        mutableState.value = SearchUiState.Suggestions(query, results.map { it.toUi() })
+        mutableState.value = results.fold(
+          ifLeft = { error -> SearchUiState.Error(error.message) },
+          ifRight = { list -> SearchUiState.Suggestions(query, list.map { it.toUi() }) }
+        )
       } catch (e: Exception) {
         mutableState.value = SearchUiState.Error("Search error: ${e.message}")
       }

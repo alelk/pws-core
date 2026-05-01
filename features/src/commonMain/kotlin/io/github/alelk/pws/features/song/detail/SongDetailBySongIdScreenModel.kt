@@ -92,7 +92,10 @@ class SongDetailBySongIdScreenModel(
 
     screenModelScope.launch {
       try {
-        _references.value = getSongReferences(songId)
+        _references.value = getSongReferences(songId).fold(
+          ifLeft = { emptyList() },
+          ifRight = { it }
+        )
         refreshReferenceContexts()
       } catch (_: Exception) {}
     }

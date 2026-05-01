@@ -23,5 +23,8 @@ class RemoteSongReadRepository(private val api: SongApi) : SongReadRepository {
       maxNumber = query.maxNumber,
       sort = sort.toDto()
     ).map { it.toDomain() }
+
+  override suspend fun exists(id: SongId): Boolean =
+    api.get(id.toDto()) != null
 }
 
