@@ -1,5 +1,12 @@
 # PWS Android
 
+# [2.22.0](https://github.com/alelk/pws-core/compare/v2.21.0...v2.22.0) (2026-05-01)
+
+
+### Features
+
+* Add getManyByIds methods for Song and BookStatistic repositories, enhance error handling in commands ([89acec8](https://github.com/alelk/pws-core/commit/89acec8e6489246580ab7531736734633a5a0221))
+
 # [2.21.0](https://github.com/alelk/pws-core/compare/v2.20.0...v2.21.0) (2026-05-01)
 
 
