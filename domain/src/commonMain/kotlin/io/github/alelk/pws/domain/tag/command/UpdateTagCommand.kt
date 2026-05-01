@@ -1,6 +1,10 @@
 package io.github.alelk.pws.domain.tag.command
 
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
 import io.github.alelk.pws.domain.core.Color
+import io.github.alelk.pws.domain.core.error.InvalidInputError
 import io.github.alelk.pws.domain.core.ids.TagId
 
 /**
@@ -18,5 +22,23 @@ data class UpdateTagCommand<out ID : TagId>(
   }
 
   fun hasChanges(): Boolean = name != null || color != null || priority != null
+
+  companion object {
+    fun <ID : TagId> validated(
+      id: ID,
+      name: String? = null,
+      color: Color? = null,
+      priority: Int? = null
+    ): Either<InvalidInputError, UpdateTagCommand<ID>> {
+      if (name != null && name.isBlank()) {
+        return InvalidInputError("tag.name", "Tag name must not be blank").left()
+      }
+      val command = UpdateTagCommand(id = id, name = name, color = color, priority = priority)
+      if (!command.hasChanges()) {
+        return InvalidInputError("tag", "At least one field should be changed").left()
+      }
+      return command.right()
+    }
+  }
 }
 

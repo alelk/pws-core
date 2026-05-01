@@ -51,6 +51,11 @@ class SongRepositoryImpl(
     return entities.map { it.toSummary() }
   }
 
+  override suspend fun getManyByIds(ids: Set<SongId>): List<SongSummary> {
+    if (ids.isEmpty()) return emptyList()
+    return songDao.getByIds(ids.toList()).map { it.toSummary() }
+  }
+
   override suspend fun exists(id: SongId): Boolean =
     songDao.getById(id) != null
 

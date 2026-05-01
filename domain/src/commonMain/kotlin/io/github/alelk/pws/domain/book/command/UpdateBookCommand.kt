@@ -1,10 +1,14 @@
 package io.github.alelk.pws.domain.book.command
 
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
 import io.github.alelk.pws.domain.core.Locale
 import io.github.alelk.pws.domain.core.NonEmptyString
 import io.github.alelk.pws.domain.core.OptionalField
 import io.github.alelk.pws.domain.core.Version
 import io.github.alelk.pws.domain.core.Year
+import io.github.alelk.pws.domain.core.error.InvalidInputError
 import io.github.alelk.pws.domain.core.ids.BookId
 
 /** Patch-like update for Book fields. */
@@ -38,5 +42,45 @@ data class UpdateBookCommand(
       releaseDate is OptionalField.Set ||
       description is OptionalField.Set ||
       preface is OptionalField.Set
+
+  companion object {
+    fun validated(
+      id: BookId,
+      locales: List<Locale>? = null,
+      name: NonEmptyString? = null,
+      displayShortName: NonEmptyString? = null,
+      displayName: NonEmptyString? = null,
+      releaseDate: OptionalField<Year?> = OptionalField.Unchanged,
+      description: OptionalField<String?> = OptionalField.Unchanged,
+      preface: OptionalField<String?> = OptionalField.Unchanged,
+      version: Version? = null,
+      expectedVersion: Version? = null,
+      enabled: Boolean? = null,
+      priority: Int? = null
+    ): Either<InvalidInputError, UpdateBookCommand> {
+      if (locales != null && locales.isEmpty()) {
+        return InvalidInputError("book.locales", "book $id locales must not be empty").left()
+      }
+      val command = UpdateBookCommand(
+        id = id,
+        locales = locales,
+        name = name,
+        displayShortName = displayShortName,
+        displayName = displayName,
+        releaseDate = releaseDate,
+        description = description,
+        preface = preface,
+        version = version,
+        expectedVersion = expectedVersion,
+        enabled = enabled,
+        priority = priority
+      )
+      return if (command.hasChanges()) {
+        command.right()
+      } else {
+        InvalidInputError("book", "At least one field should be changed").left()
+      }
+    }
+  }
 }
 

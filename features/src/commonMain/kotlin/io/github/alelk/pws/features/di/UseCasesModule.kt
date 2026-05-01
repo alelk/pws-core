@@ -52,7 +52,7 @@ val useCasesModule = module {
 
   // Book
   factory { ObserveBooksUseCase(get<BookObserveRepository>()) }
-  factory { UpdateBookStatisticUseCase(get<BookStatisticRepository>()) }
+  factory { UpdateBookStatisticUseCase(get<BookStatisticRepository>(), get<TransactionRunner>()) }
   factory { ObserveBookWithSongsUseCase(get<BookObserveRepository>(), get<SongObserveRepository>()) }
 
   // Song

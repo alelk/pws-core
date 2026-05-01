@@ -51,7 +51,7 @@ class ReplaceSongReferencesUseCase(
               )
               writeRepository.update(updateCommand).mapLeft { err ->
                 when (err) {
-                  is UpdateError.NotFound -> error("illegal state: updating song reference not found: $songId -> ${ref.refSongId}")
+                  is UpdateError.NotFound -> ReplaceAllError.UnknownError(message = "illegal state: updating song reference not found: $songId -> ${ref.refSongId}")
                   is UpdateError.ValidationError -> ReplaceAllError.ValidationError(err.message)
                   is UpdateError.UnknownError -> ReplaceAllError.UnknownError(err.cause, err.message)
                 }
@@ -60,7 +60,7 @@ class ReplaceSongReferencesUseCase(
             }
             else -> createResult.mapLeft { err ->
               when (err) {
-                is CreateError.AlreadyExists -> error("unreachable")
+                is CreateError.AlreadyExists -> ReplaceAllError.UnknownError(message = "illegal state: create reported already-exists after branch handling")
                 is CreateError.ValidationError -> ReplaceAllError.ValidationError(err.message)
                 is CreateError.UnknownError -> ReplaceAllError.UnknownError(err.cause, err.message)
               }
@@ -71,7 +71,7 @@ class ReplaceSongReferencesUseCase(
         for (ref in refsToDelete) {
           writeRepository.delete(ref.songId, ref.refSongId).mapLeft { err ->
             when (err) {
-              is DeleteError.NotFound -> error("illegal state: deleting song reference not found: $songId -> ${ref.refSongId}")
+              is DeleteError.NotFound -> ReplaceAllError.UnknownError(message = "illegal state: deleting song reference not found: $songId -> ${ref.refSongId}")
               is DeleteError.ValidationError -> ReplaceAllError.ValidationError(err.message)
               is DeleteError.UnknownError -> ReplaceAllError.UnknownError(err.cause, err.message)
             }

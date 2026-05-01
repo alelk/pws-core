@@ -1,5 +1,9 @@
 package io.github.alelk.pws.domain.core.ids
 
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
+import io.github.alelk.pws.domain.core.error.InvalidInputError
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -40,7 +44,28 @@ value class UserTagId(val value: String) {
     const val SEPARATOR = "/"
     const val MAX_LENGTH = 77 // 64 (userId) + 1 (/) + 12 (custom-XXXXX)
 
-    fun parse(value: String): UserTagId = UserTagId(value)
+    fun parse(value: String): UserTagId = parseValidated(value).fold(
+      ifLeft = { error -> throw IllegalArgumentException(error.message) },
+      ifRight = { it }
+    )
+
+    fun parseValidated(value: String): Either<InvalidInputError, UserTagId> {
+      if (!value.contains(SEPARATOR)) {
+        return InvalidInputError("userTagId", "UserTagId must contain '$SEPARATOR' separator").left()
+      }
+      if (value.length > MAX_LENGTH) {
+        return InvalidInputError("userTagId", "UserTagId length must be <= $MAX_LENGTH, but was ${value.length}").left()
+      }
+      val parts = value.split(SEPARATOR, limit = 2)
+      if (parts.size != 2 || parts[0].isBlank()) {
+        return InvalidInputError("userTagId", "UserTagId must have exactly 2 parts separated by '$SEPARATOR' with non-blank user part").left()
+      }
+      TagId.Custom.parseValidated(parts[1]).fold(
+        ifLeft = { return InvalidInputError("userTagId", "Tag part must be a valid custom tag id").left() },
+        ifRight = { }
+      )
+      return UserTagId(value).right()
+    }
   }
 }
 

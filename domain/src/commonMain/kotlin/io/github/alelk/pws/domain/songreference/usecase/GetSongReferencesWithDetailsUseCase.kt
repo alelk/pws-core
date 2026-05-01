@@ -33,12 +33,13 @@ class GetSongReferencesWithDetailsUseCase(
     txRunner.inRoTransaction {
       val refs = referenceRepository.getReferencesForSong(songId) +
         referenceRepository.getReferencesToSong(songId)
-      refs
-        .distinctBy { it.refSongId.takeIf { id -> id != songId } ?: it.songId }
+      val distinctRefs = refs.distinctBy { it.refSongId.takeIf { id -> id != songId } ?: it.songId }
+      val targetSongIds = distinctRefs.mapTo(mutableSetOf()) { ref -> if (ref.songId == songId) ref.refSongId else ref.songId }
+      val summariesById = songRepository.getManyByIds(targetSongIds).associateBy { it.id }
+      distinctRefs
         .mapNotNull { ref ->
           val targetSongId = if (ref.songId == songId) ref.refSongId else ref.songId
-          val summary: SongSummary? = songRepository.getMany()
-            .firstOrNull { it.id == targetSongId }
+          val summary: SongSummary? = summariesById[targetSongId]
           summary?.let {
             SongReferenceDetail(
               refSongId = targetSongId,

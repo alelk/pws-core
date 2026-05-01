@@ -173,6 +173,8 @@ private class FakeSongReadRepository(
 
   override suspend fun getMany(query: SongQuery, sort: SongSort): List<SongSummary> = emptyList()
 
+  override suspend fun getManyByIds(ids: Set<SongId>): List<SongSummary> = emptyList()
+
   override suspend fun exists(id: SongId): Boolean = existsResult
 }
 
@@ -208,4 +210,5 @@ private class FakeSongWriteRepository(
     return deleteResult
   }
 }
+
 

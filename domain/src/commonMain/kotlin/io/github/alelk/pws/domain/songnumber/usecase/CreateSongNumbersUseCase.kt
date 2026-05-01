@@ -28,7 +28,7 @@ class CreateSongNumbersUseCase(
         for (link in links) {
           writeRepository.create(bookId, link).mapLeft { err ->
             when (err) {
-              is CreateError.AlreadyExists -> error("impossible state: link $link exists during creation")
+              is CreateError.AlreadyExists -> BulkCreateError.UnknownError(message = "illegal state: link $link exists during creation")
               is CreateError.ValidationError -> BulkCreateError.ValidationError(err.message)
               is CreateError.UnknownError -> BulkCreateError.UnknownError(err.cause, err.message)
             }

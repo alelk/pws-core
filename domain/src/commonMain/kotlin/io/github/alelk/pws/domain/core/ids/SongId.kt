@@ -1,5 +1,9 @@
 package io.github.alelk.pws.domain.core.ids
 
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
+import io.github.alelk.pws.domain.core.error.InvalidInputError
 import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmInline
 
@@ -16,6 +20,19 @@ value class SongId(val value: Long): Comparable<SongId> {
 
   companion object {
     fun parse(string: String): SongId =
-      SongId(requireNotNull(string.toLongOrNull()) { "song id must be a positive long number" })
+      parseValidated(string).fold(
+        ifLeft = { error -> throw IllegalArgumentException(error.message) },
+        ifRight = { it }
+      )
+
+    fun parseValidated(string: String): Either<InvalidInputError, SongId> {
+      val id = string.toLongOrNull()
+        ?: return InvalidInputError("songId", "song id must be a non-negative long number: '$string'").left()
+      return if (id >= 0) {
+        SongId(id).right()
+      } else {
+        InvalidInputError("songId", "song id must be non-negative: '$string'").left()
+      }
+    }
   }
 }

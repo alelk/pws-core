@@ -26,16 +26,16 @@ class OverrideSongUseCase(
   private val txRunner: TransactionRunner
 ) {
   suspend operator fun invoke(userId: UserId, command: OverrideSongCommand): Either<UpdateError, MergedSongDetail> {
-    txRunner.inRoTransaction { songReadRepository.get(command.songId) }
-      ?: return Either.Left(UpdateError.NotFound)
-
-    if (!command.hasChanges()) {
-      return Either.Left(UpdateError.ValidationError("No changes specified in override command"))
-    }
-
     return txRunner.inRwTransaction {
+      songReadRepository.get(command.songId)
+        ?: return@inRwTransaction Either.Left(UpdateError.NotFound)
+
+      if (!command.hasChanges()) {
+        return@inRwTransaction Either.Left(UpdateError.ValidationError("No changes specified in override command"))
+      }
+
       overrideWriteRepository.overrideSong(userId, command).flatMap {
-        getMergedSongDetail(userId, command.songId).mapLeft {
+        getMergedSongDetail.inCurrentTransaction(userId, command.songId).mapLeft {
           UpdateError.UnknownError(null, "Failed to get merged song after override: ${it.message}")
         }
       }

@@ -36,7 +36,7 @@ class ReplaceAllBookSongNumbersUseCase(
         for (link in linksToUpdate) {
           writeRepository.update(bookId, link).mapLeft { err ->
             when (err) {
-              is UpdateError.NotFound -> error("illegal state: updating song number not found: $bookId $link")
+              is UpdateError.NotFound -> ReplaceAllError.UnknownError(message = "illegal state: updating song number not found: $bookId $link")
               is UpdateError.ValidationError -> ReplaceAllError.ValidationError(err.message)
               is UpdateError.UnknownError -> ReplaceAllError.UnknownError(err.cause, err.message)
             }
@@ -45,7 +45,7 @@ class ReplaceAllBookSongNumbersUseCase(
         for (link in linksToCreate) {
           writeRepository.create(bookId, link).mapLeft { err ->
             when (err) {
-              is CreateError.AlreadyExists -> error("illegal state: creating song number already exists: $bookId $link")
+              is CreateError.AlreadyExists -> ReplaceAllError.UnknownError(message = "illegal state: creating song number already exists: $bookId $link")
               is CreateError.ValidationError -> ReplaceAllError.ValidationError(err.message)
               is CreateError.UnknownError -> ReplaceAllError.UnknownError(err.cause, err.message)
             }
@@ -54,7 +54,7 @@ class ReplaceAllBookSongNumbersUseCase(
         for (link in linksToDelete) {
           writeRepository.delete(bookId, link.songId).mapLeft { err ->
             when (err) {
-              is DeleteError.NotFound -> error("illegal state: deleting song number not found: $bookId $link")
+              is DeleteError.NotFound -> ReplaceAllError.UnknownError(message = "illegal state: deleting song number not found: $bookId $link")
               is DeleteError.ValidationError -> ReplaceAllError.ValidationError(err.message)
               is DeleteError.UnknownError -> ReplaceAllError.UnknownError(err.cause, err.message)
             }

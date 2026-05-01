@@ -134,7 +134,10 @@ class SettingsScreenModel(
 
         runCatching {
           val priority = if (enabled) lastKnownPriorities[id]?.takeIf { it > 0 } ?: DEFAULT_ENABLED_PRIORITY else 0
-          updateBookStatisticUseCase(UpdateBookStatisticCommand(id = id, priority = priority))
+          updateBookStatisticUseCase(UpdateBookStatisticCommand(id = id, priority = priority)).fold(
+            ifLeft = { throw IllegalStateException(it.message) },
+            ifRight = { it }
+          )
         }.onFailure {
           updateContent {
             copy(books = books.map { if (it.id == id) it.copy(enabled = !enabled) else it })

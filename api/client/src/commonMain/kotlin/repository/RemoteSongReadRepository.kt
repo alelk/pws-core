@@ -24,6 +24,13 @@ class RemoteSongReadRepository(private val api: SongApi) : SongReadRepository {
       sort = sort.toDto()
     ).map { it.toDomain() }
 
+  override suspend fun getManyByIds(ids: Set<SongId>): List<SongSummary> {
+    if (ids.isEmpty()) return emptyList()
+    return api.list(sort = SongSort.ById.toDto())
+      .map { it.toDomain() }
+      .filter { it.id in ids }
+  }
+
   override suspend fun exists(id: SongId): Boolean =
     api.get(id.toDto()) != null
 }
