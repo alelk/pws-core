@@ -1,5 +1,13 @@
 # PWS Android
 
+# [2.23.0](https://github.com/alelk/pws-core/compare/v2.22.0...v2.23.0) (2026-05-03)
+
+
+### Features
+
+* Implement testTagsAsResourceId modifier for accessibility in Compose components ([677ecf8](https://github.com/alelk/pws-core/commit/677ecf8a009f06816c0d6b60cc86fad48085f460))
+* Refactor iOS dependencies to use a shared iosMain configuration ([1af1a77](https://github.com/alelk/pws-core/commit/1af1a77278bd260c1e49d2eaa38fe135ac18c4df))
+
 # [2.22.0](https://github.com/alelk/pws-core/compare/v2.21.0...v2.22.0) (2026-05-01)
 
 
