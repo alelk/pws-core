@@ -1,17 +1,21 @@
 package io.github.alelk.pws.features.components
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 
 /**
- * Wrapper around [ModalBottomSheet] to isolate Material3 API drift between versions.
+ * Wrapper around [ModalBottomSheet].
  *
- * Rationale: Compose Material3 has changed bottom-sheet state APIs multiple times.
- * We keep a minimal API here that works across versions.
+ * Sets testTagsAsResourceId on the content root so that Compose testTags inside
+ * the sheet are accessible via resource-id (needed by Maestro `id:` selectors).
+ * ModalBottomSheet renders in a separate window and does not inherit the flag
+ * set in MainActivity.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,7 +25,6 @@ fun AppModalBottomSheet(
   containerColor: Color,
   content: @Composable () -> Unit
 ) {
-  // Keep a stable reference to content lambda to reduce recompositions in some versions.
   val stableContent = remember(content) { content }
 
   ModalBottomSheet(
@@ -29,6 +32,8 @@ fun AppModalBottomSheet(
     sheetState = sheetState,
     containerColor = containerColor
   ) {
-    stableContent()
+    Box(modifier = Modifier.testTagsAsResourceId()) {
+      stableContent()
+    }
   }
 }

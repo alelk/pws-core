@@ -57,8 +57,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import io.github.alelk.pws.features.components.testTagsAsResourceId
+
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.registry.ScreenRegistry
 import cafe.adriel.voyager.core.screen.Screen
@@ -198,12 +201,13 @@ fun TagsContent(
         FloatingActionButton(
           onClick = { 
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            onEvent(TagsEvent.AddTagClicked) 
-          }
+            onEvent(TagsEvent.AddTagClicked)
+          },
+          modifier = Modifier.testTag("action:add-tag")
         ) {
           Icon(
             imageVector = Icons.Default.Add,
-            contentDescription = stringResource(Res.string.tags_add)
+            contentDescription = null
           )
         }
       }
@@ -314,6 +318,7 @@ private fun TagListItem(
   Surface(
     modifier = Modifier
       .fillMaxWidth()
+      .testTag("tag-row-${tag.name}")
       .clickable(onClick = {
         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         onClick()
@@ -405,13 +410,15 @@ private fun TagDialog(
       )
     },
     text = {
-      Column {
+      Column(modifier = Modifier.testTagsAsResourceId()) {
         OutlinedTextField(
           value = name,
           onValueChange = { name = it },
           label = { Text(stringResource(Res.string.tags_dialog_name)) },
           singleLine = true,
-          modifier = Modifier.fillMaxWidth()
+          modifier = Modifier
+            .fillMaxWidth()
+            .testTag("field:tag-name")
         )
 
         Spacer(Modifier.height(MaterialTheme.spacing.lg))
@@ -445,8 +452,9 @@ private fun TagDialog(
       TextButton(
         onClick = { 
           haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-          onSave(name, selectedColor) 
+          onSave(name, selectedColor)
         },
+        modifier = Modifier.testTagsAsResourceId().testTag("action:save-tag"),
         enabled = name.isNotBlank()
       ) {
         Text(stringResource(Res.string.tags_save))

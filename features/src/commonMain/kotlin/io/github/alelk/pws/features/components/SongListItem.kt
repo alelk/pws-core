@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
@@ -60,6 +61,7 @@ fun SongListItem(
   Surface(
     modifier = modifier
       .fillMaxWidth()
+      .testTag("song-row-$number")
       .clickableWithScale(onClick = {
         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         onClick()
@@ -155,8 +157,7 @@ fun NumberBadge(
       .size(40.dp)
       .clip(RoundedCornerShape(8.dp))
       .background(MaterialTheme.colorScheme.primaryContainer)
-      .semantics { contentDescription = "Song number $number" },
-    contentAlignment = Alignment.Center
+      .semantics { contentDescription = "Song number $number" },    contentAlignment = Alignment.Center
   ) {
     Text(
       text = number.toString(),
@@ -184,6 +185,7 @@ fun SwipeableSongItem(
   Surface(
     modifier = modifier
       .fillMaxWidth()
+      .testTag("song-row-$number")
       .clickableWithScale(onClick = {
         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         onClick()

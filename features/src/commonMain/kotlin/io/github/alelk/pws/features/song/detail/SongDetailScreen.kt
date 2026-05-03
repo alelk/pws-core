@@ -42,6 +42,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -335,8 +336,8 @@ fun SongDetailContent(
           }
           // "More actions" button — visible only when content loaded
           if (state is SongDetailUiState.Content) {
-            IconButton(onClick = { showActionsSheet = true }) {
-              Icon(Icons.Filled.MoreVert, contentDescription = stringResource(Res.string.song_detail_actions))
+            IconButton(onClick = { showActionsSheet = true }, modifier = Modifier.testTag("action:more-actions")) {
+              Icon(Icons.Filled.MoreVert, contentDescription = null)
             }
           }
         }
@@ -353,11 +354,11 @@ fun SongDetailContent(
           containerColor = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
           contentColor = if (isFavorite) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
           elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation(),
-          modifier = Modifier.padding(bottom = bottomInset + 12.dp)
+          modifier = Modifier.padding(bottom = bottomInset + 12.dp).testTag("action:toggle-favorite")
         ) {
           Icon(
             imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-            contentDescription = if (isFavorite) stringResource(Res.string.song_detail_remove_favorite) else stringResource(Res.string.song_detail_add_favorite)
+            contentDescription = null
           )
         }
       }
@@ -1185,12 +1186,12 @@ private fun SongActionsSheet(
     )
 
     ActionItem(
-      icon = { Icon(Icons.Filled.Edit, contentDescription = null) },
+      icon = { Icon(Icons.Filled.Edit, contentDescription = null, modifier = Modifier.testTag("action:edit-song")) },
       label = stringResource(Res.string.song_detail_action_edit),
       onClick = onEditSong
     )
     ActionItem(
-      icon = { Icon(Icons.AutoMirrored.Filled.Label, contentDescription = null) },
+      icon = { Icon(Icons.AutoMirrored.Filled.Label, contentDescription = null, modifier = Modifier.testTag("action:edit-tags")) },
       label = stringResource(Res.string.song_detail_action_edit_tags),
       onClick = onEditTags
     )
@@ -1328,7 +1329,10 @@ private fun TagEditorSheet(
     ) {
       TextButton(onClick = onDismiss) { Text(stringResource(Res.string.tags_cancel)) }
       Spacer(Modifier.width(spacing.sm))
-      Button(onClick = { onSave(selected) }) { Text(stringResource(Res.string.tags_save)) }
+      Button(
+        onClick = { onSave(selected) },
+        modifier = Modifier.testTag("action:save-song-tags")
+      ) { Text(stringResource(Res.string.tags_save)) }
     }
   }
 }

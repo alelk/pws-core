@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.testTag
 import cafe.adriel.voyager.navigator.tab.Tab
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.nav_books
@@ -108,6 +109,7 @@ fun AppNavigationBar(
 
       NavigationBarItem(
         selected = selected,
+        modifier = Modifier.testTag(destination?.route ?: label),
         onClick = {
           haptic.performHapticFeedback(HapticFeedbackType.LongPress)
           if (selected) {
@@ -118,10 +120,12 @@ fun AppNavigationBar(
         },
         icon = {
           val icons = destination
+          // contentDescription uses the stable route value (locale-independent) so that
+          // automated tests can locate nav items reliably regardless of device language.
           Icon(
             imageVector = if (selected) (icons?.selectedIcon ?: NavDestination.Home.selectedIcon)
             else (icons?.unselectedIcon ?: NavDestination.Home.unselectedIcon),
-            contentDescription = label
+            contentDescription = destination?.route ?: label
           )
         },
         label = {

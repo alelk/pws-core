@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
@@ -45,7 +46,7 @@ fun SearchField(
   TextField(
     value = query,
     onValueChange = onQueryChange,
-    modifier = modifier.fillMaxWidth(),
+    modifier = modifier.fillMaxWidth().testTag("field:search"),
     enabled = enabled,
     placeholder = {
       Text(

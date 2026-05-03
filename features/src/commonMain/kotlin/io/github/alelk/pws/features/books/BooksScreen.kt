@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -140,7 +141,7 @@ private fun BooksGrid(
 
   LazyVerticalGrid(
     columns = GridCells.Adaptive(minSize = 160.dp),
-    modifier = modifier.fillMaxSize(),
+    modifier = modifier.fillMaxSize().testTag("books-grid"),
     contentPadding = PaddingValues(
       horizontal = MaterialTheme.spacing.screenHorizontal,
       vertical = MaterialTheme.spacing.md

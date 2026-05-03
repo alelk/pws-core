@@ -42,13 +42,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -159,9 +162,10 @@ fun SongEditContent(
                   haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                   onEvent(SongEditEvent.SaveClicked) 
                 },
-                enabled = state.hasUnsavedChanges
+                enabled = state.hasUnsavedChanges,
+                modifier = Modifier.testTag("action:save")
               ) {
-                Icon(Icons.Default.Check, contentDescription = stringResource(Res.string.tags_save))
+                Icon(Icons.Default.Check, contentDescription = null)
               }
             }
           }
@@ -259,7 +263,9 @@ private fun EditForm(
       value = state.title,
       onValueChange = { onEvent(SongEditEvent.TitleChanged(it)) },
       label = { Text(stringResource(Res.string.song_edit_label_title)) },
-      modifier = Modifier.fillMaxWidth(),
+      modifier = Modifier
+        .fillMaxWidth()
+        .testTag("field:song-edit-title"),
       singleLine = true,
       isError = state.validationMessage != null && state.title.isBlank()
     )

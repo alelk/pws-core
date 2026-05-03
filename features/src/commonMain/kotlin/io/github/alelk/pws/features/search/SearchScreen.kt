@@ -37,8 +37,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.registry.rememberScreen
@@ -249,10 +248,12 @@ private fun SearchSuggestionItem(
 ) {
   val booksByNumber = suggestion.booksByNumber
   val haptic = LocalHapticFeedback.current
+  val itemCd = suggestion.primarySongNumber?.let { "song-row-$it" } ?: "song-row-unknown"
 
   Surface(
     modifier = Modifier
       .fillMaxWidth()
+      .testTag(itemCd)
       .clickable(onClick = {
         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         onClick()
