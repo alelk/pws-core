@@ -63,9 +63,13 @@ kotlin {
       dependsOn(commonMain.get())
     }
     androidMain.get().dependsOn(mobileMain)
-    iosX64Main.get().dependsOn(mobileMain)
-    iosArm64Main.get().dependsOn(mobileMain)
-    iosSimulatorArm64Main.get().dependsOn(mobileMain)
+
+    val iosMain by creating {
+      dependsOn(mobileMain)
+    }
+    iosX64Main.get().dependsOn(iosMain)
+    iosArm64Main.get().dependsOn(iosMain)
+    iosSimulatorArm64Main.get().dependsOn(iosMain)
 
     val skikoMain by creating {
       dependsOn(commonMain.get())
