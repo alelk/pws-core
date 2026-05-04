@@ -6,7 +6,7 @@ on:
       min_versions_to_keep:
         description: 'Количество последних версий, которые нужно оставить (на каждый пакет)'
         required: true
-        default: '5'
+        default: 5
         type: number
       ignore_versions:
         description: 'Regex для версий, которые нельзя удалять (например: "^2\\.24\\.")'
@@ -94,9 +94,12 @@ jobs:
 
             // ── main ─────────────────────────────────────────────────────
             const allPackages = await listPackages();
-            const packages    = allPackages.filter(p => p.name.startsWith(PKG_PREFIX));
+            const packages    = allPackages.filter(p =>
+              p.name.startsWith(PKG_PREFIX) &&
+              p.repository?.name === context.repo.repo
+            );
 
-            console.log(`\nFound ${packages.length} packages with prefix "${PKG_PREFIX}"\n`);
+            console.log(`\nFound ${packages.length} packages linked to "${context.repo.repo}" with prefix "${PKG_PREFIX}"\n`);
 
             let totalToDelete = 0;
             let totalDeleted  = 0;
@@ -107,14 +110,19 @@ jobs:
               // newest first
               versions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
+              // pre-release: содержит -rc., -alpha., -beta., -snapshot. и т.п.
+              const isPreRelease = (name) => /-(rc|alpha|beta|snapshot)[.\d]/i.test(name);
+
               // split: kept vs deletable
+              // Стабильные релизы всегда сохраняются.
+              // Из пре-релизов оставляем minToKeep последних, остальные удаляем.
               let kept = 0;
               const toDelete = [];
               for (const v of versions) {
+                if (!isPreRelease(v.name)) continue; // стабильный релиз — не трогаем
                 const ignored = ignoreRegex?.test(v.name) ?? false;
                 if (ignored || kept < minToKeep) {
                   if (!ignored) kept++;
-                  // keep this version
                 } else {
                   toDelete.push(v);
                 }
