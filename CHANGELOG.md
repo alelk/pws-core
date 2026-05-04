@@ -1,5 +1,12 @@
 # PWS Android
 
+# [2.27.0-rc.1](https://github.com/alelk/pws-core/compare/v2.26.0...v2.27.0-rc.1) (2026-05-04)
+
+
+### Features
+
+* Enhance lyric rendering with repeat handling; update app name ([15919a2](https://github.com/alelk/pws-core/commit/15919a247bcf0636a8d77726e3784277decf27c1))
+
 # [2.26.0](https://github.com/alelk/pws-core/compare/v2.25.0...v2.26.0) (2026-05-04)
 
 
