@@ -1,5 +1,12 @@
 # PWS Android
 
+# [2.25.0](https://github.com/alelk/pws-core/compare/v2.24.0...v2.25.0) (2026-05-04)
+
+
+### Features
+
+* Fix conflict ([fb27136](https://github.com/alelk/pws-core/commit/fb27136a291e345da81d264ee75a356c3f60445b))
+
 # [2.24.0](https://github.com/alelk/pws-core/compare/v2.23.0...v2.24.0) (2026-05-04)
 
 
