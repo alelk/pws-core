@@ -1,5 +1,13 @@
 # PWS Android
 
+# [2.26.0-rc.1](https://github.com/alelk/pws-core/compare/v2.25.0...v2.26.0-rc.1) (2026-05-04)
+
+
+### Features
+
+* Enhance package cleanup script ([e860ead](https://github.com/alelk/pws-core/commit/e860eadd0dd46d31f5f0221950a0b0f37048eb86))
+* Update version to 2.25.0 and add cleanup workflow for old package versions ([8e064c0](https://github.com/alelk/pws-core/commit/8e064c0af2f50eca0f21cbf7f110fe02723ebd5d))
+
 # [2.25.0](https://github.com/alelk/pws-core/compare/v2.24.0...v2.25.0) (2026-05-04)
 
 
