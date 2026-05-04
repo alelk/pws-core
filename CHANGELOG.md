@@ -1,5 +1,12 @@
 # PWS Android
 
+# [2.24.0](https://github.com/alelk/pws-core/compare/v2.23.0...v2.24.0) (2026-05-04)
+
+
+### Features
+
+* Implement Book and SongReference write repositories with CRUD operations ([62115a1](https://github.com/alelk/pws-core/commit/62115a10343168de298d8b30d326a351f7c5a31f))
+
 # [2.23.0](https://github.com/alelk/pws-core/compare/v2.22.0...v2.23.0) (2026-05-03)
 
 
