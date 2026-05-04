@@ -22,7 +22,6 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FormatSize
-import androidx.compose.material.icons.filled.Label
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
@@ -52,7 +51,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.registry.ScreenRegistry
@@ -66,6 +64,7 @@ import io.github.alelk.pws.domain.core.ids.SongNumberId
 import io.github.alelk.pws.domain.core.ids.TagId
 import io.github.alelk.pws.domain.song.lyric.Bridge
 import io.github.alelk.pws.domain.song.lyric.Chorus
+import io.github.alelk.pws.domain.song.lyric.Lyric
 import io.github.alelk.pws.domain.song.lyric.LyricPart
 import io.github.alelk.pws.domain.song.lyric.Verse
 import io.github.alelk.pws.domain.song.model.SongDetail
@@ -556,6 +555,41 @@ private fun TextSettingsSheet(
   }
 }
 
+// ---------------------------------------------------------------------------
+// Lyric render item — one entry in the ordered rendering list
+// ---------------------------------------------------------------------------
+
+private data class LyricRenderItem(
+  val part: LyricPart,
+  val isRepeat: Boolean,    // second+ occurrence of the same part instance
+  val verseNumber: Int?,    // 1-based index for Verse
+  val chorusIndex: Int?,    // 1-based index among multiple Chorus parts (null if only one)
+  val bridgeIndex: Int?,    // 1-based index among multiple Bridge parts (null if only one)
+)
+
+/** Expands a [Lyric] into an ordered list of render items based on [LyricPart.numbers]. */
+private fun Lyric.toRenderItems(): List<LyricRenderItem> {
+  val maxPos = flatMap { it.numbers }.maxOrNull() ?: return emptyList()
+  val posToPartMap: Map<Int, LyricPart> = flatMap { part -> part.numbers.map { pos -> pos to part } }.toMap()
+
+  val verses = filterIsInstance<Verse>()
+  val choruses = filterIsInstance<Chorus>()
+  val bridges = filterIsInstance<Bridge>()
+
+  val seenParts = mutableSetOf<LyricPart>()
+  return (1..maxPos).mapNotNull { pos ->
+    val part = posToPartMap[pos] ?: return@mapNotNull null
+    val isRepeat = !seenParts.add(part)
+    LyricRenderItem(
+      part = part,
+      isRepeat = isRepeat,
+      verseNumber = if (part is Verse) verses.indexOf(part) + 1 else null,
+      chorusIndex = if (part is Chorus && choruses.size > 1) choruses.indexOf(part) + 1 else null,
+      bridgeIndex = if (part is Bridge && bridges.size > 1) bridges.indexOf(part) + 1 else null,
+    )
+  }
+}
+
 @Composable
 private fun SongContent(
   song: SongDetail,
@@ -569,7 +603,7 @@ private fun SongContent(
   modifier: Modifier = Modifier
 ) {
   val spacing = MaterialTheme.spacing
-  val verses = remember(song.lyric) { song.lyric.filterIsInstance<Verse>() }
+  val renderItems = remember(song.lyric) { song.lyric.toRenderItems() }
   LazyColumn(
     modifier = modifier.fillMaxSize(),
     contentPadding = PaddingValues(
@@ -594,11 +628,13 @@ private fun SongContent(
     }
 
     // Lyrics
-    items(song.lyric) { part ->
-      val verseNumber = if (part is Verse) verses.indexOf(part) + 1 else null
+    items(renderItems) { item ->
       LyricPartView(
-        part = part,
-        verseNumber = verseNumber,
+        part = item.part,
+        verseNumber = item.verseNumber,
+        chorusIndex = item.chorusIndex,
+        bridgeIndex = item.bridgeIndex,
+        isRepeat = item.isRepeat,
         fontScale = fontScale,
         expandedText = expandedText
       )
@@ -720,11 +756,40 @@ private fun SongHeader(song: SongDetail) {
 private fun LyricPartView(
   part: LyricPart,
   verseNumber: Int?,
+  chorusIndex: Int?,
+  bridgeIndex: Int?,
+  isRepeat: Boolean,
   fontScale: Float,
   expandedText: Boolean,
 ) {
   val baseFontSize = 18.sp * fontScale
   val lineHeight = baseFontSize * 1.7f
+
+  // When repeat chorus/bridge and option is OFF — show only a reference label
+  if (isRepeat && !expandedText && part !is Verse) {
+    Box(modifier = Modifier.widthIn(max = 600.dp).fillMaxWidth()) {
+      val labelBase = when (part) {
+        is Chorus -> stringResource(Res.string.song_detail_label_chorus)
+        is Bridge -> stringResource(Res.string.song_detail_label_bridge)
+        is Verse -> ""
+      }
+      val index = when (part) {
+        is Chorus -> chorusIndex
+        is Bridge -> bridgeIndex
+        is Verse -> null
+      }
+      val label = if (index != null) "[$labelBase $index]" else "[$labelBase]"
+      Text(
+        text = label,
+        style = MaterialTheme.typography.bodyMedium.copy(
+          fontSize = baseFontSize * 0.85f,
+          fontStyle = FontStyle.Italic
+        ),
+        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
+      )
+    }
+    return
+  }
 
   Box(modifier = Modifier.widthIn(max = 600.dp).fillMaxWidth()) {
     when (part) {
@@ -750,13 +815,16 @@ private fun LyricPartView(
               color = MaterialTheme.colorScheme.onBackground
             ),
             modifier = Modifier.weight(1f),
-            maxLines = if (expandedText) Int.MAX_VALUE else 4,
-            overflow = TextOverflow.Ellipsis,
           )
         }
       }
 
       is Chorus -> {
+        val chorusLabel = if (chorusIndex != null) {
+          "${stringResource(Res.string.song_detail_label_chorus)} $chorusIndex"
+        } else {
+          stringResource(Res.string.song_detail_label_chorus)
+        }
         Surface(
           color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.45f),
           shape = MaterialTheme.shapes.large,
@@ -764,7 +832,7 @@ private fun LyricPartView(
         ) {
           IntrinsicChorusView(
             text = part.text,
-            label = stringResource(Res.string.song_detail_label_chorus),
+            label = chorusLabel,
             fontSize = baseFontSize,
             lineHeight = lineHeight,
             accentColor = MaterialTheme.colorScheme.primary
@@ -773,6 +841,11 @@ private fun LyricPartView(
       }
 
       is Bridge -> {
+        val bridgeLabel = if (bridgeIndex != null) {
+          "${stringResource(Res.string.song_detail_label_bridge)} $bridgeIndex"
+        } else {
+          stringResource(Res.string.song_detail_label_bridge)
+        }
         Surface(
           color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.35f),
           shape = MaterialTheme.shapes.large,
@@ -780,7 +853,7 @@ private fun LyricPartView(
         ) {
           IntrinsicChorusView(
             text = part.text,
-            label = stringResource(Res.string.song_detail_label_bridge),
+            label = bridgeLabel,
             fontSize = baseFontSize,
             lineHeight = lineHeight,
             accentColor = MaterialTheme.colorScheme.tertiary

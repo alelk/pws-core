@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Псаломник</string>
+    <string name="app_name">P&amp;W Songs</string>
 
     <string name="nav_home">Головна</string>
     <string name="nav_books">Збірники</string>
@@ -185,7 +185,7 @@
     <string name="song_detail_action_jump">Перейти до номера</string>
     <string name="song_detail_action_share">Поділитися</string>
     <string name="song_detail_action_copy">Скопіювати текст</string>
-    <string name="song_detail_expand_text">Розгорнутий текст</string>
+    <string name="song_detail_expand_text">Повторювати приспів</string>
     <string name="song_detail_tags_sheet_title">Теги пісні</string>
     <string name="song_detail_tags_empty">Немає доступних тегів</string>
     <string name="song_detail_jump_empty">Введіть число</string>

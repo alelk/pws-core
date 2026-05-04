@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Psalmist</string>
+    <string name="app_name">P&amp;W Songs</string>
 
     <string name="nav_home">Home</string>
     <string name="nav_books">Books</string>
@@ -186,7 +186,7 @@
     <string name="song_detail_action_jump">Jump to number</string>
     <string name="song_detail_action_share">Share</string>
     <string name="song_detail_action_copy">Copy text</string>
-    <string name="song_detail_expand_text">Expanded text</string>
+    <string name="song_detail_expand_text">Repeat chorus</string>
     <string name="song_detail_tags_sheet_title">Song tags</string>
     <string name="song_detail_tags_empty">No tags available</string>
     <string name="song_detail_jump_empty">Enter a number</string>

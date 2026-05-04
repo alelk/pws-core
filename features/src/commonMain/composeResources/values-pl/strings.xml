@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Psałterz</string>
+    <string name="app_name">P&amp;W Songs</string>
 
     <string name="nav_home">Główna</string>
     <string name="nav_books">Śpiewniki</string>
@@ -180,7 +180,7 @@
     <string name="song_detail_action_jump">Przejdź do numeru</string>
     <string name="song_detail_action_share">Udostępnij</string>
     <string name="song_detail_action_copy">Kopiuj tekst</string>
-    <string name="song_detail_expand_text">Rozwinięty tekst</string>
+    <string name="song_detail_expand_text">Powtarzaj refren</string>
     <string name="song_detail_tags_sheet_title">Kategorie pieśni</string>
     <string name="song_detail_tags_empty">Brak dostępnych kategorii</string>
     <string name="song_detail_jump_empty">Wpisz liczbę</string>
