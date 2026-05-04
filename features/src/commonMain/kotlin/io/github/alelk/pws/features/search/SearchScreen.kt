@@ -134,12 +134,15 @@ fun SearchContent(
         canNavigateBack = navigator.canPop,
         onNavigateBack = { navigator.pop() },
         actions = {
-          IconButton(onClick = { navigator.push(ScreenRegistry.get(SharedScreens.Settings)) }) {
-            Icon(
-              imageVector = Icons.Filled.Settings,
-              contentDescription = stringResource(Res.string.settings_open)
-            )
-          }
+          IconButton(
+              onClick = { navigator.push(ScreenRegistry.get(SharedScreens.Settings)) },
+              modifier = Modifier.testTag("action:open-settings")
+            ) {
+              Icon(
+                imageVector = Icons.Filled.Settings,
+                contentDescription = stringResource(Res.string.settings_open)
+              )
+            }
         }
       )
     }

@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Dialpad
@@ -52,6 +53,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -151,7 +153,10 @@ fun HomeContent(
         canNavigateBack = false,
         scrollBehavior = scrollBehavior,
         actions = {
-          IconButton(onClick = { navigator.push(ScreenRegistry.get(SharedScreens.Settings)) }) {
+          IconButton(
+              onClick = { navigator.push(ScreenRegistry.get(SharedScreens.Settings)) },
+              modifier = Modifier.testTag("action:open-settings")
+            ) {
             Icon(
               imageVector = Icons.Filled.Settings,
               contentDescription = stringResource(Res.string.settings_open)
@@ -244,40 +249,43 @@ fun HomeContent(
 
           // Recently viewed songs section
           if (state.recentSongs.isNotEmpty()) {
-            item(span = { GridItemSpan(maxLineSpan) }) {
-              Spacer(Modifier.height(MaterialTheme.spacing.md))
-              Text(
-                text = stringResource(Res.string.home_recently_opened),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.semantics { heading() }
-              )
-            }
+          item(span = { GridItemSpan(maxLineSpan) }) {
+            Spacer(Modifier.height(MaterialTheme.spacing.md))
+            Text(
+              text = stringResource(Res.string.home_recently_opened),
+              style = MaterialTheme.typography.titleMedium,
+              color = MaterialTheme.colorScheme.onBackground,
+              modifier = Modifier
+                .testTag("home-section-recently-viewed")
+                .semantics { heading() }
+            )
+          }
 
-            item(span = { GridItemSpan(maxLineSpan) }) {
-              LazyRow(
-                modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(horizontal = 0.dp),
-                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)
-              ) {
-                items(
-                  items = state.recentSongs,
-                  key = { it.id }
-                ) { song ->
-                  val songScreen = when (val subject = song.subject) {
-                    is HistorySubject.BookedSong -> rememberScreen(SharedScreens.Song(subject.songNumberId))
-                    is HistorySubject.StandaloneSong -> rememberScreen(SharedScreens.SongById(subject.songId))
-                  }
-                  RecentSongCard(
-                    song = song,
-                    onClick = { 
-                      haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                      navigator.push(songScreen) 
-                    }
-                  )
+          item(span = { GridItemSpan(maxLineSpan) }) {
+            LazyRow(
+              modifier = Modifier.fillMaxWidth(),
+              contentPadding = PaddingValues(horizontal = 0.dp),
+              horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)
+            ) {
+              itemsIndexed(
+                items = state.recentSongs,
+                key = { _, song -> song.id }
+              ) { index, song ->
+                val songScreen = when (val subject = song.subject) {
+                  is HistorySubject.BookedSong -> rememberScreen(SharedScreens.Song(subject.songNumberId))
+                  is HistorySubject.StandaloneSong -> rememberScreen(SharedScreens.SongById(subject.songId))
                 }
+                RecentSongCard(
+                  song = song,
+                  onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    navigator.push(songScreen)
+                  },
+                  modifier = Modifier.testTag("recent-song-card-$index")
+                )
               }
             }
+          }
           }
 
           // Section header for books
@@ -364,13 +372,13 @@ private fun QuickActionsRow(
       icon = Icons.Default.Dialpad,
       label = stringResource(Res.string.home_quick_number),
       onClick = onNumberSearchClick,
-      modifier = Modifier.weight(1f)
+      modifier = Modifier.weight(1f).testTag("action:number-search")
     )
     QuickActionChip(
       icon = Icons.Default.TextFields,
       label = stringResource(Res.string.home_quick_text),
       onClick = onTextSearchClick,
-      modifier = Modifier.weight(1f)
+      modifier = Modifier.weight(1f).testTag("action:text-search")
     )
     QuickActionChip(
       icon = Icons.Default.History,

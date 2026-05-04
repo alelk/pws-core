@@ -25,6 +25,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -98,22 +99,28 @@ fun SearchBarWithSuggestions(
         Box(
           modifier = Modifier
             .fillMaxWidth()
-            .padding(MaterialTheme.spacing.lg),
+            .padding(MaterialTheme.spacing.lg)
+            .testTagsAsResourceId(),
           contentAlignment = Alignment.Center
         ) {
           CircularProgressIndicator(modifier = Modifier.size(24.dp))
         }
       } else {
-        suggestions.forEachIndexed { index, suggestion ->
-          SuggestionDropdownItem(
-            suggestion = suggestion,
-            onClick = { onSuggestionClick(suggestion) }
-          )
-          if (index < suggestions.lastIndex) {
-            HorizontalDivider(
-              modifier = Modifier.padding(start = 56.dp),
-              color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-            )
+        Box(modifier = Modifier.testTagsAsResourceId()) {
+          Column {
+            suggestions.forEachIndexed { index, suggestion ->
+              SuggestionDropdownItem(
+                suggestion = suggestion,
+                onClick = { onSuggestionClick(suggestion) },
+                modifier = Modifier.testTag("home-suggestion-$index")
+              )
+              if (index < suggestions.lastIndex) {
+                HorizontalDivider(
+                  modifier = Modifier.padding(start = 56.dp),
+                  color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                )
+              }
+            }
           }
         }
       }
@@ -135,7 +142,8 @@ private fun SearchInputField(
     onValueChange = onQueryChange,
     modifier = Modifier
       .fillMaxWidth()
-      .focusRequester(focusRequester),
+      .focusRequester(focusRequester)
+      .testTag("field:home-search"),
     placeholder = {
       Text(
         text = placeholder,
@@ -186,10 +194,12 @@ private fun SearchInputField(
 @Composable
 private fun SuggestionDropdownItem(
   suggestion: SearchSuggestion,
-  onClick: () -> Unit
+  onClick: () -> Unit,
+  modifier: Modifier = Modifier
 ) {
   val haptic = LocalHapticFeedback.current
   DropdownMenuItem(
+    modifier = modifier,
     text = {
       Row(
         modifier = Modifier.fillMaxWidth(),

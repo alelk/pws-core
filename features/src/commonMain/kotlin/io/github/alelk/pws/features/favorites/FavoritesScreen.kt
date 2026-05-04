@@ -38,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -127,12 +128,15 @@ fun FavoritesContent(
           )
         },
         actions = {
-          IconButton(onClick = { navigator.push(ScreenRegistry.get(SharedScreens.Settings)) }) {
-            Icon(
-              imageVector = Icons.Filled.Settings,
-              contentDescription = stringResource(Res.string.settings_open)
-            )
-          }
+          IconButton(
+              onClick = { navigator.push(ScreenRegistry.get(SharedScreens.Settings)) },
+              modifier = Modifier.testTag("action:open-settings")
+            ) {
+              Icon(
+                imageVector = Icons.Filled.Settings,
+                contentDescription = stringResource(Res.string.settings_open)
+              )
+            }
           if (state is FavoritesUiState.Content) {
             IconButton(onClick = { 
               haptic.performHapticFeedback(HapticFeedbackType.LongPress)

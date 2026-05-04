@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.registry.rememberScreen
 import cafe.adriel.voyager.core.registry.ScreenRegistry
@@ -56,6 +57,7 @@ import io.github.alelk.pws.features.resources.history_empty_title
 import io.github.alelk.pws.features.resources.history_loading
 import io.github.alelk.pws.features.resources.nav_history
 import io.github.alelk.pws.features.resources.settings_open
+import io.github.alelk.pws.features.components.testTagsAsResourceId
 import io.github.alelk.pws.features.theme.spacing
 import kotlin.time.ExperimentalTime
 import org.jetbrains.compose.resources.stringResource
@@ -115,17 +117,23 @@ fun HistoryContent(
           )
         },
         actions = {
-          IconButton(onClick = { navigator.push(ScreenRegistry.get(SharedScreens.Settings)) }) {
-            Icon(
-              imageVector = Icons.Filled.Settings,
-              contentDescription = stringResource(Res.string.settings_open)
-            )
-          }
-          if (state is HistoryUiState.Content && state.canClearAll) {
-            IconButton(onClick = {
-              haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-              onClearAll()
-            }) {
+          IconButton(
+              onClick = { navigator.push(ScreenRegistry.get(SharedScreens.Settings)) },
+              modifier = Modifier.testTag("action:open-settings")
+            ) {
+              Icon(
+                imageVector = Icons.Filled.Settings,
+                contentDescription = stringResource(Res.string.settings_open)
+              )
+            }
+            if (state is HistoryUiState.Content && state.canClearAll) {
+              IconButton(
+                onClick = {
+                  haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                  onClearAll()
+                },
+                modifier = Modifier.testTag("action:clear-history")
+              ) {
               Icon(
                 imageVector = Icons.Outlined.DeleteSweep,
                 contentDescription = stringResource(Res.string.history_clear)
@@ -263,7 +271,10 @@ private fun ClearHistoryDialog(
       Text(stringResource(Res.string.history_clear_dialog_message))
     },
     confirmButton = {
-      TextButton(onClick = onConfirm) {
+      TextButton(
+        onClick = onConfirm,
+        modifier = Modifier.testTagsAsResourceId().testTag("action:confirm-clear-history")
+      ) {
         Text(stringResource(Res.string.history_clear_dialog_confirm))
       }
     },

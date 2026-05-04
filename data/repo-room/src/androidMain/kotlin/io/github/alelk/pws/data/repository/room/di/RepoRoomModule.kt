@@ -1,6 +1,7 @@
 package io.github.alelk.pws.data.repository.room.di
 
 import io.github.alelk.pws.data.repository.room.book.BookObserveRepositoryImpl
+import io.github.alelk.pws.data.repository.room.book.BookWriteRepositoryImpl
 import io.github.alelk.pws.data.repository.room.bookstatistic.BookStatisticRepositoryImpl
 import io.github.alelk.pws.data.repository.room.favorite.FavoriteRepositoryImpl
 import io.github.alelk.pws.data.repository.room.history.HistoryRepositoryImpl
@@ -13,9 +14,9 @@ import io.github.alelk.pws.data.repository.room.tag.TagRepositoryImpl
 import io.github.alelk.pws.database.PwsDatabase
 import io.github.alelk.pws.domain.book.repository.BookObserveRepository
 import io.github.alelk.pws.domain.book.repository.BookReadRepository
+import io.github.alelk.pws.domain.book.repository.BookWriteRepository
 import io.github.alelk.pws.domain.bookstatistic.repository.BookStatisticRepository
 import io.github.alelk.pws.data.repository.room.transaction.RoomTransactionRunner
-import io.github.alelk.pws.domain.core.ids.TagId
 import io.github.alelk.pws.domain.core.transaction.TransactionRunner
 import io.github.alelk.pws.domain.favorite.repository.FavoriteObserveRepository
 import io.github.alelk.pws.domain.favorite.repository.FavoriteReadRepository
@@ -30,6 +31,7 @@ import io.github.alelk.pws.domain.song.repository.SongSearchRepository
 import io.github.alelk.pws.domain.songnumber.repository.SongNumberReadRepository
 import io.github.alelk.pws.domain.songnumber.repository.SongNumberWriteRepository
 import io.github.alelk.pws.domain.songreference.repository.SongReferenceReadRepository
+import io.github.alelk.pws.domain.songreference.repository.SongReferenceWriteRepository
 import io.github.alelk.pws.domain.songtag.repository.SongTagObserveRepository
 import io.github.alelk.pws.domain.songtag.repository.SongTagReadRepository
 import io.github.alelk.pws.domain.songtag.repository.SongTagWriteRepository
@@ -52,6 +54,11 @@ val repoRoomModule = module {
   single {
     BookObserveRepositoryImpl(get<PwsDatabase>().bookDao())
   } binds arrayOf(BookObserveRepository::class, BookReadRepository::class)
+
+  // Book Write
+  single {
+    BookWriteRepositoryImpl(get<PwsDatabase>().bookDao())
+  } binds arrayOf(BookWriteRepository::class)
 
   // Book Statistic
   single {
@@ -104,13 +111,10 @@ val repoRoomModule = module {
   // SongReference
   single {
     SongReferenceRepositoryImpl(get<PwsDatabase>().songReferenceDao())
-  } binds arrayOf(SongReferenceReadRepository::class)
+  } binds arrayOf(SongReferenceReadRepository::class, SongReferenceWriteRepository::class)
 
   // SongNumber
   single {
     SongNumberRepositoryImpl(get<PwsDatabase>().songNumberDao())
   } binds arrayOf(SongNumberReadRepository::class, SongNumberWriteRepository::class)
 }
-
-
-

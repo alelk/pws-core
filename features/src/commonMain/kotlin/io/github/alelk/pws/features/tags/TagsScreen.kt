@@ -182,12 +182,15 @@ fun TagsContent(
           )
         },
         actions = {
-          IconButton(onClick = { navigator.push(ScreenRegistry.get(SharedScreens.Settings)) }) {
-            Icon(
-              imageVector = Icons.Filled.Settings,
-              contentDescription = stringResource(Res.string.settings_open)
-            )
-          }
+          IconButton(
+              onClick = { navigator.push(ScreenRegistry.get(SharedScreens.Settings)) },
+              modifier = Modifier.testTag("action:open-settings")
+            ) {
+              Icon(
+                imageVector = Icons.Filled.Settings,
+                contentDescription = stringResource(Res.string.settings_open)
+              )
+            }
         },
         scrollBehavior = scrollBehavior,
         colors = TopAppBarDefaults.topAppBarColors(

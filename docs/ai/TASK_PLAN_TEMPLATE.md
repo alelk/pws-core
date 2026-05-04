@@ -39,9 +39,9 @@ Create a new file in `docs/ai/plans/` named:
 Use priorities: `must`, `should`, `polish`.
 Use statuses: `TODO`, `DOING`, `DONE`, `BLOCKED`.
 
-| Checkbox | ID | Priority | Status | Task | Target modules/files | Acceptance criteria | Dependencies/Risks |
-|---|---|---|---|---|---|---|---|
-| [ ] | T-001 | must | TODO |  |  |  |  |
+| Checkbox | ID    | Priority | Status | Task | Target modules/files | Acceptance criteria | Dependencies/Risks |
+|----------|-------|----------|--------|------|----------------------|---------------------|--------------------|
+| [ ]      | T-001 | must     | TODO   |      |                      |                     |                    |
 
 ## Context Updates (append-only)
 
