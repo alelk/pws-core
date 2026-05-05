@@ -77,10 +77,8 @@ import io.github.alelk.pws.features.components.LoadingContent
 import io.github.alelk.pws.features.resources.*
 import io.github.alelk.pws.features.song.edit.SongEditScreen
 import io.github.alelk.pws.features.theme.spacing
-import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.parameter.parametersOf
-import kotlin.time.Duration.Companion.seconds
 
 class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
   override val key: String = "song-detail/${songNumberId.identifier}"
@@ -98,14 +96,10 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
     val allTags by viewModel.allTags.collectAsState()
     val bookNumberMap by viewModel.bookNumberMap.collectAsState()
 
-    LaunchedEffect(state) {
-      if (state is SongDetailUiState.Content) {
-        delay(5.seconds)
-        viewModel.onSongViewed()
-      }
-    }
 
     val snackbarHostState = remember { SnackbarHostState() }
+    val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
+
     LaunchedEffect(Unit) {
       viewModel.effects.collect { effect ->
         when (effect) {
@@ -113,6 +107,8 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
         }
       }
     }
+
+    val donationBoostyUrl = (state as? SongDetailUiState.Content)?.donationBoostyUrl ?: ""
 
     if (bookSongNumberIds.size > 1) {
       val initialPage = bookSongNumberIds.indexOf(currentSongNumberId).coerceAtLeast(0)
@@ -132,7 +128,12 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
         onFavoriteClick = { viewModel.onToggleFavorite() },
         onSaveTags = { viewModel.onSaveTags(it) },
         onJumpToNumber = { viewModel.resolveNumber(it) },
-        onPageChanged = { viewModel.onPageChanged(it) }
+        onPageChanged = { viewModel.onPageChanged(it) },
+        onDonationDonate = {
+          viewModel.onDonationClicked()
+          if (donationBoostyUrl.isNotBlank()) uriHandler.openUri(donationBoostyUrl)
+        },
+        onDonationDismiss = { viewModel.onDonationDismissed() },
       )
     } else {
       SongDetailContent(
@@ -148,6 +149,11 @@ class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
         onFavoriteClick = { viewModel.onToggleFavorite() },
         onSaveTags = { viewModel.onSaveTags(it) },
         onJumpToNumber = { viewModel.resolveNumber(it) },
+        onDonationDonate = {
+          viewModel.onDonationClicked()
+          if (donationBoostyUrl.isNotBlank()) uriHandler.openUri(donationBoostyUrl)
+        },
+        onDonationDismiss = { viewModel.onDonationDismissed() },
       )
     }
   }
@@ -177,7 +183,9 @@ private fun SongDetailPager(
   onFavoriteClick: () -> Unit,
   onSaveTags: (Set<TagId>) -> Unit,
   onJumpToNumber: (Int) -> SongNumberId?,
-  onPageChanged: (SongNumberId) -> Unit
+  onPageChanged: (SongNumberId) -> Unit,
+  onDonationDonate: () -> Unit = {},
+  onDonationDismiss: () -> Unit = {},
 ) {
   var currentPage by remember { mutableIntStateOf(initialPage.coerceIn(0, bookSongNumberIds.lastIndex)) }
   val focusRequester = remember { FocusRequester() }
@@ -246,7 +254,9 @@ private fun SongDetailPager(
       onJumpToNumber = onJumpToNumber,
       displayContextOverride = if (isCurrentPage) null else fallbackContext,
       onNavigatePrev = onNavigatePrev,
-      onNavigateNext = onNavigateNext
+      onNavigateNext = onNavigateNext,
+      onDonationDonate = onDonationDonate,
+      onDonationDismiss = onDonationDismiss,
     )
   }
 }
@@ -273,6 +283,8 @@ fun SongDetailContent(
   displayContextOverride: SongDetailUiState.DisplayContext? = null,
   onNavigatePrev: (() -> Unit)? = null,
   onNavigateNext: (() -> Unit)? = null,
+  onDonationDonate: () -> Unit = {},
+  onDonationDismiss: () -> Unit = {},
 ) {
   val navigator = LocalNavigator.currentOrThrow
   val clipboardManager = LocalClipboardManager.current
@@ -381,6 +393,9 @@ fun SongDetailContent(
             referenceBookContexts = referenceBookContexts,
             currentBookId = currentBookId,
             songTags = songTags,
+            showDonationCard = state.showDonationCard,
+            onDonationDonate = onDonationDonate,
+            onDonationDismiss = onDonationDismiss,
           )
         }
         SongDetailUiState.Error -> ErrorContent(
@@ -600,6 +615,9 @@ private fun SongContent(
   referenceBookContexts: Map<io.github.alelk.pws.domain.core.ids.SongId, List<SongDetailScreenModel.ReferenceBookContextUi>> = emptyMap(),
   currentBookId: io.github.alelk.pws.domain.core.ids.BookId? = null,
   songTags: List<Tag<TagId>> = emptyList(),
+  showDonationCard: Boolean = false,
+  onDonationDonate: () -> Unit = {},
+  onDonationDismiss: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   val spacing = MaterialTheme.spacing
@@ -614,7 +632,7 @@ private fun SongContent(
     ),
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
-    if (displayContext.bookTitle != null || displayContext.songNumber != null) {
+    if (displayContext.bookTitle != null) {
       item {
         BookContextBanner(displayContext = displayContext)
         Spacer(Modifier.height(spacing.md))
@@ -659,6 +677,17 @@ private fun SongContent(
         )
       }
     }
+
+    // Donation card — shown at the bottom only for loyal users
+    if (showDonationCard) {
+      item {
+        io.github.alelk.pws.features.components.DonationPromptCard(
+          onDonate = onDonationDonate,
+          onDismiss = onDonationDismiss,
+          modifier = Modifier.padding(top = 8.dp),
+        )
+      }
+    }
   }
 }
 
@@ -666,10 +695,9 @@ private fun SongContent(
 private fun BookContextBanner(
   displayContext: SongDetailUiState.DisplayContext
 ) {
-  val numberLabel = displayContext.songNumber?.let { "№ $it" }
   val bookLabel = displayContext.bookTitle
 
-  if (bookLabel.isNullOrBlank() && numberLabel.isNullOrBlank()) return
+  if (bookLabel.isNullOrBlank()) return
 
   Surface(
     shape = RoundedCornerShape(14.dp),
@@ -680,7 +708,7 @@ private fun BookContextBanner(
       modifier = Modifier
         .padding(horizontal = 12.dp, vertical = 8.dp)
         .semantics(mergeDescendants = true) {
-          contentDescription = "${bookLabel ?: ""}, $numberLabel"
+          contentDescription = bookLabel
         },
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -692,22 +720,11 @@ private fun BookContextBanner(
         tint = MaterialTheme.colorScheme.onSecondaryContainer
       )
 
-      Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
-        if (!bookLabel.isNullOrBlank()) {
-          Text(
-            text = bookLabel,
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSecondaryContainer
-          )
-        }
-        if (!numberLabel.isNullOrBlank()) {
-          Text(
-            text = numberLabel,
-            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
-            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.86f)
-          )
-        }
-      }
+      Text(
+        text = bookLabel,
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.onSecondaryContainer
+      )
     }
   }
 }

@@ -12,6 +12,11 @@ import io.github.alelk.pws.features.song.detail.SongDetailBySongIdScreenModel
 import io.github.alelk.pws.features.song.edit.SongEditScreenModel
 import io.github.alelk.pws.features.tags.TagsScreenModel
 import io.github.alelk.pws.features.tags.songs.TagSongsScreenModel
+import io.github.alelk.pws.domain.donationprompt.config.DonationConfig
+import io.github.alelk.pws.domain.donationprompt.usecase.IsLoyalUserUseCase
+import io.github.alelk.pws.domain.donationprompt.usecase.RecordDonationClickedUseCase
+import io.github.alelk.pws.domain.donationprompt.usecase.RecordDonationPromptDismissedUseCase
+import io.github.alelk.pws.domain.donationprompt.usecase.ShouldShowDonationPromptUseCase
 import io.github.alelk.pws.domain.book.usecase.ObserveBooksUseCase
 import io.github.alelk.pws.domain.core.ids.BookId
 import io.github.alelk.pws.domain.core.ids.SongId
@@ -41,6 +46,9 @@ import org.koin.dsl.module
  * Koin module for all features screen models.
  */
 val featuresModule = module {
+  // DonationSessionGuard — process-lifetime singleton for per-session dedup
+  single { DonationSessionGuard() }
+
   // Home
   factory { HomeScreenModel(get(), get(), get()) }
 
@@ -68,6 +76,11 @@ val featuresModule = module {
       observeTagsForSong = get<ObserveTagsForSongUseCase<TagId>>(),
       observeAllTags = get<ObserveTagsUseCase<TagId>>(),
       replaceAllSongTags = get<ReplaceAllSongTagsUseCase<TagId>>(),
+      shouldShowDonationPrompt = get<ShouldShowDonationPromptUseCase>(),
+      recordDonationDismissed = get<RecordDonationPromptDismissedUseCase>(),
+      recordDonationClicked = get<RecordDonationClickedUseCase>(),
+      donationConfig = get<DonationConfig>(),
+      donationSessionGuard = get<DonationSessionGuard>(),
     )
   }
 
@@ -86,6 +99,11 @@ val featuresModule = module {
       observeTagsForSong = get<ObserveTagsForSongUseCase<TagId>>(),
       observeAllTags = get<ObserveTagsUseCase<TagId>>(),
       replaceAllSongTags = get<ReplaceAllSongTagsUseCase<TagId>>(),
+      shouldShowDonationPrompt = get<ShouldShowDonationPromptUseCase>(),
+      recordDonationDismissed = get<RecordDonationPromptDismissedUseCase>(),
+      recordDonationClicked = get<RecordDonationClickedUseCase>(),
+      donationConfig = get<DonationConfig>(),
+      donationSessionGuard = get<DonationSessionGuard>(),
     )
   }
 
@@ -111,7 +129,7 @@ val featuresModule = module {
   factory { HistoryScreenModel(get(), get(), get()) }
 
   // Settings
-  factory { SettingsScreenModel(get(), get(), getOrNull()) }
+  factory { SettingsScreenModel(get(), get(), getOrNull(), getOrNull<IsLoyalUserUseCase>(), getOrNull<DonationConfig>()) }
 
   // Tags
   factory { TagsScreenModel(get<ObserveTagsUseCase<TagId>>(), get<CreateTagUseCase<TagId>>(), get<UpdateTagUseCase<TagId>>(), get<DeleteTagUseCase<TagId>>()) }

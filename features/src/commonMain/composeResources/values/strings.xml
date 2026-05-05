@@ -226,6 +226,14 @@
     <string name="tonality_g_minor">G minor</string>
     <string name="tonality_g_flat_major">G-flat major</string>
     <string name="tonality_g_sharp_minor">G-sharp minor</string>
+
+    <string name="donation_prompt_title">Support the App</string>
+    <string name="donation_prompt_message">If P&amp;W Songs helps you in worship, consider supporting its development. A small donation makes a big difference!</string>
+    <string name="donation_prompt_action_donate">Support on Boosty</string>
+    <string name="donation_prompt_action_later">Later</string>
+
+    <string name="settings_donation_title">Support Development</string>
+    <string name="settings_donation_subtitle">Support the app on Boosty</string>
 </resources>
 
 

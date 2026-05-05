@@ -18,7 +18,10 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -52,6 +55,8 @@ import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.settings_books
 import io.github.alelk.pws.features.resources.settings_books_subtitle
 import io.github.alelk.pws.features.resources.settings_about
+import io.github.alelk.pws.features.resources.settings_donation_title
+import io.github.alelk.pws.features.resources.settings_donation_subtitle
 import io.github.alelk.pws.features.resources.settings_version
 import io.github.alelk.pws.features.resources.settings_license
 import io.github.alelk.pws.features.resources.settings_developers
@@ -119,6 +124,7 @@ class SettingsScreen : Screen {
       onDeveloperClick = { contact -> viewModel.onEvent(SettingsEvent.OpenDeveloperContact(contact)) },
       onExportClick = { viewModel.onEvent(SettingsEvent.ExportData) },
       onImportClick = { viewModel.onEvent(SettingsEvent.ImportData) },
+      onDonationClick = { viewModel.onEvent(SettingsEvent.OpenDonation) },
     )
   }
 }
@@ -133,6 +139,7 @@ private fun SettingsContent(
   onDeveloperClick: (DeveloperContact) -> Unit,
   onExportClick: () -> Unit,
   onImportClick: () -> Unit,
+  onDonationClick: () -> Unit,
 ) {
   val haptic = LocalHapticFeedback.current
   var showLicenseDialog by remember { mutableStateOf(false) }
@@ -338,6 +345,21 @@ private fun SettingsContent(
               }
             }
 
+            // Donation section — visible only for loyal users
+            if (current.showDonationSection) {
+              item {
+                SectionTitle(stringResource(Res.string.settings_donation_title))
+              }
+              item {
+                DonationCard(
+                  onDonationClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onDonationClick()
+                  }
+                )
+              }
+            }
+
             item {
               SectionTitle(stringResource(Res.string.settings_about))
             }
@@ -440,6 +462,42 @@ private fun SectionTitle(text: String) {
     color = MaterialTheme.colorScheme.onSurface,
     modifier = Modifier.semantics { heading() }
   )
+}
+
+@Composable
+private fun DonationCard(onDonationClick: () -> Unit) {
+  Card(
+    modifier = Modifier
+      .fillMaxWidth()
+      .clickable(onClick = onDonationClick),
+    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+  ) {
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 16.dp, vertical = 14.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+      Icon(
+        imageVector = Icons.Filled.Favorite,
+        contentDescription = null,
+        tint = MaterialTheme.colorScheme.primary,
+      )
+      Column(modifier = Modifier.weight(1f)) {
+        Text(
+          text = stringResource(Res.string.settings_donation_title),
+          style = MaterialTheme.typography.bodyLarge,
+          color = MaterialTheme.colorScheme.onPrimaryContainer,
+        )
+        Text(
+          text = stringResource(Res.string.settings_donation_subtitle),
+          style = MaterialTheme.typography.bodySmall,
+          color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
+        )
+      }
+    }
+  }
 }
 
 @Composable

@@ -11,6 +11,11 @@ import io.github.alelk.pws.domain.core.ids.TagId
 import io.github.alelk.pws.domain.favorite.model.FavoriteSubject
 import io.github.alelk.pws.domain.favorite.usecase.ObserveIsFavoriteUseCase
 import io.github.alelk.pws.domain.favorite.usecase.ToggleFavoriteUseCase
+import io.github.alelk.pws.domain.donationprompt.config.DonationConfig
+import io.github.alelk.pws.domain.donationprompt.usecase.RecordDonationClickedUseCase
+import io.github.alelk.pws.domain.donationprompt.usecase.RecordDonationPromptDismissedUseCase
+import io.github.alelk.pws.domain.donationprompt.usecase.ShouldShowDonationPromptUseCase
+import io.github.alelk.pws.features.di.DonationSessionGuard
 import io.github.alelk.pws.domain.history.model.HistorySubject
 import io.github.alelk.pws.domain.history.usecase.RecordSongViewUseCase
 import io.github.alelk.pws.domain.song.model.SongDetail
@@ -24,6 +29,7 @@ import io.github.alelk.pws.domain.songtag.usecase.ReplaceAllSongTagsUseCase
 import io.github.alelk.pws.domain.tag.model.Tag
 import io.github.alelk.pws.domain.tag.usecase.ObserveTagsUseCase
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,6 +40,8 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SongDetailScreenModel(
@@ -49,6 +57,15 @@ class SongDetailScreenModel(
   private val observeTagsForSong: ObserveTagsForSongUseCase<TagId>,
   private val observeAllTags: ObserveTagsUseCase<TagId>,
   private val replaceAllSongTags: ReplaceAllSongTagsUseCase<TagId>,
+  private val shouldShowDonationPrompt: ShouldShowDonationPromptUseCase,
+  private val recordDonationDismissed: RecordDonationPromptDismissedUseCase,
+  private val recordDonationClicked: RecordDonationClickedUseCase,
+  private val donationConfig: DonationConfig,
+  private val donationSessionGuard: DonationSessionGuard,
+  /** Injected scope for testing with virtual time; null = use [screenModelScope]. */
+  private val coroutineScope: CoroutineScope? = null,
+  /** Delay before recording a song view. Override in tests to speed up. */
+  internal val viewDelay: Duration = 5.seconds,
 ) : StateScreenModel<SongDetailUiState>(SongDetailUiState.Loading) {
 
   data class ReferenceBookContextUi(
@@ -90,6 +107,9 @@ class SongDetailScreenModel(
 
   private val booksSnapshot = MutableStateFlow<List<BookSummary>>(emptyList())
 
+  /** Effective coroutine scope: injected for tests, otherwise Voyager's screenModelScope. */
+  private val scope: CoroutineScope get() = coroutineScope ?: screenModelScope
+
   /** Tags assigned to the current song. */
   private val _songTags = MutableStateFlow<List<Tag<TagId>>>(emptyList())
   val songTags: StateFlow<List<Tag<TagId>>> = _songTags.asStateFlow()
@@ -107,7 +127,7 @@ class SongDetailScreenModel(
 
   init {
     // Observe currently displayed song content
-    screenModelScope.launch(context = CoroutineExceptionHandler { _, _ -> mutableState.value = SongDetailUiState.Error }) {
+    scope.launch(context = CoroutineExceptionHandler { _, _ -> mutableState.value = SongDetailUiState.Error }) {
       _currentSongNumberId.flatMapLatest { id ->
         mutableState.value = SongDetailUiState.Loading
         observeSong(id.songId)
@@ -125,7 +145,7 @@ class SongDetailScreenModel(
     }
 
     // Observe book title to show context in header
-    screenModelScope.launch {
+    scope.launch {
       observeBooks().collectLatest { books ->
         booksSnapshot.value = books
         bookTitle.value = books.firstOrNull { it.id == songNumberId.bookId }?.displayName?.value
@@ -135,7 +155,7 @@ class SongDetailScreenModel(
     }
 
     // Observe favorite status, reacting to song changes
-    screenModelScope.launch {
+    scope.launch {
       _currentSongNumberId.flatMapLatest { id ->
         observeIsFavorite(FavoriteSubject.BookedSong(id))
       }.collectLatest { isFav ->
@@ -144,7 +164,7 @@ class SongDetailScreenModel(
     }
 
     // Load all song IDs in the same book for swipe navigation and jump-by-number
-    screenModelScope.launch {
+    scope.launch {
       try {
         songObserveRepository.observeAllInBook(songNumberId.bookId).collectLatest { songsMap ->
           // songsMap: Map<Int /* number */, SongSummary>
@@ -165,7 +185,7 @@ class SongDetailScreenModel(
     }
 
     // Load cross-references for the current song
-    screenModelScope.launch {
+    scope.launch {
       _currentSongNumberId.collectLatest { currentId ->
         try {
           _references.value = getSongReferences(currentId.songId).fold(
@@ -181,7 +201,7 @@ class SongDetailScreenModel(
     }
 
     // Observe tags for the current song
-    screenModelScope.launch {
+    scope.launch {
       _currentSongNumberId.flatMapLatest { id ->
         observeTagsForSong(id)
       }.collectLatest { tags ->
@@ -190,9 +210,23 @@ class SongDetailScreenModel(
     }
 
     // Observe all available tags (for tag editor)
-    screenModelScope.launch {
+    scope.launch {
       observeAllTags().collectLatest { tags ->
         _allTags.value = tags
+      }
+    }
+
+    // Auto-record song view after viewDelay once the song content is loaded.
+    // collectLatest cancels the timer when the user swipes to a different song.
+    scope.launch {
+      _currentSongNumberId.collectLatest { id ->
+        // Wait for Content that belongs to the current song (avoids stale-Content race on swipe)
+        state.first { s -> s is SongDetailUiState.Content && s.song.id == id.songId }
+        kotlinx.coroutines.delay(viewDelay)
+        try {
+          recordSongView(HistorySubject.BookedSong(id))
+          checkAndShowDonationPrompt()
+        } catch (_: Exception) {}
       }
     }
   }
@@ -204,16 +238,8 @@ class SongDetailScreenModel(
     }
   }
 
-  fun onSongViewed() {
-    screenModelScope.launch {
-      try {
-        recordSongView(HistorySubject.BookedSong(_currentSongNumberId.value))
-      } catch (_: Exception) {}
-    }
-  }
-
   fun onToggleFavorite() {
-    screenModelScope.launch {
+    scope.launch {
       try {
         toggleFavorite(FavoriteSubject.BookedSong(_currentSongNumberId.value))
       } catch (_: Exception) {}
@@ -222,7 +248,7 @@ class SongDetailScreenModel(
 
   /** Save the selected set of tags for the current song. */
   fun onSaveTags(selectedTagIds: Set<TagId>) {
-    screenModelScope.launch {
+    scope.launch {
       replaceAllSongTags(_currentSongNumberId.value.songId, selectedTagIds).fold(
         ifLeft = { error -> _effects.emit(Effect.ShowError(error.message)) },
         ifRight = { }
@@ -235,6 +261,48 @@ class SongDetailScreenModel(
    * or null if no song with that number exists.
    */
   fun resolveNumber(number: Int): SongNumberId? = _bookNumberMap.value[number]
+
+  /** Called when the user taps "Later" (×) on the donation prompt card.
+   * Suppresses for [shortSuppressViews] views and blocks the card for the rest of this session. */
+  fun onDonationDismissed() {
+    scope.launch {
+      try {
+        recordDonationDismissed()
+        donationSessionGuard.shownThisSession = true   // suppress for rest of session
+        val current = mutableState.value as? SongDetailUiState.Content ?: return@launch
+        mutableState.value = current.copy(showDonationCard = false)
+      } catch (_: Exception) {}
+    }
+  }
+
+  /** Called when the user taps "Support on Boosty". Permanently suppresses the prompt. */
+  fun onDonationClicked() {
+    scope.launch {
+      try {
+        recordDonationClicked()
+        val current = mutableState.value as? SongDetailUiState.Content ?: return@launch
+        mutableState.value = current.copy(showDonationCard = false)
+      } catch (_: Exception) {}
+    }
+  }
+
+  private suspend fun checkAndShowDonationPrompt() {
+    try {
+      if (shouldShowDonationPrompt()) {
+        donationSessionGuard.seenCountThisSession++
+        // After seeing the card maxShowsPerSession times without any action,
+        // suppress for the rest of this session (no persistent suppress in SharedPreferences).
+        if (donationSessionGuard.seenCountThisSession >= donationConfig.maxShowsPerSession) {
+          donationSessionGuard.shownThisSession = true
+        }
+        val current = mutableState.value as? SongDetailUiState.Content ?: return
+        mutableState.value = current.copy(
+          showDonationCard = true,
+          donationBoostyUrl = donationConfig.boostyUrl,
+        )
+      }
+    } catch (_: Exception) {}
+  }
 
   private fun refreshContextIfContent() {
     val current = mutableState.value as? SongDetailUiState.Content ?: return

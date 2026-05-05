@@ -84,6 +84,7 @@ androidx-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecyc
 androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 
 # Test
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 kotest-framework-engine = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" } # https://search.maven.org/artifact/io.kotest/kotest-framework-engine
 kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" } # https://search.maven.org/artifact/io.kotest/kotest-assertions-core
 kotest-assertions-json = { module = "io.kotest:kotest-assertions-json", version.ref = "kotest" } # https://search.maven.org/artifact/io.kotest/kotest-assertions-json

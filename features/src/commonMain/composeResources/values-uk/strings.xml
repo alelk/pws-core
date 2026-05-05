@@ -225,6 +225,14 @@
     <string name="tonality_g_minor">Соль мінор (g-moll)</string>
     <string name="tonality_g_flat_major">Соль-бемоль мажор (Ges-dur)</string>
     <string name="tonality_g_sharp_minor">Соль-дієз мінор (gis-moll)</string>
+
+    <string name="donation_prompt_title">Підтримайте додаток</string>
+    <string name="donation_prompt_message">Якщо P&amp;W Songs допомагає вам у поклонінні, ви можете підтримати його розвиток. Будь-яка допомога важлива!</string>
+    <string name="donation_prompt_action_donate">Підтримати на Boosty</string>
+    <string name="donation_prompt_action_later">Пізніше</string>
+
+    <string name="settings_donation_title">Підтримати розробку</string>
+    <string name="settings_donation_subtitle">Підтримайте додаток на Boosty</string>
 </resources>
 
 

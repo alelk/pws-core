@@ -13,6 +13,9 @@ sealed interface SongDetailUiState {
   data class Content(
     val song: SongDetail,
     val context: DisplayContext = DisplayContext(),
+    /** True when the donation banner should be shown at the bottom of the song content. */
+    val showDonationCard: Boolean = false,
+    val donationBoostyUrl: String = "",
   ) : SongDetailUiState
 
   object Loading : SongDetailUiState
