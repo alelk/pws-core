@@ -1,5 +1,12 @@
 # PWS Android
 
+# [2.27.0-rc.2](https://github.com/alelk/pws-core/compare/v2.27.0-rc.1...v2.27.0-rc.2) (2026-05-05)
+
+
+### Features
+
+* add donation prompt feature with UI components and logic ([ea1c700](https://github.com/alelk/pws-core/commit/ea1c7003ff3ef8927b025bfadbcc9f084a2c6db2))
+
 # [2.27.0-rc.1](https://github.com/alelk/pws-core/compare/v2.26.0...v2.27.0-rc.1) (2026-05-04)
 
 
