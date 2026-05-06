@@ -35,7 +35,7 @@ UI (Compose Screen)
 
 - `:domain:lyric-format`: parsing/formatting lyrics.
 - `:domain:domain-test-fixtures`: generators/helpers for tests.
-- `:backup`: backup import/export logic.
+- `:portable-data`: portable serialisation formats — `Backup` (user data export/import), `CollectionBundle` (full deduplicated collection for asset delivery), `BookBundle` (single book for dynamic delivery via Play Asset Delivery / CDN). Format: YAML (kaml) + gzip on JVM/Native.
 
 ## Dependency rules
 
@@ -72,4 +72,4 @@ Use this as the default presentation pattern unless there is a strong reason not
 - Data/API flow: `docs/DATA_FLOW.md`
 - Feature behavior: `docs/FEATURES.md` and `docs/features/*.md`
 
-Last reviewed: 2026-04-29
+Last reviewed: 2026-05-06

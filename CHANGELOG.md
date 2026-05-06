@@ -1,5 +1,35 @@
 # PWS Android
 
+# [2.27.0-rc.4](https://github.com/alelk/pws-core/compare/v2.27.0-rc.3...v2.27.0-rc.4) (2026-05-06)
+
+
+### Features
+
+* add SHA-256 and HMAC-SHA-256 known-answer tests; enhance AES-256-CBC implementation details ([5cbcfd2](https://github.com/alelk/pws-core/commit/5cbcfd24f27fc789453bc6a890139f73eb19518f))
+* implement AES-256-CBC encryption and decryption for bundle files; add serialization support ([4ddd1de](https://github.com/alelk/pws-core/commit/4ddd1de29d90998a5ea8697579c0a23fcaffea23))
+
+# [2.27.0-rc.3](https://github.com/alelk/pws-core/compare/v2.27.0-rc.2...v2.27.0-rc.3) (2026-05-06)
+
+
+### Features
+
+* add portable data models and serialization for backup, book, and song management ([034239f](https://github.com/alelk/pws-core/commit/034239f54ac10a8acdf818380c199207cccfa064))
+* rename backup module to portable-data and update related scripts ([518f89f](https://github.com/alelk/pws-core/commit/518f89f8132c53098f3e50f933c8e621175a8f6f))
+
+# [2.27.0-rc.2](https://github.com/alelk/pws-core/compare/v2.27.0-rc.1...v2.27.0-rc.2) (2026-05-05)
+
+
+### Features
+
+* add donation prompt feature with UI components and logic ([ea1c700](https://github.com/alelk/pws-core/commit/ea1c7003ff3ef8927b025bfadbcc9f084a2c6db2))
+
+# [2.27.0-rc.1](https://github.com/alelk/pws-core/compare/v2.26.0...v2.27.0-rc.1) (2026-05-04)
+
+
+### Features
+
+* Enhance lyric rendering with repeat handling; update app name ([15919a2](https://github.com/alelk/pws-core/commit/15919a247bcf0636a8d77726e3784277decf27c1))
+
 # [2.26.0](https://github.com/alelk/pws-core/compare/v2.25.0...v2.26.0) (2026-05-04)
 
 

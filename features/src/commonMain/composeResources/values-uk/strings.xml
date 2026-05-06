@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Псаломник</string>
+    <string name="app_name">P&amp;W Songs</string>
 
     <string name="nav_home">Головна</string>
     <string name="nav_books">Збірники</string>
@@ -185,7 +185,7 @@
     <string name="song_detail_action_jump">Перейти до номера</string>
     <string name="song_detail_action_share">Поділитися</string>
     <string name="song_detail_action_copy">Скопіювати текст</string>
-    <string name="song_detail_expand_text">Розгорнутий текст</string>
+    <string name="song_detail_expand_text">Повторювати приспів</string>
     <string name="song_detail_tags_sheet_title">Теги пісні</string>
     <string name="song_detail_tags_empty">Немає доступних тегів</string>
     <string name="song_detail_jump_empty">Введіть число</string>
@@ -225,6 +225,14 @@
     <string name="tonality_g_minor">Соль мінор (g-moll)</string>
     <string name="tonality_g_flat_major">Соль-бемоль мажор (Ges-dur)</string>
     <string name="tonality_g_sharp_minor">Соль-дієз мінор (gis-moll)</string>
+
+    <string name="donation_prompt_title">Підтримайте додаток</string>
+    <string name="donation_prompt_message">Якщо P&amp;W Songs допомагає вам у поклонінні, ви можете підтримати його розвиток. Будь-яка допомога важлива!</string>
+    <string name="donation_prompt_action_donate">Підтримати на Boosty</string>
+    <string name="donation_prompt_action_later">Пізніше</string>
+
+    <string name="settings_donation_title">Підтримати розробку</string>
+    <string name="settings_donation_subtitle">Підтримайте додаток на Boosty</string>
 </resources>
 
 

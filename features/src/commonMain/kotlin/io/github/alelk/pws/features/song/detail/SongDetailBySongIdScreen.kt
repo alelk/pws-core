@@ -3,6 +3,7 @@ package io.github.alelk.pws.features.song.detail
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalUriHandler
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import io.github.alelk.pws.domain.core.ids.SongId
@@ -26,6 +27,9 @@ class SongDetailBySongIdScreen(val songId: SongId) : Screen {
     val referenceBookContexts by viewModel.referenceBookContexts.collectAsState()
     val songTags by viewModel.songTags.collectAsState()
     val allTags by viewModel.allTags.collectAsState()
+    val uriHandler = LocalUriHandler.current
+
+    val donationBoostyUrl = (state as? SongDetailUiState.Content)?.donationBoostyUrl ?: ""
 
     SongDetailContent(
       state = state,
@@ -35,7 +39,12 @@ class SongDetailBySongIdScreen(val songId: SongId) : Screen {
       songTags = songTags,
       allTags = allTags,
       onFavoriteClick = { viewModel.onToggleFavorite() },
-      onSaveTags = { viewModel.onSaveTags(it) }
+      onSaveTags = { viewModel.onSaveTags(it) },
+      onDonationDonate = {
+        viewModel.onDonationClicked()
+        if (donationBoostyUrl.isNotBlank()) uriHandler.openUri(donationBoostyUrl)
+      },
+      onDonationDismiss = { viewModel.onDonationDismissed() },
     )
   }
 }

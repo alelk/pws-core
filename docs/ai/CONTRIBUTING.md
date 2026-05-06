@@ -124,7 +124,7 @@ data class UpdateSongCommand(
 
 ```shell
 ./gradlew :domain:jvmTest
-./gradlew :backup:jvmTest
+./gradlew :portable-data:jvmTest
 ./gradlew :data:db-room:testDebugUnitTest :data:db-room:jvmTest
 ```
 

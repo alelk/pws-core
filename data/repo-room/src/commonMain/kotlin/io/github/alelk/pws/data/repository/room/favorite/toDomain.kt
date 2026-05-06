@@ -4,8 +4,8 @@ import io.github.alelk.pws.database.favorite.FavoriteSongProjection
 import io.github.alelk.pws.domain.core.ids.SongNumberId
 import io.github.alelk.pws.domain.favorite.model.FavoriteSubject
 import io.github.alelk.pws.domain.favorite.model.FavoriteSong
-import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 @OptIn(ExperimentalTime::class)
 fun FavoriteSongProjection.toDomain() = FavoriteSong(
@@ -13,7 +13,8 @@ fun FavoriteSongProjection.toDomain() = FavoriteSong(
   songName = songName,
   songNumber = songNumber,
   bookDisplayName = bookDisplayName,
-  // FavoriteEntity has no timestamp — use position as sort key via epoch millis hack
-  addedAt = Clock.System.now() // will be replaced when DB has timestamp
+  // FavoriteEntity has no real timestamp — position is monotonically increasing,
+  // so convert it to a fake Instant to preserve correct "newest first" sort order.
+  addedAt = Instant.fromEpochMilliseconds(position.toLong())
 )
 

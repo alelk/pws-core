@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Psalmist</string>
+    <string name="app_name">P&amp;W Songs</string>
 
     <string name="nav_home">Home</string>
     <string name="nav_books">Books</string>
@@ -186,7 +186,7 @@
     <string name="song_detail_action_jump">Jump to number</string>
     <string name="song_detail_action_share">Share</string>
     <string name="song_detail_action_copy">Copy text</string>
-    <string name="song_detail_expand_text">Expanded text</string>
+    <string name="song_detail_expand_text">Repeat chorus</string>
     <string name="song_detail_tags_sheet_title">Song tags</string>
     <string name="song_detail_tags_empty">No tags available</string>
     <string name="song_detail_jump_empty">Enter a number</string>
@@ -226,6 +226,14 @@
     <string name="tonality_g_minor">G minor</string>
     <string name="tonality_g_flat_major">G-flat major</string>
     <string name="tonality_g_sharp_minor">G-sharp minor</string>
+
+    <string name="donation_prompt_title">Support the App</string>
+    <string name="donation_prompt_message">If P&amp;W Songs helps you in worship, consider supporting its development. A small donation makes a big difference!</string>
+    <string name="donation_prompt_action_donate">Support on Boosty</string>
+    <string name="donation_prompt_action_later">Later</string>
+
+    <string name="settings_donation_title">Support Development</string>
+    <string name="settings_donation_subtitle">Support the app on Boosty</string>
 </resources>
 
 

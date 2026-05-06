@@ -59,7 +59,14 @@ class FavoritesScreenModel(
       }
 
       is FavoritesEvent.ChangeSortMode -> {
+        val modeChanged = currentSortMode != event.mode
         currentSortMode = event.mode
+        if (modeChanged) {
+          // Reset direction to a sensible default for the new mode:
+          // ADDED_DATE → descending (newest first); others → ascending.
+          currentAscending = event.mode != FavoriteSortMode.ADDED_DATE
+          displaySettings?.onAscendingChange?.invoke(currentAscending)
+        }
         displaySettings?.onSortModeChange?.invoke(event.mode.name)
         loadFavorites()
       }

@@ -1,0 +1,96 @@
+metadata:
+  version: 1
+  createdAt: "2026-01-01T12:00"
+  locale: "ru"
+  bundleId: "pws-ru-fixture-v1"
+books:
+- id: "pws-ru"
+  version: "3.300"
+  locales:
+  - "ru"
+  name: "Песнь Возрождения"
+  displayShortName: "ПВ"
+  displayName: "Песнь Возрождения 3300"
+  priority: 100
+  releaseDate: "2003"
+  authors: null
+  creators: null
+  reviewers: null
+  editors: null
+  description: "Основной сборник"
+  preface: null
+- id: "pws-uk"
+  version: "1.0"
+  locales:
+  - "uk"
+  name: "Пісня Відродження"
+  displayShortName: "ПВ"
+  displayName: "Пісня Відродження"
+  priority: 80
+  releaseDate: null
+  authors: null
+  creators: null
+  reviewers: null
+  editors: null
+  description: null
+  preface: null
+bookPriorities:
+  "pws-ru": 100
+  "pws-uk": 80
+songs:
+- number:
+    bookId: "pws-ru"
+    number: 1
+  id: 1001
+  version: "1.0"
+  locale: "ru"
+  name: "Господь — мой свет"
+  lyric: |-
+    Куплет 1 строка 1
+    Куплет 1 строка 2
+
+    Куплет 2 строка 1
+    Куплет 2 строка 2
+  numbers:
+  - bookId: "pws-uk"
+    number: 1
+  tonalities:
+  - "a major"
+  - "c major"
+  author: "Иван Иванов"
+  translator: null
+  composer: "Пётр Петров"
+  bibleRef: "Пс. 26:1"
+  year: "1990"
+  priority: 10
+- number:
+    bookId: "pws-ru"
+    number: 42
+  id: 2042
+  version: "2.1"
+  locale: "ru"
+  name: "Радуйся, земля"
+  lyric: |-
+    Строк один
+
+    Строка два
+  tonalities: null
+  author: null
+  translator: null
+  composer: null
+  bibleRef: null
+songReferences:
+- songId: 1001
+  refSongId: 2042
+  reason: "variation"
+  volume: 75
+tags:
+- name: "Прославление"
+  color: "#ff6600"
+  songs:
+    "pws-ru":
+    - "1"
+    - "42"
+  id: "worship"
+  priority: 10
+  predefined: true

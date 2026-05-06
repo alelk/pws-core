@@ -14,7 +14,9 @@ sealed interface SettingsUiState {
     val themes: List<ThemeItemUi>,
     val developers: List<DeveloperItemUi>,
     val books: List<BookToggleUi>,
-    val appVersion: String = ""
+    val appVersion: String = "",
+    val showDonationSection: Boolean = false,
+    val donationBoostyUrl: String = "",
   ) : SettingsUiState
 }
 
@@ -51,6 +53,7 @@ sealed interface SettingsEvent {
   data object ExportData : SettingsEvent
   data object ImportData : SettingsEvent
   data object Back : SettingsEvent
+  data object OpenDonation : SettingsEvent
 }
 
 

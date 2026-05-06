@@ -19,7 +19,7 @@ This page lists current modules from `settings.gradle.kts` and their responsibil
 | `:data:db-room` | Room schema, entities, DAOs |
 | `:data:db-room:db-room-test-fixtures` | Test helpers/fixtures for Room module |
 | `:data:repo-room` | Room-backed repository implementations |
-| `:backup` | Backup/import/export domain logic |
+| `:portable-data` | Portable serialization formats: `Backup` (user data export/import), `CollectionBundle` (full deduplicated collection for assets), `BookBundle` (single book for dynamic delivery). Shared sub-models: `Book`, `Song`, `Tag`, `SongReference`. Format: YAML (kaml) + gzip on JVM. |
 
 ## Important note about sync
 
@@ -36,10 +36,10 @@ This page lists current modules from `settings.gradle.kts` and their responsibil
 
 :data:repo-room -> :domain, :data:db-room
 
-:domain:lyric-format -> :domain
+:portable-data -> :domain
 :domain:domain-test-fixtures -> :domain
 
-:backup -> :domain
+:portable-data -> :domain
 ```
 
 ## Key code locations
@@ -65,4 +65,4 @@ Typical feature package in `:features`:
 
 Primary presentation pattern is Voyager `Screen` + `StateScreenModel`.
 
-Last reviewed: 2026-04-29
+Last reviewed: 2026-05-06

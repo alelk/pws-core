@@ -46,7 +46,7 @@ Key terms used across `pws-core` docs and code.
 | `:core:ui` | Shared UI primitives |
 | `:data:db-room` | Local DB schema/DAO layer |
 | `:data:repo-room` | Local repository implementations |
-| `:backup` | Backup/import-export logic |
+| `:portable-data` | Portable serialisation formats: `Backup` (user data export/import), `CollectionBundle` (full deduplicated collection for asset delivery), `BookBundle` (single book for dynamic delivery) |
 
 ## Naming conventions
 

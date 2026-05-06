@@ -42,6 +42,14 @@ import io.github.alelk.pws.domain.tag.usecase.DeleteTagUseCase
 import io.github.alelk.pws.domain.tag.usecase.GetTagDetailUseCase
 import io.github.alelk.pws.domain.tag.usecase.ObserveTagsUseCase
 import io.github.alelk.pws.domain.tag.usecase.UpdateTagUseCase
+import io.github.alelk.pws.domain.donationprompt.config.DonationConfig
+import io.github.alelk.pws.domain.donationprompt.repository.DonationPromptStateReadRepository
+import io.github.alelk.pws.domain.donationprompt.repository.DonationPromptStateWriteRepository
+import io.github.alelk.pws.domain.donationprompt.usecase.IsLoyalUserUseCase
+import io.github.alelk.pws.domain.donationprompt.usecase.ShouldShowDonationPromptUseCase
+import io.github.alelk.pws.domain.donationprompt.usecase.RecordDonationPromptDismissedUseCase
+import io.github.alelk.pws.domain.donationprompt.usecase.RecordDonationClickedUseCase
+import io.github.alelk.pws.domain.history.repository.HistoryReadRepository
 import org.koin.dsl.module
 
 /**
@@ -87,5 +95,11 @@ val useCasesModule = module {
   factory<ReplaceAllSongTagsUseCase<TagId>> {
     ReplaceAllSongTagsUseCase(get<SongTagReadRepository<TagId>>(), get<SongTagWriteRepository<TagId>>(), get<TransactionRunner>())
   }
+
+  // Donation prompt
+  factory { IsLoyalUserUseCase(get<DonationConfig>(), get<HistoryReadRepository>()) }
+  factory { ShouldShowDonationPromptUseCase(get<DonationConfig>(), get<HistoryReadRepository>(), get<DonationPromptStateReadRepository>(), get<DonationSessionGuard>()) }
+  factory { RecordDonationPromptDismissedUseCase(get<DonationConfig>(), get<HistoryReadRepository>(), get<DonationPromptStateReadRepository>(), get<DonationPromptStateWriteRepository>()) }
+  factory { RecordDonationClickedUseCase(get<DonationPromptStateReadRepository>(), get<DonationPromptStateWriteRepository>()) }
 }
 

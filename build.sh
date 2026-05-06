@@ -10,7 +10,7 @@ rm -rf ./.gradle/buildOutputCleanup
 rm -rf ./.gradle/configuration-cache
 
 ./gradlew :domain:jvmTest domain:testDebugUnitTest :database:jvmTest :database:testRuDebugUnitTest \
-  :backup:jvmTest :app:testRuDebugUnitTest :app:test \
+  :portable-data:jvmTest :app:testRuDebugUnitTest :app:test \
   bundleRuRelease bundleUkRelease assembleRuRelease assembleUkRelease
 
 mkdir $DEST_DIR

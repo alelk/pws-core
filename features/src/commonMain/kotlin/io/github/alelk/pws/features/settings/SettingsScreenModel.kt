@@ -2,6 +2,8 @@ package io.github.alelk.pws.features.settings
 
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import io.github.alelk.pws.domain.donationprompt.config.DonationConfig
+import io.github.alelk.pws.domain.donationprompt.usecase.IsLoyalUserUseCase
 import io.github.alelk.pws.domain.book.model.BookSummary
 import io.github.alelk.pws.domain.book.usecase.ObserveBooksUseCase
 import io.github.alelk.pws.domain.bookstatistic.command.UpdateBookStatisticCommand
@@ -30,6 +32,8 @@ class SettingsScreenModel(
   observeBooksUseCase: ObserveBooksUseCase,
   private val updateBookStatisticUseCase: UpdateBookStatisticUseCase,
   private val appInfo: PwsAppInfo?,
+  private val isLoyalUser: IsLoyalUserUseCase? = null,
+  private val donationConfig: DonationConfig? = null,
 ) : StateScreenModel<SettingsUiState>(SettingsUiState.Loading) {
 
   companion object {
@@ -93,6 +97,19 @@ class SettingsScreenModel(
         }
       }
     }
+
+    // Check loyal-user status once (count only grows; no need to observe reactively)
+    screenModelScope.launch {
+      if (isLoyalUser != null && donationConfig != null) {
+        try {
+          if (isLoyalUser()) {
+            updateContent {
+              copy(showDonationSection = true, donationBoostyUrl = donationConfig.boostyUrl)
+            }
+          }
+        } catch (_: Exception) {}
+      }
+    }
   }
 
   fun onEvent(event: SettingsEvent) {
@@ -122,6 +139,11 @@ class SettingsScreenModel(
       SettingsEvent.ExportData -> screenModelScope.launch { _effects.emit(Effect.ExportData) }
       SettingsEvent.ImportData -> screenModelScope.launch { _effects.emit(Effect.ImportData) }
       SettingsEvent.Back -> screenModelScope.launch { _effects.emit(Effect.NavigateBack) }
+      SettingsEvent.OpenDonation -> {
+        val url = (mutableState.value as? SettingsUiState.Content)?.donationBoostyUrl
+          ?: donationConfig?.boostyUrl ?: return
+        screenModelScope.launch { _effects.emit(Effect.OpenUrl(url)) }
+      }
     }
   }
 

@@ -3,6 +3,8 @@ plugins {
   alias(libs.plugins.composeMultiplatform)
   alias(libs.plugins.composeCompiler)
   alias(libs.plugins.androidKmpLibrary)
+  alias(libs.plugins.kotest)
+  id("com.google.devtools.ksp")
 }
 
 compose.resources {
@@ -59,6 +61,18 @@ kotlin {
       implementation(libs.androidx.lifecycle.runtimeCompose)
     }
 
+    commonTest.dependencies {
+      implementation(libs.kotlinx.coroutines.test)
+      implementation(libs.kotest.framework.engine)
+      implementation(libs.kotest.assertions.core)
+      implementation(kotlin("test-common"))
+      implementation(kotlin("test-annotations-common"))
+    }
+
+    jvmTest.dependencies {
+      implementation(libs.kotest.runner.junit5)
+    }
+
     val mobileMain by creating {
       dependsOn(commonMain.get())
     }
@@ -82,3 +96,8 @@ kotlin {
     }
   }
 }
+
+tasks.withType<Test> {
+  useJUnitPlatform()
+}
+
