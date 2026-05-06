@@ -18,12 +18,12 @@ Multiplatform library for PWS (Praise & Worship Songs): domain logic, Compose UI
 
 ## Platforms
 
-| Platform | UI | Data source | Offline |
-|---|---|---|---|
-| Android | Compose | Room DB | Yes |
-| iOS | Compose | Room DB | Yes |
-| Web (JS) | Compose | Remote API | No |
-| Telegram Mini App | Compose | Remote API | No |
+| Platform          | UI      | Data source | Offline |
+|-------------------|---------|-------------|---------|
+| Android           | Compose | Room DB     | Yes     |
+| iOS               | Compose | Room DB     | Yes     |
+| Web (JS)          | Compose | Remote API  | No      |
+| Telegram Mini App | Compose | Remote API  | No      |
 
 ## Read this first
 

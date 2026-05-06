@@ -73,5 +73,26 @@ When touching data flow, verify all affected layers:
 2. API contract and mapping (`:api:contract`, `:api:mapping`) if remote shape changed.
 3. Local repo/DAO path (`:data:repo-room`, `:data:db-room`) if local behavior changed.
 4. ScreenModel usage in `:features`.
+5. Portable bundle (`：portable-data`) if the local DB schema or content delivery format changed.
 
-Last reviewed: 2026-04-29
+## Asset-based content delivery (CollectionBundle)
+
+`pws-android` can initialise the Room database from a bundled `*.collection.yaml.gz` file placed in `assets/library/`.
+
+```text
+pws-v2x-library-manager
+  ./pws-mgr library export-bundle <lib-file> --output <dir>
+    → {locale}.collection.yaml.gz
+
+pws-android (cold start)
+  DatabaseInitializer
+    reads assets/library/{locale}.collection.yaml.gz
+    BundleSerializer.decodeCollectionGzip(bytes): CollectionBundle
+    writes → Room DAOs (idempotent)
+```
+
+- `CollectionBundle` mirrors `BookCollection` from `pws-v2x-library-manager`: songs are **deduplicated** across books, each `Song.number` may reference multiple books.
+- `BookBundle` contains a single book — used for dynamic delivery (Play Asset Delivery / CDN).
+- Both formats serialise as YAML + gzip via `BundleSerializer` in `:portable-data`.
+
+Last reviewed: 2026-05-06
