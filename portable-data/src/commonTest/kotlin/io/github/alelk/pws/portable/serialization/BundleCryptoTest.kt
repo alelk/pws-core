@@ -64,7 +64,7 @@ class BundleCryptoTest : StringSpec({
   }
 
   "keyFromHex roundtrip" {
-    val hex = key32.joinToString("") { "%02x".format(it) }
+    val hex = key32.joinToString("") { it.toInt().and(0xff).toString(16).padStart(2, '0') }
     BundleCrypto.keyFromHex(hex) shouldBe key32
   }
 

@@ -7,21 +7,24 @@ import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.usePinned
-import platform.CommonCrypto.CCCrypt
-import platform.CommonCrypto.CCCryptorStatus
-import platform.CommonCrypto.kCCAlgorithmAES
-import platform.CommonCrypto.kCCDecrypt
-import platform.CommonCrypto.kCCEncrypt
-import platform.CommonCrypto.kCCOptionPKCS7Padding
-import platform.CommonCrypto.kCCSuccess
+import kotlinx.cinterop.value
+import platform.CoreCrypto.CCCrypt
+import platform.CoreCrypto.CCCryptorStatus
+import platform.CoreCrypto.kCCAlgorithmAES
+import platform.CoreCrypto.kCCDecrypt
+import platform.CoreCrypto.kCCEncrypt
+import platform.CoreCrypto.kCCOptionPKCS7Padding
+import platform.CoreCrypto.kCCSuccess
 import platform.Security.SecRandomCopyBytes
 import platform.Security.kSecRandomDefault
+
+// AES-256-CBC: Apple CommonCrypto (hardware-accelerated, FIPS-certified, side-channel safe)
+// SHA-256 / HMAC-SHA-256: pure Kotlin in commonMain/Sha256.kt (deterministic, no platform API needed)
 
 private const val AES_BLOCK_SIZE = 16
 
 @OptIn(ExperimentalForeignApi::class)
 internal actual fun aesEncrypt(plaintext: ByteArray, key: ByteArray, iv: ByteArray): ByteArray {
-  // AES-256-CBC with PKCS7 padding; output size = next multiple of AES_BLOCK_SIZE
   val outputBuf = ByteArray((plaintext.size / AES_BLOCK_SIZE + 1) * AES_BLOCK_SIZE)
   return memScoped {
     val moved = alloc<ULongVar>()
@@ -48,7 +51,7 @@ internal actual fun aesEncrypt(plaintext: ByteArray, key: ByteArray, iv: ByteArr
 
 @OptIn(ExperimentalForeignApi::class)
 internal actual fun aesDecrypt(ciphertext: ByteArray, key: ByteArray, iv: ByteArray): ByteArray {
-  val outputBuf = ByteArray(ciphertext.size) // padded output ≤ input size
+  val outputBuf = ByteArray(ciphertext.size)
   return memScoped {
     val moved = alloc<ULongVar>()
     key.usePinned { kp ->
