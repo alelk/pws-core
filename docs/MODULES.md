@@ -39,7 +39,7 @@ This page lists current modules from `settings.gradle.kts` and their responsibil
 :portable-data -> :domain
 :domain:domain-test-fixtures -> :domain
 
-:backup -> :domain
+:portable-data -> :domain
 ```
 
 ## Key code locations

@@ -71,7 +71,7 @@ High-level principles:
 
 :features
 
-:backup
+:portable-data
 
 :data:db-room
 :data:db-room:db-room-test-fixtures
