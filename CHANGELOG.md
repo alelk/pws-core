@@ -1,5 +1,13 @@
 # PWS Android
 
+# [2.27.0-rc.4](https://github.com/alelk/pws-core/compare/v2.27.0-rc.3...v2.27.0-rc.4) (2026-05-06)
+
+
+### Features
+
+* add SHA-256 and HMAC-SHA-256 known-answer tests; enhance AES-256-CBC implementation details ([5cbcfd2](https://github.com/alelk/pws-core/commit/5cbcfd24f27fc789453bc6a890139f73eb19518f))
+* implement AES-256-CBC encryption and decryption for bundle files; add serialization support ([4ddd1de](https://github.com/alelk/pws-core/commit/4ddd1de29d90998a5ea8697579c0a23fcaffea23))
+
 # [2.27.0-rc.3](https://github.com/alelk/pws-core/compare/v2.27.0-rc.2...v2.27.0-rc.3) (2026-05-06)
 
 
