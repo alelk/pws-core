@@ -1,5 +1,13 @@
 # PWS Android
 
+# [2.27.0-rc.3](https://github.com/alelk/pws-core/compare/v2.27.0-rc.2...v2.27.0-rc.3) (2026-05-06)
+
+
+### Features
+
+* add portable data models and serialization for backup, book, and song management ([034239f](https://github.com/alelk/pws-core/commit/034239f54ac10a8acdf818380c199207cccfa064))
+* rename backup module to portable-data and update related scripts ([518f89f](https://github.com/alelk/pws-core/commit/518f89f8132c53098f3e50f933c8e621175a8f6f))
+
 # [2.27.0-rc.2](https://github.com/alelk/pws-core/compare/v2.27.0-rc.1...v2.27.0-rc.2) (2026-05-05)
 
 
