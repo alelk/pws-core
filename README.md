@@ -53,7 +53,7 @@ Top-level modules (source of truth: `settings.gradle.kts`):
 
 :features
 
-:backup
+:portable-data
 
 :data:db-room
 :data:db-room:db-room-test-fixtures
@@ -86,7 +86,7 @@ Top-level modules (source of truth: `settings.gradle.kts`):
 
 ```shell
 ./gradlew :domain:jvmTest
-./gradlew :backup:jvmTest
+./gradlew :portable-data:jvmTest
 ./gradlew :data:db-room:testDebugUnitTest :data:db-room:jvmTest
 ```
 
