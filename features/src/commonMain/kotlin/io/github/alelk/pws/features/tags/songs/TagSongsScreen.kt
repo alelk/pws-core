@@ -60,7 +60,10 @@ import io.github.alelk.pws.features.theme.spacing
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.parameter.parametersOf
 
-class TagSongsScreen(val tagId: TagId) : Screen {
+class TagSongsScreen(val tagIdString: String) : Screen {
+
+  val tagId: TagId get() = TagId.parse(tagIdString)
+
   @Composable
   override fun Content() {
     val viewModel = koinScreenModel<TagSongsScreenModel>(parameters = { parametersOf(tagId) })
@@ -174,7 +177,7 @@ private fun TagSongsList(
       items = songs,
       key = { "${it.songNumberId.bookId}-${it.songNumberId.songId}" }
     ) { song ->
-      val songScreen = rememberScreen(SharedScreens.Song(song.songNumberId))
+      val songScreen = rememberScreen(SharedScreens.song(song.songNumberId))
 
       SongListItem(
         number = song.songNumber,

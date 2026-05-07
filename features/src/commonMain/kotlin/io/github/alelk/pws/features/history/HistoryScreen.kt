@@ -216,7 +216,7 @@ private fun HistoryList(
     ) { item ->
       when (item) {
         is HistoryItemUi.BookedSong -> {
-          val songScreen = rememberScreen(SharedScreens.Song(item.subject.songNumberId))
+          val songScreen = rememberScreen(SharedScreens.song(item.subject.songNumberId))
           SwipeableSongItem(
             number = item.songNumber,
             title = item.songName,
@@ -226,7 +226,7 @@ private fun HistoryList(
           )
         }
         is HistoryItemUi.StandaloneSong -> {
-          val songScreen = rememberScreen(SharedScreens.SongById(item.subject.songId))
+          val songScreen = rememberScreen(SharedScreens.songById(item.subject.songId))
           SwipeableSongItem(
             number = null,
             title = item.songName,

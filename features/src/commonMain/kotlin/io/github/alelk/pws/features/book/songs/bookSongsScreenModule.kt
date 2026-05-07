@@ -4,5 +4,5 @@ import cafe.adriel.voyager.core.registry.screenModule
 import io.github.alelk.pws.core.navigation.SharedScreens
 
 val bookSongsScreenModule = screenModule {
-  register<SharedScreens.BookSongs> { BookSongsScreen(it.bookId) }
+  register<SharedScreens.BookSongs> { BookSongsScreen(it.bookIdString) }
 }

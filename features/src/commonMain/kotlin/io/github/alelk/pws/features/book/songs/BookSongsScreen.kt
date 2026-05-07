@@ -81,7 +81,9 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.parameter.parametersOf
 
-class BookSongsScreen(val bookId: BookId) : Screen {
+class BookSongsScreen(val bookIdString: String) : Screen {
+  val bookId: BookId get() = BookId.parse(bookIdString)
+
   @Composable
   override fun Content() {
     val viewModel = koinScreenModel<BookSongsScreenModel>(parameters = { parametersOf(bookId) })
@@ -112,7 +114,7 @@ class BookSongsScreen(val bookId: BookId) : Screen {
           if (song != null) {
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             showGoToNumberDialog = false
-            val screen = SharedScreens.Song(SongNumberId(bookId, song.id))
+            val screen = SharedScreens.song(SongNumberId(bookId, song.id))
             navigator.push(cafe.adriel.voyager.core.registry.ScreenRegistry.get(screen))
           } else {
             scope.launch {
@@ -298,7 +300,7 @@ private fun SongsList(
       items = slice,
       key = { (number, _) -> number }
     ) { (number, song) ->
-      val songScreen = rememberScreen(SharedScreens.Song(SongNumberId(bookId, song.id)))
+      val songScreen = rememberScreen(SharedScreens.song(SongNumberId(bookId, song.id)))
 
       SongListItem(
         number = number,

@@ -20,16 +20,41 @@ sealed interface SharedScreens : ScreenProvider {
   data object Settings : SharedScreens
 
   // Book related
-  data class BookSongs(val bookId: BookId) : SharedScreens
+  data class BookSongs(val bookIdString: String) : SharedScreens {
+    val bookId: BookId get() = BookId.parse(bookIdString)
+  }
 
   // Song related
-  data class Song(val songNumberId: SongNumberId) : SharedScreens
-  data class SongById(val songId: SongId) : SharedScreens
-  data class SongEdit(val songId: SongId) : SharedScreens
+  data class Song(val songNumberIdString: String) : SharedScreens {
+    val songNumberId: SongNumberId get() = SongNumberId.parse(songNumberIdString)
+  }
+  data class SongById(val songIdLong: Long) : SharedScreens {
+    val songId: SongId get() = SongId(songIdLong)
+  }
+  data class SongEdit(val songIdLong: Long) : SharedScreens {
+    val songId: SongId get() = SongId(songIdLong)
+  }
 
   // Tag related
-  data class TagSongs(val tagId: TagId) : SharedScreens
+  data class TagSongs(val tagIdString: String) : SharedScreens {
+    val tagId: TagId get() = TagId.parse(tagIdString)
+  }
 
   // Search
   data class SearchResults(val query: String) : SharedScreens
+
+  companion object {
+    fun bookSongs(bookId: BookId) = BookSongs(bookId.identifier)
+    fun song(songNumberId: SongNumberId) = Song(songNumberId.identifier)
+    fun songById(songId: SongId) = SongById(songId.value)
+    fun songEdit(songId: SongId) = SongEdit(songId.value)
+    fun tagSongs(tagId: TagId) = TagSongs(tagId.identifier)
+  }
 }
+
+// Top-level factory helpers to construct SharedScreens from domain ID types
+fun sharedScreenBookSongs(bookId: BookId) = SharedScreens.BookSongs(bookId.identifier)
+fun sharedScreenSong(songNumberId: SongNumberId) = SharedScreens.Song(songNumberId.identifier)
+fun sharedScreenSongById(songId: SongId) = SharedScreens.SongById(songId.value)
+fun sharedScreenSongEdit(songId: SongId) = SharedScreens.SongEdit(songId.value)
+fun sharedScreenTagSongs(tagId: TagId) = SharedScreens.TagSongs(tagId.identifier)

@@ -29,29 +29,28 @@ val appScreenModule = screenModule {
 
   // Book screens
   register<SharedScreens.BookSongs> { provider ->
-    BookSongsScreen(provider.bookId)
+    BookSongsScreen(provider.bookIdString)
   }
 
   // Song screens
   register<SharedScreens.Song> { provider ->
-    SongDetailScreen(provider.songNumberId)
+    SongDetailScreen(provider.songNumberIdString)
   }
 
   register<SharedScreens.SongById> { provider ->
-    SongDetailBySongIdScreen(provider.songId)
+    SongDetailBySongIdScreen(provider.songIdLong)
   }
 
   register<SharedScreens.SongEdit> { provider ->
-    SongEditScreen(provider.songId)
+    SongEditScreen(provider.songIdLong)
   }
 
   // Tag screens
   register<SharedScreens.TagSongs> { provider ->
-    TagSongsScreen(provider.tagId)
+    TagSongsScreen(provider.tagIdString)
   }
 
   register<SharedScreens.SearchResults> { provider ->
     SearchResultsScreen(provider.query)
   }
 }
-

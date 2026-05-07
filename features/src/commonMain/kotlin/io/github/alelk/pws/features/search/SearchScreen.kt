@@ -229,8 +229,8 @@ private fun SearchSuggestionsList(
     ) { suggestion ->
       // Navigate to song in book context if available, otherwise by id
       val songScreen = suggestion.bookReferences.firstOrNull()?.let { ref ->
-        rememberScreen(SharedScreens.Song(SongNumberId(ref.bookId, suggestion.songId)))
-      } ?: rememberScreen(SharedScreens.SongById(suggestion.songId))
+        rememberScreen(SharedScreens.song(SongNumberId(ref.bookId, suggestion.songId)))
+      } ?: rememberScreen(SharedScreens.songById(suggestion.songId))
 
       SearchSuggestionItem(
         suggestion = suggestion,
@@ -352,8 +352,8 @@ private fun SearchResultsList(
     ) { result ->
       // Navigate to song in book context if available, otherwise by id
       val songScreen = result.bookReferences.firstOrNull()?.let { ref ->
-        rememberScreen(SharedScreens.Song(SongNumberId(ref.bookId, result.songId)))
-      } ?: rememberScreen(SharedScreens.SongById(result.songId))
+        rememberScreen(SharedScreens.song(SongNumberId(ref.bookId, result.songId)))
+      } ?: rememberScreen(SharedScreens.songById(result.songId))
 
       SearchSuggestionItem(
         suggestion = result,

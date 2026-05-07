@@ -280,7 +280,7 @@ private fun FavoritesList(
     ) { song ->
       when (song) {
         is FavoriteSongUi.BookedSong -> {
-          val songScreen = rememberScreen(SharedScreens.Song(song.subject.songNumberId))
+          val songScreen = rememberScreen(SharedScreens.song(song.subject.songNumberId))
           SwipeableSongItem(
             number = song.songNumber,
             title = song.songName,
@@ -291,7 +291,7 @@ private fun FavoritesList(
           )
         }
         is FavoriteSongUi.StandaloneSong -> {
-          val songScreen = rememberScreen(SharedScreens.SongById(song.subject.songId))
+          val songScreen = rememberScreen(SharedScreens.songById(song.subject.songId))
           SwipeableSongItem(
             number = null,
             title = song.songName,

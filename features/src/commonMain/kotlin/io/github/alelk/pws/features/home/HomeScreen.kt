@@ -203,10 +203,10 @@ fun HomeContent(
                 // Navigate to song in book context if available
                 val screen = suggestion.bookReferences.firstOrNull()?.let { ref ->
                   ScreenRegistry.get(
-                    SharedScreens.Song(io.github.alelk.pws.domain.core.ids.SongNumberId(ref.bookId, suggestion.songId))
+                    SharedScreens.song(io.github.alelk.pws.domain.core.ids.SongNumberId(ref.bookId, suggestion.songId))
                   )
                 } ?: ScreenRegistry.get(
-                  SharedScreens.SongById(suggestion.songId)
+                  SharedScreens.songById(suggestion.songId)
                 )
                 navigator.push(screen)
               },
@@ -272,8 +272,8 @@ fun HomeContent(
                 key = { _, song -> song.id }
               ) { index, song ->
                 val songScreen = when (val subject = song.subject) {
-                  is HistorySubject.BookedSong -> rememberScreen(SharedScreens.Song(subject.songNumberId))
-                  is HistorySubject.StandaloneSong -> rememberScreen(SharedScreens.SongById(subject.songId))
+                  is HistorySubject.BookedSong -> rememberScreen(SharedScreens.song(subject.songNumberId))
+                  is HistorySubject.StandaloneSong -> rememberScreen(SharedScreens.songById(subject.songId))
                 }
                 RecentSongCard(
                   song = song,
@@ -304,7 +304,7 @@ fun HomeContent(
             items = state.books.take(6),
             key = { it.id.toString() }
           ) { book ->
-            val bookSongsScreen = rememberScreen(SharedScreens.BookSongs(book.id))
+            val bookSongsScreen = rememberScreen(SharedScreens.bookSongs(book.id))
             HomeBookCard(
               book = book,
               onClick = { 
@@ -347,9 +347,9 @@ fun HomeContent(
         onClearNumberSearch()
         val screen = suggestion.bookReferences.firstOrNull()?.let { ref ->
           ScreenRegistry.get(
-            SharedScreens.Song(io.github.alelk.pws.domain.core.ids.SongNumberId(ref.bookId, suggestion.songId))
+            SharedScreens.song(io.github.alelk.pws.domain.core.ids.SongNumberId(ref.bookId, suggestion.songId))
           )
-        } ?: ScreenRegistry.get(SharedScreens.SongById(suggestion.songId))
+        } ?: ScreenRegistry.get(SharedScreens.songById(suggestion.songId))
         navigator.push(screen)
       }
     )
