@@ -1,5 +1,12 @@
 # PWS Android
 
+## [2.27.1-rc.2](https://github.com/alelk/pws-core/compare/v2.27.1-rc.1...v2.27.1-rc.2) (2026-05-11)
+
+
+### Bug Fixes
+
+* change ungzip function visibility from internal to actual ([acae55f](https://github.com/alelk/pws-core/commit/acae55fa2d74c130359909ffdc4787493cede767))
+
 ## [2.27.1-rc.1](https://github.com/alelk/pws-core/compare/v2.27.0...v2.27.1-rc.1) (2026-05-07)
 
 
