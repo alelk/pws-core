@@ -13,4 +13,3 @@ import androidx.compose.ui.Modifier
  * (Dialog, ModalBottomSheet) where the flag set in MainActivity is not inherited.
  */
 expect fun Modifier.testTagsAsResourceId(): Modifier
-

@@ -131,7 +131,7 @@ class TagsScreen : Screen {
       viewModel.effects.collect { effect ->
         when (effect) {
           is TagsScreenModel.Effect.NavigateToTagSongs -> {
-            val screen = ScreenRegistry.get(SharedScreens.TagSongs(effect.tag.id))
+            val screen = ScreenRegistry.get(SharedScreens.tagSongs(effect.tag.id))
             navigator.push(screen)
           }
           is TagsScreenModel.Effect.ShowSnackbar -> {

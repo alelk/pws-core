@@ -8,7 +8,12 @@ import io.github.alelk.pws.portable.model.CollectionBundle
 
 /** Shared YAML instance for bundle serialization. */
 internal val bundleYaml = Yaml(
-  configuration = YamlConfiguration(multiLineStringStyle = MultiLineStringStyle.Literal)
+  configuration = YamlConfiguration(
+    multiLineStringStyle = MultiLineStringStyle.Literal,
+    // Default limit is 3MB — too small for large collections (8000+ songs).
+    // Set to 64MB; real-world bundles are ~10MB uncompressed YAML.
+    codePointLimit = 64 * 1024 * 1024,
+  )
 )
 
 /**

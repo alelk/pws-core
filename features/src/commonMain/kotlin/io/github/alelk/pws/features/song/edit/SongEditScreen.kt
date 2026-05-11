@@ -95,7 +95,9 @@ import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.parameter.parametersOf
 
-class SongEditScreen(val songId: SongId) : Screen {
+class SongEditScreen(val songIdLong: Long) : Screen {
+  val songId: SongId get() = SongId(songIdLong)
+
   @Composable
   override fun Content() {
     val viewModel = koinScreenModel<SongEditScreenModel>(parameters = { parametersOf(songId) })

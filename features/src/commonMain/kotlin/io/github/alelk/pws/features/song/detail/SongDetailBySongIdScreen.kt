@@ -15,8 +15,10 @@ import org.koin.core.parameter.parametersOf
  * Used for navigation from search results where we have SongId
  * but not the specific SongNumberId context.
  */
-class SongDetailBySongIdScreen(val songId: SongId) : Screen {
-  override val key: String = "song-detail-by-id/${songId.value}"
+class SongDetailBySongIdScreen(val songIdLong: Long) : Screen {
+  val songId: SongId get() = SongId(songIdLong)
+
+  override val key: String = "song-detail-by-id/$songIdLong"
 
   @Composable
   override fun Content() {

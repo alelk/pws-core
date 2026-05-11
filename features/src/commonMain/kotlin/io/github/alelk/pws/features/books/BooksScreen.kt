@@ -153,7 +153,7 @@ private fun BooksGrid(
       items = books,
       key = { it.id.toString() }
     ) { book ->
-      val bookSongsScreen = rememberScreen(SharedScreens.BookSongs(book.id))
+      val bookSongsScreen = rememberScreen(SharedScreens.bookSongs(book.id))
       BookCard(
         displayName = book.displayName.value,
         songCount = book.countSongs,

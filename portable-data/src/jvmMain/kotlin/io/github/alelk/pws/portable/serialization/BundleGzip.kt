@@ -11,7 +11,7 @@ internal actual fun gzip(data: ByteArray): ByteArray =
     baos.toByteArray()
   }
 
-internal actual fun ungzip(data: ByteArray): ByteArray =
+actual fun ungzip(data: ByteArray): ByteArray =
   GZIPInputStream(ByteArrayInputStream(data)).use { it.readBytes() }
 
 

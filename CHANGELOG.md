@@ -1,5 +1,19 @@
 # PWS Android
 
+## [2.27.1-rc.2](https://github.com/alelk/pws-core/compare/v2.27.1-rc.1...v2.27.1-rc.2) (2026-05-11)
+
+
+### Bug Fixes
+
+* change ungzip function visibility from internal to actual ([acae55f](https://github.com/alelk/pws-core/commit/acae55fa2d74c130359909ffdc4787493cede767))
+
+## [2.27.1-rc.1](https://github.com/alelk/pws-core/compare/v2.27.0...v2.27.1-rc.1) (2026-05-07)
+
+
+### Bug Fixes
+
+* update SharedScreens to use string IDs for Book, Song, and Tag data classes ([6b7ba68](https://github.com/alelk/pws-core/commit/6b7ba689d454fec3618e5c42741e3623c3a3e3c7))
+
 # [2.27.0](https://github.com/alelk/pws-core/compare/v2.26.0...v2.27.0) (2026-05-06)
 
 

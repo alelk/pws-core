@@ -55,7 +55,7 @@ internal actual fun gzip(data: ByteArray): ByteArray = memScoped {
   output.copyOf(compressedSize)
 }
 @OptIn(ExperimentalForeignApi::class)
-internal actual fun ungzip(data: ByteArray): ByteArray = memScoped {
+actual fun ungzip(data: ByteArray): ByteArray = memScoped {
   val stream = alloc<z_stream>()
   stream.zalloc = null
   stream.zfree = null

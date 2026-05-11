@@ -80,8 +80,10 @@ import io.github.alelk.pws.features.theme.spacing
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.parameter.parametersOf
 
-class SongDetailScreen(val songNumberId: SongNumberId) : Screen {
-  override val key: String = "song-detail/${songNumberId.identifier}"
+class SongDetailScreen(val songNumberIdString: String) : Screen {
+  val songNumberId: SongNumberId get() = SongNumberId.parse(songNumberIdString)
+
+  override val key: String = "song-detail/$songNumberIdString"
 
   @Composable
   override fun Content() {
@@ -438,7 +440,7 @@ fun SongDetailContent(
           showJump = bookNumberMap.isNotEmpty(),
           onEditSong = {
             showActionsSheet = false
-            navigator.push(SongEditScreen(songId))
+            navigator.push(SongEditScreen(songId.value))
           },
           onEditTags = {
             showActionsSheet = false
@@ -491,7 +493,7 @@ fun SongDetailContent(
           bookNumberMap = bookNumberMap,
           onNavigate = { targetId ->
             showJumpSheet = false
-            navigator.push(SongDetailScreen(targetId))
+            navigator.push(SongDetailScreen(targetId.identifier))
           },
           onDismiss = { showJumpSheet = false }
         )
@@ -1013,14 +1015,14 @@ private fun SongReferencesSection(
   val spacing = MaterialTheme.spacing
 
   fun openBySongNumberId(target: SongNumberId) {
-    val screen = runCatching { ScreenRegistry.get(SharedScreens.Song(target)) }
-      .getOrElse { SongDetailScreen(target) }
+    val screen = runCatching { ScreenRegistry.get(SharedScreens.song(target)) }
+      .getOrElse { SongDetailScreen(target.identifier) }
     navigator.push(screen)
   }
 
   fun openBySongId(target: io.github.alelk.pws.domain.core.ids.SongId) {
-    val screen = runCatching { ScreenRegistry.get(SharedScreens.SongById(target)) }
-      .getOrElse { SongDetailBySongIdScreen(target) }
+    val screen = runCatching { ScreenRegistry.get(SharedScreens.songById(target)) }
+      .getOrElse { SongDetailBySongIdScreen(target.value) }
     navigator.push(screen)
   }
 
