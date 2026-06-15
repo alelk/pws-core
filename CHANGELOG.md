@@ -1,5 +1,12 @@
 # PWS Android
 
+# [2.28.0-rc.1](https://github.com/alelk/pws-core/compare/v2.27.1-rc.2...v2.28.0-rc.1) (2026-06-15)
+
+
+### Features
+
+* implement data protection ([9872184](https://github.com/alelk/pws-core/commit/9872184132c028cc45ebd7628092651e1dff6e0b))
+
 ## [2.27.1-rc.2](https://github.com/alelk/pws-core/compare/v2.27.1-rc.1...v2.27.1-rc.2) (2026-05-11)
 
 
