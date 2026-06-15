@@ -35,3 +35,6 @@ yarn-debug.log*
 **/logs/*.log.*.gz
 
 docs/ai/skills/
+
+# Claude
+/.claude/skills/
