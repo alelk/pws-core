@@ -1,5 +1,12 @@
 # PWS Android
 
+# [2.28.0-rc.2](https://github.com/alelk/pws-core/compare/v2.28.0-rc.1...v2.28.0-rc.2) (2026-06-15)
+
+
+### Bug Fixes
+
+* update database version ([f6eea9f](https://github.com/alelk/pws-core/commit/f6eea9f9f9a4cbc24b626e3ed0ef0a8ed8037421))
+
 # [2.28.0-rc.1](https://github.com/alelk/pws-core/compare/v2.27.1-rc.2...v2.28.0-rc.1) (2026-06-15)
 
 
