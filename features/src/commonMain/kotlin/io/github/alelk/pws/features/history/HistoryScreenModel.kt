@@ -7,6 +7,7 @@ import io.github.alelk.pws.domain.history.model.HistorySubject
 import io.github.alelk.pws.domain.history.usecase.ClearHistoryUseCase
 import io.github.alelk.pws.domain.history.usecase.ObserveHistoryUseCase
 import io.github.alelk.pws.domain.history.usecase.RemoveHistoryEntryUseCase
+import io.github.alelk.pws.features.app.UiMessage
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -25,6 +26,7 @@ class HistoryScreenModel(
 
   sealed interface Effect {
     data class NavigateToSong(val item: HistoryItemUi) : Effect
+    data class ShowError(val message: UiMessage) : Effect
   }
 
   private val _effects = MutableSharedFlow<Effect>()
@@ -76,7 +78,7 @@ class HistoryScreenModel(
           }
         }
       } catch (e: Exception) {
-        mutableState.value = HistoryUiState.Error(e.message ?: "Unknown error")
+        mutableState.value = HistoryUiState.Error(UiMessage.Failure(e.message))
       }
     }
   }
@@ -86,7 +88,7 @@ class HistoryScreenModel(
       try {
         removeHistoryItemUseCase(item.subject)
       } catch (e: Exception) {
-        // Handle error
+        _effects.emit(Effect.ShowError(UiMessage.Failure(e.message)))
       }
     }
   }
@@ -97,7 +99,7 @@ class HistoryScreenModel(
         clearHistoryUseCase()
         mutableState.value = HistoryUiState.Empty
       } catch (e: Exception) {
-        // Handle error
+        _effects.emit(Effect.ShowError(UiMessage.Failure(e.message)))
       }
     }
   }

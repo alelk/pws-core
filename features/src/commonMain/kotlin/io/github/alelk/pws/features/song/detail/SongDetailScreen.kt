@@ -70,6 +70,7 @@ import io.github.alelk.pws.domain.song.lyric.Verse
 import io.github.alelk.pws.domain.song.model.SongDetail
 import io.github.alelk.pws.domain.songreference.usecase.SongReferenceDetail
 import io.github.alelk.pws.domain.tag.model.Tag
+import io.github.alelk.pws.features.app.resolveString
 import io.github.alelk.pws.features.components.AppModalBottomSheet
 import io.github.alelk.pws.features.components.AppTopBar
 import io.github.alelk.pws.features.components.ErrorContent
@@ -89,14 +90,16 @@ class SongDetailScreen(val songNumberIdString: String) : Screen {
   override fun Content() {
     val viewModel = koinScreenModel<SongDetailScreenModel>(parameters = { parametersOf(songNumberId) })
     val state by viewModel.state.collectAsState()
-    val isFavorite by viewModel.isFavorite.collectAsState()
     val bookSongNumberIds by viewModel.bookSongNumberIds.collectAsState()
     val currentSongNumberId by viewModel.currentSongNumberId.collectAsState()
-    val references by viewModel.references.collectAsState()
-    val referenceBookContexts by viewModel.referenceBookContexts.collectAsState()
-    val songTags by viewModel.songTags.collectAsState()
     val allTags by viewModel.allTags.collectAsState()
     val bookNumberMap by viewModel.bookNumberMap.collectAsState()
+
+    val content = state as? SongDetailUiState.Content
+    val isFavorite = content?.isFavorite == true
+    val references = content?.references.orEmpty()
+    val referenceBookContexts = content?.referenceBookContexts.orEmpty()
+    val songTags = content?.songTags.orEmpty()
 
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -105,7 +108,8 @@ class SongDetailScreen(val songNumberIdString: String) : Screen {
     LaunchedEffect(Unit) {
       viewModel.effects.collect { effect ->
         when (effect) {
-          is SongDetailScreenModel.Effect.ShowError -> snackbarHostState.showSnackbar(effect.message)
+          is SongDetailScreenModel.Effect.ShowError ->
+            snackbarHostState.showSnackbar(effect.message.resolveString())
         }
       }
     }
@@ -293,26 +297,15 @@ fun SongDetailContent(
   val haptic = LocalHapticFeedback.current
   val externalActions = LocalSongDetailExternalActions.current
   val displaySettings = LocalSongDetailDisplaySettings.current
-  var fontScale by remember { mutableFloatStateOf(displaySettings?.fontScale ?: 1f) }
-  var expandedText by remember { mutableStateOf(displaySettings?.expandedText ?: true) }
+  // Host is the single source of truth for these settings; fall back to sensible defaults
+  // when no host has provided them (e.g. previews, tests).
+  val fontScale = displaySettings?.fontScale ?: 1f
+  val expandedText = displaySettings?.expandedText ?: true
 
-  LaunchedEffect(displaySettings?.fontScale) {
-    displaySettings?.let { fontScale = it.fontScale }
-  }
-  LaunchedEffect(displaySettings?.expandedText) {
-    displaySettings?.let { expandedText = it.expandedText }
-  }
-
-  // Sheet visibility state
-  var showTextSettingsSheet by remember { mutableStateOf(false) }
-  var showActionsSheet by remember { mutableStateOf(false) }
-  var showTagEditorSheet by remember { mutableStateOf(false) }
-  var showJumpSheet by remember { mutableStateOf(false) }
-
-  val textSettingsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-  val actionsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-  val tagEditorSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-  val jumpSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+  // Only one sheet may be open at a time — typed as a single sealed bucket so
+  // it's impossible to leave a "two sheets open" state by accident.
+  var activeSheet by remember { mutableStateOf<SongDetailSheet?>(null) }
+  val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
   val songId = (state as? SongDetailUiState.Content)?.song?.id
   val displayContext = when (state) {
@@ -324,7 +317,7 @@ fun SongDetailContent(
     snackbarHost = { SnackbarHost(snackbarHostState) },
     topBar = {
       val title = when {
-        displayContext.songNumber != null -> "№ ${displayContext.songNumber}"
+        displayContext.songNumber != null -> stringResource(Res.string.song_number_label, displayContext.songNumber)
         state is SongDetailUiState.Content -> state.song.name.value
         else -> stringResource(Res.string.song_detail_title_fallback)
       }
@@ -344,12 +337,12 @@ fun SongDetailContent(
               Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = stringResource(Res.string.song_detail_next))
             }
           }
-          IconButton(onClick = { showTextSettingsSheet = true }) {
+          IconButton(onClick = { activeSheet = SongDetailSheet.TextSettings }) {
             Icon(Icons.Filled.FormatSize, contentDescription = stringResource(Res.string.song_detail_text_size))
           }
           // "More actions" button — visible only when content loaded
           if (state is SongDetailUiState.Content) {
-            IconButton(onClick = { showActionsSheet = true }, modifier = Modifier.testTag("action:more-actions")) {
+            IconButton(onClick = { activeSheet = SongDetailSheet.Actions }, modifier = Modifier.testTag("action:more-actions")) {
               Icon(Icons.Filled.MoreVert, contentDescription = null)
             }
           }
@@ -361,7 +354,7 @@ fun SongDetailContent(
         val bottomInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
         FloatingActionButton(
           onClick = {
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
             onFavoriteClick()
           },
           containerColor = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -407,100 +400,70 @@ fun SongDetailContent(
       }
     }
 
-    // Text settings sheet
-    if (showTextSettingsSheet) {
+    val sheet = activeSheet
+    if (sheet != null) {
+      val dismiss: () -> Unit = { activeSheet = null }
       AppModalBottomSheet(
-        onDismissRequest = { showTextSettingsSheet = false },
-        sheetState = textSettingsSheetState,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        onDismissRequest = dismiss,
+        sheetState = sheetState,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
       ) {
-        TextSettingsSheet(
-          fontScale = fontScale,
-          expandedText = expandedText,
-          onFontScaleChange = {
-            fontScale = it
-            displaySettings?.onFontScaleChange?.invoke(it)
-          },
-          onExpandedTextChange = {
-            expandedText = it
-            displaySettings?.onExpandedTextChange?.invoke(it)
+        when (sheet) {
+          SongDetailSheet.TextSettings -> TextSettingsSheet(
+            fontScale = fontScale,
+            expandedText = expandedText,
+            onFontScaleChange = { displaySettings?.onFontScaleChange?.invoke(it) },
+            onExpandedTextChange = { displaySettings?.onExpandedTextChange?.invoke(it) },
+          )
+
+          SongDetailSheet.Actions -> if (songId != null) {
+            SongActionsSheet(
+              showJump = bookNumberMap.isNotEmpty(),
+              onEditSong = {
+                dismiss()
+                navigator.push(SongEditScreen(songId.value))
+              },
+              onEditTags = { activeSheet = SongDetailSheet.TagEditor },
+              onJumpToNumber = { activeSheet = SongDetailSheet.Jump },
+              onShare = {
+                val shareSong = (state as? SongDetailUiState.Content)?.song ?: return@SongActionsSheet
+                externalActions?.shareText?.invoke(buildShareText(shareSong))
+              },
+              onCopy = {
+                val copySong = (state as? SongDetailUiState.Content)?.song ?: return@SongActionsSheet
+                clipboardManager.setText(AnnotatedString(buildShareText(copySong)))
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+              },
+            )
           }
-        )
-      }
-    }
 
-    // Actions sheet (Edit / Tags / Jump)
-    if (showActionsSheet && songId != null) {
-      AppModalBottomSheet(
-        onDismissRequest = { showActionsSheet = false },
-        sheetState = actionsSheetState,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-      ) {
-        SongActionsSheet(
-          showJump = bookNumberMap.isNotEmpty(),
-          onEditSong = {
-            showActionsSheet = false
-            navigator.push(SongEditScreen(songId.value))
-          },
-          onEditTags = {
-            showActionsSheet = false
-            showTagEditorSheet = true
-          },
-          onJumpToNumber = {
-            showActionsSheet = false
-            showJumpSheet = true
-          },
-          onShare = {
-            val shareSong = (state as? SongDetailUiState.Content)?.song ?: return@SongActionsSheet
-            externalActions?.shareText?.invoke(buildShareText(shareSong))
-          },
-          onCopy = {
-            val copySong = (state as? SongDetailUiState.Content)?.song ?: return@SongActionsSheet
-            clipboardManager.setText(AnnotatedString(buildShareText(copySong)))
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+          SongDetailSheet.TagEditor -> TagEditorSheet(
+            songTags = songTags,
+            allTags = allTags,
+            onSave = { selectedIds ->
+              onSaveTags(selectedIds)
+              dismiss()
+            },
+            onDismiss = dismiss,
+          )
+
+          SongDetailSheet.Jump -> if (bookNumberMap.isNotEmpty()) {
+            JumpToNumberSheet(
+              bookNumberMap = bookNumberMap,
+              onNavigate = { targetId ->
+                dismiss()
+                navigator.push(SongDetailScreen(targetId.identifier))
+              },
+              onDismiss = dismiss,
+            )
           }
-        )
-      }
-    }
-
-    // Tag editor sheet
-    if (showTagEditorSheet) {
-      AppModalBottomSheet(
-        onDismissRequest = { showTagEditorSheet = false },
-        sheetState = tagEditorSheetState,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-      ) {
-        TagEditorSheet(
-          songTags = songTags,
-          allTags = allTags,
-          onSave = { selectedIds ->
-            onSaveTags(selectedIds)
-            showTagEditorSheet = false
-          },
-          onDismiss = { showTagEditorSheet = false }
-        )
-      }
-    }
-
-    // Jump to number sheet
-    if (showJumpSheet && bookNumberMap.isNotEmpty()) {
-      AppModalBottomSheet(
-        onDismissRequest = { showJumpSheet = false },
-        sheetState = jumpSheetState,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-      ) {
-        JumpToNumberSheet(
-          bookNumberMap = bookNumberMap,
-          onNavigate = { targetId ->
-            showJumpSheet = false
-            navigator.push(SongDetailScreen(targetId.identifier))
-          },
-          onDismiss = { showJumpSheet = false }
-        )
+        }
       }
     }
   }
 }
+
+private enum class SongDetailSheet { TextSettings, Actions, TagEditor, Jump }
 
 @Composable
 private fun TextSettingsSheet(
@@ -973,11 +936,11 @@ private fun SongMetadata(song: SongDetail) {
 
       Spacer(Modifier.height(spacing.sm))
 
-      if (song.author != null) MetadataItem(stringResource(Res.string.song_detail_info_author), song.author!!.name)
-      if (song.composer != null) MetadataItem(stringResource(Res.string.song_detail_info_composer), song.composer!!.name)
-      if (song.translator != null) MetadataItem(stringResource(Res.string.song_detail_info_translator), song.translator!!.name)
-      if (song.year != null) MetadataItem(stringResource(Res.string.song_detail_info_year), song.year.toString())
-      if (hasBibleRef) {
+      song.author?.let { MetadataItem(stringResource(Res.string.song_detail_info_author), it.name) }
+      song.composer?.let { MetadataItem(stringResource(Res.string.song_detail_info_composer), it.name) }
+      song.translator?.let { MetadataItem(stringResource(Res.string.song_detail_info_translator), it.name) }
+      song.year?.let { MetadataItem(stringResource(Res.string.song_detail_info_year), it.toString()) }
+      if (hasBibleRef && bibleRefText != null) {
         MetadataItem(stringResource(Res.string.song_detail_info_bible), bibleRefText)
       }
     }

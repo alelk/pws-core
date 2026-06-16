@@ -3,9 +3,12 @@ package io.github.alelk.pws.features.home
 import androidx.compose.runtime.Immutable
 import io.github.alelk.pws.domain.book.model.BookSummary
 import io.github.alelk.pws.domain.history.model.HistoryEntry
+import io.github.alelk.pws.features.search.SearchSuggestion
 
 /**
- * UI State for Home Screen.
+ * Single composite UI state for the Home screen. The skill (`compose-multiplatform-ui`)
+ * mandates one sealed `Loading / Content / Error` state per screen — all transient
+ * fields (search query, suggestions, loading spinners) live inside [Content].
  */
 sealed interface HomeUiState {
   data object Loading : HomeUiState
@@ -14,35 +17,21 @@ sealed interface HomeUiState {
   data class Content(
     val books: List<BookSummary>,
     val recentSongs: List<HistoryEntry> = emptyList(),
-    val isSearchActive: Boolean = false
+    val searchQuery: String = "",
+    val searchSuggestions: List<SearchSuggestion> = emptyList(),
+    val isSearching: Boolean = false,
+    val numberQuery: String = "",
+    val numberSuggestions: List<SearchSuggestion> = emptyList(),
+    val isNumberSearching: Boolean = false,
   ) : HomeUiState
 
   data object Error : HomeUiState
 }
 
-/**
- * Search mode for quick actions.
- */
-enum class SearchMode {
-  /** Search by song number */
-  NUMBER,
-  /** Search by text/lyrics */
-  TEXT
-}
-
-/**
- * Events from UI to ViewModel.
- */
+/** User-driven events accepted by [HomeScreenModel]. */
 sealed interface HomeEvent {
-  /** User clicked on search field */
-  data object SearchClicked : HomeEvent
-
-  /** User clicked quick search by number */
-  data object QuickNumberSearchClicked : HomeEvent
-
-  /** User clicked quick search by text */
-  data object QuickTextSearchClicked : HomeEvent
-
-  /** User selected a book */
-  data class BookClicked(val book: BookSummary) : HomeEvent
+  data class SearchQueryChanged(val query: String) : HomeEvent
+  data object SearchCleared : HomeEvent
+  data class NumberQueryChanged(val query: String) : HomeEvent
+  data object NumberCleared : HomeEvent
 }

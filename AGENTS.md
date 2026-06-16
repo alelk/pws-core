@@ -1,7 +1,10 @@
 # PWS Core - Guide for AI Agents
 
+> **Claude Code:** read `CLAUDE.md` (auto-loaded, more concise, lists project-local skills).
+> This file targets generic agents (Cursor, Aider, Copilot, etc.).
+> For detailed context and conventions, continue with `docs/ai/CONTEXT.md` and `docs/ai/CONTRIBUTING.md`.
+
 Use this file as a fast operational runbook.
-For detailed context and conventions, continue with `docs/ai/CONTEXT.md` and `docs/ai/CONTRIBUTING.md`.
 
 ## Mission and boundaries
 

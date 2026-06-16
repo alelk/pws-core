@@ -24,21 +24,18 @@ class SongDetailBySongIdScreen(val songIdLong: Long) : Screen {
   override fun Content() {
     val viewModel = koinScreenModel<SongDetailBySongIdScreenModel>(parameters = { parametersOf(songId) })
     val state by viewModel.state.collectAsState()
-    val isFavorite by viewModel.isFavorite.collectAsState()
-    val references by viewModel.references.collectAsState()
-    val referenceBookContexts by viewModel.referenceBookContexts.collectAsState()
-    val songTags by viewModel.songTags.collectAsState()
     val allTags by viewModel.allTags.collectAsState()
     val uriHandler = LocalUriHandler.current
 
-    val donationBoostyUrl = (state as? SongDetailUiState.Content)?.donationBoostyUrl ?: ""
+    val content = state as? SongDetailUiState.Content
+    val donationBoostyUrl = content?.donationBoostyUrl.orEmpty()
 
     SongDetailContent(
       state = state,
-      isFavorite = isFavorite,
-      references = references,
-      referenceBookContexts = referenceBookContexts,
-      songTags = songTags,
+      isFavorite = content?.isFavorite == true,
+      references = content?.references.orEmpty(),
+      referenceBookContexts = content?.referenceBookContexts.orEmpty(),
+      songTags = content?.songTags.orEmpty(),
       allTags = allTags,
       onFavoriteClick = { viewModel.onToggleFavorite() },
       onSaveTags = { viewModel.onSaveTags(it) },

@@ -203,7 +203,7 @@ fun TagsContent(
       if (state is TagsUiState.Content || state is TagsUiState.Empty) {
         FloatingActionButton(
           onClick = { 
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
             onEvent(TagsEvent.AddTagClicked)
           },
           modifier = Modifier.testTag("action:add-tag")
@@ -323,7 +323,7 @@ private fun TagListItem(
       .fillMaxWidth()
       .testTag("tag-row-${tag.name}")
       .clickable(onClick = {
-        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
         onClick()
       }),
     color = MaterialTheme.colorScheme.surface
@@ -365,7 +365,7 @@ private fun TagListItem(
 
       // Actions for all tags (API handles user overrides for predefined tags)
       IconButton(onClick = {
-        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
         onEditClick()
       }) {
         Icon(
@@ -375,7 +375,7 @@ private fun TagListItem(
         )
       }
       IconButton(onClick = {
-        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
         onDeleteClick()
       }) {
         Icon(
@@ -443,7 +443,7 @@ private fun TagDialog(
               color = color,
               isSelected = color == selectedColor,
               onClick = { 
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 selectedColor = color 
               }
             )
@@ -454,7 +454,7 @@ private fun TagDialog(
     confirmButton = {
       TextButton(
         onClick = { 
-          haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+          haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
           onSave(name, selectedColor)
         },
         modifier = Modifier.testTagsAsResourceId().testTag("action:save-tag"),
@@ -508,46 +508,20 @@ private fun DeleteTagDialog(
   onDismiss: () -> Unit
 ) {
   val isPredefined = tag.isPredefined
-  val title = if (isPredefined) {
-    stringResource(Res.string.tags_hide_dialog_title)
-  } else {
-    stringResource(Res.string.tags_delete_dialog_title)
-  }
-  val message = if (isPredefined) {
-    stringResource(Res.string.tags_hide_dialog_message, tag.name)
-  } else {
-    stringResource(Res.string.tags_delete_dialog_message, tag.name)
-  }
+  val title = if (isPredefined) stringResource(Res.string.tags_hide_dialog_title) else stringResource(Res.string.tags_delete_dialog_title)
+  val message = if (isPredefined) stringResource(Res.string.tags_hide_dialog_message, tag.name) else stringResource(Res.string.tags_delete_dialog_message, tag.name)
   val confirmText = if (isPredefined) stringResource(Res.string.tags_hide) else stringResource(Res.string.common_delete)
   val haptic = LocalHapticFeedback.current
 
-  AlertDialog(
-    onDismissRequest = onDismiss,
-    icon = {
-      Icon(
-        imageVector = Icons.Outlined.Delete,
-        contentDescription = null,
-        tint = MaterialTheme.colorScheme.error
-      )
+  io.github.alelk.pws.features.components.AppConfirmDialog(
+    title = title,
+    message = message,
+    confirmLabel = confirmText,
+    icon = Icons.Outlined.Delete,
+    onConfirm = {
+      haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+      onConfirm()
     },
-    title = {
-      Text(title)
-    },
-    text = {
-      Text(message)
-    },
-    confirmButton = {
-      TextButton(onClick = {
-        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-        onConfirm()
-      }) {
-        Text(confirmText, color = MaterialTheme.colorScheme.error)
-      }
-    },
-    dismissButton = {
-      TextButton(onClick = onDismiss) {
-        Text(stringResource(Res.string.tags_cancel))
-      }
-    }
+    onDismiss = onDismiss,
   )
 }

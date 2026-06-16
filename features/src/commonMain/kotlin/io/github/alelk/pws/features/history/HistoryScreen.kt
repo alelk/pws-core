@@ -26,6 +26,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -57,9 +58,16 @@ import io.github.alelk.pws.features.resources.history_empty_title
 import io.github.alelk.pws.features.resources.history_loading
 import io.github.alelk.pws.features.resources.nav_history
 import io.github.alelk.pws.features.resources.settings_open
+import io.github.alelk.pws.features.resources.time_days_ago
+import io.github.alelk.pws.features.resources.time_hours_ago
+import io.github.alelk.pws.features.resources.time_just_now
+import io.github.alelk.pws.features.resources.time_minutes_ago
+import io.github.alelk.pws.features.resources.time_yesterday
 import io.github.alelk.pws.features.components.testTagsAsResourceId
 import io.github.alelk.pws.features.theme.spacing
+import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 import org.jetbrains.compose.resources.stringResource
 
 class HistoryScreen : Screen {
@@ -129,7 +137,7 @@ fun HistoryContent(
             if (state is HistoryUiState.Content && state.canClearAll) {
               IconButton(
                 onClick = {
-                  haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                  haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                   onClearAll()
                 },
                 modifier = Modifier.testTag("action:clear-history")
@@ -178,7 +186,7 @@ fun HistoryContent(
         ErrorContent(
           modifier = Modifier.padding(innerPadding),
           title = stringResource(Res.string.common_error_title),
-          message = state.message
+          message = io.github.alelk.pws.features.app.rememberResolved(state.message),
         )
       }
     }
@@ -188,7 +196,7 @@ fun HistoryContent(
   if (showClearDialog) {
     ClearHistoryDialog(
       onConfirm = {
-        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
         onConfirmClear()
       },
       onDismiss = onDismissClear
@@ -204,7 +212,7 @@ private fun HistoryList(
   onRemove: (HistoryItemUi) -> Unit
 ) {
   val navigator = LocalNavigator.currentOrThrow
-  val recentlyText = stringResource(Res.string.common_recently)
+  val now = remember { Clock.System.now() }
 
   LazyColumn(
     modifier = modifier.fillMaxSize(),
@@ -220,7 +228,7 @@ private fun HistoryList(
           SwipeableSongItem(
             number = item.songNumber,
             title = item.songName,
-            subtitle = "${item.bookDisplayName} • ${formatTime(item.viewedAt.toEpochMilliseconds(), recentlyText)}",
+            subtitle = "${item.bookDisplayName} • ${formatRelativeTime(item.viewedAt, now)}",
             onClick = { navigator.push(songScreen) },
             onDelete = { onRemove(item) }
           )
@@ -230,7 +238,7 @@ private fun HistoryList(
           SwipeableSongItem(
             number = null,
             title = item.songName,
-            subtitle = formatTime(item.viewedAt.toEpochMilliseconds(), recentlyText),
+            subtitle = formatRelativeTime(item.viewedAt, now),
             onClick = { navigator.push(songScreen) },
             onDelete = { onRemove(item) }
           )
@@ -256,38 +264,30 @@ private fun ClearHistoryDialog(
   onConfirm: () -> Unit,
   onDismiss: () -> Unit
 ) {
-  AlertDialog(
-    onDismissRequest = onDismiss,
-    icon = {
-      Icon(
-        imageVector = Icons.Outlined.DeleteSweep,
-        contentDescription = null
-      )
-    },
-    title = {
-      Text(stringResource(Res.string.history_clear_dialog_title))
-    },
-    text = {
-      Text(stringResource(Res.string.history_clear_dialog_message))
-    },
-    confirmButton = {
-      TextButton(
-        onClick = onConfirm,
-        modifier = Modifier.testTagsAsResourceId().testTag("action:confirm-clear-history")
-      ) {
-        Text(stringResource(Res.string.history_clear_dialog_confirm))
-      }
-    },
-    dismissButton = {
-      TextButton(onClick = onDismiss) {
-        Text(stringResource(Res.string.history_clear_dialog_cancel))
-      }
-    }
+  io.github.alelk.pws.features.components.AppConfirmDialog(
+    title = stringResource(Res.string.history_clear_dialog_title),
+    message = stringResource(Res.string.history_clear_dialog_message),
+    confirmLabel = stringResource(Res.string.history_clear_dialog_confirm),
+    dismissLabel = stringResource(Res.string.history_clear_dialog_cancel),
+    icon = Icons.Outlined.DeleteSweep,
+    confirmButtonTestTag = "action:confirm-clear-history",
+    onConfirm = onConfirm,
+    onDismiss = onDismiss,
   )
 }
 
-private fun formatTime(timestamp: Long, recentlyText: String): String {
-  // Simple relative time formatting
-  // In production, use kotlinx-datetime for proper KMP time handling
-  return recentlyText
+@OptIn(ExperimentalTime::class)
+@Composable
+private fun formatRelativeTime(viewedAt: Instant, now: Instant): String {
+  val diff = now - viewedAt
+  val minutes = diff.inWholeMinutes
+  val hours = diff.inWholeHours
+  val days = diff.inWholeDays
+  return when {
+    minutes < 1 -> stringResource(Res.string.time_just_now)
+    minutes < 60 -> stringResource(Res.string.time_minutes_ago, minutes.toInt())
+    hours < 24 -> stringResource(Res.string.time_hours_ago, hours.toInt())
+    days < 2 -> stringResource(Res.string.time_yesterday)
+    else -> stringResource(Res.string.time_days_ago, days.toInt())
+  }
 }

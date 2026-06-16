@@ -98,6 +98,8 @@ import org.koin.core.parameter.parametersOf
 class SongEditScreen(val songIdLong: Long) : Screen {
   val songId: SongId get() = SongId(songIdLong)
 
+  override val key: String = "song-edit/$songIdLong"
+
   @Composable
   override fun Content() {
     val viewModel = koinScreenModel<SongEditScreenModel>(parameters = { parametersOf(songId) })
@@ -161,7 +163,7 @@ fun SongEditContent(
             } else {
               IconButton(
                 onClick = { 
-                  haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                  haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                   onEvent(SongEditEvent.SaveClicked) 
                 },
                 enabled = state.hasUnsavedChanges,
@@ -195,15 +197,15 @@ fun SongEditContent(
       }
 
       is SongEditUiState.Error -> {
-        val message = if (state.message == "SONG_NOT_FOUND") {
-          stringResource(Res.string.song_edit_error_not_found)
-        } else {
-          state.message
+        val message = when (val m = state.message) {
+          io.github.alelk.pws.features.app.UiMessage.SongNotFound ->
+            stringResource(Res.string.song_edit_error_not_found)
+          else -> io.github.alelk.pws.features.app.rememberResolved(m)
         }
         ErrorContent(
           modifier = Modifier.padding(innerPadding),
           title = stringResource(Res.string.common_error_title),
-          message = message
+          message = message,
         )
       }
     }
@@ -213,7 +215,7 @@ fun SongEditContent(
   if (showDiscardDialog) {
     DiscardChangesDialog(
       onConfirm = { 
-        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
         onEvent(SongEditEvent.DiscardChangesConfirmed) 
       },
       onDismiss = { onEvent(SongEditEvent.DismissDiscardDialog) }
@@ -364,7 +366,7 @@ private fun EditForm(
           FilterChip(
             selected = tag.isSelected,
             onClick = { 
-              haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+              haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
               onEvent(SongEditEvent.TagToggled(tag.id)) 
             },
             label = {
@@ -412,7 +414,7 @@ private fun EditForm(
         FilterChip(
           selected = isSelected,
           onClick = {
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
             onEvent(SongEditEvent.TonalityToggled(tonality))
           },
           label = {
@@ -442,19 +444,12 @@ private fun DiscardChangesDialog(
   onConfirm: () -> Unit,
   onDismiss: () -> Unit
 ) {
-  AlertDialog(
-    onDismissRequest = onDismiss,
-    title = { Text(stringResource(Res.string.song_edit_discard_title)) },
-    text = { Text(stringResource(Res.string.song_edit_discard_message)) },
-    confirmButton = {
-      TextButton(onClick = onConfirm) {
-        Text(stringResource(Res.string.song_edit_discard_confirm), color = MaterialTheme.colorScheme.error)
-      }
-    },
-    dismissButton = {
-      TextButton(onClick = onDismiss) {
-        Text(stringResource(Res.string.song_edit_discard_cancel))
-      }
-    }
+  io.github.alelk.pws.features.components.AppConfirmDialog(
+    title = stringResource(Res.string.song_edit_discard_title),
+    message = stringResource(Res.string.song_edit_discard_message),
+    confirmLabel = stringResource(Res.string.song_edit_discard_confirm),
+    dismissLabel = stringResource(Res.string.song_edit_discard_cancel),
+    onConfirm = onConfirm,
+    onDismiss = onDismiss,
   )
 }

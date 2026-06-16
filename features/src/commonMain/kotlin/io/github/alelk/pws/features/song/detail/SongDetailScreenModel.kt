@@ -8,14 +8,13 @@ import io.github.alelk.pws.domain.core.ids.BookId
 import io.github.alelk.pws.domain.core.ids.SongId
 import io.github.alelk.pws.domain.core.ids.SongNumberId
 import io.github.alelk.pws.domain.core.ids.TagId
-import io.github.alelk.pws.domain.favorite.model.FavoriteSubject
-import io.github.alelk.pws.domain.favorite.usecase.ObserveIsFavoriteUseCase
-import io.github.alelk.pws.domain.favorite.usecase.ToggleFavoriteUseCase
 import io.github.alelk.pws.domain.donationprompt.config.DonationConfig
 import io.github.alelk.pws.domain.donationprompt.usecase.RecordDonationClickedUseCase
 import io.github.alelk.pws.domain.donationprompt.usecase.RecordDonationPromptDismissedUseCase
 import io.github.alelk.pws.domain.donationprompt.usecase.ShouldShowDonationPromptUseCase
-import io.github.alelk.pws.features.di.DonationSessionGuard
+import io.github.alelk.pws.domain.favorite.model.FavoriteSubject
+import io.github.alelk.pws.domain.favorite.usecase.ObserveIsFavoriteUseCase
+import io.github.alelk.pws.domain.favorite.usecase.ToggleFavoriteUseCase
 import io.github.alelk.pws.domain.history.model.HistorySubject
 import io.github.alelk.pws.domain.history.usecase.RecordSongViewUseCase
 import io.github.alelk.pws.domain.song.model.SongDetail
@@ -28,6 +27,8 @@ import io.github.alelk.pws.domain.songtag.usecase.ObserveTagsForSongUseCase
 import io.github.alelk.pws.domain.songtag.usecase.ReplaceAllSongTagsUseCase
 import io.github.alelk.pws.domain.tag.model.Tag
 import io.github.alelk.pws.domain.tag.usecase.ObserveTagsUseCase
+import io.github.alelk.pws.features.app.UiMessage
+import io.github.alelk.pws.features.di.DonationSessionGuard
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -37,8 +38,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -76,107 +79,109 @@ class SongDetailScreenModel(
     val songNumber: Int,
   )
 
-  /** Currently active song number id — changes when user swipes. */
+  // ---------------------------------------------------------------------------
+  // Pager / jump-by-number — book-level, independent of which song is shown.
+  // ---------------------------------------------------------------------------
+
   private val _currentSongNumberId = MutableStateFlow(songNumberId)
   val currentSongNumberId: StateFlow<SongNumberId> = _currentSongNumberId.asStateFlow()
 
-  private val _isFavorite = MutableStateFlow(false)
-  val isFavorite: StateFlow<Boolean> = _isFavorite.asStateFlow()
-
-  /** Ordered list of SongNumberIds in the same book (sorted by number). Empty until loaded. */
   private val _bookSongNumberIds = MutableStateFlow<List<SongNumberId>>(emptyList())
   val bookSongNumberIds: StateFlow<List<SongNumberId>> = _bookSongNumberIds.asStateFlow()
 
-  /** Map: song number (Int) → SongNumberId. Used for "jump by number" navigation. */
   private val _bookNumberMap = MutableStateFlow<Map<Int, SongNumberId>>(emptyMap())
   val bookNumberMap: StateFlow<Map<Int, SongNumberId>> = _bookNumberMap.asStateFlow()
 
-  /** Reverse index: songId -> song number inside the current book. */
-  private val songIdToNumber = MutableStateFlow<Map<io.github.alelk.pws.domain.core.ids.SongId, Int>>(emptyMap())
-
-  /** Current book display title. */
+  /** Reverse index: songId → song number inside the current book. */
+  private val songIdToNumber = MutableStateFlow<Map<SongId, Int>>(emptyMap())
   private val bookTitle = MutableStateFlow<String?>(null)
-
-  /** Cross-references to related songs. Empty until loaded. */
-  private val _references = MutableStateFlow<List<SongReferenceDetail>>(emptyList())
-  val references: StateFlow<List<SongReferenceDetail>> = _references.asStateFlow()
-
-  /** Map: ref song id -> all known book contexts for opening by SongNumberId. */
-  private val _referenceBookContexts = MutableStateFlow<Map<SongId, List<ReferenceBookContextUi>>>(emptyMap())
-  val referenceBookContexts: StateFlow<Map<SongId, List<ReferenceBookContextUi>>> = _referenceBookContexts.asStateFlow()
-
   private val booksSnapshot = MutableStateFlow<List<BookSummary>>(emptyList())
 
-  /** Effective coroutine scope: injected for tests, otherwise Voyager's screenModelScope. */
-  private val scope: CoroutineScope get() = coroutineScope ?: screenModelScope
-
-  /** Tags assigned to the current song. */
-  private val _songTags = MutableStateFlow<List<Tag<TagId>>>(emptyList())
-  val songTags: StateFlow<List<Tag<TagId>>> = _songTags.asStateFlow()
-
-  /** All available tags (for the tag editor). */
+  /** All available tags (for the tag editor sheet) — global, not per-song. */
   private val _allTags = MutableStateFlow<List<Tag<TagId>>>(emptyList())
   val allTags: StateFlow<List<Tag<TagId>>> = _allTags.asStateFlow()
 
+  // ---------------------------------------------------------------------------
+  // Effects
+  // ---------------------------------------------------------------------------
+
   sealed interface Effect {
-    data class ShowError(val message: String) : Effect
+    data class ShowError(val message: UiMessage) : Effect
   }
 
   private val _effects = MutableSharedFlow<Effect>()
   val effects = _effects.asSharedFlow()
 
+  // ---------------------------------------------------------------------------
+  // Lifecycle
+  // ---------------------------------------------------------------------------
+
+  private val scope: CoroutineScope get() = coroutineScope ?: screenModelScope
+
+  /** Cached per-song bits not in [observeSong]. Folded into Content alongside the song. */
+  private data class PerSongExtras(
+    val isFavorite: Boolean,
+    val songTags: List<Tag<TagId>>,
+    val references: List<SongReferenceDetail>,
+    val referenceBookContexts: Map<SongId, List<ReferenceBookContextUi>>,
+  )
+
   init {
-    // Observe currently displayed song content
+    // Per-song flow: emit Loading whenever the active song changes; on the new
+    // song id, observe song + favourite + tags + references and fold them into
+    // a single Content (or Error if the song is missing).
     scope.launch(context = CoroutineExceptionHandler { _, _ -> mutableState.value = SongDetailUiState.Error }) {
-      _currentSongNumberId.flatMapLatest { id ->
-        mutableState.value = SongDetailUiState.Loading
-        observeSong(id.songId)
-      }.collectLatest { detail: SongDetail? ->
-        mutableState.value = detail?.let {
-          SongDetailUiState.Content(
-            song = it,
-            context = SongDetailUiState.DisplayContext(
-              songNumber = songIdToNumber.value[it.id],
-              bookTitle = bookTitle.value
+      _currentSongNumberId
+        .onEach { mutableState.value = SongDetailUiState.Loading }
+        .flatMapLatest { id ->
+          val refs = loadReferences(id.songId)
+          combineLatest4(
+            observeSong(id.songId),
+            observeIsFavorite(FavoriteSubject.BookedSong(id)),
+            observeTagsForSong(id),
+            booksSnapshot,
+          ) { song, isFav, tags, books ->
+            song to PerSongExtras(
+              isFavorite = isFav,
+              songTags = tags,
+              references = refs,
+              referenceBookContexts = computeReferenceBookContexts(refs, books),
             )
-          )
-        } ?: SongDetailUiState.Error
-      }
+          }
+        }
+        .collectLatest { (detail, extras) ->
+          mutableState.value = detail?.let {
+            SongDetailUiState.Content(
+              song = it,
+              context = SongDetailUiState.DisplayContext(
+                songNumber = songIdToNumber.value[it.id],
+                bookTitle = bookTitle.value,
+              ),
+              isFavorite = extras.isFavorite,
+              songTags = extras.songTags,
+              references = extras.references,
+              referenceBookContexts = extras.referenceBookContexts,
+            )
+          } ?: SongDetailUiState.Error
+        }
     }
 
-    // Observe book title to show context in header
+    // Book context — title and song list for the pager. Book-level, not per-song.
     scope.launch {
       observeBooks().collectLatest { books ->
         booksSnapshot.value = books
         bookTitle.value = books.firstOrNull { it.id == songNumberId.bookId }?.displayName?.value
         refreshContextIfContent()
-        refreshReferenceContexts()
       }
     }
 
-    // Observe favorite status, reacting to song changes
-    scope.launch {
-      _currentSongNumberId.flatMapLatest { id ->
-        observeIsFavorite(FavoriteSubject.BookedSong(id))
-      }.collectLatest { isFav ->
-        _isFavorite.value = isFav
-      }
-    }
-
-    // Load all song IDs in the same book for swipe navigation and jump-by-number
     scope.launch {
       try {
         songObserveRepository.observeAllInBook(songNumberId.bookId).collectLatest { songsMap ->
-          // songsMap: Map<Int /* number */, SongSummary>
           val sorted = songsMap.entries.sortedBy { it.key }
-          val idToNum = sorted.associate { (number, summary) -> summary.id to number }
-          _bookSongNumberIds.value = sorted.map { (_, summary) ->
-            SongNumberId(songNumberId.bookId, summary.id)
-          }
-          _bookNumberMap.value = sorted.associate { (number, summary) ->
-            number to SongNumberId(songNumberId.bookId, summary.id)
-          }
-          songIdToNumber.value = idToNum
+          songIdToNumber.value = sorted.associate { (number, summary) -> summary.id to number }
+          _bookSongNumberIds.value = sorted.map { (_, summary) -> SongNumberId(songNumberId.bookId, summary.id) }
+          _bookNumberMap.value = sorted.associate { (number, summary) -> number to SongNumberId(songNumberId.bookId, summary.id) }
           refreshContextIfContent()
         }
       } catch (_: Exception) {
@@ -184,43 +189,13 @@ class SongDetailScreenModel(
       }
     }
 
-    // Load cross-references for the current song
     scope.launch {
-      _currentSongNumberId.collectLatest { currentId ->
-        try {
-          _references.value = getSongReferences(currentId.songId).fold(
-            ifLeft = { emptyList() },
-            ifRight = { it }
-          )
-          refreshReferenceContexts()
-        } catch (_: Exception) {
-          _references.value = emptyList()
-          _referenceBookContexts.value = emptyMap()
-        }
-      }
+      observeAllTags().collectLatest { _allTags.value = it }
     }
 
-    // Observe tags for the current song
-    scope.launch {
-      _currentSongNumberId.flatMapLatest { id ->
-        observeTagsForSong(id)
-      }.collectLatest { tags ->
-        _songTags.value = tags
-      }
-    }
-
-    // Observe all available tags (for tag editor)
-    scope.launch {
-      observeAllTags().collectLatest { tags ->
-        _allTags.value = tags
-      }
-    }
-
-    // Auto-record song view after viewDelay once the song content is loaded.
-    // collectLatest cancels the timer when the user swipes to a different song.
+    // Auto-record song view after viewDelay once Content for the current song is loaded.
     scope.launch {
       _currentSongNumberId.collectLatest { id ->
-        // Wait for Content that belongs to the current song (avoids stale-Content race on swipe)
         state.first { s -> s is SongDetailUiState.Content && s.song.id == id.songId }
         kotlinx.coroutines.delay(viewDelay)
         try {
@@ -242,40 +217,34 @@ class SongDetailScreenModel(
     scope.launch {
       try {
         toggleFavorite(FavoriteSubject.BookedSong(_currentSongNumberId.value))
-      } catch (_: Exception) {}
+      } catch (e: Exception) {
+        _effects.emit(Effect.ShowError(UiMessage.Failure(e.message)))
+      }
     }
   }
 
-  /** Save the selected set of tags for the current song. */
   fun onSaveTags(selectedTagIds: Set<TagId>) {
     scope.launch {
       replaceAllSongTags(_currentSongNumberId.value.songId, selectedTagIds).fold(
-        ifLeft = { error -> _effects.emit(Effect.ShowError(error.message)) },
-        ifRight = { }
+        ifLeft = { error -> _effects.emit(Effect.ShowError(UiMessage.Failure(error.message))) },
+        ifRight = { },
       )
     }
   }
 
-  /**
-   * Returns the [SongNumberId] for the given song number in the current book,
-   * or null if no song with that number exists.
-   */
   fun resolveNumber(number: Int): SongNumberId? = _bookNumberMap.value[number]
 
-  /** Called when the user taps "Later" (×) on the donation prompt card.
-   * Suppresses for [shortSuppressViews] views and blocks the card for the rest of this session. */
   fun onDonationDismissed() {
     scope.launch {
       try {
         recordDonationDismissed()
-        donationSessionGuard.shownThisSession = true   // suppress for rest of session
+        donationSessionGuard.shownThisSession = true
         val current = mutableState.value as? SongDetailUiState.Content ?: return@launch
         mutableState.value = current.copy(showDonationCard = false)
       } catch (_: Exception) {}
     }
   }
 
-  /** Called when the user taps "Support on Boosty". Permanently suppresses the prompt. */
   fun onDonationClicked() {
     scope.launch {
       try {
@@ -290,8 +259,6 @@ class SongDetailScreenModel(
     try {
       if (shouldShowDonationPrompt()) {
         donationSessionGuard.seenCountThisSession++
-        // After seeing the card maxShowsPerSession times without any action,
-        // suppress for the rest of this session (no persistent suppress in SharedPreferences).
         if (donationSessionGuard.seenCountThisSession >= donationConfig.maxShowsPerSession) {
           donationSessionGuard.shownThisSession = true
         }
@@ -309,22 +276,29 @@ class SongDetailScreenModel(
     mutableState.value = current.copy(
       context = SongDetailUiState.DisplayContext(
         songNumber = songIdToNumber.value[current.song.id],
-        bookTitle = bookTitle.value
-      )
+        bookTitle = bookTitle.value,
+      ),
     )
   }
 
-  private suspend fun refreshReferenceContexts() {
-    val references = _references.value
-    val targetSongIds = references.map { it.refSongId }.toSet()
-    if (targetSongIds.isEmpty()) {
-      _referenceBookContexts.value = emptyMap()
-      return
+  private suspend fun loadReferences(songId: SongId): List<SongReferenceDetail> =
+    try {
+      getSongReferences(songId).fold(ifLeft = { emptyList() }, ifRight = { it })
+    } catch (_: Exception) {
+      emptyList()
     }
 
-    val bySong = linkedMapOf<SongId, MutableList<ReferenceBookContextUi>>()
-    val activeBooks = booksSnapshot.value.filter { it.enabled }.associateBy { it.id }
+  private suspend fun computeReferenceBookContexts(
+    references: List<SongReferenceDetail>,
+    books: List<BookSummary>,
+  ): Map<SongId, List<ReferenceBookContextUi>> {
+    val targetSongIds = references.map { it.refSongId }.toSet()
+    if (targetSongIds.isEmpty()) return emptyMap()
 
+    val activeBooks = books.filter { it.enabled }.associateBy { it.id }
+    val bookPriority = activeBooks.mapValues { it.value.priority }
+
+    val bySong = linkedMapOf<SongId, MutableList<ReferenceBookContextUi>>()
     targetSongIds.forEach { songId ->
       val songNumbers = songNumberReadRepository.getAllBySongId(songId)
       songNumbers.forEach { sn ->
@@ -342,9 +316,7 @@ class SongDetailScreenModel(
       }
     }
 
-    val bookPriority = activeBooks.mapValues { it.value.priority }
-
-    _referenceBookContexts.value = bySong.mapValues { (_, list) ->
+    return bySong.mapValues { (_, list) ->
       list.distinctBy { it.songNumberId.identifier }
         .sortedWith(
           compareByDescending<ReferenceBookContextUi> { bookPriority[it.bookId] ?: 0 }
@@ -354,3 +326,12 @@ class SongDetailScreenModel(
     }
   }
 }
+
+/** kotlinx-coroutines lacks a varargs combine with 4 args; this is the shim. */
+private fun <T1, T2, T3, T4, R> combineLatest4(
+  f1: kotlinx.coroutines.flow.Flow<T1>,
+  f2: kotlinx.coroutines.flow.Flow<T2>,
+  f3: kotlinx.coroutines.flow.Flow<T3>,
+  f4: kotlinx.coroutines.flow.Flow<T4>,
+  transform: suspend (T1, T2, T3, T4) -> R,
+): kotlinx.coroutines.flow.Flow<R> = kotlinx.coroutines.flow.combine(f1, f2, f3, f4, transform)

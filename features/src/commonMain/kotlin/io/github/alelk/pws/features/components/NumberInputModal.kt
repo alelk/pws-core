@@ -1,16 +1,17 @@
 package io.github.alelk.pws.features.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -18,9 +19,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Dialpad
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Dialpad
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -31,27 +31,28 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.common_clear
-import io.github.alelk.pws.features.resources.common_close
 import io.github.alelk.pws.features.resources.number_dropdown_idle
 import io.github.alelk.pws.features.resources.number_dropdown_no_results
 import io.github.alelk.pws.features.resources.number_hint_example
@@ -65,15 +66,12 @@ import io.github.alelk.pws.features.theme.spacing
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * Modal for entering song number with custom numpad and live suggestions.
+ * Modal bottom sheet for entering a song number with live suggestions.
  *
- * @param numberQuery Current number input string
- * @param suggestions List of song suggestions for the current number
- * @param isSearching Whether search is in progress
- * @param onNumberChange Called when user presses a digit or backspace
- * @param onDismiss Called when modal should be dismissed
- * @param onSuggestionClick Called when user taps a suggestion
+ * Backed by [AppModalBottomSheet] for system-correct dismissal, a11y dialog role,
+ * and drag-to-dismiss out of the box.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NumberInputModal(
   numberQuery: String,
@@ -82,104 +80,64 @@ fun NumberInputModal(
   onNumberChange: (String) -> Unit,
   onDismiss: () -> Unit,
   onSuggestionClick: (SearchSuggestion) -> Unit,
-  modifier: Modifier = Modifier
 ) {
-  val focusRequester = FocusRequester()
+  val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+  val focusRequester = remember { FocusRequester() }
   val normalizedQuery = numberQuery.filter { it.isDigit() }.take(4)
 
   LaunchedEffect(Unit) {
     focusRequester.requestFocus()
   }
 
-  // Full screen overlay
-  Box(
-    modifier = modifier
-      .fillMaxSize()
-      .background(Color.Black.copy(alpha = 0.5f))
-      .clickable(onClick = onDismiss),
-    contentAlignment = Alignment.BottomCenter
+  AppModalBottomSheet(
+    onDismissRequest = onDismiss,
+    sheetState = sheetState,
+    containerColor = MaterialTheme.colorScheme.surface,
   ) {
-    // Bottom sheet content
-    Surface(
+    Column(
       modifier = Modifier
         .fillMaxWidth()
-        .clickable(enabled = false) { },
-      shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-      color = MaterialTheme.colorScheme.surface,
-      tonalElevation = 2.dp
+        .padding(MaterialTheme.spacing.lg)
+        .padding(WindowInsets.navigationBars.asPaddingValues()),
     ) {
-      Column(
+      Text(
+        text = stringResource(Res.string.number_search_title),
+        style = MaterialTheme.typography.titleMedium,
+        color = MaterialTheme.colorScheme.onSurface,
+      )
+
+      Spacer(Modifier.height(MaterialTheme.spacing.md))
+
+      NumberInputField(
+        value = normalizedQuery,
+        isSearching = isSearching,
+        focusRequester = focusRequester,
+        onValueChange = onNumberChange,
+        onClear = { onNumberChange("") },
+        onDone = { suggestions.firstOrNull()?.let(onSuggestionClick) },
+      )
+
+      Spacer(Modifier.height(MaterialTheme.spacing.sm))
+
+      SuggestionsHint(
+        query = normalizedQuery,
+        suggestionsCount = suggestions.size,
+        isSearching = isSearching,
+      )
+
+      Spacer(Modifier.height(MaterialTheme.spacing.sm))
+
+      SuggestionsDropdown(
         modifier = Modifier
           .fillMaxWidth()
-          .padding(MaterialTheme.spacing.lg),
-        horizontalAlignment = Alignment.Start
-      ) {
-        // Handle bar
-        Box(
-          modifier = Modifier
-            .width(40.dp)
-            .height(4.dp)
-            .clip(RoundedCornerShape(2.dp))
-            .background(MaterialTheme.colorScheme.outlineVariant)
-        )
+          .heightIn(min = 180.dp, max = 300.dp),
+        query = normalizedQuery,
+        suggestions = suggestions,
+        isSearching = isSearching,
+        onSuggestionClick = onSuggestionClick,
+      )
 
-        Spacer(Modifier.height(MaterialTheme.spacing.lg))
-
-        // Header with close button
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceBetween,
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Text(
-            text = stringResource(Res.string.number_search_title),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface
-          )
-          IconButton(onClick = onDismiss) {
-            Icon(
-              imageVector = Icons.Default.Close,
-              contentDescription = stringResource(Res.string.common_close),
-              tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-          }
-        }
-
-        Spacer(Modifier.height(MaterialTheme.spacing.md))
-
-        NumberInputField(
-          value = normalizedQuery,
-          isSearching = isSearching,
-          focusRequester = focusRequester,
-          onValueChange = onNumberChange,
-          onClear = { onNumberChange("") },
-          onDone = {
-            suggestions.firstOrNull()?.let(onSuggestionClick)
-          }
-        )
-
-        Spacer(Modifier.height(MaterialTheme.spacing.sm))
-
-        SuggestionsHint(
-          query = normalizedQuery,
-          suggestionsCount = suggestions.size,
-          isSearching = isSearching
-        )
-
-        Spacer(Modifier.height(MaterialTheme.spacing.sm))
-
-        SuggestionsDropdown(
-          modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = 180.dp, max = 300.dp),
-          query = normalizedQuery,
-          suggestions = suggestions,
-          isSearching = isSearching,
-          onSuggestionClick = onSuggestionClick
-        )
-
-        Spacer(Modifier.height(MaterialTheme.spacing.md))
-      }
+      Spacer(Modifier.height(MaterialTheme.spacing.md))
     }
   }
 }
@@ -193,7 +151,7 @@ private fun NumberInputField(
   onValueChange: (String) -> Unit,
   onClear: () -> Unit,
   onDone: () -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   OutlinedTextField(
     value = value,
@@ -211,7 +169,7 @@ private fun NumberInputField(
       Icon(
         imageVector = Icons.Default.Dialpad,
         contentDescription = null,
-        tint = MaterialTheme.colorScheme.onSurfaceVariant
+        tint = MaterialTheme.colorScheme.onSurfaceVariant,
       )
     },
     trailingIcon = {
@@ -220,25 +178,23 @@ private fun NumberInputField(
         value.isNotEmpty() -> IconButton(onClick = onClear) {
           Icon(
             imageVector = Icons.Default.Clear,
-            contentDescription = stringResource(Res.string.common_clear)
+            contentDescription = stringResource(Res.string.common_clear),
           )
         }
       }
     },
     keyboardOptions = KeyboardOptions(
       keyboardType = KeyboardType.Number,
-      imeAction = ImeAction.Done
+      imeAction = ImeAction.Done,
     ),
-    keyboardActions = KeyboardActions(
-      onDone = { onDone() }
-    ),
+    keyboardActions = KeyboardActions(onDone = { onDone() }),
     shape = RoundedCornerShape(16.dp),
     colors = TextFieldDefaults.colors(
       focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
       unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
       focusedIndicatorColor = Color.Transparent,
-      unfocusedIndicatorColor = Color.Transparent
-    )
+      unfocusedIndicatorColor = Color.Transparent,
+    ),
   )
 }
 
@@ -247,7 +203,7 @@ private fun SuggestionsHint(
   query: String,
   suggestionsCount: Int,
   isSearching: Boolean,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   val hint = when {
     query.isBlank() -> stringResource(Res.string.number_hint_example)
@@ -260,7 +216,7 @@ private fun SuggestionsHint(
     text = hint,
     style = MaterialTheme.typography.bodySmall,
     color = MaterialTheme.colorScheme.onSurfaceVariant,
-    modifier = modifier
+    modifier = modifier,
   )
 }
 
@@ -270,31 +226,26 @@ private fun SuggestionsDropdown(
   suggestions: List<SearchSuggestion>,
   isSearching: Boolean,
   onSuggestionClick: (SearchSuggestion) -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   Surface(
     modifier = modifier,
     shape = RoundedCornerShape(14.dp),
     color = MaterialTheme.colorScheme.surface,
-    tonalElevation = 2.dp
+    tonalElevation = 2.dp,
   ) {
     when {
-      query.isBlank() -> {
-        EmptyDropdownState(text = stringResource(Res.string.number_dropdown_idle))
+      query.isBlank() -> EmptyDropdownState(text = stringResource(Res.string.number_dropdown_idle))
+      isSearching -> Box(
+        modifier = Modifier
+          .fillMaxWidth()
+          .height(180.dp),
+        contentAlignment = Alignment.Center,
+      ) {
+        CircularProgressIndicator(modifier = Modifier.size(28.dp), strokeWidth = 2.dp)
       }
-      isSearching -> {
-        Box(
-          modifier = Modifier
-            .fillMaxWidth()
-            .height(180.dp),
-          contentAlignment = Alignment.Center
-        ) {
-          CircularProgressIndicator(modifier = Modifier.size(28.dp), strokeWidth = 2.dp)
-        }
-      }
-      suggestions.isEmpty() -> {
-        EmptyDropdownState(text = stringResource(Res.string.number_dropdown_no_results))
-      }
+
+      suggestions.isEmpty() -> EmptyDropdownState(text = stringResource(Res.string.number_dropdown_no_results))
       else -> {
         LazyColumn(modifier = Modifier.fillMaxWidth()) {
           items(suggestions, key = { it.songId.value }) { suggestion ->
@@ -302,7 +253,7 @@ private fun SuggestionsDropdown(
             NumberSuggestionItem(
               suggestion = suggestion,
               onClick = { onSuggestionClick(suggestion) },
-              modifier = Modifier.testTag("number-suggestion-$index")
+              modifier = Modifier.testTag("number-suggestion-$index"),
             )
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f))
           }
@@ -315,19 +266,19 @@ private fun SuggestionsDropdown(
 @Composable
 private fun EmptyDropdownState(
   text: String,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   Box(
     modifier = modifier
       .fillMaxWidth()
       .height(180.dp)
       .padding(MaterialTheme.spacing.lg),
-    contentAlignment = Alignment.Center
+    contentAlignment = Alignment.Center,
   ) {
     Text(
       text = text,
       style = MaterialTheme.typography.bodyMedium,
-      color = MaterialTheme.colorScheme.onSurfaceVariant
+      color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
   }
 }
@@ -336,30 +287,30 @@ private fun EmptyDropdownState(
 private fun NumberSuggestionItem(
   suggestion: SearchSuggestion,
   onClick: () -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   val haptic = LocalHapticFeedback.current
   Row(
     modifier = modifier
       .fillMaxWidth()
       .clickable(onClick = {
-        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
         onClick()
       })
       .padding(horizontal = MaterialTheme.spacing.md, vertical = MaterialTheme.spacing.sm),
-    verticalAlignment = Alignment.CenterVertically
+    verticalAlignment = Alignment.CenterVertically,
   ) {
     val primaryRef = suggestion.bookReferences.firstOrNull()
 
     Surface(
       shape = RoundedCornerShape(10.dp),
-      color = MaterialTheme.colorScheme.primaryContainer
+      color = MaterialTheme.colorScheme.primaryContainer,
     ) {
       Text(
         text = primaryRef?.songNumber?.toString() ?: "-",
         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
         color = MaterialTheme.colorScheme.onPrimaryContainer,
-        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
       )
     }
 
@@ -371,7 +322,7 @@ private fun NumberSuggestionItem(
         style = MaterialTheme.typography.bodyLarge,
         color = MaterialTheme.colorScheme.onSurface,
         maxLines = 1,
-        overflow = TextOverflow.Ellipsis
+        overflow = TextOverflow.Ellipsis,
       )
 
       if (suggestion.bookReferences.isNotEmpty()) {
@@ -382,7 +333,7 @@ private fun NumberSuggestionItem(
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.onSurfaceVariant,
           maxLines = 1,
-          overflow = TextOverflow.Ellipsis
+          overflow = TextOverflow.Ellipsis,
         )
       }
     }

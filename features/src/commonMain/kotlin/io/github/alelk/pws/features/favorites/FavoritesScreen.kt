@@ -1,12 +1,17 @@
 package io.github.alelk.pws.features.favorites
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.Alignment
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDownward
@@ -21,6 +26,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -139,7 +145,7 @@ fun FavoritesContent(
             }
           if (state is FavoritesUiState.Content) {
             IconButton(onClick = { 
-              haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+              haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
               showSortDialog = true 
             }) {
               Icon(
@@ -148,7 +154,7 @@ fun FavoritesContent(
               )
             }
             IconButton(onClick = {
-              haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+              haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
               onSortDirectionToggle()
             }) {
               Icon(
@@ -196,7 +202,7 @@ fun FavoritesContent(
         ErrorContent(
           modifier = Modifier.padding(innerPadding),
           title = stringResource(Res.string.common_error_title),
-          message = state.message
+          message = io.github.alelk.pws.features.app.rememberResolved(state.message),
         )
       }
     }
@@ -212,7 +218,7 @@ fun FavoritesContent(
             label = stringResource(Res.string.favorites_sort_added_date),
             selected = state.sortMode == FavoriteSortMode.ADDED_DATE,
             onClick = {
-              haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+              haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
               onSortModeChange(FavoriteSortMode.ADDED_DATE)
               showSortDialog = false
             }
@@ -221,7 +227,7 @@ fun FavoritesContent(
             label = stringResource(Res.string.favorites_sort_song_number),
             selected = state.sortMode == FavoriteSortMode.SONG_NUMBER,
             onClick = {
-              haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+              haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
               onSortModeChange(FavoriteSortMode.SONG_NUMBER)
               showSortDialog = false
             }
@@ -230,7 +236,7 @@ fun FavoritesContent(
             label = stringResource(Res.string.favorites_sort_song_name),
             selected = state.sortMode == FavoriteSortMode.SONG_NAME,
             onClick = {
-              haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+              haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
               onSortModeChange(FavoriteSortMode.SONG_NAME)
               showSortDialog = false
             }
@@ -249,11 +255,19 @@ private fun SortOptionRow(
   selected: Boolean,
   onClick: () -> Unit,
 ) {
-  TextButton(onClick = onClick) {
+  Row(
+    modifier = Modifier
+      .fillMaxWidth()
+      .clickable(onClick = onClick),
+    horizontalArrangement = Arrangement.SpaceBetween,
+    verticalAlignment = Alignment.CenterVertically,
+  ) {
     Text(
-      text = if (selected) "\u2713 $label" else label,
-      style = MaterialTheme.typography.bodyLarge
+      text = label,
+      style = MaterialTheme.typography.bodyLarge,
+      modifier = Modifier.weight(1f).padding(vertical = 12.dp),
     )
+    RadioButton(selected = selected, onClick = onClick)
   }
 }
 

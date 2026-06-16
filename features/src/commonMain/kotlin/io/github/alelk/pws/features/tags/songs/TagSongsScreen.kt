@@ -64,6 +64,8 @@ class TagSongsScreen(val tagIdString: String) : Screen {
 
   val tagId: TagId get() = TagId.parse(tagIdString)
 
+  override val key: String = "tag-songs/$tagIdString"
+
   @Composable
   override fun Content() {
     val viewModel = koinScreenModel<TagSongsScreenModel>(parameters = { parametersOf(tagId) })
@@ -147,15 +149,15 @@ fun TagSongsContent(state: TagSongsUiState) {
       }
 
       is TagSongsUiState.Error -> {
-        val message = if (state.message == "TAG_NOT_FOUND") {
-          stringResource(Res.string.tag_not_found)
-        } else {
-          state.message
+        val message = when (val m = state.message) {
+          io.github.alelk.pws.features.app.UiMessage.TagNotFound ->
+            stringResource(Res.string.tag_not_found)
+          else -> io.github.alelk.pws.features.app.rememberResolved(m)
         }
         ErrorContent(
           modifier = Modifier.padding(innerPadding),
           title = stringResource(Res.string.common_error_title),
-          message = message
+          message = message,
         )
       }
     }
