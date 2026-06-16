@@ -1,5 +1,12 @@
 # PWS Android
 
+# [2.28.0-rc.3](https://github.com/alelk/pws-core/compare/v2.28.0-rc.2...v2.28.0-rc.3) (2026-06-16)
+
+
+### Features
+
+* UI refactoring ([b626f42](https://github.com/alelk/pws-core/commit/b626f423b9aeed5e9ad6522b60c8fde81c5903f2))
+
 # [2.28.0-rc.2](https://github.com/alelk/pws-core/compare/v2.28.0-rc.1...v2.28.0-rc.2) (2026-06-15)
 
 
