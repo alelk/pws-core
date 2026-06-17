@@ -236,16 +236,16 @@
     <string name="settings_donation_subtitle">Поддержите приложение на Boosty</string>
 
     <string name="time_just_now">Только что</string>
-    <string name="time_minutes_ago">%d мин назад</string>
-    <string name="time_hours_ago">%d ч назад</string>
+    <string name="time_minutes_ago">%1$d мин назад</string>
+    <string name="time_hours_ago">%1$d ч назад</string>
     <string name="time_yesterday">Вчера</string>
-    <string name="time_days_ago">%d дн назад</string>
+    <string name="time_days_ago">%1$d дн назад</string>
 
-    <string name="song_number_label">№ %d</string>
-    <string name="song_number_a11y">Номер песни %d</string>
+    <string name="song_number_label">№ %1$d</string>
+    <string name="song_number_a11y">Номер песни %1$d</string>
     <string name="license_loading">Загрузка…</string>
-    <string name="license_load_failed">Не удалось загрузить текст лицензии: %s</string>
-    <string name="jump_number_range">%d – %d</string>
+    <string name="license_load_failed">Не удалось загрузить текст лицензии: %1$s</string>
+    <string name="jump_number_range">%1$d – %2$d</string>
 </resources>
 
 
