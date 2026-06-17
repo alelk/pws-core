@@ -25,7 +25,7 @@ class BookSongsScreenModel(
     }
 
     screenModelScope.launch(context = CoroutineExceptionHandler { _, t ->
-      println("[BookSongsScreenModel] Exception in collection: ${t?.message}")
+      println("[BookSongsScreenModel] Exception in collection: ${t.message}")
       mutableState.value = BookSongsUiState.Error
     }) {
       println("[BookSongsScreenModel] Start collecting book with songs for bookId=$bookId")

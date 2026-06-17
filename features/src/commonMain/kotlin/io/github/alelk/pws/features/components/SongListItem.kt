@@ -40,6 +40,7 @@ import io.github.alelk.pws.features.resources.song_item_add_to_favorites
 import io.github.alelk.pws.features.resources.song_item_edited
 import io.github.alelk.pws.features.resources.song_item_in_favorites
 import io.github.alelk.pws.features.resources.song_item_remove_from_favorites
+import io.github.alelk.pws.features.resources.song_number_a11y
 import io.github.alelk.pws.features.theme.NumberBadgeTextStyle
 import io.github.alelk.pws.features.theme.spacing
 import org.jetbrains.compose.resources.stringResource
@@ -63,7 +64,7 @@ fun SongListItem(
       .fillMaxWidth()
       .testTag("song-row-$number")
       .clickableWithScale(onClick = {
-        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
         onClick()
       }),
     color = MaterialTheme.colorScheme.surfaceContainerLow
@@ -152,12 +153,14 @@ fun NumberBadge(
   number: Int,
   modifier: Modifier = Modifier
 ) {
+  val songNumberA11y = stringResource(Res.string.song_number_a11y, number)
   Box(
     modifier = modifier
       .size(40.dp)
       .clip(RoundedCornerShape(8.dp))
       .background(MaterialTheme.colorScheme.primaryContainer)
-      .semantics { contentDescription = "Song number $number" },    contentAlignment = Alignment.Center
+      .semantics { contentDescription = songNumberA11y },
+    contentAlignment = Alignment.Center
   ) {
     Text(
       text = number.toString(),
@@ -187,7 +190,7 @@ fun SwipeableSongItem(
       .fillMaxWidth()
       .testTag("song-row-$number")
       .clickableWithScale(onClick = {
-        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
         onClick()
       }),
     color = MaterialTheme.colorScheme.surfaceContainerLow
@@ -232,7 +235,7 @@ fun SwipeableSongItem(
         // Favorite toggle
         if (onFavoriteToggle != null) {
           IconButton(onClick = {
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
             onFavoriteToggle()
           }) {
             Icon(
@@ -250,7 +253,7 @@ fun SwipeableSongItem(
         // Delete button
         if (onDelete != null) {
           IconButton(onClick = {
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
             onDelete()
           }) {
             Icon(

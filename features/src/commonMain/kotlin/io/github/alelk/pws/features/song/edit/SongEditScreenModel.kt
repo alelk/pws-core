@@ -14,6 +14,7 @@ import io.github.alelk.pws.domain.song.command.UpdateSongCommand
 import io.github.alelk.pws.domain.song.lyric.Lyric
 import io.github.alelk.pws.domain.song.usecase.GetSongDetailUseCase
 import io.github.alelk.pws.domain.song.usecase.UpdateSongUseCase
+import io.github.alelk.pws.features.app.UiMessage
 import io.github.alelk.pws.domain.songtag.usecase.GetSongTagIdsUseCase
 import io.github.alelk.pws.domain.songtag.usecase.ReplaceAllSongTagsUseCase
 import io.github.alelk.pws.domain.tag.usecase.ObserveTagsUseCase
@@ -39,9 +40,6 @@ class SongEditScreenModel(
   private val replaceAllSongTagsUseCase: ReplaceAllSongTagsUseCase<TagId>,
 ) : StateScreenModel<SongEditUiState>(SongEditUiState.Loading) {
 
-  private companion object {
-    const val SONG_NOT_FOUND_CODE = "SONG_NOT_FOUND"
-  }
 
   sealed interface Effect {
     data object NavigateBack : Effect
@@ -92,7 +90,7 @@ class SongEditScreenModel(
       try {
         val song = getSongDetailUseCase(songId).fold(
           ifLeft = {
-            mutableState.value = SongEditUiState.Error(SONG_NOT_FOUND_CODE)
+            mutableState.value = SongEditUiState.Error(UiMessage.SongNotFound)
             return@launch
           },
           ifRight = { it }
@@ -136,7 +134,7 @@ class SongEditScreenModel(
           }
         )
       } catch (e: Exception) {
-        mutableState.value = SongEditUiState.Error(e.message ?: "Unknown error")
+        mutableState.value = SongEditUiState.Error(UiMessage.Failure(e.message))
       }
     }
   }

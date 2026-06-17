@@ -68,6 +68,8 @@ import io.github.alelk.pws.features.resources.settings_interface
 import io.github.alelk.pws.features.resources.settings_theme_subtitle
 import io.github.alelk.pws.features.resources.settings_title
 import io.github.alelk.pws.features.resources.common_close
+import io.github.alelk.pws.features.resources.license_load_failed
+import io.github.alelk.pws.features.resources.license_loading
 import io.github.alelk.pws.features.theme.LocalThemeSettings
 import io.github.alelk.pws.features.theme.ThemeMode
 import io.github.alelk.pws.features.theme.spacing
@@ -194,7 +196,7 @@ private fun SettingsContent(
                       title = stringResource(item.titleRes),
                       isSelected = item.themeMode == current.selectedTheme,
                       onClick = { 
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                         onThemeSelected(item.themeMode) 
                       }
                     )
@@ -224,7 +226,7 @@ private fun SettingsContent(
                       modifier = Modifier
                         .fillMaxWidth()
                         .clickable { 
-                          haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                          haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                           onDeveloperClick(dev.contact) 
                         }
                         .padding(horizontal = 16.dp, vertical = 12.dp),
@@ -288,7 +290,7 @@ private fun SettingsContent(
                       Switch(
                         checked = book.enabled,
                         onCheckedChange = { checked -> 
-                          haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                          haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                           onBookToggle(book.id, checked) 
                         }
                       )
@@ -325,7 +327,7 @@ private fun SettingsContent(
                   OutlinedButton(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = {
-                      haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                      haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                       onExportClick()
                     }
                   ) {
@@ -335,7 +337,7 @@ private fun SettingsContent(
                   OutlinedButton(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = {
-                      haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                      haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                       onImportClick()
                     }
                   ) {
@@ -353,7 +355,7 @@ private fun SettingsContent(
               item {
                 DonationCard(
                   onDonationClick = {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                     onDonationClick()
                   }
                 )
@@ -395,7 +397,7 @@ private fun SettingsContent(
                     modifier = Modifier
                       .fillMaxWidth()
                       .clickable {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                         showLicenseDialog = true
                       }
                       .padding(horizontal = 16.dp, vertical = 12.dp),
@@ -424,15 +426,13 @@ private fun SettingsContent(
 @Composable
 private fun LicenseDialog(onDismiss: () -> Unit) {
   var licenseText by remember { mutableStateOf<String?>(null) }
+  val loadingText = stringResource(Res.string.license_loading)
+  val loadFailedFmt = stringResource(Res.string.license_load_failed, "%s")
   LaunchedEffect(Unit) {
     runCatching {
-      // In Compose Resources, files are accessed via Res.readBytes
       io.github.alelk.pws.features.resources.Res.readBytes("files/LICENSE.txt").decodeToString()
-    }.onSuccess {
-      licenseText = it
-    }.onFailure {
-      licenseText = "Failed to load license text: ${it.message}"
-    }
+    }.onSuccess { licenseText = it }
+      .onFailure { licenseText = loadFailedFmt.replace("%s", it.message ?: "") }
   }
 
   androidx.compose.material3.AlertDialog(
@@ -441,7 +441,7 @@ private fun LicenseDialog(onDismiss: () -> Unit) {
     text = {
       Box(modifier = Modifier.height(400.dp).verticalScroll(rememberScrollState())) {
         Text(
-          text = licenseText ?: "Loading...",
+          text = licenseText ?: loadingText,
           style = MaterialTheme.typography.bodySmall
         )
       }

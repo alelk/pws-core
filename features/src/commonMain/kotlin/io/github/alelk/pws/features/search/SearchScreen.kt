@@ -90,6 +90,8 @@ class SearchScreen : Screen {
  * Immediately starts search with the provided query.
  */
 class SearchResultsScreen(private val initialQuery: String) : Screen {
+  override val key: String = "search-results/$initialQuery"
+
   @Composable
   override fun Content() {
     val viewModel = koinScreenModel<SearchScreenModel>()
@@ -197,7 +199,7 @@ fun SearchContent(
         is SearchUiState.Error -> {
           ErrorContent(
             title = stringResource(Res.string.search_error_title),
-            message = state.message
+            message = io.github.alelk.pws.features.app.rememberResolved(state.message),
           )
         }
       }
@@ -229,8 +231,8 @@ private fun SearchSuggestionsList(
     ) { suggestion ->
       // Navigate to song in book context if available, otherwise by id
       val songScreen = suggestion.bookReferences.firstOrNull()?.let { ref ->
-        rememberScreen(SharedScreens.Song(SongNumberId(ref.bookId, suggestion.songId)))
-      } ?: rememberScreen(SharedScreens.SongById(suggestion.songId))
+        rememberScreen(SharedScreens.song(SongNumberId(ref.bookId, suggestion.songId)))
+      } ?: rememberScreen(SharedScreens.songById(suggestion.songId))
 
       SearchSuggestionItem(
         suggestion = suggestion,
@@ -258,7 +260,7 @@ private fun SearchSuggestionItem(
       .fillMaxWidth()
       .testTag(itemCd)
       .clickable(onClick = {
-        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
         onClick()
       }),
     color = MaterialTheme.colorScheme.surface
@@ -352,8 +354,8 @@ private fun SearchResultsList(
     ) { result ->
       // Navigate to song in book context if available, otherwise by id
       val songScreen = result.bookReferences.firstOrNull()?.let { ref ->
-        rememberScreen(SharedScreens.Song(SongNumberId(ref.bookId, result.songId)))
-      } ?: rememberScreen(SharedScreens.SongById(result.songId))
+        rememberScreen(SharedScreens.song(SongNumberId(ref.bookId, result.songId)))
+      } ?: rememberScreen(SharedScreens.songById(result.songId))
 
       SearchSuggestionItem(
         suggestion = result,

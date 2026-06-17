@@ -2,6 +2,7 @@ package io.github.alelk.pws.features.favorites
 
 import androidx.compose.runtime.Immutable
 import io.github.alelk.pws.domain.favorite.model.FavoriteSubject
+import io.github.alelk.pws.features.app.UiMessage
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
@@ -50,7 +51,7 @@ sealed interface FavoritesUiState {
   ) : FavoritesUiState
 
   data object Empty : FavoritesUiState
-  data class Error(val message: String) : FavoritesUiState
+  data class Error(val message: UiMessage) : FavoritesUiState
 }
 
 enum class FavoriteSortMode {

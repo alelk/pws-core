@@ -233,6 +233,18 @@
 
     <string name="settings_donation_title">Підтримати розробку</string>
     <string name="settings_donation_subtitle">Підтримайте додаток на Boosty</string>
+
+    <string name="time_just_now">Щойно</string>
+    <string name="time_minutes_ago">%1$d хв тому</string>
+    <string name="time_hours_ago">%1$d год тому</string>
+    <string name="time_yesterday">Учора</string>
+    <string name="time_days_ago">%1$d дн тому</string>
+
+    <string name="song_number_label">№ %1$d</string>
+    <string name="song_number_a11y">Номер пісні %1$d</string>
+    <string name="license_loading">Завантаження…</string>
+    <string name="license_load_failed">Не вдалося завантажити текст ліцензії: %1$s</string>
+    <string name="jump_number_range">%1$d – %2$d</string>
 </resources>
 
 

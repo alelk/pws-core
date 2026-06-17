@@ -3,17 +3,16 @@ package io.github.alelk.pws.features.app
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.CurrentTab
@@ -28,7 +27,6 @@ import io.github.alelk.pws.features.favorites.FavoritesScreen
 import io.github.alelk.pws.features.history.HistoryScreen
 import io.github.alelk.pws.features.home.HomeScreen
 import io.github.alelk.pws.features.search.SearchScreen
-import io.github.alelk.pws.features.tags.TagsScreen
 import io.github.alelk.pws.features.settings.LocalSettingsExternalActions
 import io.github.alelk.pws.features.settings.SettingsExternalActions
 import io.github.alelk.pws.features.song.detail.FavoritesDisplaySettings
@@ -37,6 +35,7 @@ import io.github.alelk.pws.features.song.detail.LocalSongDetailDisplaySettings
 import io.github.alelk.pws.features.song.detail.LocalSongDetailExternalActions
 import io.github.alelk.pws.features.song.detail.SongDetailDisplaySettings
 import io.github.alelk.pws.features.song.detail.SongDetailExternalActions
+import io.github.alelk.pws.features.tags.TagsScreen
 import io.github.alelk.pws.features.theme.AppTheme
 import io.github.alelk.pws.features.theme.LocalThemeSettings
 import io.github.alelk.pws.features.theme.ThemeMode
@@ -74,154 +73,63 @@ fun AppRoot(
   }
 }
 
-private object HomeTab : Tab {
+/**
+ * One Tab implementation parameterised by [NavDestination]. Each tab owns its own
+ * nested back-stack [Navigator]; the [LocalTabNavigatorsHolder] lets the bottom-nav
+ * "reselect current tab" handler pop that nested stack to root.
+ */
+private class DestinationTab(
+  private val destination: NavDestination,
+  private val tabIndex: UShort,
+) : Tab {
+  override val key: String = "tab/${destination.route}"
+
   override val options: TabOptions
-    @Composable get() {
-      return TabOptions(
-        index = 0u,
-        title = NavDestination.Home.route,
-        icon = androidx.compose.ui.graphics.vector.rememberVectorPainter(Icons.Outlined.Home)
-      )
-    }
+    @Composable get() = TabOptions(
+      index = tabIndex,
+      title = destination.route,
+      icon = rememberVectorPainter(destination.unselectedIcon),
+    )
 
   @Composable
   override fun Content() {
     val holder = LocalTabNavigatorsHolder.currentOrThrow
-    Navigator(HomeScreen()) { navigator ->
+    Navigator(initialScreen()) { navigator ->
       holder.navigators[this] = navigator
       SlideTransition(navigator)
     }
   }
-}
 
-private object BooksTab : Tab {
-  override val options: TabOptions
-    @Composable get() {
-      val icon = NavDestination.Books.unselectedIcon
-      return TabOptions(
-        index = 1u,
-        title = NavDestination.Books.route,
-        icon = androidx.compose.ui.graphics.vector.rememberVectorPainter(icon)
-      )
-    }
-
-  @Composable
-  override fun Content() {
-    val holder = LocalTabNavigatorsHolder.currentOrThrow
-    Navigator(BooksScreen()) { navigator ->
-      holder.navigators[this] = navigator
-      SlideTransition(navigator)
-    }
+  private fun initialScreen(): Screen = when (destination) {
+    NavDestination.Home -> HomeScreen()
+    NavDestination.Books -> BooksScreen()
+    NavDestination.Search -> SearchScreen()
+    NavDestination.Tags -> TagsScreen()
+    NavDestination.Favorites -> FavoritesScreen()
+    NavDestination.History -> HistoryScreen()
   }
 }
 
-private object SearchTab : Tab {
-  override val options: TabOptions
-    @Composable get() {
-      val icon = NavDestination.Search.unselectedIcon
-      return TabOptions(
-        index = 2u,
-        title = NavDestination.Search.route,
-        icon = androidx.compose.ui.graphics.vector.rememberVectorPainter(icon)
-      )
-    }
-
-  @Composable
-  override fun Content() {
-    val holder = LocalTabNavigatorsHolder.currentOrThrow
-    Navigator(SearchScreen()) { navigator ->
-      holder.navigators[this] = navigator
-      SlideTransition(navigator)
-    }
-  }
-}
-
-private object TagsTab : Tab {
-  override val options: TabOptions
-    @Composable get() {
-      val icon = NavDestination.Tags.unselectedIcon
-      return TabOptions(
-        index = 3u,
-        title = NavDestination.Tags.route,
-        icon = androidx.compose.ui.graphics.vector.rememberVectorPainter(icon)
-      )
-    }
-
-  @Composable
-  override fun Content() {
-    val holder = LocalTabNavigatorsHolder.currentOrThrow
-    Navigator(TagsScreen()) { navigator ->
-      holder.navigators[this] = navigator
-      SlideTransition(navigator)
-    }
-  }
-}
-
-private object FavoritesTab : Tab {
-  override val options: TabOptions
-    @Composable get() {
-      val icon = NavDestination.Favorites.unselectedIcon
-      return TabOptions(
-        index = 4u,
-        title = NavDestination.Favorites.route,
-        icon = androidx.compose.ui.graphics.vector.rememberVectorPainter(icon)
-      )
-    }
-
-  @Composable
-  override fun Content() {
-    val holder = LocalTabNavigatorsHolder.currentOrThrow
-    Navigator(FavoritesScreen()) { navigator ->
-      holder.navigators[this] = navigator
-      SlideTransition(navigator)
-    }
-  }
-}
-
-private object HistoryTab : Tab {
-  override val options: TabOptions
-    @Composable get() {
-      val icon = NavDestination.History.unselectedIcon
-      return TabOptions(
-        index = 5u,
-        title = NavDestination.History.route,
-        icon = androidx.compose.ui.graphics.vector.rememberVectorPainter(icon)
-      )
-    }
-
-  @Composable
-  override fun Content() {
-    val holder = LocalTabNavigatorsHolder.currentOrThrow
-    Navigator(HistoryScreen()) { navigator ->
-      holder.navigators[this] = navigator
-      SlideTransition(navigator)
-    }
-  }
-}
-
-@Suppress("unused")
 private val mainTabs: List<Tab> = listOf(
-  HomeTab,
-  BooksTab,
-  SearchTab,
-  TagsTab,
-  FavoritesTab,
-  HistoryTab
+  DestinationTab(NavDestination.Home, 0u),
+  DestinationTab(NavDestination.Books, 1u),
+  DestinationTab(NavDestination.Search, 2u),
+  DestinationTab(NavDestination.Tags, 3u),
+  DestinationTab(NavDestination.Favorites, 4u),
+  DestinationTab(NavDestination.History, 5u),
 )
 
 private class TabNavigatorsHolder(
-  val navigators: MutableMap<Tab, Navigator>
+  val navigators: MutableMap<Tab, Navigator>,
 )
 
 private val LocalTabNavigatorsHolder = staticCompositionLocalOf<TabNavigatorsHolder?> { null }
 
 @Composable
 private fun MainScreen() {
-  // Holds navigators for each Tab's nested stack.
-  val tabNavigators = remember { mutableStateMapOf<Tab, Navigator>() }
-  val holder = remember { TabNavigatorsHolder(tabNavigators) }
+  val holder = remember { TabNavigatorsHolder(mutableMapOf()) }
 
-  TabNavigator(HomeTab) { tabNavigator ->
+  TabNavigator(mainTabs.first()) { tabNavigator ->
     CompositionLocalProvider(LocalTabNavigatorsHolder provides holder) {
       Scaffold(
         bottomBar = {

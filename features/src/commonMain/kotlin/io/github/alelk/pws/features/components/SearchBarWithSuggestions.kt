@@ -251,7 +251,7 @@ private fun SuggestionDropdownItem(
       }
     },
     onClick = {
-      haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+      haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
       onClick()
     }
   )

@@ -1,6 +1,5 @@
 package io.github.alelk.pws.features.book.songs
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -40,7 +38,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -74,14 +71,15 @@ import io.github.alelk.pws.features.resources.book_songs_title_fallback
 import io.github.alelk.pws.features.resources.common_back
 import io.github.alelk.pws.features.resources.home_load_error_message
 import io.github.alelk.pws.features.theme.spacing
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.parameter.parametersOf
 
-class BookSongsScreen(val bookId: BookId) : Screen {
+class BookSongsScreen(val bookIdString: String) : Screen {
+  val bookId: BookId get() = BookId.parse(bookIdString)
+
+  override val key: String = "book-songs/$bookIdString"
+
   @Composable
   override fun Content() {
     val viewModel = koinScreenModel<BookSongsScreenModel>(parameters = { parametersOf(bookId) })
@@ -94,7 +92,7 @@ class BookSongsScreen(val bookId: BookId) : Screen {
       bookId = bookId,
       state = state,
       onNumberInputClick = { 
-        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
         showGoToNumberDialog = true 
       }
     )
@@ -110,9 +108,9 @@ class BookSongsScreen(val bookId: BookId) : Screen {
         onConfirm = { number ->
           val song = songs[number]
           if (song != null) {
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
             showGoToNumberDialog = false
-            val screen = SharedScreens.Song(SongNumberId(bookId, song.id))
+            val screen = SharedScreens.song(SongNumberId(bookId, song.id))
             navigator.push(cafe.adriel.voyager.core.registry.ScreenRegistry.get(screen))
           } else {
             scope.launch {
@@ -261,44 +259,15 @@ private fun SongsList(
   val navigator = LocalNavigator.currentOrThrow
   val sortedSongs = remember(songs) { songs.toList().sortedBy { (number, _) -> number } }
 
-  // Client-side incremental rendering for large lists
-  val listState = rememberLazyListState()
-  val visibleCountState = rememberSaveable(songs.hashCode().toString()) {
-    mutableStateOf(minOf(100, sortedSongs.size))
-  }
-  var visibleCount by visibleCountState
-
-  // Reset visible count on data change
-  LaunchedEffect(sortedSongs.size) {
-    visibleCount = minOf(100, sortedSongs.size)
-  }
-
-  // Load more as user scrolls
-  LaunchedEffect(listState, sortedSongs.size, visibleCount) {
-    snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
-      .filter { it != null }
-      .map { it!! }
-      .distinctUntilChanged()
-      .collect { lastVisibleIndex ->
-        val threshold = visibleCount - 20
-        if (lastVisibleIndex >= threshold && visibleCount < sortedSongs.size) {
-          visibleCount = minOf(visibleCount + 50, sortedSongs.size)
-        }
-      }
-  }
-
   LazyColumn(
     modifier = modifier.fillMaxSize(),
-    state = listState,
     contentPadding = PaddingValues(vertical = MaterialTheme.spacing.sm)
   ) {
-    val slice = sortedSongs.take(visibleCount)
-
     items(
-      items = slice,
+      items = sortedSongs,
       key = { (number, _) -> number }
     ) { (number, song) ->
-      val songScreen = rememberScreen(SharedScreens.Song(SongNumberId(bookId, song.id)))
+      val songScreen = rememberScreen(SharedScreens.song(SongNumberId(bookId, song.id)))
 
       SongListItem(
         number = number,
@@ -307,7 +276,7 @@ private fun SongsList(
         isEdited = song.edited
       )
 
-      if (number != slice.last().first) {
+      if (number != sortedSongs.last().first) {
         HorizontalDivider(
           modifier = Modifier.padding(start = 72.dp),
           color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
@@ -315,20 +284,6 @@ private fun SongsList(
       }
     }
 
-    // Loading indicator for more items
-    if (visibleCount < sortedSongs.size) {
-      item(key = "loading_more") {
-        Box(
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(MaterialTheme.spacing.lg)
-        ) {
-          LoadingContent()
-        }
-      }
-    }
-
-    // Bottom padding
     item {
       Spacer(Modifier.height(80.dp))
     }

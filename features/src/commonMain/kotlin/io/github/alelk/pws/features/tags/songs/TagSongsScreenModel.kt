@@ -8,6 +8,7 @@ import io.github.alelk.pws.domain.songtag.model.SongWithBookInfo
 import io.github.alelk.pws.domain.songtag.usecase.ObserveSongsByTagUseCase
 import io.github.alelk.pws.domain.tag.model.TagDetail
 import io.github.alelk.pws.domain.tag.usecase.GetTagDetailUseCase
+import io.github.alelk.pws.features.app.UiMessage
 import kotlinx.coroutines.launch
 import io.github.alelk.pws.domain.core.Color as DomainColor
 
@@ -20,10 +21,6 @@ class TagSongsScreenModel(
   private val observeSongsByTagUseCase: ObserveSongsByTagUseCase<TagId>
 ) : StateScreenModel<TagSongsUiState>(TagSongsUiState.Loading) {
 
-  private companion object {
-    const val TAG_NOT_FOUND_CODE = "TAG_NOT_FOUND"
-  }
-
   init {
     loadTagSongs()
   }
@@ -33,7 +30,7 @@ class TagSongsScreenModel(
       try {
         val tag = getTagDetailUseCase(tagId).fold(
           ifLeft = {
-            mutableState.value = TagSongsUiState.Error(TAG_NOT_FOUND_CODE)
+            mutableState.value = TagSongsUiState.Error(UiMessage.TagNotFound)
             return@launch
           },
           ifRight = { it }
@@ -46,7 +43,7 @@ class TagSongsScreenModel(
           }
         }
       } catch (e: Exception) {
-        mutableState.value = TagSongsUiState.Error(e.message ?: "Unknown error")
+        mutableState.value = TagSongsUiState.Error(UiMessage.Failure(e.message))
       }
     }
   }

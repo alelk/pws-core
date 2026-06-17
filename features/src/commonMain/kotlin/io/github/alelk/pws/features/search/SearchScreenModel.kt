@@ -4,6 +4,7 @@ import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import io.github.alelk.pws.domain.song.model.SongSearchSuggestion
 import io.github.alelk.pws.domain.song.usecase.SearchSongSuggestionsUseCase
+import io.github.alelk.pws.features.app.UiMessage
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -95,11 +96,11 @@ class SearchScreenModel(
       try {
         val results = searchSuggestionsUseCase(query)
         mutableState.value = results.fold(
-          ifLeft = { error -> SearchUiState.Error(error.message) },
+          ifLeft = { error -> SearchUiState.Error(UiMessage.Failure(error.message)) },
           ifRight = { list -> SearchUiState.Suggestions(query, list.map { it.toUi() }) }
         )
       } catch (e: Exception) {
-        mutableState.value = SearchUiState.Error("Search error: ${e.message}")
+        mutableState.value = SearchUiState.Error(UiMessage.Failure(e.message))
       }
     }
   }

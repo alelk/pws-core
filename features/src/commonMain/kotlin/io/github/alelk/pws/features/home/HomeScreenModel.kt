@@ -4,177 +4,177 @@ import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import io.github.alelk.pws.domain.book.query.BookQuery
 import io.github.alelk.pws.domain.book.usecase.ObserveBooksUseCase
+import io.github.alelk.pws.domain.history.usecase.ObserveHistoryUseCase
 import io.github.alelk.pws.domain.song.model.SongSearchSuggestion
 import io.github.alelk.pws.domain.song.usecase.SearchSongSuggestionsUseCase
 import io.github.alelk.pws.features.search.BookReferenceUi
 import io.github.alelk.pws.features.search.SearchSuggestion
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
-import io.github.alelk.pws.domain.history.usecase.ObserveHistoryUseCase
-import kotlinx.coroutines.flow.combine
-
 /**
- * ScreenModel for Home Screen.
- * Manages books list and inline search with suggestions.
+ * ScreenModel for the Home screen. Exposes a single composite [HomeUiState]; the
+ * search query and suggestions live inside [HomeUiState.Content] so the UI sees
+ * atomic updates instead of three independent flows racing.
  */
 @OptIn(FlowPreview::class)
 class HomeScreenModel(
   observeBooksUseCase: ObserveBooksUseCase,
   private val searchSuggestionsUseCase: SearchSongSuggestionsUseCase,
-  observeHistoryUseCase: ObserveHistoryUseCase
+  observeHistoryUseCase: ObserveHistoryUseCase,
+  /** Injected scope for testing with virtual time; null = use [screenModelScope]. */
+  private val coroutineScope: CoroutineScope? = null,
 ) : StateScreenModel<HomeUiState>(HomeUiState.Loading) {
 
-  /** Current search query - updated immediately for responsive UI */
-  private val _searchQuery = MutableStateFlow("")
-  val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+  private val scope: CoroutineScope get() = coroutineScope ?: screenModelScope
 
-  /** Search suggestions */
-  private val _suggestions = MutableStateFlow<List<SearchSuggestion>>(emptyList())
-  val suggestions: StateFlow<List<SearchSuggestion>> = _suggestions.asStateFlow()
+  // Internal "user inputs" — wired into the composite state via combine() below.
+  private val searchQuery = MutableStateFlow("")
+  private val searchSuggestions = MutableStateFlow<List<SearchSuggestion>>(emptyList())
+  private val isSearching = MutableStateFlow(false)
 
-  /** Whether suggestions are loading */
-  private val _isSearching = MutableStateFlow(false)
-  val isSearching: StateFlow<Boolean> = _isSearching.asStateFlow()
-
-  // Number search state
-  private val _numberQuery = MutableStateFlow("")
-  val numberQuery: StateFlow<String> = _numberQuery.asStateFlow()
-
-  private val _numberSuggestions = MutableStateFlow<List<SearchSuggestion>>(emptyList())
-  val numberSuggestions: StateFlow<List<SearchSuggestion>> = _numberSuggestions.asStateFlow()
-
-  private val _isNumberSearching = MutableStateFlow(false)
-  val isNumberSearching: StateFlow<Boolean> = _isNumberSearching.asStateFlow()
+  private val numberQuery = MutableStateFlow("")
+  private val numberSuggestions = MutableStateFlow<List<SearchSuggestion>>(emptyList())
+  private val isNumberSearching = MutableStateFlow(false)
 
   private var searchJob: Job? = null
   private var numberSearchJob: Job? = null
 
   init {
-    // Observe books and history
+    // Observe books + history and fold all transient fields into one Content state.
     combine(
       observeBooksUseCase(query = BookQuery(enabled = true)),
-      observeHistoryUseCase(limit = 10)
-    ) { books, history ->
+      observeHistoryUseCase(limit = 10),
+      searchQuery,
+      searchSuggestions,
+      isSearching,
+      numberQuery,
+      numberSuggestions,
+      isNumberSearching,
+    ) { values ->
+      @Suppress("UNCHECKED_CAST")
       HomeUiState.Content(
-        books = books,
-        recentSongs = history
+        books = values[0] as List<io.github.alelk.pws.domain.book.model.BookSummary>,
+        recentSongs = values[1] as List<io.github.alelk.pws.domain.history.model.HistoryEntry>,
+        searchQuery = values[2] as String,
+        searchSuggestions = values[3] as List<SearchSuggestion>,
+        isSearching = values[4] as Boolean,
+        numberQuery = values[5] as String,
+        numberSuggestions = values[6] as List<SearchSuggestion>,
+        isNumberSearching = values[7] as Boolean,
       )
     }
-      .onEach { content ->
-        mutableState.value = content
-      }
-      .catch {
-        mutableState.value = HomeUiState.Error
-      }
-      .launchIn(screenModelScope)
+      .onEach { mutableState.value = it }
+      .catch { mutableState.value = HomeUiState.Error }
+      .launchIn(scope)
 
-    // Debounced search
-    _searchQuery
+    // Debounced search side-channels — write back into the StateFlows above.
+    searchQuery
       .debounce(300)
       .distinctUntilChanged()
-      .onEach { query ->
-        if (query.isBlank()) {
-          _suggestions.value = emptyList()
-          _isSearching.value = false
+      .onEach { q ->
+        if (q.isBlank()) {
+          searchSuggestions.value = emptyList()
+          isSearching.value = false
         } else {
-          performSearch(query)
+          performSearch(q)
         }
       }
-      .launchIn(screenModelScope)
+      .launchIn(scope)
 
-    // Debounced number search
-    _numberQuery
+    numberQuery
       .debounce(200)
       .distinctUntilChanged()
-      .onEach { query ->
-        if (query.isBlank()) {
-          _numberSuggestions.value = emptyList()
-          _isNumberSearching.value = false
+      .onEach { q ->
+        if (q.isBlank()) {
+          numberSuggestions.value = emptyList()
+          isNumberSearching.value = false
         } else {
-          performNumberSearch(query)
+          performNumberSearch(q)
         }
       }
-      .launchIn(screenModelScope)
+      .launchIn(scope)
   }
 
-  fun onSearchQueryChange(query: String) {
-    _searchQuery.value = query
-    if (query.isNotBlank()) {
-      _isSearching.value = true
-    } else {
-      _suggestions.value = emptyList()
-      _isSearching.value = false
-    }
-  }
+  fun onEvent(event: HomeEvent) {
+    when (event) {
+      is HomeEvent.SearchQueryChanged -> {
+        searchQuery.value = event.query
+        if (event.query.isNotBlank()) isSearching.value = true
+        else {
+          searchSuggestions.value = emptyList()
+          isSearching.value = false
+        }
+      }
 
-  fun onClearSearch() {
-    _searchQuery.value = ""
-    _suggestions.value = emptyList()
-    _isSearching.value = false
-  }
+      HomeEvent.SearchCleared -> {
+        searchQuery.value = ""
+        searchSuggestions.value = emptyList()
+        isSearching.value = false
+      }
 
-  fun onNumberQueryChange(query: String) {
-    val normalized = query.filter { it.isDigit() }.take(4)
-    _numberQuery.value = normalized
+      is HomeEvent.NumberQueryChanged -> {
+        val normalized = event.query.filter { it.isDigit() }.take(4)
+        numberQuery.value = normalized
+        if (normalized.isBlank()) {
+          numberSearchJob?.cancel()
+          numberSuggestions.value = emptyList()
+          isNumberSearching.value = false
+        } else {
+          isNumberSearching.value = true
+        }
+      }
 
-    if (normalized.isBlank()) {
-      numberSearchJob?.cancel()
-      _numberSuggestions.value = emptyList()
-      _isNumberSearching.value = false
-    } else {
-      _isNumberSearching.value = true
-    }
-  }
-
-  fun onClearNumberSearch() {
-    _numberQuery.value = ""
-    _numberSuggestions.value = emptyList()
-    _isNumberSearching.value = false
-    numberSearchJob?.cancel()
-  }
-
-  private fun performNumberSearch(query: String) {
-    numberSearchJob?.cancel()
-    numberSearchJob = screenModelScope.launch {
-      try {
-        _isNumberSearching.value = true
-        val results = searchSuggestionsUseCase(query, limit = 15)
-        _numberSuggestions.value = results.fold(
-          ifLeft = { emptyList() },
-          ifRight = { list -> list.map { it.toUi() } }
-        )
-      } catch (_: Exception) {
-        _numberSuggestions.value = emptyList()
-      } finally {
-        _isNumberSearching.value = false
+      HomeEvent.NumberCleared -> {
+        numberQuery.value = ""
+        numberSuggestions.value = emptyList()
+        isNumberSearching.value = false
+        numberSearchJob?.cancel()
       }
     }
   }
 
   private fun performSearch(query: String) {
     searchJob?.cancel()
-    searchJob = screenModelScope.launch {
+    searchJob = scope.launch {
       try {
-        _isSearching.value = true
+        isSearching.value = true
         val results = searchSuggestionsUseCase(query)
-        _suggestions.value = results.fold(
+        searchSuggestions.value = results.fold(
           ifLeft = { emptyList() },
-          ifRight = { list -> list.map { it.toUi() } }
+          ifRight = { list -> list.map { it.toUi() } },
         )
       } catch (_: Exception) {
-        _suggestions.value = emptyList()
+        searchSuggestions.value = emptyList()
       } finally {
-        _isSearching.value = false
+        isSearching.value = false
+      }
+    }
+  }
+
+  private fun performNumberSearch(query: String) {
+    numberSearchJob?.cancel()
+    numberSearchJob = scope.launch {
+      try {
+        isNumberSearching.value = true
+        val results = searchSuggestionsUseCase(query, limit = 15)
+        numberSuggestions.value = results.fold(
+          ifLeft = { emptyList() },
+          ifRight = { list -> list.map { it.toUi() } },
+        )
+      } catch (_: Exception) {
+        numberSuggestions.value = emptyList()
+      } finally {
+        isNumberSearching.value = false
       }
     }
   }
@@ -186,9 +186,9 @@ class HomeScreenModel(
       BookReferenceUi(
         bookId = ref.bookId,
         displayShortName = ref.displayShortName.value,
-        songNumber = ref.songNumber
+        songNumber = ref.songNumber,
       )
     },
-    snippet = snippet
+    snippet = snippet,
   )
 }

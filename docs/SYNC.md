@@ -1,46 +1,47 @@
-# Synchronization (Status and Design Notes)
+# Sync (design notes — NOT IMPLEMENTED)
 
-## Current status
+> ⚠️ **Status:** there is no `:sync` module in `pws-core` today. Mobile targets are offline-first
+> via local Room storage. This file captures the intended direction and constraints so that the
+> eventual implementation stays consistent with the rest of the architecture. **Do not assume any of
+this is wired up.**
 
-- A dedicated sync module is **not implemented** in `pws-core` at this time.
-- Mobile targets still follow offline-first behavior via local storage as primary source.
-- This file describes intended synchronization direction and constraints.
+---
 
 ## Goals
 
 - Keep UX responsive offline.
-- Reconcile local user data with server when network/auth are available.
-- Avoid data loss for favorites/history/tags/user overrides.
+- Reconcile local user data with the server when network/auth become available.
+- Avoid data loss for favorites / history / tags / user overrides.
 
 ## Candidate sync scope
 
-| Data group | Direction | Priority |
-|---|---|---|
-| Read-only catalog (songs/books/global tags) | Server -> Client | Medium |
-| User data (favorites/history/user tags) | Bidirectional | High |
-| User overrides | Bidirectional | High |
+| Data group                                    | Direction       | Priority |
+|-----------------------------------------------|-----------------|----------|
+| Read-only catalog (songs, books, global tags) | Server → Client | Medium   |
+| User data (favorites, history, user tags)     | Bidirectional   | High     |
+| User overrides                                | Bidirectional   | High     |
 
-## Intended architecture (conceptual)
+## Intended architecture
 
 ```text
-UI -> UseCase -> Local repository (Room)
-                       |
-                       v
+UI → UseCase → Local repository (Room)
+                       │
+                       ▼
                  Sync coordinator
-                 /             \
-         Local change log    Remote API
+                 ┌──────┴──────┐
+        Local change log   Remote API (Ktor)
 ```
 
 ## Conflict strategy draft
 
-| Entity | Preferred strategy |
-|---|---|
-| Favorites | Last-write-wins |
-| History | Merge append-only entries |
-| User tags | Merge + LWW for edits |
-| User song overrides | Last-write-wins |
+| Entity              | Preferred strategy        |
+|---------------------|---------------------------|
+| Favorites           | Last-write-wins           |
+| History             | Merge append-only entries |
+| User tags           | Merge + LWW for edits     |
+| User song overrides | Last-write-wins           |
 
-## Triggers (candidate)
+## Sync triggers (candidate)
 
 - Connectivity restored.
 - App foreground after staleness threshold.
@@ -49,16 +50,16 @@ UI -> UseCase -> Local repository (Room)
 
 ## Constraints
 
-- Keep domain layer platform-agnostic.
-- Synchronization-specific implementation details should live outside `:domain`.
-- Any API changes required for sync must remain aligned with `pws-server` contracts.
+- Domain layer must remain platform-agnostic.
+- Sync-specific implementation lives **outside `:domain`** (proposed `:sync` module).
+- Any new API endpoints must stay aligned with `pws-server`.
 
-## Next implementation milestones
+## Implementation roadmap (when work starts)
 
-1. Define minimal sync interfaces and status model.
-2. Add persistent queue for local mutations that require push.
+1. Define minimal sync interfaces and a status model.
+2. Add a persistent queue for local mutations that require push.
 3. Implement push-first flow for favorites/history.
-4. Add pull-and-merge policy per entity.
-5. Add telemetry/error visibility for host apps.
+4. Add a pull-and-merge policy per entity.
+5. Add telemetry / error visibility for host apps.
 
-Last reviewed: 2026-04-29
+Last reviewed: 2026-06-17

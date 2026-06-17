@@ -70,12 +70,11 @@ import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.domain.book.model.BookSummary
 import io.github.alelk.pws.domain.history.model.HistorySubject
 import io.github.alelk.pws.features.components.AppLargeTopBar
+import io.github.alelk.pws.features.components.BookCard
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.NumberInputModal
 import io.github.alelk.pws.features.components.SearchBarWithSuggestions
 import io.github.alelk.pws.features.components.clickableWithScaleAndClip
-import io.github.alelk.pws.features.components.generateBookColor
-import io.github.alelk.pws.features.components.getInitials
 import io.github.alelk.pws.features.components.shimmerEffect
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.app_name
@@ -102,25 +101,20 @@ class HomeScreen : Screen {
   override fun Content() {
     val viewModel = koinScreenModel<HomeScreenModel>()
     val state by viewModel.state.collectAsState()
-    val searchQuery by viewModel.searchQuery.collectAsState()
-    val suggestions by viewModel.suggestions.collectAsState()
-    val isSearching by viewModel.isSearching.collectAsState()
-    val numberQuery by viewModel.numberQuery.collectAsState()
-    val numberSuggestions by viewModel.numberSuggestions.collectAsState()
-    val isNumberSearching by viewModel.isNumberSearching.collectAsState()
+    val content = state as? HomeUiState.Content
 
     HomeContent(
       state = state,
-      searchQuery = searchQuery,
-      suggestions = suggestions,
-      isSearching = isSearching,
-      onSearchQueryChange = viewModel::onSearchQueryChange,
-      onClearSearch = viewModel::onClearSearch,
-      numberQuery = numberQuery,
-      numberSuggestions = numberSuggestions,
-      isNumberSearching = isNumberSearching,
-      onNumberQueryChange = viewModel::onNumberQueryChange,
-      onClearNumberSearch = viewModel::onClearNumberSearch
+      searchQuery = content?.searchQuery.orEmpty(),
+      suggestions = content?.searchSuggestions.orEmpty(),
+      isSearching = content?.isSearching == true,
+      onSearchQueryChange = { viewModel.onEvent(HomeEvent.SearchQueryChanged(it)) },
+      onClearSearch = { viewModel.onEvent(HomeEvent.SearchCleared) },
+      numberQuery = content?.numberQuery.orEmpty(),
+      numberSuggestions = content?.numberSuggestions.orEmpty(),
+      isNumberSearching = content?.isNumberSearching == true,
+      onNumberQueryChange = { viewModel.onEvent(HomeEvent.NumberQueryChanged(it)) },
+      onClearNumberSearch = { viewModel.onEvent(HomeEvent.NumberCleared) },
     )
   }
 }
@@ -203,10 +197,10 @@ fun HomeContent(
                 // Navigate to song in book context if available
                 val screen = suggestion.bookReferences.firstOrNull()?.let { ref ->
                   ScreenRegistry.get(
-                    SharedScreens.Song(io.github.alelk.pws.domain.core.ids.SongNumberId(ref.bookId, suggestion.songId))
+                    SharedScreens.song(io.github.alelk.pws.domain.core.ids.SongNumberId(ref.bookId, suggestion.songId))
                   )
                 } ?: ScreenRegistry.get(
-                  SharedScreens.SongById(suggestion.songId)
+                  SharedScreens.songById(suggestion.songId)
                 )
                 navigator.push(screen)
               },
@@ -219,15 +213,15 @@ fun HomeContent(
           item(span = { GridItemSpan(maxLineSpan) }) {
             QuickActionsRow(
               onNumberSearchClick = { 
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 showNumberInput = true 
               },
               onTextSearchClick = {
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 navigator.push(ScreenRegistry.get(SharedScreens.Search))
               },
               onHistoryClick = {
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 navigator.push(ScreenRegistry.get(SharedScreens.History))
               }
             )
@@ -237,11 +231,11 @@ fun HomeContent(
           item(span = { GridItemSpan(maxLineSpan) }) {
             QuickActionsRowSecondary(
               onFavoritesClick = {
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 navigator.push(ScreenRegistry.get(SharedScreens.Favorites))
               },
               onTagsClick = {
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 navigator.push(ScreenRegistry.get(SharedScreens.Tags))
               }
             )
@@ -272,13 +266,13 @@ fun HomeContent(
                 key = { _, song -> song.id }
               ) { index, song ->
                 val songScreen = when (val subject = song.subject) {
-                  is HistorySubject.BookedSong -> rememberScreen(SharedScreens.Song(subject.songNumberId))
-                  is HistorySubject.StandaloneSong -> rememberScreen(SharedScreens.SongById(subject.songId))
+                  is HistorySubject.BookedSong -> rememberScreen(SharedScreens.song(subject.songNumberId))
+                  is HistorySubject.StandaloneSong -> rememberScreen(SharedScreens.songById(subject.songId))
                 }
                 RecentSongCard(
                   song = song,
                   onClick = {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                     navigator.push(songScreen)
                   },
                   modifier = Modifier.testTag("recent-song-card-$index")
@@ -304,12 +298,15 @@ fun HomeContent(
             items = state.books.take(6),
             key = { it.id.toString() }
           ) { book ->
-            val bookSongsScreen = rememberScreen(SharedScreens.BookSongs(book.id))
-            HomeBookCard(
-              book = book,
-              onClick = { 
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                navigator.push(bookSongsScreen) 
+            val bookSongsScreen = rememberScreen(SharedScreens.bookSongs(book.id))
+            BookCard(
+              displayName = book.displayName.value,
+              songCount = book.countSongs,
+              aspectRatio = 1.4f,
+              initialsStyle = MaterialTheme.typography.headlineMedium,
+              onClick = {
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                navigator.push(bookSongsScreen)
               }
             )
           }
@@ -347,9 +344,9 @@ fun HomeContent(
         onClearNumberSearch()
         val screen = suggestion.bookReferences.firstOrNull()?.let { ref ->
           ScreenRegistry.get(
-            SharedScreens.Song(io.github.alelk.pws.domain.core.ids.SongNumberId(ref.bookId, suggestion.songId))
+            SharedScreens.song(io.github.alelk.pws.domain.core.ids.SongNumberId(ref.bookId, suggestion.songId))
           )
-        } ?: ScreenRegistry.get(SharedScreens.SongById(suggestion.songId))
+        } ?: ScreenRegistry.get(SharedScreens.songById(suggestion.songId))
         navigator.push(screen)
       }
     )
@@ -413,8 +410,6 @@ private fun QuickActionsRowSecondary(
       onClick = onTagsClick,
       modifier = Modifier.weight(1f)
     )
-    // Балансируем сетку, чтобы визуально была ровная 3-колоночная линия как в первом ряду
-    Spacer(Modifier.weight(1f))
   }
 }
 
@@ -450,75 +445,6 @@ private fun QuickActionChip(
         maxLines = 1,
         overflow = TextOverflow.Ellipsis
       )
-    }
-  }
-}
-
-@Composable
-private fun HomeBookCard(
-  book: BookSummary,
-  onClick: () -> Unit,
-  modifier: Modifier = Modifier
-) {
-  val baseColor = remember(book.displayName.value) { generateBookColor(book.displayName.value) }
-  val initials = remember(book.displayName.value) { getInitials(book.displayName.value) }
-
-  Card(
-    modifier = modifier
-      .fillMaxWidth()
-      .clickableWithScaleAndClip(shape = MaterialTheme.shapes.large, onClick = onClick),
-    shape = MaterialTheme.shapes.large,
-    colors = CardDefaults.cardColors(
-      containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-    ),
-    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-  ) {
-    Column {
-      // Gradient header with initials
-      Box(
-        modifier = Modifier
-          .fillMaxWidth()
-          .aspectRatio(1.4f)
-          .background(
-            Brush.linearGradient(
-              colors = listOf(
-                baseColor,
-                baseColor.copy(alpha = 0.7f)
-              )
-            )
-          ),
-        contentAlignment = Alignment.Center
-      ) {
-        Text(
-          text = initials,
-          style = MaterialTheme.typography.headlineMedium.copy(
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 2.sp
-          ),
-          color = Color.White.copy(alpha = 0.95f)
-        )
-      }
-
-      // Book info
-      Column(
-        modifier = Modifier.padding(MaterialTheme.spacing.md)
-      ) {
-        Text(
-          text = book.displayName.value,
-          style = MaterialTheme.typography.bodyMedium.copy(
-            fontWeight = FontWeight.Medium
-          ),
-          color = MaterialTheme.colorScheme.onSurface,
-          maxLines = 2,
-          overflow = TextOverflow.Ellipsis
-        )
-        Spacer(Modifier.height(2.dp))
-        Text(
-          text = stringResource(Res.string.book_songs_count, book.countSongs),
-          style = MaterialTheme.typography.bodySmall,
-          color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-      }
     }
   }
 }

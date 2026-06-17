@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Color
 import io.github.alelk.pws.domain.core.Locale
 import io.github.alelk.pws.domain.core.ids.SongId
 import io.github.alelk.pws.domain.core.ids.TagId
+import io.github.alelk.pws.features.app.UiMessage
 
 @Immutable
 data class EditableTagUi(
@@ -47,7 +48,7 @@ sealed interface SongEditUiState {
     val validationMessage: SongEditValidationMessage? = null
   ) : SongEditUiState
 
-  data class Error(val message: String) : SongEditUiState
+  data class Error(val message: UiMessage) : SongEditUiState
 }
 
 sealed interface SongEditEvent {

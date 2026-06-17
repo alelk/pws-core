@@ -1,5 +1,54 @@
 # PWS Android
 
+# [2.28.0-rc.5](https://github.com/alelk/pws-core/compare/v2.28.0-rc.4...v2.28.0-rc.5) (2026-06-17)
+
+
+### Bug Fixes
+
+* fix song title issue ([4f5a64c](https://github.com/alelk/pws-core/commit/4f5a64cf06770abdf042e7003ee7d1e4f78db41d))
+
+# [2.28.0-rc.4](https://github.com/alelk/pws-core/compare/v2.28.0-rc.3...v2.28.0-rc.4) (2026-06-17)
+
+
+### Bug Fixes
+
+* Add tags for e2e testing ([92c4ac1](https://github.com/alelk/pws-core/commit/92c4ac1c57a4d27ebed6dab5a93ceef7d9cc48ae))
+
+# [2.28.0-rc.3](https://github.com/alelk/pws-core/compare/v2.28.0-rc.2...v2.28.0-rc.3) (2026-06-16)
+
+
+### Features
+
+* UI refactoring ([b626f42](https://github.com/alelk/pws-core/commit/b626f423b9aeed5e9ad6522b60c8fde81c5903f2))
+
+# [2.28.0-rc.2](https://github.com/alelk/pws-core/compare/v2.28.0-rc.1...v2.28.0-rc.2) (2026-06-15)
+
+
+### Bug Fixes
+
+* update database version ([f6eea9f](https://github.com/alelk/pws-core/commit/f6eea9f9f9a4cbc24b626e3ed0ef0a8ed8037421))
+
+# [2.28.0-rc.1](https://github.com/alelk/pws-core/compare/v2.27.1-rc.2...v2.28.0-rc.1) (2026-06-15)
+
+
+### Features
+
+* implement data protection ([9872184](https://github.com/alelk/pws-core/commit/9872184132c028cc45ebd7628092651e1dff6e0b))
+
+## [2.27.1-rc.2](https://github.com/alelk/pws-core/compare/v2.27.1-rc.1...v2.27.1-rc.2) (2026-05-11)
+
+
+### Bug Fixes
+
+* change ungzip function visibility from internal to actual ([acae55f](https://github.com/alelk/pws-core/commit/acae55fa2d74c130359909ffdc4787493cede767))
+
+## [2.27.1-rc.1](https://github.com/alelk/pws-core/compare/v2.27.0...v2.27.1-rc.1) (2026-05-07)
+
+
+### Bug Fixes
+
+* update SharedScreens to use string IDs for Book, Song, and Tag data classes ([6b7ba68](https://github.com/alelk/pws-core/commit/6b7ba689d454fec3618e5c42741e3623c3a3e3c7))
+
 # [2.27.0](https://github.com/alelk/pws-core/compare/v2.26.0...v2.27.0) (2026-05-06)
 
 

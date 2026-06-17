@@ -2,6 +2,7 @@ package io.github.alelk.pws.features.history
 
 import androidx.compose.runtime.Immutable
 import io.github.alelk.pws.domain.history.model.HistorySubject
+import io.github.alelk.pws.features.app.UiMessage
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
@@ -55,7 +56,7 @@ sealed interface HistoryUiState {
   ) : HistoryUiState
 
   data object Empty : HistoryUiState
-  data class Error(val message: String) : HistoryUiState
+  data class Error(val message: UiMessage) : HistoryUiState
 }
 
 sealed interface HistoryEvent {

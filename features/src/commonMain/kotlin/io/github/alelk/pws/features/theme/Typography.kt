@@ -13,8 +13,8 @@ import androidx.compose.ui.unit.sp
 val NumberBadgeTextStyle = TextStyle(
   fontFamily = FontFamily.Monospace,
   fontWeight = FontWeight.W600,
-  fontSize = 12.sp,
-  lineHeight = 16.sp,
+  fontSize = 14.sp,
+  lineHeight = 18.sp,
   letterSpacing = 0.sp
 )
 

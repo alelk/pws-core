@@ -190,5 +190,17 @@
     <string name="song_detail_jump_clear">Wyczyść</string>
 
     <string name="tag_chip_edit">Edytuj</string>
+
+    <string name="time_just_now">Przed chwilą</string>
+    <string name="time_minutes_ago">%1$d min temu</string>
+    <string name="time_hours_ago">%1$d godz. temu</string>
+    <string name="time_yesterday">Wczoraj</string>
+    <string name="time_days_ago">%1$d dni temu</string>
+
+    <string name="song_number_label">№ %1$d</string>
+    <string name="song_number_a11y">Numer pieśni %1$d</string>
+    <string name="license_loading">Ładowanie…</string>
+    <string name="license_load_failed">Nie udało się załadować tekstu licencji: %1$s</string>
+    <string name="jump_number_range">%1$d – %2$d</string>
 </resources>
 

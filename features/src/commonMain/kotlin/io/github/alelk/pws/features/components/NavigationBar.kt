@@ -111,7 +111,7 @@ fun AppNavigationBar(
         selected = selected,
         modifier = Modifier.testTag(destination?.route ?: label),
         onClick = {
-          haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+          haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
           if (selected) {
             onReselectCurrentTab()
           } else {
@@ -120,12 +120,10 @@ fun AppNavigationBar(
         },
         icon = {
           val icons = destination
-          // contentDescription uses the stable route value (locale-independent) so that
-          // automated tests can locate nav items reliably regardless of device language.
           Icon(
             imageVector = if (selected) (icons?.selectedIcon ?: NavDestination.Home.selectedIcon)
             else (icons?.unselectedIcon ?: NavDestination.Home.unselectedIcon),
-            contentDescription = destination?.route ?: label
+            contentDescription = label
           )
         },
         label = {

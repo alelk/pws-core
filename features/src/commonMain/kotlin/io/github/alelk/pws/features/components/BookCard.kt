@@ -81,15 +81,21 @@ fun BookCard(
   displayName: String,
   songCount: Int,
   onClick: () -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
+  aspectRatio: Float = 1.6f,
+  initialsStyle: androidx.compose.ui.text.TextStyle = MaterialTheme.typography.displayMedium,
+  testTag: String = "book-card-$displayName",
 ) {
   val baseColor = remember(displayName) { generateBookColor(displayName) }
   val initials = remember(displayName) { getInitials(displayName) }
+  val gradient = remember(baseColor) {
+    Brush.linearGradient(colors = listOf(baseColor, baseColor.copy(alpha = 0.7f)))
+  }
 
   Card(
     modifier = modifier
       .fillMaxWidth()
-      .testTag("book-card-$displayName")
+      .testTag(testTag)
       .clickableWithScaleAndClip(shape = MaterialTheme.shapes.large, onClick = onClick),
     shape = MaterialTheme.shapes.large,
     colors = CardDefaults.cardColors(
@@ -102,20 +108,13 @@ fun BookCard(
       Box(
         modifier = Modifier
           .fillMaxWidth()
-          .aspectRatio(1.6f)
-          .background(
-            Brush.linearGradient(
-              colors = listOf(
-                baseColor,
-                baseColor.copy(alpha = 0.7f)
-              )
-            )
-          ),
+          .aspectRatio(aspectRatio)
+          .background(gradient),
         contentAlignment = Alignment.Center
       ) {
         Text(
           text = initials,
-          style = MaterialTheme.typography.displayMedium.copy(
+          style = initialsStyle.copy(
             fontWeight = FontWeight.Bold,
             letterSpacing = 2.sp
           ),

@@ -3,6 +3,7 @@ package io.github.alelk.pws.features.search
 import androidx.compose.runtime.Immutable
 import io.github.alelk.pws.domain.core.ids.BookId
 import io.github.alelk.pws.domain.core.ids.SongId
+import io.github.alelk.pws.features.app.UiMessage
 
 /**
  * Book reference in search suggestion for navigation.
@@ -73,7 +74,7 @@ sealed interface SearchUiState {
     val isLoading: Boolean = false
   ) : SearchUiState
 
-  data class Error(val message: String) : SearchUiState
+  data class Error(val message: UiMessage) : SearchUiState
 }
 
 sealed interface SearchEvent {

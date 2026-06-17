@@ -51,7 +51,7 @@ fun TagChip(
   val haptic = LocalHapticFeedback.current
   Surface(
     modifier = modifier.clickable(onClick = {
-      haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+      haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
       onClick()
     }),
     shape = MaterialTheme.shapes.small,
@@ -96,7 +96,7 @@ fun SelectableTagChip(
     modifier = modifier,
     selected = selected,
     onClick = {
-      haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+      haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
       onClick()
     },
     label = {
@@ -162,7 +162,7 @@ fun RemovableTagChip(
       )
       IconButton(
         onClick = {
-          haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+          haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
           onRemove()
         },
         modifier = Modifier.size(24.dp)
@@ -212,7 +212,7 @@ fun TagListItem(
   val haptic = LocalHapticFeedback.current
   Surface(
     modifier = modifier.clickable(onClick = {
-      haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+      haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
       onClick()
     }),
     color = MaterialTheme.colorScheme.surface
@@ -250,7 +250,7 @@ fun TagListItem(
       if (!isPredefined) {
         Spacer(Modifier.width(MaterialTheme.spacing.sm))
         IconButton(onClick = {
-          haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+          haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
           onEditClick()
         }) {
           Icon(

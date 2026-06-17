@@ -39,7 +39,7 @@ fun RecentSongCard(
     modifier = modifier
       .width(140.dp)
       .clickableWithScaleAndClip(shape = MaterialTheme.shapes.medium, onClick = {
-        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
         onClick()
       }),
     shape = MaterialTheme.shapes.medium,

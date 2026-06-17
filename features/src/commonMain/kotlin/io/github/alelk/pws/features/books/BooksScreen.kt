@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -149,18 +149,19 @@ private fun BooksGrid(
     horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md),
     verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)
   ) {
-    items(
+    itemsIndexed(
       items = books,
-      key = { it.id.toString() }
-    ) { book ->
-      val bookSongsScreen = rememberScreen(SharedScreens.BookSongs(book.id))
+      key = { _, book -> book.id.toString() }
+    ) { index, book ->
+      val bookSongsScreen = rememberScreen(SharedScreens.bookSongs(book.id))
       BookCard(
         displayName = book.displayName.value,
         songCount = book.countSongs,
-        onClick = { 
-          haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-          navigator.push(bookSongsScreen) 
-        }
+        onClick = {
+          haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+          navigator.push(bookSongsScreen)
+        },
+        testTag = "book-card-$index"
       )
     }
 
