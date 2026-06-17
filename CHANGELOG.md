@@ -1,11 +1,29 @@
 # PWS Android
 
-# [2.28.0-rc.6](https://github.com/alelk/pws-core/compare/v2.28.0-rc.5...v2.28.0-rc.6) (2026-06-18)
+# [3.0.0](https://github.com/alelk/pws-core/compare/v2.27.0...v3.0.0) (2026-06-17)
+
+
+* feat(database)!: Encrypted database support ([ec91b3d](https://github.com/alelk/pws-core/commit/ec91b3d132f79b9a3d3139f7e3abd6da687d74b4))
+
+
+### Bug Fixes
+
+* Add tags for e2e testing ([92c4ac1](https://github.com/alelk/pws-core/commit/92c4ac1c57a4d27ebed6dab5a93ceef7d9cc48ae))
+* change ungzip function visibility from internal to actual ([acae55f](https://github.com/alelk/pws-core/commit/acae55fa2d74c130359909ffdc4787493cede767))
+* fix song title issue ([4f5a64c](https://github.com/alelk/pws-core/commit/4f5a64cf06770abdf042e7003ee7d1e4f78db41d))
+* update database version ([f6eea9f](https://github.com/alelk/pws-core/commit/f6eea9f9f9a4cbc24b626e3ed0ef0a8ed8037421))
+* update SharedScreens to use string IDs for Book, Song, and Tag data classes ([6b7ba68](https://github.com/alelk/pws-core/commit/6b7ba689d454fec3618e5c42741e3623c3a3e3c7))
 
 
 ### Features
 
-* improve ui ([c717920](https://github.com/alelk/pws-core/commit/c7179207172ee1fe9e34dc95f237e9106bee6809))
+* implement data protection ([9872184](https://github.com/alelk/pws-core/commit/9872184132c028cc45ebd7628092651e1dff6e0b))
+* UI refactoring ([b626f42](https://github.com/alelk/pws-core/commit/b626f423b9aeed5e9ad6522b60c8fde81c5903f2))
+
+
+### BREAKING CHANGES
+
+* Encrypted database
 
 # [2.28.0-rc.5](https://github.com/alelk/pws-core/compare/v2.28.0-rc.4...v2.28.0-rc.5) (2026-06-17)
 
