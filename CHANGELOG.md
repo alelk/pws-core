@@ -1,5 +1,12 @@
 # PWS Android
 
+# [2.28.0-rc.5](https://github.com/alelk/pws-core/compare/v2.28.0-rc.4...v2.28.0-rc.5) (2026-06-17)
+
+
+### Bug Fixes
+
+* fix song title issue ([4f5a64c](https://github.com/alelk/pws-core/commit/4f5a64cf06770abdf042e7003ee7d1e4f78db41d))
+
 # [2.28.0-rc.4](https://github.com/alelk/pws-core/compare/v2.28.0-rc.3...v2.28.0-rc.4) (2026-06-17)
 
 
