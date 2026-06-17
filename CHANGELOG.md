@@ -1,5 +1,12 @@
 # PWS Android
 
+# [2.28.0-rc.4](https://github.com/alelk/pws-core/compare/v2.28.0-rc.3...v2.28.0-rc.4) (2026-06-17)
+
+
+### Bug Fixes
+
+* Add tags for e2e testing ([92c4ac1](https://github.com/alelk/pws-core/commit/92c4ac1c57a4d27ebed6dab5a93ceef7d9cc48ae))
+
 # [2.28.0-rc.3](https://github.com/alelk/pws-core/compare/v2.28.0-rc.2...v2.28.0-rc.3) (2026-06-16)
 
 
