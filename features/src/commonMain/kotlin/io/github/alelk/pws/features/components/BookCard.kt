@@ -84,6 +84,7 @@ fun BookCard(
   modifier: Modifier = Modifier,
   aspectRatio: Float = 1.6f,
   initialsStyle: androidx.compose.ui.text.TextStyle = MaterialTheme.typography.displayMedium,
+  testTag: String = "book-card-$displayName",
 ) {
   val baseColor = remember(displayName) { generateBookColor(displayName) }
   val initials = remember(displayName) { getInitials(displayName) }
@@ -94,7 +95,7 @@ fun BookCard(
   Card(
     modifier = modifier
       .fillMaxWidth()
-      .testTag("book-card-$displayName")
+      .testTag(testTag)
       .clickableWithScaleAndClip(shape = MaterialTheme.shapes.large, onClick = onClick),
     shape = MaterialTheme.shapes.large,
     colors = CardDefaults.cardColors(
