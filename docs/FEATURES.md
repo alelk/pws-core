@@ -1,66 +1,32 @@
-# PWS Features
+# Features
 
-This document is an index of implemented behavior.
-Detailed behavior and edge cases are documented in `docs/features/*.md`.
+Index of implemented behavior. Each row links to a deep-dive in [`features/`](features/) with edge cases, use cases, and related files.
 
-## Core feature set
+| Feature            | Summary                                                                                            | Deep dive                                                   |
+|--------------------|----------------------------------------------------------------------------------------------------|-------------------------------------------------------------|
+| **Search**         | Full-text + number search; debounced suggestions with `bookReferences` for book-context navigation | [`features/search.md`](features/search.md)                  |
+| **Books & songs**  | Books list, songs-in-book, song detail; visibility filtered via `BookQuery(enabled = true)`        | (see `:features/book`, `:features/books`, `:features/song`) |
+| **Favorites**      | Toggle from song screen; reactive list; two subject types (`BookedSong` / `StandaloneSong`)        | [`features/favorites.md`](features/favorites.md)            |
+| **History**        | Records song views (debounce/threshold in screen logic); reactive list; remove/clear actions       | [`features/history.md`](features/history.md)                |
+| **Tags**           | Global + custom tags; CRUD for user tags; replace-all semantics for song-tag assignments           | [`features/tags.md`](features/tags.md)                      |
+| **User overrides** | Per-user song field overrides without mutating canonical data; merged view via `MergedSongDetail`  | [`features/user-overrides.md`](features/user-overrides.md)  |
 
-### Search
-
-- Full-text search by text/number.
-- Search suggestions with debounce in UI.
-- Suggestions/results can include `bookReferences` for context navigation.
-
-Details: `docs/features/search.md`
-
-### Books and songs
-
-- Books list and songs-in-book flows.
-- Song detail screen with lyric + metadata.
-- Book visibility can be filtered by enabled priority (`BookQuery(enabled = true)`).
-
-### Favorites
-
-- Toggle favorite from song screen.
-- Favorites list is reactive via observe use cases.
-
-Details: `docs/features/favorites.md`
-
-### History
-
-- Song views are recorded with debounce/time threshold in screen logic.
-- History list supports removal and clear actions.
-
-Details: `docs/features/history.md`
-
-### Tags
-
-- Global and custom tags.
-- CRUD for user tags.
-- Tag-to-song assignment via replace-all semantics.
-
-Details: `docs/features/tags.md`
-
-### User song overrides
-
-- Users can override global song fields.
-- Merged song view is returned for display.
-- Override reset is supported.
-
-Details: `docs/features/user-overrides.md`
+---
 
 ## Platform notes
 
-| Capability | Android/iOS | Web/Telegram Mini App |
-|---|---|---|
-| Main UI flows | Yes | Yes |
-| Primary data source | Local Room | Remote API |
-| Offline-first behavior | Yes | No |
+| Capability             | Android / iOS | Web / Telegram Mini App |
+|------------------------|---------------|-------------------------|
+| Main UI flows          | ✅            | ✅                      |
+| Primary data source    | Local Room    | Remote API              |
+| Offline-first behavior | ✅            | ❌                      |
 
-## Related docs
+---
 
-- Architecture: `docs/ARCHITECTURE.md`
-- Data flow/API: `docs/DATA_FLOW.md`
-- Synchronization status: `docs/SYNC.md`
+## Related
 
-Last reviewed: 2026-04-29
+- [`ARCHITECTURE.md`](ARCHITECTURE.md) — layer responsibilities
+- [`DATA_FLOW.md`](DATA_FLOW.md) — local vs remote routing, search behavior, bundle delivery
+- [`SYNC.md`](SYNC.md) — sync design notes (not implemented)
+
+Last reviewed: 2026-06-17

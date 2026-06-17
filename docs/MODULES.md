@@ -1,68 +1,93 @@
-# PWS Core Modules
+# Modules
 
-This page lists current modules from `settings.gradle.kts` and their responsibilities.
+Dependency graph and code locations.
+For the module inventory table see [`../AGENTS.md`](../AGENTS.md) § 4.
 
-## Module inventory
+Source of truth: [`../settings.gradle.kts`](../settings.gradle.kts).
 
-| Module | Purpose |
-|---|---|
-| `:domain` | Business models, commands/queries, use cases, repository interfaces |
-| `:domain:lyric-format` | Lyrics parser/formatter |
-| `:domain:domain-test-fixtures` | Test data generators/helpers |
-| `:api:contract` | HTTP DTOs and Ktor `@Resource` contracts |
-| `:api:mapping` | DTO <-> domain mapping |
-| `:api:client` | Ktor API client + remote repository implementations |
-| `:api:client:di` | DI wiring for API client modules |
-| `:core:navigation` | Shared navigation contracts (`SharedScreens`) |
-| `:core:ui` | Shared UI primitives/utilities |
-| `:features` | Compose Multiplatform screens + screen models |
-| `:data:db-room` | Room schema, entities, DAOs |
-| `:data:db-room:db-room-test-fixtures` | Test helpers/fixtures for Room module |
-| `:data:repo-room` | Room-backed repository implementations |
-| `:portable-data` | Portable serialization formats: `Backup` (user data export/import), `CollectionBundle` (full deduplicated collection for assets), `BookBundle` (single book for dynamic delivery). Shared sub-models: `Book`, `Song`, `Tag`, `SongReference`. Format: YAML (kaml) + gzip on JVM. |
+---
 
-## Important note about sync
-
-- There is currently no standalone `:sync` module in this repository.
-- Synchronization concepts are documented in `docs/SYNC.md` as architecture/roadmap guidance.
-
-## Typical dependency direction
+## Dependency direction
 
 ```text
-:features -> :domain, :core:navigation, :core:ui
+:features ─► :domain
+         ├─► :core:navigation
+         └─► :core:ui
 
-:api:client -> :domain, :api:contract, :api:mapping
-:api:mapping -> :domain, :api:contract
+:api:client ─► :domain
+           ├─► :api:contract
+           └─► :api:mapping
+:api:mapping ─► :domain
+             └─► :api:contract
+:api:client:di ─► :api:client
 
-:data:repo-room -> :domain, :data:db-room
+:data:repo-room ─► :domain
+                └─► :data:db-room
 
-:portable-data -> :domain
-:domain:domain-test-fixtures -> :domain
-
-:portable-data -> :domain
+:portable-data ─► :domain
+:domain:lyric-format ─► :domain
+:domain:domain-test-fixtures ─► :domain
+:data:db-room:db-room-test-fixtures ─► :data:db-room
 ```
 
-## Key code locations
+**Forbidden direction:** `:domain` must never depend on `:features`, `:api:*`, `:data:*`, or platform code.
 
-- Domain root: `domain/src/commonMain/kotlin/io/github/alelk/pws/domain/`
-- Features root: `features/src/commonMain/kotlin/io/github/alelk/pws/features/`
-- API client repos: `api/client/src/commonMain/kotlin/repository/`
-- Room repos: `data/repo-room/src/commonMain/kotlin/io/github/alelk/pws/data/repository/room/`
-- API contracts: `api/contract/src/commonMain/kotlin/`
+---
 
-## Feature-module conventions
+## Code locations (navigation map)
 
-Typical feature package in `:features`:
+| What                            | Path                                                                                                   |
+|---------------------------------|--------------------------------------------------------------------------------------------------------|
+| Domain entities + use cases     | `domain/src/commonMain/kotlin/io/github/alelk/pws/domain/`                                             |
+| Core identifiers (e.g. `TagId`) | `domain/src/commonMain/kotlin/io/github/alelk/pws/domain/core/ids/`                                    |
+| Feature screens + ScreenModels  | `features/src/commonMain/kotlin/io/github/alelk/pws/features/`                                         |
+| Shared `UiMessage` type         | `features/src/commonMain/kotlin/io/github/alelk/pws/features/app/UiMessage.kt`                         |
+| Shared navigation contracts     | `core/navigation/src/commonMain/kotlin/.../SharedScreens.kt`                                           |
+| Remote repository impls         | `api/client/src/commonMain/kotlin/repository/`                                                         |
+| Room repository impls           | `data/repo-room/src/commonMain/kotlin/io/github/alelk/pws/data/repository/room/`                       |
+| API DTO contracts               | `api/contract/src/commonMain/kotlin/{book,song,tag,favorite,history,usersong,usertag,userbook,admin}/` |
+| Lyrics parser                   | `domain/lyric-format/src/commonMain/kotlin/io/github/alelk/pws/domain/lyric/format/`                   |
+| Portable bundles                | `portable-data/src/commonMain/kotlin/io/github/alelk/pws/portable/`                                    |
+
+---
+
+## Feature package convention
+
+Each feature lives under `features/src/commonMain/kotlin/io/github/alelk/pws/features/{feature}/`:
 
 ```text
 {feature}/
-  {Feature}Screen.kt
-  {Feature}ScreenModel.kt
-  {Feature}UiState.kt
-  {feature}ScreenModelModule.kt
-  {feature}ScreenModule.kt
+  {Feature}Screen.kt              Voyager Screen
+  {Feature}ScreenModel.kt         StateScreenModel<UiState>
+  {Feature}UiState.kt             sealed Loading | Content | Error
+  {feature}ScreenModelModule.kt   (optional) ScreenModel Koin module
+  {feature}ScreenModule.kt        feature wiring Koin module
 ```
 
-Primary presentation pattern is Voyager `Screen` + `StateScreenModel`.
+Current feature directories: `app`, `book`, `books`, `components`, `di`, `favorites`, `history`, `home`, `resources`, `search`, `settings`, `song`, `tags`, `theme`.
 
-Last reviewed: 2026-05-06
+---
+
+## Domain entity convention
+
+Each entity lives under `domain/src/commonMain/kotlin/io/github/alelk/pws/domain/{entity}/`:
+
+```text
+{entity}/
+  model/         entities, value objects
+  repository/    {Entity}{Read|Write|Observe}Repository interfaces
+  usecase/       {Action}{Entity}UseCase
+  command/       UpdateXxxCommand + OptionalField<...> patches
+  query/         filter/sort objects
+```
+
+Current domain dirs: `auth`, `book`, `bookstatistic`, `core`, `cross`, `donationprompt`, `favorite`, `history`, `payment`, `person`, `song`, `songnumber`, `songreference`, `songtag`, `tag`, `tonality`.
+
+---
+
+## Related
+
+- [`ARCHITECTURE.md`](ARCHITECTURE.md) — layer responsibilities + dependency rules
+- [`../AGENTS.md`](../AGENTS.md) § 4–5 — module purpose table + where code belongs
+
+Last reviewed: 2026-06-17

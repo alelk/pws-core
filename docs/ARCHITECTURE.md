@@ -1,75 +1,85 @@
-# PWS Core Architecture
+# Architecture
 
-## Overview
+Deep-dive on layer responsibilities and dependency rules.
+For the one-screen overview, module table, and canonical patterns see [`../AGENTS.md`](../AGENTS.md).
 
-`pws-core` follows clean architecture with strict dependency direction:
+---
 
-```text
-UI (Compose Screen)
-  -> StateScreenModel (Voyager)
-    -> UseCase (domain)
-      -> Repository interface (domain)
-        -> Local impl (Room) OR Remote impl (Ktor)
-```
+## Layer responsibilities
 
-## Layers
+### Presentation — `:features`, `:core:navigation`, `:core:ui`
 
-### Presentation (`:features`, `:core:navigation`, `:core:ui`)
+- `Screen` (Voyager) — renders UI; no business logic.
+- `StateScreenModel<UiState>` — holds state, owns one-shot `Channel<Effect>(BUFFERED)`, calls use cases.
+- `:core:navigation` defines shared navigation contracts (`SharedScreens`) — features depend on this, not on each other.
+- `:core:ui` — primitives that don't belong to a specific feature.
 
-- `Screen` renders UI.
-- `StateScreenModel` holds state/effects and calls use cases.
-- Navigation contracts are defined in `core/navigation/src/commonMain/kotlin/SharedScreens.kt`.
+UI is **passive**: no calls to repositories, no transactions, no localised text inside state/effects (i18n boundary).
 
-### Domain (`:domain`)
+### Domain — `:domain`
 
-- Source of business rules.
-- Contains models, commands/queries, use cases, repository interfaces.
-- Stays platform-agnostic (`commonMain` only, no Android/iOS APIs).
+Source of business rules. Contains:
+- Models, value objects (validated `@JvmInline value class` IDs).
+- Repository **interfaces** only (no implementations).
+- Use cases (`{Action}{Entity}UseCase`) — single responsibility, own the transaction boundary via `TransactionRunner`.
+- Commands (`UpdateXxxCommand` + `OptionalField<T>` for PATCH semantics) and queries (filter/sort objects).
 
-### Data implementations
+Strict constraint: `commonMain` only, no `java.*` / Android / iOS APIs.
 
-- Local path: `:data:db-room` + `:data:repo-room`.
-- Remote path: `:api:client` + `:api:mapping` + `:api:contract`.
+### Data implementations — local + remote
+
+| Path   | Modules                                              | Used by      |
+|--------|------------------------------------------------------|--------------|
+| Local  | `:data:db-room` (schema) + `:data:repo-room` (impls) | Android, iOS |
+| Remote | `:api:contract` + `:api:mapping` + `:api:client`     | Web, Telegram Mini App |
+
+DI (Koin) decides concrete bindings per host app — domain doesn't care which one is wired.
 
 ### Supporting modules
 
-- `:domain:lyric-format`: parsing/formatting lyrics.
-- `:domain:domain-test-fixtures`: generators/helpers for tests.
-- `:portable-data`: portable serialisation formats — `Backup` (user data export/import), `CollectionBundle` (full deduplicated collection for asset delivery), `BookBundle` (single book for dynamic delivery via Play Asset Delivery / CDN). Format: YAML (kaml) + gzip on JVM/Native.
+- `:domain:lyric-format` — lyrics parser/formatter.
+- `:domain:domain-test-fixtures` — generators/helpers (use these in domain tests).
+- `:portable-data` — portable serialisation formats (YAML + gzip on JVM/Native):
+  - `Backup` — user-data export/import.
+  - `CollectionBundle` — full deduplicated collection for asset delivery.
+  - `BookBundle` — single book for dynamic delivery (Play Asset Delivery / CDN).
+
+---
 
 ## Dependency rules
 
-- UI depends on domain contracts, not on concrete data sources.
-- Repository interfaces live in domain; implementations live in data/api modules.
-- Use cases own transaction boundaries (`TransactionRunner`) for consistency.
-- DTO contracts (`:api:contract`) and mappings (`:api:mapping`) must stay compatible with `pws-server`.
+1. **UI depends on domain contracts**, not concrete data sources.
+2. **Repository interfaces live in `:domain`**, implementations in `:data:repo-room` / `:api:client`.
+3. **Use cases own transaction boundaries** (`TransactionRunner`).
+4. **`:api:contract` + `:api:mapping`** must stay compatible with `pws-server` — coordinate any DTO/field rename.
+5. **No cross-feature `ScreenModel` imports** — communicate via Koin-provided interfaces or navigation contracts.
 
-## Runtime data source selection
+The forbidden direction is anything that lets `:domain` import from `:features`, `:api:client`, `:data:repo-room`, or platform-specific code.
 
-- Android/iOS typically use Room-backed repositories.
-- Web/Telegram Mini App typically use remote API repositories.
-- DI (Koin) decides concrete bindings per target app.
+---
 
 ## Reactive model
 
-- Read paths are mostly `Flow`-based (`Observe*UseCase`).
-- Screen models collect flows and convert them to `UiState`.
-- Write operations go through `*WriteRepository` and expose typed results.
+- Read paths return `Flow` via `Observe*UseCase`.
+- ScreenModels collect flows and produce a composite `XxxUiState` (`Loading | Content | Error`).
+- Writes go through `*WriteRepository` and return typed sealed results — not exceptions for expected business outcomes.
+- One-shot signals (snackbar, navigation effect, dialog open) use `Channel<Effect>(BUFFERED)` — never `MutableSharedFlow<Effect>()` for new code.
 
-## Core UI pattern
+---
 
-```kotlin
-class FeatureScreenModel(
-  private val observeData: ObserveSomethingUseCase
-) : StateScreenModel<FeatureUiState>(FeatureUiState.Loading)
-```
+## Runtime data source selection
 
-Use this as the default presentation pattern unless there is a strong reason not to.
+- Android/iOS: Room-backed repositories (offline-first).
+- Web/Telegram Mini App: remote API repositories (no offline).
+- The choice is wired in the host app's Koin modules; `pws-core` itself ships both sets.
 
-## Related documents
+---
 
-- Module details: `docs/MODULES.md`
-- Data/API flow: `docs/DATA_FLOW.md`
-- Feature behavior: `docs/FEATURES.md` and `docs/features/*.md`
+## Related
 
-Last reviewed: 2026-05-06
+- [`MODULES.md`](MODULES.md) — dependency graph + code locations
+- [`DATA_FLOW.md`](DATA_FLOW.md) — local vs remote routing + content bundles
+- [`FEATURES.md`](FEATURES.md) — feature catalog
+- [`../AGENTS.md`](../AGENTS.md) — operational runbook
+
+Last reviewed: 2026-06-17
