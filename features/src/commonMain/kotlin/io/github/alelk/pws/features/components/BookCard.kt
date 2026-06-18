@@ -27,11 +27,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.alelk.pws.features.resources.Res
+import io.github.alelk.pws.features.resources.book_card_a11y
 import io.github.alelk.pws.features.resources.book_songs_count
 import io.github.alelk.pws.features.theme.spacing
 import org.jetbrains.compose.resources.stringResource
@@ -91,11 +94,13 @@ fun BookCard(
   val gradient = remember(baseColor) {
     Brush.linearGradient(colors = listOf(baseColor, baseColor.copy(alpha = 0.7f)))
   }
+  val a11yDescription = stringResource(Res.string.book_card_a11y, displayName, songCount)
 
   Card(
     modifier = modifier
       .fillMaxWidth()
       .testTag(testTag)
+      .semantics { contentDescription = a11yDescription }
       .clickableWithScaleAndClip(shape = MaterialTheme.shapes.large, onClick = onClick),
     shape = MaterialTheme.shapes.large,
     colors = CardDefaults.cardColors(

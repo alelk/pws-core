@@ -13,12 +13,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MusicNote
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,7 +33,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -55,12 +60,16 @@ import io.github.alelk.pws.features.components.HighlightedText
 import io.github.alelk.pws.features.components.LoadingContent
 import io.github.alelk.pws.features.components.SearchEmptyContent
 import io.github.alelk.pws.features.components.SearchField
+import io.github.alelk.pws.features.components.StateCrossfade
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.search_error_title
 import io.github.alelk.pws.features.resources.search_idle_subtitle
 import io.github.alelk.pws.features.resources.search_idle_title
 import io.github.alelk.pws.features.resources.search_loading
 import io.github.alelk.pws.features.resources.search_placeholder
+import io.github.alelk.pws.features.resources.search_scope_all
+import io.github.alelk.pws.features.resources.search_scope_in_books
+import io.github.alelk.pws.features.resources.search_scope_standalone
 import io.github.alelk.pws.features.resources.search_title
 import io.github.alelk.pws.features.resources.settings_open
 import io.github.alelk.pws.features.theme.spacing
@@ -113,6 +122,15 @@ class SearchResultsScreen(private val initialQuery: String) : Screen {
   }
 }
 
+/** Локальный UI-фильтр результатов поиска. Не лезет в use case — пост-фильтрация. */
+enum class SearchScope { ALL, IN_BOOKS, STANDALONE }
+
+private fun SearchScope.matches(s: SearchSuggestion): Boolean = when (this) {
+  SearchScope.ALL -> true
+  SearchScope.IN_BOOKS -> s.bookReferences.isNotEmpty()
+  SearchScope.STANDALONE -> s.bookReferences.isEmpty()
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchContent(
@@ -123,6 +141,7 @@ fun SearchContent(
 ) {
   val navigator = LocalNavigator.currentOrThrow
   val focusRequester = remember { FocusRequester() }
+  var scope by remember { mutableStateOf(SearchScope.ALL) }
 
   // Auto-focus search field when screen opens
   LaunchedEffect(Unit) {
@@ -162,47 +181,93 @@ fun SearchContent(
         modifier = Modifier
           .fillMaxWidth()
           .padding(horizontal = MaterialTheme.spacing.screenHorizontal)
-          .padding(bottom = MaterialTheme.spacing.md)
+          .padding(bottom = MaterialTheme.spacing.sm)
           .focusRequester(focusRequester),
         placeholder = stringResource(Res.string.search_placeholder)
       )
 
-      // Content based on state
-      when (state) {
-        SearchUiState.Idle -> {
-          SearchIdleContent()
-        }
+      // Scope chips — iOS-style filter row под поиском.
+      SearchScopeChips(
+        scope = scope,
+        onScopeChange = { scope = it },
+        modifier = Modifier.padding(bottom = MaterialTheme.spacing.sm)
+      )
 
-        SearchUiState.Loading -> {
-          LoadingContent(message = stringResource(Res.string.search_loading))
-        }
-
-        is SearchUiState.Suggestions -> {
-          if (state.items.isEmpty()) {
-            SearchEmptyContent(query = query)
-          } else {
-            SearchSuggestionsList(suggestions = state.items)
+      // Content based on state — spring crossfade between Loading/Empty/Results/Error
+      StateCrossfade(state) { current ->
+        when (current) {
+          SearchUiState.Idle -> {
+            SearchIdleContent()
           }
-        }
 
-        is SearchUiState.Results -> {
-          if (state.items.isEmpty() && !state.isLoading) {
-            SearchEmptyContent(query = query)
-          } else {
-            SearchResultsList(
-              results = state.items,
-              isLoading = state.isLoading
+          SearchUiState.Loading -> {
+            LoadingContent(message = stringResource(Res.string.search_loading))
+          }
+
+          is SearchUiState.Suggestions -> {
+            val filtered = current.items.filter { scope.matches(it) }
+            if (filtered.isEmpty()) {
+              SearchEmptyContent(query = query)
+            } else {
+              SearchSuggestionsList(suggestions = filtered)
+            }
+          }
+
+          is SearchUiState.Results -> {
+            val filtered = current.items.filter { scope.matches(it) }
+            if (filtered.isEmpty() && !current.isLoading) {
+              SearchEmptyContent(query = query)
+            } else {
+              SearchResultsList(
+                results = filtered,
+                isLoading = current.isLoading
+              )
+            }
+          }
+
+          is SearchUiState.Error -> {
+            ErrorContent(
+              title = stringResource(Res.string.search_error_title),
+              message = io.github.alelk.pws.features.app.rememberResolved(current.message),
             )
           }
         }
-
-        is SearchUiState.Error -> {
-          ErrorContent(
-            title = stringResource(Res.string.search_error_title),
-            message = io.github.alelk.pws.features.app.rememberResolved(state.message),
-          )
-        }
       }
+    }
+  }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SearchScopeChips(
+  scope: SearchScope,
+  onScopeChange: (SearchScope) -> Unit,
+  modifier: Modifier = Modifier,
+) {
+  val haptic = LocalHapticFeedback.current
+  val items = listOf(
+    SearchScope.ALL to stringResource(Res.string.search_scope_all),
+    SearchScope.IN_BOOKS to stringResource(Res.string.search_scope_in_books),
+    SearchScope.STANDALONE to stringResource(Res.string.search_scope_standalone),
+  )
+  LazyRow(
+    modifier = modifier.fillMaxWidth(),
+    contentPadding = PaddingValues(horizontal = MaterialTheme.spacing.screenHorizontal),
+    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(MaterialTheme.spacing.sm),
+  ) {
+    items(items, key = { it.first }) { (s, label) ->
+      FilterChip(
+        selected = scope == s,
+        onClick = {
+          haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+          onScopeChange(s)
+        },
+        label = { Text(label) },
+        colors = FilterChipDefaults.filterChipColors(
+          selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+          selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        ),
+      )
     }
   }
 }

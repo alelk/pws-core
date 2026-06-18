@@ -301,6 +301,7 @@ fun SongDetailContent(
   // when no host has provided them (e.g. previews, tests).
   val fontScale = displaySettings?.fontScale ?: 1f
   val expandedText = displaySettings?.expandedText ?: true
+  val lineHeightMultiplier = displaySettings?.lineHeightMultiplier ?: 1.0f
 
   // Only one sheet may be open at a time — typed as a single sealed bucket so
   // it's impossible to leave a "two sheets open" state by accident.
@@ -384,6 +385,7 @@ fun SongDetailContent(
             displayContext = state.context,
             fontScale = fontScale,
             expandedText = expandedText,
+            lineHeightMultiplier = lineHeightMultiplier,
             references = references,
             referenceBookContexts = referenceBookContexts,
             currentBookId = currentBookId,
@@ -412,8 +414,10 @@ fun SongDetailContent(
           SongDetailSheet.TextSettings -> TextSettingsSheet(
             fontScale = fontScale,
             expandedText = expandedText,
+            lineHeightMultiplier = lineHeightMultiplier,
             onFontScaleChange = { displaySettings?.onFontScaleChange?.invoke(it) },
             onExpandedTextChange = { displaySettings?.onExpandedTextChange?.invoke(it) },
+            onLineHeightMultiplierChange = { displaySettings?.onLineHeightMultiplierChange?.invoke(it) },
           )
 
           SongDetailSheet.Actions -> if (songId != null) {
@@ -469,8 +473,10 @@ private enum class SongDetailSheet { TextSettings, Actions, TagEditor, Jump }
 private fun TextSettingsSheet(
   fontScale: Float,
   expandedText: Boolean,
+  lineHeightMultiplier: Float,
   onFontScaleChange: (Float) -> Unit,
   onExpandedTextChange: (Boolean) -> Unit,
+  onLineHeightMultiplierChange: (Float) -> Unit,
 ) {
   val spacing = MaterialTheme.spacing
   Column(
@@ -513,6 +519,44 @@ private fun TextSettingsSheet(
         contentDescription = null,
         modifier = Modifier.size(28.dp),
         tint = MaterialTheme.colorScheme.onSurface
+      )
+    }
+    Spacer(Modifier.height(spacing.lg))
+
+    // Line spacing — iOS Books-like slider. Range 0.85x..1.6x of base lineHeight.
+    Text(
+      text = stringResource(Res.string.song_detail_line_spacing),
+      style = MaterialTheme.typography.titleSmall,
+      color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    Spacer(Modifier.height(spacing.sm))
+    Row(
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.spacedBy(spacing.md)
+    ) {
+      Text(
+        text = "¶",
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.width(20.dp)
+      )
+      Slider(
+        value = lineHeightMultiplier,
+        onValueChange = onLineHeightMultiplierChange,
+        valueRange = 0.85f..1.6f,
+        steps = 14, // 0.05 step
+        modifier = Modifier.weight(1f),
+        colors = SliderDefaults.colors(
+          thumbColor = MaterialTheme.colorScheme.primary,
+          activeTrackColor = MaterialTheme.colorScheme.primary,
+          inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+      )
+      Text(
+        text = "¶",
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.onSurface,
+        modifier = Modifier.width(28.dp)
       )
     }
     Spacer(Modifier.height(spacing.md))
@@ -576,6 +620,7 @@ private fun SongContent(
   displayContext: SongDetailUiState.DisplayContext,
   fontScale: Float,
   expandedText: Boolean,
+  lineHeightMultiplier: Float = 1.0f,
   references: List<SongReferenceDetail> = emptyList(),
   referenceBookContexts: Map<io.github.alelk.pws.domain.core.ids.SongId, List<SongDetailScreenModel.ReferenceBookContextUi>> = emptyMap(),
   currentBookId: io.github.alelk.pws.domain.core.ids.BookId? = null,
@@ -619,7 +664,8 @@ private fun SongContent(
         bridgeIndex = item.bridgeIndex,
         isRepeat = item.isRepeat,
         fontScale = fontScale,
-        expandedText = expandedText
+        expandedText = expandedText,
+        lineHeightMultiplier = lineHeightMultiplier
       )
       Spacer(Modifier.height(spacing.lg))
     }
@@ -743,9 +789,10 @@ private fun LyricPartView(
   isRepeat: Boolean,
   fontScale: Float,
   expandedText: Boolean,
+  lineHeightMultiplier: Float = 1.0f,
 ) {
   val baseFontSize = 18.sp * fontScale
-  val lineHeight = baseFontSize * 1.7f
+  val lineHeight = baseFontSize * 1.7f * lineHeightMultiplier
 
   // When repeat chorus/bridge and option is OFF — show only a reference label
   if (isRepeat && !expandedText && part !is Verse) {

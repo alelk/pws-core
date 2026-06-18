@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import io.github.alelk.pws.features.theme.Motion
 
 /**
  * Modifier to add a shimmer effect to any component.
@@ -35,7 +36,7 @@ fun Modifier.shimmerEffect(
     initialValue = -2 * size.width.toFloat(),
     targetValue = 2 * size.width.toFloat(),
     animationSpec = infiniteRepeatable(
-      animation = tween(1000)
+      animation = tween(Motion.shimmerCycleMs)
     )
   )
 

@@ -4,6 +4,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Indication
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.runtime.Composable
@@ -13,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
+import io.github.alelk.pws.features.theme.Motion
 
 /**
  * Composable factory replacement for the legacy `composed { }` modifier.
@@ -24,13 +26,14 @@ import androidx.compose.ui.graphics.graphicsLayer
 @Composable
 fun Modifier.clickableWithScale(
   onClick: () -> Unit,
+  onLongClick: (() -> Unit)? = null,
   interactionSource: MutableInteractionSource? = null,
   enabled: Boolean = true,
   indication: Indication? = null,
 ): Modifier {
   val source = interactionSource ?: remember { MutableInteractionSource() }
   val isPressed by source.collectIsPressedAsState()
-  val scale by animateFloatAsState(targetValue = if (isPressed) 0.97f else 1f)
+  val scale by animateFloatAsState(targetValue = if (isPressed) 0.97f else 1f, animationSpec = Motion.fast())
   val resolvedIndication = indication ?: LocalIndication.current
 
   return this
@@ -38,11 +41,23 @@ fun Modifier.clickableWithScale(
       scaleX = scale
       scaleY = scale
     }
-    .clickable(
-      interactionSource = source,
-      indication = resolvedIndication,
-      enabled = enabled,
-      onClick = onClick,
+    .then(
+      if (onLongClick != null) {
+        Modifier.combinedClickable(
+          interactionSource = source,
+          indication = resolvedIndication,
+          enabled = enabled,
+          onLongClick = onLongClick,
+          onClick = onClick,
+        )
+      } else {
+        Modifier.clickable(
+          interactionSource = source,
+          indication = resolvedIndication,
+          enabled = enabled,
+          onClick = onClick,
+        )
+      }
     )
 }
 

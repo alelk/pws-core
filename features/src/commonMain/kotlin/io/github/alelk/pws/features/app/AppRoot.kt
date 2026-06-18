@@ -9,6 +9,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -22,7 +23,10 @@ import cafe.adriel.voyager.navigator.tab.TabOptions
 import cafe.adriel.voyager.transitions.SlideTransition
 import io.github.alelk.pws.features.books.BooksScreen
 import io.github.alelk.pws.features.components.AppNavigationBar
+import io.github.alelk.pws.features.components.LocalTabReselectEvents
 import io.github.alelk.pws.features.components.NavDestination
+import io.github.alelk.pws.features.components.TabReselectEvents
+import kotlinx.coroutines.launch
 import io.github.alelk.pws.features.favorites.FavoritesScreen
 import io.github.alelk.pws.features.history.HistoryScreen
 import io.github.alelk.pws.features.home.HomeScreen
@@ -49,20 +53,31 @@ fun AppRoot(
   themeMode: ThemeMode = ThemeMode.DEFAULT,
   appVersion: String? = null,
   onThemeModeChange: (ThemeMode) -> Unit = {},
+  useDynamicColor: Boolean = false,
+  onUseDynamicColorChange: (Boolean) -> Unit = {},
+  keepScreenOn: Boolean = false,
+  onKeepScreenOnChange: (Boolean) -> Unit = {},
   settingsExternalActions: SettingsExternalActions? = null,
   songDetailExternalActions: SongDetailExternalActions? = null,
   songDetailDisplaySettings: SongDetailDisplaySettings? = null,
   favoritesDisplaySettings: FavoritesDisplaySettings? = null,
 ) {
   CompositionLocalProvider(
-    LocalThemeSettings provides ThemeSettings(themeMode = themeMode, onThemeModeChange = onThemeModeChange),
+    LocalThemeSettings provides ThemeSettings(
+      themeMode = themeMode,
+      onThemeModeChange = onThemeModeChange,
+      useDynamicColor = useDynamicColor,
+      onUseDynamicColorChange = onUseDynamicColorChange,
+      keepScreenOn = keepScreenOn,
+      onKeepScreenOnChange = onKeepScreenOnChange,
+    ),
     LocalPwsAppInfo provides appVersion?.let { PwsAppInfo(it) },
     LocalSettingsExternalActions provides settingsExternalActions,
     LocalSongDetailExternalActions provides songDetailExternalActions,
     LocalSongDetailDisplaySettings provides songDetailDisplaySettings,
     LocalFavoritesDisplaySettings provides favoritesDisplaySettings,
   ) {
-    AppTheme(themeMode = themeMode) {
+    AppTheme(themeMode = themeMode, useDynamicColor = useDynamicColor) {
       Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -79,7 +94,7 @@ fun AppRoot(
  * "reselect current tab" handler pop that nested stack to root.
  */
 private class DestinationTab(
-  private val destination: NavDestination,
+  val destination: NavDestination,
   private val tabIndex: UShort,
 ) : Tab {
   override val key: String = "tab/${destination.route}"
@@ -128,9 +143,14 @@ private val LocalTabNavigatorsHolder = staticCompositionLocalOf<TabNavigatorsHol
 @Composable
 private fun MainScreen() {
   val holder = remember { TabNavigatorsHolder(mutableMapOf()) }
+  val reselectEvents = remember { TabReselectEvents() }
+  val scope = rememberCoroutineScope()
 
   TabNavigator(mainTabs.first()) { tabNavigator ->
-    CompositionLocalProvider(LocalTabNavigatorsHolder provides holder) {
+    CompositionLocalProvider(
+      LocalTabNavigatorsHolder provides holder,
+      LocalTabReselectEvents provides reselectEvents,
+    ) {
       Scaffold(
         bottomBar = {
           AppNavigationBar(
@@ -138,7 +158,18 @@ private fun MainScreen() {
             currentTab = tabNavigator.current,
             onTabSelected = { tabNavigator.current = it },
             onReselectCurrentTab = {
-              holder.navigators[tabNavigator.current]?.popUntilRoot()
+              val current = tabNavigator.current
+              val nav = holder.navigators[current]
+              // If there's a pushed stack — first pop to root. Otherwise emit reselect so
+              // root screen can scroll-to-top + expand large top bar (iOS-like).
+              if (nav != null && nav.canPop) {
+                nav.popUntilRoot()
+              } else {
+                val destination = (current as? DestinationTab)?.destination
+                if (destination != null) {
+                  scope.launch { reselectEvents.emit(destination) }
+                }
+              }
             }
           )
         }

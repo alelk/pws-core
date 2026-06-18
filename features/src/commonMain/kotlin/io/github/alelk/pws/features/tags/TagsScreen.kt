@@ -72,6 +72,13 @@ import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.features.components.EmptyContent
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
+import io.github.alelk.pws.features.components.NavDestination
+import io.github.alelk.pws.features.components.OnTabReselected
+import io.github.alelk.pws.features.components.StateCrossfade
+import io.github.alelk.pws.features.components.confirm
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.common_delete
 import io.github.alelk.pws.features.resources.common_error_title
@@ -154,7 +161,8 @@ class TagsScreen : Screen {
     TagsContent(
       state = state,
       snackbarHostState = snackbarHostState,
-      onEvent = viewModel::onEvent
+      onEvent = viewModel::onEvent,
+      onRetry = viewModel::retry,
     )
   }
 }
@@ -164,11 +172,19 @@ class TagsScreen : Screen {
 fun TagsContent(
   state: TagsUiState,
   snackbarHostState: SnackbarHostState,
-  onEvent: (TagsEvent) -> Unit
+  onEvent: (TagsEvent) -> Unit,
+  onRetry: () -> Unit = {},
 ) {
   val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
   val navigator = LocalNavigator.currentOrThrow
   val haptic = LocalHapticFeedback.current
+  val listState = rememberLazyListState()
+  val scope = rememberCoroutineScope()
+
+  OnTabReselected(NavDestination.Tags) {
+    scope.launch { listState.animateScrollToItem(0) }
+    scrollBehavior.state.heightOffset = 0f
+  }
 
   Scaffold(
     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -217,57 +233,55 @@ fun TagsContent(
     },
     snackbarHost = { SnackbarHost(snackbarHostState) }
   ) { innerPadding ->
-    when (state) {
-      TagsUiState.Loading -> {
-        LoadingContent(
-          modifier = Modifier.padding(innerPadding),
-          message = stringResource(Res.string.tags_loading)
-        )
-      }
+    StateCrossfade(state, modifier = Modifier.padding(innerPadding)) { current ->
+      when (current) {
+        TagsUiState.Loading -> {
+          LoadingContent(message = stringResource(Res.string.tags_loading))
+        }
 
-      TagsUiState.Empty -> {
-        EmptyContent(
-          modifier = Modifier.padding(innerPadding),
-          icon = Icons.Outlined.Tag,
-          title = stringResource(Res.string.tags_empty_title),
-          subtitle = stringResource(Res.string.tags_empty_subtitle)
-        )
-      }
-
-      is TagsUiState.Content -> {
-        TagsList(
-          tags = state.tags,
-          modifier = Modifier.padding(innerPadding),
-          onTagClick = { onEvent(TagsEvent.TagClicked(it)) },
-          onEditClick = { onEvent(TagsEvent.EditTag(it)) },
-          onDeleteClick = { onEvent(TagsEvent.DeleteTag(it)) }
-        )
-
-        // Add/Edit dialog
-        if (state.showAddDialog) {
-          TagDialog(
-            editingTag = state.editingTag,
-            onSave = { name, color -> onEvent(TagsEvent.SaveTag(name, color)) },
-            onDismiss = { onEvent(TagsEvent.DismissDialog) }
+        TagsUiState.Empty -> {
+          EmptyContent(
+            icon = Icons.Outlined.Tag,
+            title = stringResource(Res.string.tags_empty_title),
+            subtitle = stringResource(Res.string.tags_empty_subtitle)
           )
         }
 
-        // Delete confirmation
-        state.showDeleteConfirmation?.let { tag ->
-          DeleteTagDialog(
-            tag = tag,
-            onConfirm = { onEvent(TagsEvent.ConfirmDeleteTag(tag)) },
-            onDismiss = { onEvent(TagsEvent.DismissDeleteConfirmation) }
+        is TagsUiState.Content -> {
+          TagsList(
+            tags = current.tags,
+            listState = listState,
+            onTagClick = { onEvent(TagsEvent.TagClicked(it)) },
+            onEditClick = { onEvent(TagsEvent.EditTag(it)) },
+            onDeleteClick = { onEvent(TagsEvent.DeleteTag(it)) }
+          )
+
+          // Add/Edit dialog
+          if (current.showAddDialog) {
+            TagDialog(
+              editingTag = current.editingTag,
+              onSave = { name, color -> onEvent(TagsEvent.SaveTag(name, color)) },
+              onDismiss = { onEvent(TagsEvent.DismissDialog) }
+            )
+          }
+
+          // Delete confirmation
+          current.showDeleteConfirmation?.let { tag ->
+            DeleteTagDialog(
+              tag = tag,
+              onConfirm = { onEvent(TagsEvent.ConfirmDeleteTag(tag)) },
+              onDismiss = { onEvent(TagsEvent.DismissDeleteConfirmation) }
+            )
+          }
+        }
+
+        is TagsUiState.Error -> {
+          ErrorContent(
+            title = stringResource(Res.string.common_error_title),
+            message = current.message,
+            onRetry = onRetry,
           )
         }
-      }
-
-      is TagsUiState.Error -> {
-        ErrorContent(
-          modifier = Modifier.padding(innerPadding),
-          title = stringResource(Res.string.common_error_title),
-          message = state.message
-        )
       }
     }
   }
@@ -277,11 +291,13 @@ fun TagsContent(
 private fun TagsList(
   tags: List<TagUi>,
   modifier: Modifier = Modifier,
+  listState: androidx.compose.foundation.lazy.LazyListState = rememberLazyListState(),
   onTagClick: (TagUi) -> Unit,
   onEditClick: (TagUi) -> Unit,
   onDeleteClick: (TagUi) -> Unit
 ) {
   LazyColumn(
+    state = listState,
     modifier = modifier.fillMaxSize(),
     contentPadding = PaddingValues(vertical = MaterialTheme.spacing.sm)
   ) {
@@ -289,18 +305,20 @@ private fun TagsList(
       items = tags,
       key = { it.id.toString() }
     ) { tag ->
-      TagListItem(
-        tag = tag,
-        onClick = { onTagClick(tag) },
-        onEditClick = { onEditClick(tag) },
-        onDeleteClick = { onDeleteClick(tag) }
-      )
-
-      if (tag != tags.last()) {
-        HorizontalDivider(
-          modifier = Modifier.padding(start = 56.dp),
-          color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+      androidx.compose.foundation.layout.Column(modifier = Modifier.animateItem()) {
+        TagListItem(
+          tag = tag,
+          onClick = { onTagClick(tag) },
+          onEditClick = { onEditClick(tag) },
+          onDeleteClick = { onDeleteClick(tag) }
         )
+
+        if (tag != tags.last()) {
+          HorizontalDivider(
+            modifier = Modifier.padding(start = 56.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+          )
+        }
       }
     }
 
@@ -519,7 +537,7 @@ private fun DeleteTagDialog(
     confirmLabel = confirmText,
     icon = Icons.Outlined.Delete,
     onConfirm = {
-      haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+      haptic.confirm()
       onConfirm()
     },
     onDismiss = onDismiss,

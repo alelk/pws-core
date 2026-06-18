@@ -18,6 +18,10 @@ enum class ThemeMode(val identifier: String) {
 data class ThemeSettings(
   val themeMode: ThemeMode,
   val onThemeModeChange: (ThemeMode) -> Unit,
+  val useDynamicColor: Boolean = false,
+  val onUseDynamicColorChange: (Boolean) -> Unit = {},
+  val keepScreenOn: Boolean = false,
+  val onKeepScreenOnChange: (Boolean) -> Unit = {},
 )
 
 val LocalThemeSettings = staticCompositionLocalOf<ThemeSettings?> { null }
