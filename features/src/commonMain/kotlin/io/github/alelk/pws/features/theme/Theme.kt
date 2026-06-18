@@ -8,6 +8,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 @Composable
 fun AppTheme(
   themeMode: ThemeMode = ThemeMode.DEFAULT,
+  useDynamicColor: Boolean = false,
   content: @Composable () -> Unit
 ) {
   val isDark = when (themeMode) {
@@ -17,7 +18,13 @@ fun AppTheme(
     ThemeMode.SYSTEM -> isSystemInDarkTheme()
   }
 
-  val colors = when {
+  // BLACK mode keeps its custom OLED-friendly palette даже если Dynamic включён —
+  // приоритет phys-feature (OLED). Иначе берём dynamic если доступен и включён.
+  val dynamicScheme = if (useDynamicColor && themeMode != ThemeMode.BLACK) {
+    platformDynamicColorSchemeOrNull(isDark)
+  } else null
+
+  val colors = dynamicScheme ?: when {
     themeMode == ThemeMode.BLACK -> BlackColors
     isDark -> DarkColors
     else -> LightColors

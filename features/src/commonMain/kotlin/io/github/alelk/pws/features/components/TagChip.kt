@@ -13,9 +13,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -27,9 +29,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.book_songs_count
@@ -37,6 +41,33 @@ import io.github.alelk.pws.features.resources.common_delete
 import io.github.alelk.pws.features.resources.tag_chip_edit
 import io.github.alelk.pws.features.theme.spacing
 import org.jetbrains.compose.resources.stringResource
+
+/**
+ * Color indicator that also conveys shape info for colorblind accessibility.
+ * Shape is deterministically derived from the color value so the same tag
+ * always gets the same shape.
+ */
+@Composable
+fun TagColorIndicator(color: Color, size: Dp = 8.dp, modifier: Modifier = Modifier) {
+  val pattern = (color.hashCode() and 0x7FFFFFFF) % 4
+  when (pattern) {
+    0 -> Box(modifier = modifier.size(size).clip(CircleShape).background(color))
+    1 -> Icon(
+      imageVector = Icons.Default.Star,
+      contentDescription = null,
+      tint = color,
+      modifier = modifier.size(size + 2.dp)
+    )
+    2 -> Box(modifier = modifier.size(size).clip(RoundedCornerShape(2.dp)).background(color))
+    else -> Box(
+      modifier = modifier
+        .size(size)
+        .rotate(45f)
+        .clip(RoundedCornerShape(1.dp))
+        .background(color)
+    )
+  }
+}
 
 /**
  * Tag chip for display in song view and other places.
@@ -64,12 +95,7 @@ fun TagChip(
       ),
       verticalAlignment = Alignment.CenterVertically
     ) {
-      Box(
-        modifier = Modifier
-          .size(8.dp)
-          .clip(CircleShape)
-          .background(color)
-      )
+      TagColorIndicator(color = color)
       Spacer(Modifier.width(MaterialTheme.spacing.sm))
       Text(
         text = name,
@@ -101,12 +127,7 @@ fun SelectableTagChip(
     },
     label = {
       Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(
-          modifier = Modifier
-            .size(8.dp)
-            .clip(CircleShape)
-            .background(color)
-        )
+        TagColorIndicator(color = color)
         Spacer(Modifier.width(MaterialTheme.spacing.sm))
         Text(name)
       }
@@ -148,12 +169,7 @@ fun RemovableTagChip(
       ),
       verticalAlignment = Alignment.CenterVertically
     ) {
-      Box(
-        modifier = Modifier
-          .size(8.dp)
-          .clip(CircleShape)
-          .background(color)
-      )
+      TagColorIndicator(color = color)
       Spacer(Modifier.width(MaterialTheme.spacing.sm))
       Text(
         text = name,
@@ -223,13 +239,8 @@ fun TagListItem(
         .padding(end = MaterialTheme.spacing.sm),
       verticalAlignment = Alignment.CenterVertically
     ) {
-      // Color indicator
-      Box(
-        modifier = Modifier
-          .size(12.dp)
-          .clip(CircleShape)
-          .background(color)
-      )
+      // Color indicator with shape pattern for colorblind accessibility
+      TagColorIndicator(color = color, size = 12.dp)
 
       Spacer(Modifier.width(MaterialTheme.spacing.md))
 

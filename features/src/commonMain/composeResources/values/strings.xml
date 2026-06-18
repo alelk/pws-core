@@ -23,6 +23,13 @@
     <string name="search_find_song_placeholder">Find a song...</string>
     <string name="search_loading">Searching...</string>
     <string name="search_error_title">Search error</string>
+    <string name="book_card_a11y">%1$s songbook, %2$d songs</string>
+
+    <string name="settings_dynamic_color">Dynamic colour</string>
+    <string name="settings_dynamic_color_subtitle">Use system Material You palette (Android 12+)</string>
+    <string name="settings_keep_screen_on">Keep screen on</string>
+    <string name="settings_keep_screen_on_subtitle">Don't dim the screen while reading a song</string>
+
     <string name="search_idle_title">Start searching</string>
     <string name="search_idle_subtitle">Enter title, number, or lyrics</string>
 
@@ -198,6 +205,7 @@
     <string name="song_detail_jump_title">Jump to number</string>
     <string name="song_detail_jump_number_label">Number (%1$d-%2$d)</string>
     <string name="song_detail_jump_clear">Clear</string>
+    <string name="song_detail_line_spacing">Line spacing</string>
 
     <string name="tag_chip_edit">Edit</string>
     <string name="tonality_a_major">A major</string>

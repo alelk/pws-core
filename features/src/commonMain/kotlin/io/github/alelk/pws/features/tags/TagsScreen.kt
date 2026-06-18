@@ -305,18 +305,20 @@ private fun TagsList(
       items = tags,
       key = { it.id.toString() }
     ) { tag ->
-      TagListItem(
-        tag = tag,
-        onClick = { onTagClick(tag) },
-        onEditClick = { onEditClick(tag) },
-        onDeleteClick = { onDeleteClick(tag) }
-      )
-
-      if (tag != tags.last()) {
-        HorizontalDivider(
-          modifier = Modifier.padding(start = 56.dp),
-          color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+      androidx.compose.foundation.layout.Column(modifier = Modifier.animateItem()) {
+        TagListItem(
+          tag = tag,
+          onClick = { onTagClick(tag) },
+          onEditClick = { onEditClick(tag) },
+          onDeleteClick = { onDeleteClick(tag) }
         )
+
+        if (tag != tags.last()) {
+          HorizontalDivider(
+            modifier = Modifier.padding(start = 56.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+          )
+        }
       }
     }
 

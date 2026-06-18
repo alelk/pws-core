@@ -21,10 +21,12 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Brightness7
 import androidx.compose.material.icons.filled.Contrast
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.SettingsBrightness
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.OutlinedButton
@@ -65,6 +67,10 @@ import io.github.alelk.pws.features.resources.settings_donation_subtitle
 import io.github.alelk.pws.features.resources.settings_version
 import io.github.alelk.pws.features.resources.settings_license
 import io.github.alelk.pws.features.resources.settings_developers
+import io.github.alelk.pws.features.resources.settings_dynamic_color
+import io.github.alelk.pws.features.resources.settings_dynamic_color_subtitle
+import io.github.alelk.pws.features.resources.settings_keep_screen_on
+import io.github.alelk.pws.features.resources.settings_keep_screen_on_subtitle
 import io.github.alelk.pws.features.resources.settings_export
 import io.github.alelk.pws.features.resources.settings_import
 import io.github.alelk.pws.features.resources.settings_import_export
@@ -125,6 +131,10 @@ class SettingsScreen : Screen {
 
     SettingsContent(
       state = state,
+      useDynamicColor = themeSettings?.useDynamicColor == true,
+      onDynamicColorChange = { themeSettings?.onUseDynamicColorChange?.invoke(it) },
+      keepScreenOn = themeSettings?.keepScreenOn == true,
+      onKeepScreenOnChange = { themeSettings?.onKeepScreenOnChange?.invoke(it) },
       onBack = { viewModel.onEvent(SettingsEvent.Back) },
       onThemeSelected = { mode -> viewModel.onEvent(SettingsEvent.SetTheme(mode)) },
       onBookToggle = { id, enabled -> viewModel.onEvent(SettingsEvent.ToggleBook(id, enabled)) },
@@ -140,6 +150,10 @@ class SettingsScreen : Screen {
 @Composable
 private fun SettingsContent(
   state: SettingsUiState,
+  useDynamicColor: Boolean,
+  onDynamicColorChange: (Boolean) -> Unit,
+  keepScreenOn: Boolean,
+  onKeepScreenOnChange: (Boolean) -> Unit,
   onBack: () -> Unit,
   onThemeSelected: (ThemeMode) -> Unit,
   onBookToggle: (io.github.alelk.pws.domain.core.ids.BookId, Boolean) -> Unit,
@@ -200,6 +214,36 @@ private fun SettingsContent(
                     )
                   }
                 }
+              }
+            }
+
+            // Dynamic Color (Material You) — Android 12+
+            item {
+              SettingsSectionCard(footer = stringResource(Res.string.settings_dynamic_color_subtitle)) {
+                ToggleRow(
+                  title = stringResource(Res.string.settings_dynamic_color),
+                  icon = Icons.Filled.Palette,
+                  checked = useDynamicColor,
+                  onCheckedChange = { checked ->
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    onDynamicColorChange(checked)
+                  }
+                )
+              }
+            }
+
+            // Keep screen on в Song Detail
+            item {
+              SettingsSectionCard(footer = stringResource(Res.string.settings_keep_screen_on_subtitle)) {
+                ToggleRow(
+                  title = stringResource(Res.string.settings_keep_screen_on),
+                  icon = Icons.Filled.Brightness7,
+                  checked = keepScreenOn,
+                  onCheckedChange = { checked ->
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    onKeepScreenOnChange(checked)
+                  }
+                )
               }
             }
 
@@ -502,6 +546,36 @@ private fun ThemeRow(
       selected = isSelected,
       onClick = onClick
     )
+  }
+}
+
+@Composable
+private fun ToggleRow(
+  title: String,
+  icon: ImageVector,
+  checked: Boolean,
+  onCheckedChange: (Boolean) -> Unit,
+) {
+  Row(
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(horizontal = 16.dp, vertical = 8.dp),
+    horizontalArrangement = Arrangement.SpaceBetween,
+    verticalAlignment = Alignment.CenterVertically
+  ) {
+    Icon(
+      imageVector = icon,
+      contentDescription = null,
+      tint = MaterialTheme.colorScheme.onSurfaceVariant,
+      modifier = Modifier.padding(end = 16.dp)
+    )
+    Text(
+      text = title,
+      style = MaterialTheme.typography.bodyLarge,
+      color = MaterialTheme.colorScheme.onSurface,
+      modifier = Modifier.weight(1f)
+    )
+    Switch(checked = checked, onCheckedChange = onCheckedChange)
   }
 }
 

@@ -250,34 +250,37 @@ private fun HistoryList(
         items = group.items,
         key = { it.id }
       ) { item ->
-        when (item) {
-          is HistoryItemUi.BookedSong -> {
-            val songScreen = rememberScreen(SharedScreens.song(item.subject.songNumberId))
-            SwipeableSongItem(
-              number = item.songNumber,
-              title = item.songName,
-              subtitle = "${item.bookDisplayName} • ${formatRelativeTime(item.viewedAt, now)}",
-              onClick = { navigator.push(songScreen) },
-              onDelete = { onRemove(item) }
-            )
+        // iOS-style плавное появление/удаление элементов
+        androidx.compose.foundation.layout.Column(modifier = Modifier.animateItem()) {
+          when (item) {
+            is HistoryItemUi.BookedSong -> {
+              val songScreen = rememberScreen(SharedScreens.song(item.subject.songNumberId))
+              SwipeableSongItem(
+                number = item.songNumber,
+                title = item.songName,
+                subtitle = "${item.bookDisplayName} • ${formatRelativeTime(item.viewedAt, now)}",
+                onClick = { navigator.push(songScreen) },
+                onDelete = { onRemove(item) }
+              )
+            }
+            is HistoryItemUi.StandaloneSong -> {
+              val songScreen = rememberScreen(SharedScreens.songById(item.subject.songId))
+              SwipeableSongItem(
+                number = null,
+                title = item.songName,
+                subtitle = formatRelativeTime(item.viewedAt, now),
+                onClick = { navigator.push(songScreen) },
+                onDelete = { onRemove(item) }
+              )
+            }
           }
-          is HistoryItemUi.StandaloneSong -> {
-            val songScreen = rememberScreen(SharedScreens.songById(item.subject.songId))
-            SwipeableSongItem(
-              number = null,
-              title = item.songName,
-              subtitle = formatRelativeTime(item.viewedAt, now),
-              onClick = { navigator.push(songScreen) },
-              onDelete = { onRemove(item) }
-            )
-          }
-        }
 
-        if (item != group.items.last()) {
-          HorizontalDivider(
-            modifier = Modifier.padding(start = 72.dp),
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-          )
+          if (item != group.items.last()) {
+            HorizontalDivider(
+              modifier = Modifier.padding(start = 72.dp),
+              color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+            )
+          }
         }
       }
     }

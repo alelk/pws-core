@@ -193,6 +193,7 @@
     <string name="song_detail_jump_title">Перейти до номера</string>
     <string name="song_detail_jump_number_label">Номер (%1$d-%2$d)</string>
     <string name="song_detail_jump_clear">Очистити</string>
+    <string name="song_detail_line_spacing">Міжрядковий інтервал</string>
 
     <string name="tag_chip_edit">Редагувати</string>
     <string name="tonality_a_major">Ля мажор (A-dur)</string>
@@ -237,6 +238,13 @@
     <string name="time_just_now">Щойно</string>
     <string name="time_minutes_ago">%1$d хв тому</string>
     <string name="time_hours_ago">%1$d год тому</string>
+    <string name="book_card_a11y">Пісенник %1$s, %2$d пісень</string>
+
+    <string name="settings_dynamic_color">Системні кольори</string>
+    <string name="settings_dynamic_color_subtitle">Палітра Material You з шпалер (Android 12+)</string>
+    <string name="settings_keep_screen_on">Не гасити екран у пісні</string>
+    <string name="settings_keep_screen_on_subtitle">Екран лишається ввімкненим на сторінці пісні</string>
+
     <string name="search_scope_all">Усі</string>
     <string name="search_scope_in_books">У книгах</string>
     <string name="search_scope_standalone">Окремі</string>

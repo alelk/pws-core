@@ -53,20 +53,31 @@ fun AppRoot(
   themeMode: ThemeMode = ThemeMode.DEFAULT,
   appVersion: String? = null,
   onThemeModeChange: (ThemeMode) -> Unit = {},
+  useDynamicColor: Boolean = false,
+  onUseDynamicColorChange: (Boolean) -> Unit = {},
+  keepScreenOn: Boolean = false,
+  onKeepScreenOnChange: (Boolean) -> Unit = {},
   settingsExternalActions: SettingsExternalActions? = null,
   songDetailExternalActions: SongDetailExternalActions? = null,
   songDetailDisplaySettings: SongDetailDisplaySettings? = null,
   favoritesDisplaySettings: FavoritesDisplaySettings? = null,
 ) {
   CompositionLocalProvider(
-    LocalThemeSettings provides ThemeSettings(themeMode = themeMode, onThemeModeChange = onThemeModeChange),
+    LocalThemeSettings provides ThemeSettings(
+      themeMode = themeMode,
+      onThemeModeChange = onThemeModeChange,
+      useDynamicColor = useDynamicColor,
+      onUseDynamicColorChange = onUseDynamicColorChange,
+      keepScreenOn = keepScreenOn,
+      onKeepScreenOnChange = onKeepScreenOnChange,
+    ),
     LocalPwsAppInfo provides appVersion?.let { PwsAppInfo(it) },
     LocalSettingsExternalActions provides settingsExternalActions,
     LocalSongDetailExternalActions provides songDetailExternalActions,
     LocalSongDetailDisplaySettings provides songDetailDisplaySettings,
     LocalFavoritesDisplaySettings provides favoritesDisplaySettings,
   ) {
-    AppTheme(themeMode = themeMode) {
+    AppTheme(themeMode = themeMode, useDynamicColor = useDynamicColor) {
       Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
