@@ -44,6 +44,12 @@ import io.github.alelk.pws.domain.book.model.BookSummary
 import io.github.alelk.pws.features.components.BookCard
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
+import io.github.alelk.pws.features.components.NavDestination
+import io.github.alelk.pws.features.components.OnTabReselected
+import io.github.alelk.pws.features.components.StateCrossfade
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.books_error_title
 import io.github.alelk.pws.features.resources.books_loading
@@ -58,15 +64,22 @@ class BooksScreen : Screen {
   override fun Content() {
     val viewModel = koinScreenModel<BooksScreenModel>()
     val state by viewModel.state.collectAsState()
-    BooksContent(state = state)
+    BooksContent(state = state, onRetry = viewModel::retry)
   }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BooksContent(state: BooksUiState) {
+fun BooksContent(state: BooksUiState, onRetry: () -> Unit = {}) {
   val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
   val navigator = LocalNavigator.currentOrThrow
+  val gridState = rememberLazyGridState()
+  val scope = rememberCoroutineScope()
+
+  OnTabReselected(NavDestination.Books) {
+    scope.launch { gridState.animateScrollToItem(0) }
+    scrollBehavior.state.heightOffset = 0f
+  }
 
   Scaffold(
     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -77,25 +90,21 @@ fun BooksContent(state: BooksUiState) {
       )
     }
   ) { innerPadding ->
-    when (state) {
-      BooksUiState.Loading -> {
-        LoadingContent(
-          modifier = Modifier.padding(innerPadding),
-          message = stringResource(Res.string.books_loading)
-        )
-      }
-      is BooksUiState.Content -> {
-        BooksGrid(
-          books = state.books,
-          modifier = Modifier.padding(innerPadding)
-        )
-      }
-      BooksUiState.Error -> {
-        ErrorContent(
-          modifier = Modifier.padding(innerPadding),
-          title = stringResource(Res.string.books_error_title),
-          message = stringResource(Res.string.home_load_error_message)
-        )
+    StateCrossfade(state, modifier = Modifier.padding(innerPadding)) { current ->
+      when (current) {
+        BooksUiState.Loading -> {
+          LoadingContent(message = stringResource(Res.string.books_loading))
+        }
+        is BooksUiState.Content -> {
+          BooksGrid(books = current.books, gridState = gridState)
+        }
+        BooksUiState.Error -> {
+          ErrorContent(
+            title = stringResource(Res.string.books_error_title),
+            message = stringResource(Res.string.home_load_error_message),
+            onRetry = onRetry,
+          )
+        }
       }
     }
   }
@@ -134,13 +143,15 @@ private fun BooksTopBar(
 @Composable
 private fun BooksGrid(
   books: List<BookSummary>,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
+  gridState: androidx.compose.foundation.lazy.grid.LazyGridState = rememberLazyGridState(),
 ) {
   val navigator = LocalNavigator.currentOrThrow
   val haptic = LocalHapticFeedback.current
 
   LazyVerticalGrid(
     columns = GridCells.Adaptive(minSize = 160.dp),
+    state = gridState,
     modifier = modifier.fillMaxSize().testTag("books-grid"),
     contentPadding = PaddingValues(
       horizontal = MaterialTheme.spacing.screenHorizontal,

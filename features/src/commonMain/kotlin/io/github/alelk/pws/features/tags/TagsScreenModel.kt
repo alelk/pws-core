@@ -11,6 +11,7 @@ import io.github.alelk.pws.domain.tag.usecase.CreateTagUseCase
 import io.github.alelk.pws.domain.tag.usecase.DeleteTagUseCase
 import io.github.alelk.pws.domain.tag.usecase.ObserveTagsUseCase
 import io.github.alelk.pws.domain.tag.usecase.UpdateTagUseCase
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
@@ -43,7 +44,14 @@ class TagsScreenModel(
   private val _effects = MutableSharedFlow<Effect>()
   val effects = _effects.asSharedFlow()
 
+  private var loadJob: Job? = null
+
   init {
+    loadTags()
+  }
+
+  fun retry() {
+    mutableState.value = TagsUiState.Loading
     loadTags()
   }
 
@@ -106,7 +114,8 @@ class TagsScreenModel(
   }
 
   private fun loadTags() {
-    screenModelScope.launch {
+    loadJob?.cancel()
+    loadJob = screenModelScope.launch {
       try {
         observeTagsUseCase().collect { tags ->
           val uiTags = tags.map { it.toUi() }

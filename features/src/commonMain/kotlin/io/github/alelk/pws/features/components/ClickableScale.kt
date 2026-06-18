@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
+import io.github.alelk.pws.features.theme.Motion
 
 /**
  * Composable factory replacement for the legacy `composed { }` modifier.
@@ -30,7 +31,7 @@ fun Modifier.clickableWithScale(
 ): Modifier {
   val source = interactionSource ?: remember { MutableInteractionSource() }
   val isPressed by source.collectIsPressedAsState()
-  val scale by animateFloatAsState(targetValue = if (isPressed) 0.97f else 1f)
+  val scale by animateFloatAsState(targetValue = if (isPressed) 0.97f else 1f, animationSpec = Motion.fast())
   val resolvedIndication = indication ?: LocalIndication.current
 
   return this

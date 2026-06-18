@@ -26,6 +26,10 @@
     <string name="search_idle_title">Start searching</string>
     <string name="search_idle_subtitle">Enter title, number, or lyrics</string>
 
+    <string name="search_scope_all">All</string>
+    <string name="search_scope_in_books">In songbooks</string>
+    <string name="search_scope_standalone">Standalone</string>
+
     <string name="common_clear">Clear</string>
     <string name="common_close">Close</string>
     <string name="theme_settings">Theme settings</string>
@@ -240,6 +244,11 @@
     <string name="time_hours_ago">%1$d h ago</string>
     <string name="time_yesterday">Yesterday</string>
     <string name="time_days_ago">%1$d days ago</string>
+
+    <string name="history_group_today">Today</string>
+    <string name="history_group_yesterday">Yesterday</string>
+    <string name="history_group_this_week">This week</string>
+    <string name="history_group_earlier">Earlier</string>
 
     <string name="song_number_label">№ %1$d</string>
     <string name="song_number_a11y">Song number %1$d</string>

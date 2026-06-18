@@ -72,8 +72,14 @@ import io.github.alelk.pws.domain.history.model.HistorySubject
 import io.github.alelk.pws.features.components.AppLargeTopBar
 import io.github.alelk.pws.features.components.BookCard
 import io.github.alelk.pws.features.components.ErrorContent
+import io.github.alelk.pws.features.components.NavDestination
 import io.github.alelk.pws.features.components.NumberInputModal
+import io.github.alelk.pws.features.components.OnTabReselected
 import io.github.alelk.pws.features.components.SearchBarWithSuggestions
+import io.github.alelk.pws.features.components.StateCrossfade
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import io.github.alelk.pws.features.components.clickableWithScaleAndClip
 import io.github.alelk.pws.features.components.shimmerEffect
 import io.github.alelk.pws.features.resources.Res
@@ -138,6 +144,13 @@ fun HomeContent(
   val haptic = LocalHapticFeedback.current
   var showNumberInput by remember { mutableStateOf(false) }
   val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+  val gridState = rememberLazyGridState()
+  val scope = rememberCoroutineScope()
+
+  OnTabReselected(NavDestination.Home) {
+    scope.launch { gridState.animateScrollToItem(0) }
+    scrollBehavior.state.heightOffset = 0f
+  }
 
   Scaffold(
     modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -160,18 +173,18 @@ fun HomeContent(
       )
     }
   ) { innerPadding ->
-    when (state) {
+    StateCrossfade(state, modifier = Modifier.padding(innerPadding)) { current ->
+    when (current) {
       HomeUiState.Loading -> {
-        HomeContentSkeleton(
-          modifier = Modifier.padding(innerPadding)
-        )
+        HomeContentSkeleton()
       }
 
       is HomeUiState.Content -> {
         // Main scrollable content with search bar inside
         LazyVerticalGrid(
           columns = GridCells.Adaptive(minSize = 140.dp),
-          modifier = Modifier.fillMaxSize().padding(innerPadding),
+          state = gridState,
+          modifier = Modifier.fillMaxSize(),
           contentPadding = PaddingValues(
             horizontal = MaterialTheme.spacing.screenHorizontal,
             vertical = MaterialTheme.spacing.md
@@ -242,7 +255,7 @@ fun HomeContent(
           }
 
           // Recently viewed songs section
-          if (state.recentSongs.isNotEmpty()) {
+          if (current.recentSongs.isNotEmpty()) {
           item(span = { GridItemSpan(maxLineSpan) }) {
             Spacer(Modifier.height(MaterialTheme.spacing.md))
             Text(
@@ -262,7 +275,7 @@ fun HomeContent(
               horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)
             ) {
               itemsIndexed(
-                items = state.recentSongs,
+                items = current.recentSongs,
                 key = { _, song -> song.id }
               ) { index, song ->
                 val songScreen = when (val subject = song.subject) {
@@ -295,7 +308,7 @@ fun HomeContent(
 
           // Books grid - limit to max 6 featured books
           items(
-            items = state.books.take(6),
+            items = current.books.take(6),
             key = { it.id.toString() }
           ) { book ->
             val bookSongsScreen = rememberScreen(SharedScreens.bookSongs(book.id))
@@ -320,11 +333,11 @@ fun HomeContent(
 
       HomeUiState.Error -> {
         ErrorContent(
-          modifier = Modifier.padding(innerPadding),
           title = stringResource(Res.string.home_load_error_title),
           message = stringResource(Res.string.home_load_error_message)
         )
       }
+    }
     }
   }
 

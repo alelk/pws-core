@@ -1,10 +1,10 @@
 package io.github.alelk.pws.features.components
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,6 +36,7 @@ import io.github.alelk.pws.features.resources.state_error_title
 import io.github.alelk.pws.features.resources.state_nothing_found_subtitle
 import io.github.alelk.pws.features.resources.state_nothing_found_title
 import io.github.alelk.pws.features.resources.state_retry
+import io.github.alelk.pws.features.theme.Motion
 import io.github.alelk.pws.features.theme.spacing
 import org.jetbrains.compose.resources.stringResource
 
@@ -191,20 +192,27 @@ fun ErrorContent(
 }
 
 /**
- * Animated content visibility wrapper.
+ * Smooth crossfade between UI states (Loading / Empty / Content / Error).
+ *
+ * iOS-feel: spring-based fade-in + slight scale-in, fast fade-out.
+ * Distinguishes states by class (sealed-interface friendly), so transitions
+ * fire only on logical state changes, not on every Content data tweak.
  */
 @Composable
-fun AnimatedContent(
-  visible: Boolean,
+fun <S : Any> StateCrossfade(
+  state: S,
   modifier: Modifier = Modifier,
-  content: @Composable () -> Unit
+  content: @Composable (S) -> Unit
 ) {
-  AnimatedVisibility(
-    visible = visible,
-    modifier = modifier,
-    enter = fadeIn() + expandVertically(),
-    exit = fadeOut() + shrinkVertically()
-  ) {
-    content()
-  }
+  AnimatedContent(
+    targetState = state,
+    transitionSpec = {
+      (fadeIn(animationSpec = Motion.standard()) +
+        scaleIn(initialScale = 0.96f, animationSpec = Motion.standard()))
+        .togetherWith(fadeOut(animationSpec = Motion.fast()))
+    },
+    contentKey = { it::class },
+    label = "state-crossfade",
+    modifier = modifier
+  ) { current -> content(current) }
 }

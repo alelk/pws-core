@@ -58,7 +58,13 @@ import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.features.components.EmptyContent
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
+import io.github.alelk.pws.features.components.NavDestination
+import io.github.alelk.pws.features.components.OnTabReselected
+import io.github.alelk.pws.features.components.StateCrossfade
 import io.github.alelk.pws.features.components.SwipeableSongItem
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.common_back
 import io.github.alelk.pws.features.resources.common_error_title
@@ -111,6 +117,13 @@ fun FavoritesContent(
   val navigator = LocalNavigator.currentOrThrow
   val haptic = LocalHapticFeedback.current
   var showSortDialog by remember { mutableStateOf(false) }
+  val listState = rememberLazyListState()
+  val scope = rememberCoroutineScope()
+
+  OnTabReselected(NavDestination.Favorites) {
+    scope.launch { listState.animateScrollToItem(0) }
+    scrollBehavior.state.heightOffset = 0f
+  }
 
   Scaffold(
     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -173,37 +186,34 @@ fun FavoritesContent(
     },
     snackbarHost = { SnackbarHost(snackbarHostState) }
   ) { innerPadding ->
-    when (state) {
-      FavoritesUiState.Loading -> {
-        LoadingContent(
-          modifier = Modifier.padding(innerPadding),
-          message = stringResource(Res.string.favorites_loading)
-        )
-      }
+    StateCrossfade(state, modifier = Modifier.padding(innerPadding)) { current ->
+      when (current) {
+        FavoritesUiState.Loading -> {
+          LoadingContent(message = stringResource(Res.string.favorites_loading))
+        }
 
-      FavoritesUiState.Empty -> {
-        EmptyContent(
-          modifier = Modifier.padding(innerPadding),
-          icon = Icons.Outlined.FavoriteBorder,
-          title = stringResource(Res.string.favorites_empty_title),
-          subtitle = stringResource(Res.string.favorites_empty_subtitle)
-        )
-      }
+        FavoritesUiState.Empty -> {
+          EmptyContent(
+            icon = Icons.Outlined.FavoriteBorder,
+            title = stringResource(Res.string.favorites_empty_title),
+            subtitle = stringResource(Res.string.favorites_empty_subtitle)
+          )
+        }
 
-      is FavoritesUiState.Content -> {
-        FavoritesList(
-          songs = state.songs,
-          modifier = Modifier.padding(innerPadding),
-          onRemove = onRemove
-        )
-      }
+        is FavoritesUiState.Content -> {
+          FavoritesList(
+            songs = current.songs,
+            listState = listState,
+            onRemove = onRemove
+          )
+        }
 
-      is FavoritesUiState.Error -> {
-        ErrorContent(
-          modifier = Modifier.padding(innerPadding),
-          title = stringResource(Res.string.common_error_title),
-          message = io.github.alelk.pws.features.app.rememberResolved(state.message),
-        )
+        is FavoritesUiState.Error -> {
+          ErrorContent(
+            title = stringResource(Res.string.common_error_title),
+            message = io.github.alelk.pws.features.app.rememberResolved(current.message),
+          )
+        }
       }
     }
   }
@@ -275,11 +285,13 @@ private fun SortOptionRow(
 private fun FavoritesList(
   songs: List<FavoriteSongUi>,
   modifier: Modifier = Modifier,
+  listState: androidx.compose.foundation.lazy.LazyListState = rememberLazyListState(),
   onRemove: (FavoriteSongUi) -> Unit
 ) {
   val navigator = LocalNavigator.currentOrThrow
 
   LazyColumn(
+    state = listState,
     modifier = modifier.fillMaxSize(),
     contentPadding = PaddingValues(vertical = MaterialTheme.spacing.sm)
   ) {

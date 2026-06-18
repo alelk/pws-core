@@ -139,7 +139,7 @@ fun SongListItem(
       }
 
       HorizontalDivider(
-        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
       )
     }
   }
@@ -250,10 +250,10 @@ fun SwipeableSongItem(
           }
         }
 
-        // Delete button
+        // Delete button — destructive haptic, не lightTap.
         if (onDelete != null) {
           IconButton(onClick = {
-            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            haptic.confirm()
             onDelete()
           }) {
             Icon(
@@ -266,7 +266,7 @@ fun SwipeableSongItem(
       }
 
       HorizontalDivider(
-        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
       )
     }
   }
