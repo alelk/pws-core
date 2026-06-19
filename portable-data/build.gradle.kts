@@ -18,6 +18,7 @@ kotlin {
       implementation(project(":domain"))
       implementation(libs.kaml)
       implementation(libs.kotlinx.datetime)
+      implementation(libs.kotlinx.serialization.json)
     }
 
     commonTest.dependencies {

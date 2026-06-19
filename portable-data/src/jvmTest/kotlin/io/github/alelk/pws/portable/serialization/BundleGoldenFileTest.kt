@@ -6,7 +6,6 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.ints.shouldBeLessThan
 import io.kotest.matchers.shouldBe
 import java.io.File
-import java.net.URL
 
 /**
  * Golden-file compatibility tests for bundle serialization.
@@ -188,15 +187,6 @@ class BundleGoldenFileTest : StringSpec({
   }
 })
 
-/** Resolves the golden directory in the source tree (not the build output). */
-/** Resolves the golden directory in the source tree (not the build output). */
-private fun goldenDir(): File {
-  val resourceRoot: URL = BundleGoldenFileTest::class.java.getResource("/") ?: error("Cannot find resource root")
-  // build/classes/kotlin/jvm/test → 5 steps up → module root (portable-data/)
-  var dir = File(resourceRoot.toURI())
-  repeat(5) { dir = dir.parentFile }
-  return dir.resolve("src/jvmTest/resources/golden")
-}
 
 
 

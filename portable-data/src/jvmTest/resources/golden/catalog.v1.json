@@ -1,0 +1,39 @@
+{
+    "version": "3.2.2",
+    "books": [
+        {
+            "book": {
+                "id": "pws-ru",
+                "version": "3.300",
+                "locales": [
+                    "ru"
+                ],
+                "name": "Песнь Возрождения",
+                "displayShortName": "ПВ",
+                "displayName": "Песнь Возрождения 3300",
+                "priority": 100,
+                "releaseDate": "2003",
+                "description": "Основной сборник"
+            },
+            "songCount": 2,
+            "fileSizeBytes": 102400,
+            "checksum": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2"
+        },
+        {
+            "book": {
+                "id": "pws-uk",
+                "version": "1.0",
+                "locales": [
+                    "uk"
+                ],
+                "name": "Пісня Відродження",
+                "displayShortName": "ПВ",
+                "displayName": "Пісня Відродження",
+                "priority": 80
+            },
+            "songCount": 350,
+            "fileSizeBytes": 51200,
+            "checksum": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+        }
+    ]
+}
