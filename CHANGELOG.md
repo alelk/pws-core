@@ -1,5 +1,14 @@
 # PWS Android
 
+# [3.1.0-rc.2](https://github.com/alelk/pws-core/compare/v3.1.0-rc.1...v3.1.0-rc.2) (2026-06-19)
+
+
+### Features
+
+* Add 'installed_books' table. ([64a4f6f](https://github.com/alelk/pws-core/commit/64a4f6fbded3a6a6e4b687697ecabfcdb01668a7))
+* Add 'installed_books' table. ([7c66b14](https://github.com/alelk/pws-core/commit/7c66b14aac6f936ab32032935e0c6b080a6a4feb))
+* Refactor installed_books repository. ([29025fb](https://github.com/alelk/pws-core/commit/29025fb5d05f0ef01a0c98a0b9fac17324496c28))
+
 # [3.1.0-rc.1](https://github.com/alelk/pws-core/compare/v3.0.0...v3.1.0-rc.1) (2026-06-19)
 
 
