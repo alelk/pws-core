@@ -1,5 +1,13 @@
 # PWS Android
 
+# [2.28.0-rc.7](https://github.com/alelk/pws-core/compare/v2.28.0-rc.6...v2.28.0-rc.7) (2026-06-19)
+
+
+### Features
+
+* fix build issue ([841f0c3](https://github.com/alelk/pws-core/commit/841f0c39f5ecf7a7f1e7f6c8da12c69992c20aca))
+* Implement book catalog portable model ([037cde3](https://github.com/alelk/pws-core/commit/037cde3b318cb9cd88127519124817ab58973651))
+
 # [3.0.0](https://github.com/alelk/pws-core/compare/v2.27.0...v3.0.0) (2026-06-17)
 
 
