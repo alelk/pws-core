@@ -3,11 +3,10 @@ package io.github.alelk.pws.features.booklibrary
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import io.github.alelk.pws.domain.booklibrary.model.BookCatalogEntry
-import io.github.alelk.pws.domain.booklibrary.model.BookInstallSource
 import io.github.alelk.pws.domain.booklibrary.model.DownloadState
-import io.github.alelk.pws.domain.booklibrary.repository.InstalledBookRepository
 import io.github.alelk.pws.domain.booklibrary.usecase.GetBookCatalogUseCase
 import io.github.alelk.pws.domain.booklibrary.usecase.InstallBookUseCase
+import io.github.alelk.pws.domain.booklibrary.usecase.ObserveInstalledBooksUseCase
 import io.github.alelk.pws.domain.booklibrary.usecase.UninstallBookUseCase
 import io.github.alelk.pws.domain.core.ids.BookId
 import kotlinx.coroutines.Job
@@ -16,7 +15,7 @@ import kotlinx.coroutines.launch
 
 class BookLibraryScreenModel(
     private val getBookCatalog: GetBookCatalogUseCase,
-    private val installedBookRepository: InstalledBookRepository,
+    private val observeInstalledBooks: ObserveInstalledBooksUseCase,
     private val installBook: InstallBookUseCase,
     private val uninstallBook: UninstallBookUseCase,
 ) : StateScreenModel<BookLibraryUiState>(BookLibraryUiState.Loading) {
@@ -35,16 +34,15 @@ class BookLibraryScreenModel(
 
     private fun load() {
         screenModelScope.launch {
-            runCatching { getBookCatalog.getCatalog() }
-                .onFailure { mutableState.value = BookLibraryUiState.Error(it.message ?: "Unknown error") }
-                .onSuccess { entries ->
+            getBookCatalog().fold(
+                ifLeft = { error -> mutableState.value = BookLibraryUiState.Error(error.message) },
+                ifRight = { entries ->
                     catalog = entries
-                    installedBookRepository.observeAll().collectLatest { installedList ->
+                    observeInstalledBooks().collectLatest { installedList ->
                         val installedMap = installedList.associateBy { it.bookId }
-                        val current = mutableState.value
-                        val downloadStates = if (current is BookLibraryUiState.Content)
-                            current.items.associate { it.bookId to it.downloadState }
-                        else emptyMap()
+                        val downloadStates = (mutableState.value as? BookLibraryUiState.Content)
+                            ?.items?.associate { it.bookId to it.downloadState }
+                            ?: emptyMap()
 
                         mutableState.value = BookLibraryUiState.Content(
                             entries.map { entry ->
@@ -56,7 +54,8 @@ class BookLibraryScreenModel(
                             }
                         )
                     }
-                }
+                },
+            )
         }
     }
 
@@ -72,8 +71,10 @@ class BookLibraryScreenModel(
 
     fun uninstall(bookId: BookId) {
         screenModelScope.launch {
-            runCatching { uninstallBook(bookId) }
-                .onFailure { updateDownloadState(bookId, DownloadState.Error(it.message ?: "Uninstall failed")) }
+            uninstallBook(bookId).fold(
+                ifLeft = { error -> updateDownloadState(bookId, DownloadState.Error(error.message)) },
+                ifRight = {},
+            )
         }
     }
 

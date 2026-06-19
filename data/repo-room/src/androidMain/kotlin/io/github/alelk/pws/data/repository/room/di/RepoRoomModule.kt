@@ -16,7 +16,10 @@ import io.github.alelk.pws.database.PwsDatabase
 import io.github.alelk.pws.domain.book.repository.BookObserveRepository
 import io.github.alelk.pws.domain.book.repository.BookReadRepository
 import io.github.alelk.pws.domain.book.repository.BookWriteRepository
+import io.github.alelk.pws.domain.booklibrary.repository.InstalledBookObserveRepository
+import io.github.alelk.pws.domain.booklibrary.repository.InstalledBookReadRepository
 import io.github.alelk.pws.domain.booklibrary.repository.InstalledBookRepository
+import io.github.alelk.pws.domain.booklibrary.repository.InstalledBookWriteRepository
 import io.github.alelk.pws.domain.bookstatistic.repository.BookStatisticRepository
 import io.github.alelk.pws.data.repository.room.transaction.RoomTransactionRunner
 import io.github.alelk.pws.domain.core.transaction.TransactionRunner
@@ -123,5 +126,10 @@ val repoRoomModule = module {
   // InstalledBook
   single {
     InstalledBookRepositoryImpl(get<PwsDatabase>().installedBookDao())
-  } binds arrayOf(InstalledBookRepository::class)
+  } binds arrayOf(
+    InstalledBookRepository::class,
+    InstalledBookObserveRepository::class,
+    InstalledBookReadRepository::class,
+    InstalledBookWriteRepository::class,
+  )
 }
