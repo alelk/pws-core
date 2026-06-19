@@ -120,3 +120,7 @@ dependencies {
   add("kspIosArm64", libs.room.compiler)
 }
 
+ksp {
+  arg("room.schemaLocation", "$projectDir/schemas")
+}
+

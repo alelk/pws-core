@@ -263,6 +263,24 @@
     <string name="license_loading">Loading…</string>
     <string name="license_load_failed">Failed to load license text: %1$s</string>
     <string name="jump_number_range">%1$d – %2$d</string>
+
+    <string name="book_library_title">Book Library</string>
+    <string name="book_library_loading">Loading catalog…</string>
+    <string name="book_library_error_title">Failed to load catalog</string>
+    <string name="book_library_error_message">Check your internet connection and try again.</string>
+    <string name="book_library_retry">Retry</string>
+    <string name="book_library_status_built_in">Built-in</string>
+    <string name="book_library_status_installed">Installed</string>
+    <string name="book_library_action_install">Install</string>
+    <string name="book_library_action_uninstall">Uninstall</string>
+    <string name="book_library_songs_count">%1$d songs</string>
+    <string name="book_library_size">%1$s MB</string>
+    <string name="book_library_downloading">Downloading…</string>
+    <string name="book_library_uninstall_confirm_title">Uninstall book?</string>
+    <string name="book_library_uninstall_confirm_message">All songs, favorites and history entries for this book will be removed.</string>
+    <string name="book_library_uninstall_confirm_ok">Uninstall</string>
+    <string name="book_library_uninstall_confirm_cancel">Cancel</string>
+    <string name="book_library_open">Book Library</string>
 </resources>
 
 

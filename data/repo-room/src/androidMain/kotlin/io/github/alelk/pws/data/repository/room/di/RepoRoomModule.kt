@@ -2,6 +2,7 @@ package io.github.alelk.pws.data.repository.room.di
 
 import io.github.alelk.pws.data.repository.room.book.BookObserveRepositoryImpl
 import io.github.alelk.pws.data.repository.room.book.BookWriteRepositoryImpl
+import io.github.alelk.pws.data.repository.room.installed_book.InstalledBookRepositoryImpl
 import io.github.alelk.pws.data.repository.room.bookstatistic.BookStatisticRepositoryImpl
 import io.github.alelk.pws.data.repository.room.favorite.FavoriteRepositoryImpl
 import io.github.alelk.pws.data.repository.room.history.HistoryRepositoryImpl
@@ -15,6 +16,7 @@ import io.github.alelk.pws.database.PwsDatabase
 import io.github.alelk.pws.domain.book.repository.BookObserveRepository
 import io.github.alelk.pws.domain.book.repository.BookReadRepository
 import io.github.alelk.pws.domain.book.repository.BookWriteRepository
+import io.github.alelk.pws.domain.booklibrary.repository.InstalledBookRepository
 import io.github.alelk.pws.domain.bookstatistic.repository.BookStatisticRepository
 import io.github.alelk.pws.data.repository.room.transaction.RoomTransactionRunner
 import io.github.alelk.pws.domain.core.transaction.TransactionRunner
@@ -117,4 +119,9 @@ val repoRoomModule = module {
   single {
     SongNumberRepositoryImpl(get<PwsDatabase>().songNumberDao())
   } binds arrayOf(SongNumberReadRepository::class, SongNumberWriteRepository::class)
+
+  // InstalledBook
+  single {
+    InstalledBookRepositoryImpl(get<PwsDatabase>().installedBookDao())
+  } binds arrayOf(InstalledBookRepository::class)
 }

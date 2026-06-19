@@ -10,6 +10,8 @@ import io.github.alelk.pws.database.book.BookDao
 import io.github.alelk.pws.database.bookstatistic.BookStatisticDao
 import io.github.alelk.pws.database.favorite.FavoriteDao
 import io.github.alelk.pws.database.history.HistoryDao
+import io.github.alelk.pws.database.installed_book.InstalledBookDao
+import io.github.alelk.pws.database.installed_book.InstalledBookEntity
 import io.github.alelk.pws.database.song.SongDao
 import io.github.alelk.pws.database.song_number.SongNumberDao
 import io.github.alelk.pws.database.song_tag.SongTagDao
@@ -28,6 +30,7 @@ import io.github.alelk.pws.database.tag.TagEntity
 
 @Database(
   version = 14,
+  exportSchema = true,
   entities = [
     BookEntity::class,
     BookStatisticEntity::class,
@@ -38,7 +41,8 @@ import io.github.alelk.pws.database.tag.TagEntity
     SongNumberEntity::class,
     SongReferenceEntity::class,
     TagEntity::class,
-    SongTagEntity::class
+    SongTagEntity::class,
+    InstalledBookEntity::class,
   ],
   exportSchema = false
 )
@@ -49,6 +53,7 @@ abstract class PwsDatabase : RoomDatabase() {
   abstract fun bookStatisticDao(): BookStatisticDao
   abstract fun favoriteDao(): FavoriteDao
   abstract fun historyDao(): HistoryDao
+  abstract fun installedBookDao(): InstalledBookDao
   abstract fun songDao(): SongDao
   abstract fun songNumberDao(): SongNumberDao
   abstract fun songReferenceDao(): SongReferenceDao

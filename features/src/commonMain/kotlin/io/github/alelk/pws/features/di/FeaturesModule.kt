@@ -1,6 +1,11 @@
 package io.github.alelk.pws.features.di
 
 import io.github.alelk.pws.features.books.BooksScreenModel
+import io.github.alelk.pws.features.booklibrary.BookLibraryScreenModel
+import io.github.alelk.pws.domain.booklibrary.repository.InstalledBookRepository
+import io.github.alelk.pws.domain.booklibrary.usecase.GetBookCatalogUseCase
+import io.github.alelk.pws.domain.booklibrary.usecase.InstallBookUseCase
+import io.github.alelk.pws.domain.booklibrary.usecase.UninstallBookUseCase
 import io.github.alelk.pws.features.book.songs.BookSongsScreenModel
 import io.github.alelk.pws.features.favorites.FavoritesScreenModel
 import io.github.alelk.pws.features.history.HistoryScreenModel
@@ -54,6 +59,16 @@ val featuresModule = module {
 
   // Books
   factory { BooksScreenModel(get()) }
+
+  // Book Library
+  factory {
+    BookLibraryScreenModel(
+      getBookCatalog = get<GetBookCatalogUseCase>(),
+      installedBookRepository = get<InstalledBookRepository>(),
+      installBook = get<InstallBookUseCase>(),
+      uninstallBook = get<UninstallBookUseCase>(),
+    )
+  }
 
   // Book Songs
   factory { (bookId: BookId) -> BookSongsScreenModel(bookId, get()) }

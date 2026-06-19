@@ -262,6 +262,24 @@
     <string name="license_loading">Завантаження…</string>
     <string name="license_load_failed">Не вдалося завантажити текст ліцензії: %1$s</string>
     <string name="jump_number_range">%1$d – %2$d</string>
+
+    <string name="book_library_title">Бібліотека збірників</string>
+    <string name="book_library_loading">Завантаження каталогу…</string>
+    <string name="book_library_error_title">Не вдалося завантажити каталог</string>
+    <string name="book_library_error_message">Перевірте підключення до інтернету та спробуйте знову.</string>
+    <string name="book_library_retry">Повторити</string>
+    <string name="book_library_status_built_in">Вбудований</string>
+    <string name="book_library_status_installed">Встановлено</string>
+    <string name="book_library_action_install">Встановити</string>
+    <string name="book_library_action_uninstall">Видалити</string>
+    <string name="book_library_songs_count">%1$d пісень</string>
+    <string name="book_library_size">%1$s МБ</string>
+    <string name="book_library_downloading">Завантаження…</string>
+    <string name="book_library_uninstall_confirm_title">Видалити збірник?</string>
+    <string name="book_library_uninstall_confirm_message">Усі пісні, вибране та історія для цього збірника будуть видалені.</string>
+    <string name="book_library_uninstall_confirm_ok">Видалити</string>
+    <string name="book_library_uninstall_confirm_cancel">Скасувати</string>
+    <string name="book_library_open">Бібліотека збірників</string>
 </resources>
 
 

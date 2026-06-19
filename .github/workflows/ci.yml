@@ -34,6 +34,9 @@ jobs:
         run: |
           ./gradlew :domain:check :domain:lyric-format:check :api:client:check :portable-data:check :data:db-room:check :data:repo-room:check :features:check assemble
 
+      - name: Validate Room schema is committed
+        run: git diff --exit-code data/db-room/schemas/
+
       - name: Publish Test Results
         uses: mikepenz/action-junit-report@v4
         if: success() || failure()

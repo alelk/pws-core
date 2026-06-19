@@ -33,12 +33,17 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.material.icons.filled.LibraryBooks
+import androidx.compose.runtime.LaunchedEffect
 import cafe.adriel.voyager.core.registry.ScreenRegistry
 import cafe.adriel.voyager.core.registry.rememberScreen
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import androidx.compose.runtime.remember
+import io.github.alelk.pws.features.booklibrary.BookLibraryFirstLaunchState
+import org.koin.compose.getKoin
 import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.domain.book.model.BookSummary
 import io.github.alelk.pws.features.components.BookCard
@@ -55,6 +60,7 @@ import io.github.alelk.pws.features.resources.books_error_title
 import io.github.alelk.pws.features.resources.books_loading
 import io.github.alelk.pws.features.resources.home_load_error_message
 import io.github.alelk.pws.features.resources.home_songbooks
+import io.github.alelk.pws.features.resources.book_library_open
 import io.github.alelk.pws.features.resources.settings_open
 import io.github.alelk.pws.features.theme.spacing
 import org.jetbrains.compose.resources.stringResource
@@ -64,13 +70,29 @@ class BooksScreen : Screen {
   override fun Content() {
     val viewModel = koinScreenModel<BooksScreenModel>()
     val state by viewModel.state.collectAsState()
-    BooksContent(state = state, onRetry = viewModel::retry)
+    val navigator = LocalNavigator.currentOrThrow
+    val bookLibraryScreen = rememberScreen(SharedScreens.BookLibrary)
+    val koin = getKoin()
+    val firstLaunchState = remember { runCatching { koin.get<BookLibraryFirstLaunchState>() }.getOrNull() }
+
+    LaunchedEffect(Unit) {
+      if (firstLaunchState?.shouldShow() == true) {
+        firstLaunchState.markShown()
+        navigator.push(bookLibraryScreen)
+      }
+    }
+
+    BooksContent(
+      state = state,
+      onRetry = viewModel::retry,
+      onOpenBookLibrary = { navigator.push(bookLibraryScreen) },
+    )
   }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BooksContent(state: BooksUiState, onRetry: () -> Unit = {}) {
+fun BooksContent(state: BooksUiState, onRetry: () -> Unit = {}, onOpenBookLibrary: () -> Unit = {}) {
   val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
   val navigator = LocalNavigator.currentOrThrow
   val gridState = rememberLazyGridState()
@@ -86,7 +108,8 @@ fun BooksContent(state: BooksUiState, onRetry: () -> Unit = {}) {
     topBar = {
       BooksTopBar(
         scrollBehavior = scrollBehavior,
-        onOpenSettings = { navigator.push(ScreenRegistry.get(SharedScreens.Settings)) }
+        onOpenSettings = { navigator.push(ScreenRegistry.get(SharedScreens.Settings)) },
+        onOpenBookLibrary = onOpenBookLibrary,
       )
     }
   ) { innerPadding ->
@@ -115,6 +138,7 @@ fun BooksContent(state: BooksUiState, onRetry: () -> Unit = {}) {
 private fun BooksTopBar(
   scrollBehavior: TopAppBarScrollBehavior,
   onOpenSettings: () -> Unit,
+  onOpenBookLibrary: () -> Unit = {},
 ) {
   LargeTopAppBar(
     title = {
@@ -125,6 +149,12 @@ private fun BooksTopBar(
       )
     },
     actions = {
+      IconButton(onClick = onOpenBookLibrary) {
+        Icon(
+          imageVector = Icons.Filled.LibraryBooks,
+          contentDescription = stringResource(Res.string.book_library_open)
+        )
+      }
       IconButton(onClick = onOpenSettings) {
         Icon(
           imageVector = Icons.Filled.Settings,

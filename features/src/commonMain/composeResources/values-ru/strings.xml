@@ -263,6 +263,24 @@
     <string name="license_loading">Загрузка…</string>
     <string name="license_load_failed">Не удалось загрузить текст лицензии: %1$s</string>
     <string name="jump_number_range">%1$d – %2$d</string>
+
+    <string name="book_library_title">Библиотека сборников</string>
+    <string name="book_library_loading">Загрузка каталога…</string>
+    <string name="book_library_error_title">Не удалось загрузить каталог</string>
+    <string name="book_library_error_message">Проверьте подключение к интернету и попробуйте снова.</string>
+    <string name="book_library_retry">Повторить</string>
+    <string name="book_library_status_built_in">Встроен</string>
+    <string name="book_library_status_installed">Установлен</string>
+    <string name="book_library_action_install">Установить</string>
+    <string name="book_library_action_uninstall">Удалить</string>
+    <string name="book_library_songs_count">%1$d песен</string>
+    <string name="book_library_size">%1$s МБ</string>
+    <string name="book_library_downloading">Загрузка…</string>
+    <string name="book_library_uninstall_confirm_title">Удалить сборник?</string>
+    <string name="book_library_uninstall_confirm_message">Все песни, избранное и история для этого сборника будут удалены.</string>
+    <string name="book_library_uninstall_confirm_ok">Удалить</string>
+    <string name="book_library_uninstall_confirm_cancel">Отмена</string>
+    <string name="book_library_open">Библиотека сборников</string>
 </resources>
 
 
