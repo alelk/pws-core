@@ -80,7 +80,14 @@ internal fun sha256(data: ByteArray): ByteArray {
 }
 
 /** Returns the SHA-256 digest of this byte array as a lowercase hex string. */
-fun ByteArray.sha256Hex(): String = sha256(this).joinToString("") { "%02x".format(it) }
+fun ByteArray.sha256Hex(): String = buildString {
+  val hex = "0123456789abcdef"
+  sha256(this@sha256Hex).forEach { b ->
+    val i = b.toInt() and 0xFF
+    append(hex[i ushr 4])
+    append(hex[i and 0x0F])
+  }
+}
 
 /**
  * HMAC-SHA-256 — pure Kotlin, all platforms.
