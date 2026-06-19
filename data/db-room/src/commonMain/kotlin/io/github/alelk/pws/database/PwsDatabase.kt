@@ -43,8 +43,7 @@ import io.github.alelk.pws.database.tag.TagEntity
     TagEntity::class,
     SongTagEntity::class,
     InstalledBookEntity::class,
-  ],
-  exportSchema = false
+  ]
 )
 @TypeConverters(DbTypeConverters::class)
 @ConstructedBy(PwsDatabaseConstructor::class)
