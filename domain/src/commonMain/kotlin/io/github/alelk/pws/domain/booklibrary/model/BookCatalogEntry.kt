@@ -1,6 +1,7 @@
 package io.github.alelk.pws.domain.booklibrary.model
 
 import io.github.alelk.pws.domain.core.Locale
+import io.github.alelk.pws.domain.core.Version
 import io.github.alelk.pws.domain.core.ids.BookId
 
 data class BookCatalogEntry(
@@ -8,7 +9,7 @@ data class BookCatalogEntry(
     val locales: List<Locale>,
     val name: String,
     val displayName: String,
-    val bundleVersion: String,
+    val bundleVersion: Version,
     val downloadUrl: String,
     val fileSizeBytes: Long,
     val checksum: String,

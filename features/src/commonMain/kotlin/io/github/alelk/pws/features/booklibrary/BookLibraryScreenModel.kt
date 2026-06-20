@@ -10,6 +10,7 @@ import io.github.alelk.pws.domain.booklibrary.usecase.ObserveInstalledBooksUseCa
 import io.github.alelk.pws.domain.booklibrary.usecase.UninstallBookUseCase
 import io.github.alelk.pws.domain.core.ids.BookId
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -63,9 +64,9 @@ class BookLibraryScreenModel(
         val bookId = entry.bookId
         if (downloadJobs[bookId]?.isActive == true) return
         downloadJobs[bookId] = screenModelScope.launch {
-            installBook(entry).collect { state ->
-                updateDownloadState(bookId, state)
-            }
+            installBook(entry)
+                .catch { e -> updateDownloadState(bookId, DownloadState.Error(e.message ?: "Unknown error")) }
+                .collect { state -> updateDownloadState(bookId, state) }
         }
     }
 
