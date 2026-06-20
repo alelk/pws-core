@@ -1,5 +1,12 @@
 # PWS Android
 
+# [3.1.0-rc.3](https://github.com/alelk/pws-core/compare/v3.1.0-rc.2...v3.1.0-rc.3) (2026-06-20)
+
+
+### Features
+
+* Update installed book version type ([99b7649](https://github.com/alelk/pws-core/commit/99b7649dc76d8092afb129d8594943b163a7f969))
+
 # [3.1.0-rc.2](https://github.com/alelk/pws-core/compare/v3.1.0-rc.1...v3.1.0-rc.2) (2026-06-19)
 
 
