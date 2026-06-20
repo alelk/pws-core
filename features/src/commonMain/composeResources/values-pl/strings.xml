@@ -219,5 +219,8 @@
     <string name="license_loading">Ładowanie…</string>
     <string name="license_load_failed">Nie udało się załadować tekstu licencji: %1$s</string>
     <string name="jump_number_range">%1$d – %2$d</string>
+    <string name="books_browse_library_title">Dostępne inne śpiewniki</string>
+    <string name="books_browse_library_subtitle">Pobierz dodatkowe zbiory z katalogu</string>
+    <string name="books_browse_library_action">Przeglądaj katalog</string>
 </resources>
 

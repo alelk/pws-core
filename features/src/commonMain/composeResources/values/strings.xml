@@ -281,6 +281,9 @@
     <string name="book_library_uninstall_confirm_ok">Uninstall</string>
     <string name="book_library_uninstall_confirm_cancel">Cancel</string>
     <string name="book_library_open">Book Library</string>
+    <string name="books_browse_library_title">More songbooks available</string>
+    <string name="books_browse_library_subtitle">Download additional collections from the catalog</string>
+    <string name="books_browse_library_action">Browse Library</string>
 </resources>
 
 

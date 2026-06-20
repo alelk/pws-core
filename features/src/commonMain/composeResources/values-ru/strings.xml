@@ -281,6 +281,9 @@
     <string name="book_library_uninstall_confirm_ok">Удалить</string>
     <string name="book_library_uninstall_confirm_cancel">Отмена</string>
     <string name="book_library_open">Библиотека сборников</string>
+    <string name="books_browse_library_title">Доступны другие сборники</string>
+    <string name="books_browse_library_subtitle">Скачайте дополнительные сборники из каталога</string>
+    <string name="books_browse_library_action">Открыть каталог</string>
 </resources>
 
 
