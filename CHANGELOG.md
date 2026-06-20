@@ -1,5 +1,12 @@
 # PWS Android
 
+# [3.1.0-rc.4](https://github.com/alelk/pws-core/compare/v3.1.0-rc.3...v3.1.0-rc.4) (2026-06-20)
+
+
+### Features
+
+* add Browse Library banner to BooksScreen ([c69df11](https://github.com/alelk/pws-core/commit/c69df1145818991b55002a858d6cb3c4d5e93c58))
+
 # [3.1.0-rc.3](https://github.com/alelk/pws-core/compare/v3.1.0-rc.2...v3.1.0-rc.3) (2026-06-20)
 
 
