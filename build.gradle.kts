@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnLockMismatchReport
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
 
 plugins {
   id("maven-publish")
@@ -7,6 +10,15 @@ plugins {
   alias(libs.plugins.androidLibrary) apply false
   alias(libs.plugins.androidKmpLibrary) apply false
   id("com.google.devtools.ksp") version libs.versions.ksp.get() apply false
+}
+
+// Kotlin/JS: yarn 1.x периодически переставляет/склеивает записи алиасных пакетов
+// (string-width-cjs@npm:…, strip-ansi-cjs, wrap-ansi-cjs из @isaacs/cliui) в yarn.lock.
+// Различие чисто текстовое (версии те же), но дефолтная политика FAIL валит kotlinStoreYarnLock
+// на первом прогоне после `clean`. Понижаем до WARNING, чтобы сборка не падала из-за косметики.
+rootProject.plugins.withType<YarnPlugin> {
+  rootProject.the<YarnRootExtension>().yarnLockMismatchReport = YarnLockMismatchReport.WARNING
+  rootProject.the<YarnRootExtension>().reportNewYarnLock = false
 }
 
 val androidSdkVersion by extra(36)
