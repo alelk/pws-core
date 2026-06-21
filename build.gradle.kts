@@ -12,13 +12,12 @@ plugins {
   id("com.google.devtools.ksp") version libs.versions.ksp.get() apply false
 }
 
-// Kotlin/JS: yarn 1.x периодически переставляет/склеивает записи алиасных пакетов
-// (string-width-cjs@npm:…, strip-ansi-cjs, wrap-ansi-cjs из @isaacs/cliui) в yarn.lock.
-// Различие чисто текстовое (версии те же), но дефолтная политика FAIL валит kotlinStoreYarnLock
-// на первом прогоне после `clean`. Понижаем до WARNING, чтобы сборка не падала из-за косметики.
+// Kotlin/JS: keep the strict FAIL policy (the default) — it catches unintended dependency drift.
+// To stop it from failing on yarn 1.x cosmetic instability, the yarn.lock committed in
+// kotlin-js-store is in the clean-resolution form (after `clean`); regenerate via kotlinUpgradeYarnLock.
 rootProject.plugins.withType<YarnPlugin> {
-  rootProject.the<YarnRootExtension>().yarnLockMismatchReport = YarnLockMismatchReport.WARNING
-  rootProject.the<YarnRootExtension>().reportNewYarnLock = false
+  rootProject.the<YarnRootExtension>().yarnLockMismatchReport = YarnLockMismatchReport.FAIL
+  rootProject.the<YarnRootExtension>().reportNewYarnLock = true
 }
 
 val androidSdkVersion by extra(36)
