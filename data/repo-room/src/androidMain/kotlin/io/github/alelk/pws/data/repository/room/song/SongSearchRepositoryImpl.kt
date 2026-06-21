@@ -28,10 +28,7 @@ class SongSearchRepositoryImpl(
     val results: List<SongSearchResultEntity> = if (raw != null) {
       songDao.findBySongNumber(raw, limit)
     } else {
-      val ftsQuery = trimmed.split("\\s+".toRegex())
-        .filter { it.isNotBlank() }
-        .joinToString(" ") { "$it*" }
-      songDao.findBySongText(ftsQuery, limit)
+      songDao.findBySongText(buildFtsPrefixQuery(trimmed), limit)
     }
 
     // Group by songId to merge multiple book references
@@ -63,10 +60,7 @@ class SongSearchRepositoryImpl(
     val results: List<SongSearchResultEntity> = if (raw != null) {
       songDao.findBySongNumber(raw, searchQuery.limit)
     } else {
-      val ftsQuery = trimmed.split("\\s+".toRegex())
-        .filter { it.isNotBlank() }
-        .joinToString(" ") { "$it*" }
-      songDao.findBySongText(ftsQuery, searchQuery.limit)
+      songDao.findBySongText(buildFtsPrefixQuery(trimmed), searchQuery.limit)
     }
 
     // Fetch full song data for SongSummary

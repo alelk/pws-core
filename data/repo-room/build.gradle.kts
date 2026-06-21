@@ -40,10 +40,18 @@ kotlin {
         implementation(kotlin("test-common"))
         implementation(kotlin("test-annotations-common"))
       }
+
+    jvmTest.dependencies {
+        implementation(libs.kotest.runner.junit5)
+      }
   }
 }
 
 dependencies {
   add("kspAndroid", libs.room.compiler)
+}
+
+tasks.withType<Test> {
+  useJUnitPlatform()
 }
 
