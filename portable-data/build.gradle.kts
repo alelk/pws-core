@@ -9,7 +9,6 @@ group = "io.github.alelk.pws.portable"
 
 kotlin {
   jvm()
-  iosX64()
   iosArm64()
   iosSimulatorArm64()
 
@@ -35,11 +34,10 @@ kotlin {
       implementation(kotlin("test"))
     }
 
-    // nativeMain covers iosX64, iosArm64, iosSimulatorArm64.
+    // nativeMain covers iosArm64, iosSimulatorArm64.
     // Uses platform.zlib (gzip), platform.CoreCrypto (AES), platform.Security (randomBytes) —
     // all available in Kotlin/Native iOS klibs without extra linker flags.
     val nativeMain by creating { dependsOn(commonMain.get()) }
-    val iosX64Main by getting { dependsOn(nativeMain) }
     val iosArm64Main by getting { dependsOn(nativeMain) }
     val iosSimulatorArm64Main by getting { dependsOn(nativeMain) }
   }

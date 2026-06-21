@@ -6,7 +6,6 @@ group = "io.github.alelk.pws.data"
 
 kotlin {
   jvm()
-  iosX64()
   iosArm64()
   iosSimulatorArm64()
 
@@ -19,7 +18,6 @@ kotlin {
       api(libs.room.runtime)
       implementation(libs.kotlinx.datetime)
       implementation(libs.kotlinx.coroutines.core)
-      implementation(libs.kotest.property.datetime)
     }
   }
 }

@@ -32,22 +32,7 @@ class SongSearchRepositoryImpl(
     }
 
     // Group by songId to merge multiple book references
-    return results
-      .groupBy { it.songId }
-      .map { (songId, rows) ->
-        SongSearchSuggestion(
-          id = songId,
-          name = NonEmptyString(rows.first().songName),
-          bookReferences = rows.map { r ->
-            SongBookReference(
-              bookId = r.bookId,
-              displayShortName = NonEmptyString(r.bookDisplayName),
-              songNumber = r.songNumber
-            )
-          },
-          snippet = rows.firstOrNull { it.snippet.isNotBlank() }?.snippet
-        )
-      }
+    return groupSuggestions(results)
   }
 
   override suspend fun search(

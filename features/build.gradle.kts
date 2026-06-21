@@ -25,7 +25,6 @@ kotlin {
   }
 
   jvm()
-  iosX64()
   iosArm64()
   iosSimulatorArm64()
   js(IR) {
@@ -81,7 +80,6 @@ kotlin {
     val iosMain by creating {
       dependsOn(mobileMain)
     }
-    iosX64Main.get().dependsOn(iosMain)
     iosArm64Main.get().dependsOn(iosMain)
     iosSimulatorArm64Main.get().dependsOn(iosMain)
 

@@ -12,11 +12,14 @@ kotlin {
     namespace = "io.github.alelk.pws.data.repo_room"
     compileSdk = rootProject.extra["androidSdkVersion"] as Int
     minSdk = 23
+
+    withHostTestBuilder {
+      sourceSetTreeName = "test"
+    }
   }
 
   jvm()
 
-  iosX64()
   iosArm64()
   iosSimulatorArm64()
 
@@ -43,6 +46,12 @@ kotlin {
 
     jvmTest.dependencies {
         implementation(libs.kotest.runner.junit5)
+      }
+
+    getByName("androidHostTest").dependencies {
+        implementation(libs.kotest.runner.junit5)
+        implementation(libs.kotest.assertions.core)
+        implementation(libs.kotest.property)
       }
   }
 }
