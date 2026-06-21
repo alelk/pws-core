@@ -1,5 +1,14 @@
 # PWS Android
 
+# [3.1.0-rc.5](https://github.com/alelk/pws-core/compare/v3.1.0-rc.4...v3.1.0-rc.5) (2026-06-21)
+
+
+### Bug Fixes
+
+* Fix build issue ([dfd1a7d](https://github.com/alelk/pws-core/commit/dfd1a7d224791788f70d5ee0cd64ac961bf347d0))
+* Fix build issue ([42e9fe0](https://github.com/alelk/pws-core/commit/42e9fe0f56ca97798ceb4e3ded0b1404ec24e64b))
+* Update library dependencies. Add tests ([218314d](https://github.com/alelk/pws-core/commit/218314df84aa6fe47e8a6300628d61ce8612700a))
+
 # [3.1.0-rc.4](https://github.com/alelk/pws-core/compare/v3.1.0-rc.3...v3.1.0-rc.4) (2026-06-20)
 
 
