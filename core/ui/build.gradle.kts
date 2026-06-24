@@ -18,7 +18,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api(compose.runtime)
+            api(libs.compose.runtime)
         }
         commonTest.dependencies {
         }

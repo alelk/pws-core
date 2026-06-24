@@ -14,12 +14,10 @@ kotlin {
   }
 
   sourceSets {
-    val commonMain by getting {
-      dependencies {
-        api(project(":domain"))
-        implementation(libs.kotest.assertions.core)
-        api(libs.kotest.property)
-      }
+    commonMain.dependencies {
+      api(project(":domain"))
+      implementation(libs.kotest.assertions.core)
+      api(libs.kotest.property)
     }
   }
 }

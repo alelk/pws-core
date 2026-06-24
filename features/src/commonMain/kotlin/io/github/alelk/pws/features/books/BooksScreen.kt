@@ -37,7 +37,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import androidx.compose.material.icons.filled.LibraryBooks
+import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilledTonalButton
@@ -162,7 +162,7 @@ private fun BooksTopBar(
     actions = {
       IconButton(onClick = onOpenBookLibrary) {
         Icon(
-          imageVector = Icons.Filled.LibraryBooks,
+          imageVector = Icons.AutoMirrored.Filled.LibraryBooks,
           contentDescription = stringResource(Res.string.book_library_open)
         )
       }
@@ -243,7 +243,7 @@ private fun BrowseLibraryBanner(onClick: () -> Unit) {
       horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md),
     ) {
       Icon(
-        imageVector = Icons.Filled.LibraryBooks,
+        imageVector = Icons.AutoMirrored.Filled.LibraryBooks,
         contentDescription = null,
         tint = MaterialTheme.colorScheme.onSecondaryContainer,
       )

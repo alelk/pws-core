@@ -17,7 +17,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ArrowUpward
-import androidx.compose.material.icons.filled.Sort
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -164,7 +164,7 @@ fun FavoritesContent(
               showSortDialog = true 
             }) {
               Icon(
-                imageVector = Icons.Filled.Sort,
+                imageVector = Icons.AutoMirrored.Filled.Sort,
                 contentDescription = stringResource(Res.string.favorites_sort)
               )
             }

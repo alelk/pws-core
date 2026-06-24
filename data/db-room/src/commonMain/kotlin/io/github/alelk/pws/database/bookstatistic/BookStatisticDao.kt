@@ -32,10 +32,12 @@ interface BookStatisticDao {
   suspend fun getByIds(bookIds: List<BookId>): List<BookStatisticEntity>
 
   @Deprecated("")
+  @Transaction
   @Query("SELECT * FROM book_statistic WHERE id = :bookId")
   suspend fun getBookStatisticWithBookById(bookId: BookId): BookStatisticWithBookEntity?
 
   @Deprecated("")
+  @Transaction
   @Query("SELECT * FROM book_statistic bs WHERE bs.priority > 0")
   suspend fun getAllActive(): List<BookStatisticWithBookEntity>
 

@@ -386,7 +386,7 @@ private fun SettingsContent(
               ) {
                 Column {
                   // Version
-                  if (state is SettingsUiState.Content && state.appVersion.isNotBlank()) {
+                  if (current.appVersion.isNotBlank()) {
                     Row(
                       modifier = Modifier
                         .fillMaxWidth()
@@ -394,7 +394,7 @@ private fun SettingsContent(
                       verticalAlignment = Alignment.CenterVertically
                     ) {
                       Text(
-                        text = stringResource(Res.string.settings_version, state.appVersion),
+                        text = stringResource(Res.string.settings_version, current.appVersion),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface
                       )

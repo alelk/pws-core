@@ -293,6 +293,9 @@ fun SongDetailContent(
   onDonationDismiss: () -> Unit = {},
 ) {
   val navigator = LocalNavigator.currentOrThrow
+  // LocalClipboard (the non-deprecated replacement) has no stable common factory for a text
+  // ClipEntry across JVM/iOS/JS yet, so we keep LocalClipboardManager until it does.
+  @Suppress("DEPRECATION")
   val clipboardManager = LocalClipboardManager.current
   val haptic = LocalHapticFeedback.current
   val externalActions = LocalSongDetailExternalActions.current
@@ -430,12 +433,10 @@ fun SongDetailContent(
               onEditTags = { activeSheet = SongDetailSheet.TagEditor },
               onJumpToNumber = { activeSheet = SongDetailSheet.Jump },
               onShare = {
-                val shareSong = (state as? SongDetailUiState.Content)?.song ?: return@SongActionsSheet
-                externalActions?.shareText?.invoke(buildShareText(shareSong))
+                externalActions?.shareText?.invoke(buildShareText(state.song))
               },
               onCopy = {
-                val copySong = (state as? SongDetailUiState.Content)?.song ?: return@SongActionsSheet
-                clipboardManager.setText(AnnotatedString(buildShareText(copySong)))
+                clipboardManager.setText(AnnotatedString(buildShareText(state.song)))
                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
               },
             )
@@ -942,13 +943,12 @@ private fun IntrinsicChorusView(
 
 @Composable
 private fun SongMetadata(song: SongDetail) {
-  val bibleRefText = song.bibleRef?.toString()
-  val hasBibleRef = !bibleRefText.isNullOrBlank() && bibleRefText != "-"
+  val bibleRefText = song.bibleRef?.toString()?.takeUnless { it.isBlank() || it == "-" }
   val hasMetadata = song.author != null ||
     song.composer != null ||
     song.translator != null ||
     song.year != null ||
-    hasBibleRef
+    bibleRefText != null
 
   if (!hasMetadata) return
 
@@ -987,7 +987,7 @@ private fun SongMetadata(song: SongDetail) {
       song.composer?.let { MetadataItem(stringResource(Res.string.song_detail_info_composer), it.name) }
       song.translator?.let { MetadataItem(stringResource(Res.string.song_detail_info_translator), it.name) }
       song.year?.let { MetadataItem(stringResource(Res.string.song_detail_info_year), it.toString()) }
-      if (hasBibleRef && bibleRefText != null) {
+      if (bibleRefText != null) {
         MetadataItem(stringResource(Res.string.song_detail_info_bible), bibleRefText)
       }
     }

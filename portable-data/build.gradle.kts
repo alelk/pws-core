@@ -34,11 +34,8 @@ kotlin {
       implementation(kotlin("test"))
     }
 
-    // nativeMain covers iosArm64, iosSimulatorArm64.
+    // nativeMain (provided by the default hierarchy template) covers iosArm64, iosSimulatorArm64.
     // Uses platform.zlib (gzip), platform.CoreCrypto (AES), platform.Security (randomBytes) —
     // all available in Kotlin/Native iOS klibs without extra linker flags.
-    val nativeMain by creating { dependsOn(commonMain.get()) }
-    val iosArm64Main by getting { dependsOn(nativeMain) }
-    val iosSimulatorArm64Main by getting { dependsOn(nativeMain) }
   }
 }

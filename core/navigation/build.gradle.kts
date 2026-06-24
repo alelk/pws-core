@@ -30,7 +30,7 @@ kotlin {
       implementation(libs.kotlinx.coroutines.core)
       implementation(libs.voyager.core)
 
-      implementation(compose.runtime)
+      implementation(libs.compose.runtime)
     }
     commonTest.dependencies {}
   }

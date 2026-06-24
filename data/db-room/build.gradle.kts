@@ -12,6 +12,13 @@ plugins {
 group = "io.github.alelk.pws.data"
 
 kotlin {
+  // Room generates 'actual' classes (e.g. PwsDatabaseConstructor) and the module uses
+  // expect/actual classes for the DAO split — a Beta feature that warns by default (KT-61573).
+  // The flag is JetBrains' recommended way to opt in and silence the noise.
+  compilerOptions {
+    freeCompilerArgs.add("-Xexpect-actual-classes")
+  }
+
   android {
     namespace = "io.github.alelk.pws.data.room_database"
     compileSdk = rootProject.extra["androidSdkVersion"] as Int

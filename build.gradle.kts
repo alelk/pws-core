@@ -20,19 +20,17 @@ rootProject.plugins.withType<YarnPlugin> {
   rootProject.the<YarnRootExtension>().reportNewYarnLock = true
 }
 
-val androidSdkVersion by extra(36)
+extra["androidSdkVersion"] = 36
 
-val versionName by extra(
-  runCatching {
-    checkNotNull(
-      File("app.version")
-        .readText()
-        .lines()
-        .firstOrNull()?.trim()
-        ?.takeIf { it.isNotBlank() }
-    ) { "app.version empty" }
-  }.getOrElse { "0.0.1-SNAPSHOT" }
-)
+val versionName = runCatching {
+  checkNotNull(
+    File("app.version")
+      .readText()
+      .lines()
+      .firstOrNull()?.trim()
+      ?.takeIf { it.isNotBlank() }
+  ) { "app.version empty" }
+}.getOrElse { "0.0.1-SNAPSHOT" }
 
 allprojects {
   version = versionName

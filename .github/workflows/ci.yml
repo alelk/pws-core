@@ -30,6 +30,11 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
+      - name: Warm up yarn
+        # kotlinStoreYarnLock fails spuriously on first cold run due to a known Kotlin/JS plugin
+        # race; yarn state is stable on subsequent runs. This step warms it up before the real build.
+        run: ./gradlew kotlinStoreYarnLock || true
+
       - name: Build and run tests
         run: |
           ./gradlew check assemble
