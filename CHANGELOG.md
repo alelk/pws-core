@@ -1,5 +1,12 @@
 # PWS Android
 
+# [3.1.0-rc.6](https://github.com/alelk/pws-core/compare/v3.1.0-rc.5...v3.1.0-rc.6) (2026-06-24)
+
+
+### Bug Fixes
+
+* Fix build warnings ([a3d1733](https://github.com/alelk/pws-core/commit/a3d1733e30382c7c9871baa2c723ee763756c40e))
+
 # [3.1.0-rc.5](https://github.com/alelk/pws-core/compare/v3.1.0-rc.4...v3.1.0-rc.5) (2026-06-21)
 
 
