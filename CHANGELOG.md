@@ -1,5 +1,12 @@
 # PWS Android
 
+# [3.1.0-rc.7](https://github.com/alelk/pws-core/compare/v3.1.0-rc.6...v3.1.0-rc.7) (2026-06-26)
+
+
+### Features
+
+* Implement user data backup ([b2aa2be](https://github.com/alelk/pws-core/commit/b2aa2bef012722ac8b3798622ff31f4df1fc7ffd))
+
 # [3.1.0-rc.6](https://github.com/alelk/pws-core/compare/v3.1.0-rc.5...v3.1.0-rc.6) (2026-06-24)
 
 
