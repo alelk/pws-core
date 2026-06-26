@@ -15,8 +15,15 @@ data class Backup(
   val favorites: List<SongNumber>? = null,
   val tags: List<Tag>? = null,
   val bookPreferences: List<BookPreference>? = null,
+  val history: List<HistoryEntry>? = null,
   val settings: Map<String, String>? = null
 ) {
+
+  @Serializable
+  data class HistoryEntry(
+    val songNumber: SongNumber,
+    val accessTimestamp: LocalDateTime,
+  )
 
   /** Backup metadata.
    *

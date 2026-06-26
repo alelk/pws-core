@@ -50,6 +50,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -338,7 +339,7 @@ private fun SettingsContent(
               SettingsSectionCard(footer = stringResource(Res.string.settings_import_export_subtitle)) {
                 Column(modifier = Modifier.padding(16.dp)) {
                   OutlinedButton(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().testTag("action:export-backup"),
                     onClick = {
                       haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                       onExportClick()
@@ -348,7 +349,7 @@ private fun SettingsContent(
                   }
                   Spacer(Modifier.height(8.dp))
                   OutlinedButton(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().testTag("action:import-backup"),
                     onClick = {
                       haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                       onImportClick()

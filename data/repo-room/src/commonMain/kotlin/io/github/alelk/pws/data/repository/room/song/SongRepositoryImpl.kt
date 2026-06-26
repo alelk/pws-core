@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.map
 class SongRepositoryImpl(
   private val songDao: SongDao,
   private val songNumberDao: SongNumberDao,
+  private val onDataChanged: () -> Unit = {},
 ) : SongReadRepository, SongObserveRepository, SongWriteRepository {
 
   override suspend fun get(id: SongId): SongDetail? =
@@ -105,7 +106,7 @@ class SongRepositoryImpl(
         edited = song.edited
       )
       songDao.update(entity)
-      Either.Right(song.id)
+      Either.Right(song.id).also { if (song.edited) onDataChanged() }
     }.getOrElse { Either.Left(UpdateError.UnknownError(it)) }
 
   override suspend fun delete(id: SongId): Either<DeleteError, SongId> =

@@ -43,6 +43,8 @@ import io.github.alelk.pws.domain.songtag.repository.SongTagWriteRepository
 import io.github.alelk.pws.domain.tag.repository.TagObserveRepository
 import io.github.alelk.pws.domain.tag.repository.TagReadRepository
 import io.github.alelk.pws.domain.tag.repository.TagWriteRepository
+import android.content.Context
+import org.koin.core.qualifier.named
 import org.koin.dsl.binds
 import org.koin.dsl.module
 
@@ -70,9 +72,19 @@ val repoRoomModule = module {
     BookStatisticRepositoryImpl(get<PwsDatabase>().bookStatisticDao())
   } binds arrayOf(BookStatisticRepository::class)
 
+  // Notifies the Android backup system that user data has changed.
+  // OS schedules the next backup run at its own discretion.
+  factory<() -> Unit>(qualifier = named("onDataChanged")) {
+    { android.app.backup.BackupManager(get<Context>()).dataChanged() }
+  }
+
   // Song
   single {
-    SongRepositoryImpl(get<PwsDatabase>().songDao(), get<PwsDatabase>().songNumberDao())
+    SongRepositoryImpl(
+      get<PwsDatabase>().songDao(),
+      get<PwsDatabase>().songNumberDao(),
+      get(qualifier = named("onDataChanged")),
+    )
   } binds arrayOf(SongReadRepository::class, SongObserveRepository::class, SongWriteRepository::class)
 
   // Song Search
@@ -82,17 +94,27 @@ val repoRoomModule = module {
 
   // Favorite
   single {
-    FavoriteRepositoryImpl(get<PwsDatabase>().favoriteDao())
+    FavoriteRepositoryImpl(
+      get<PwsDatabase>().favoriteDao(),
+      get(qualifier = named("onDataChanged")),
+    )
   } binds arrayOf(FavoriteReadRepository::class, FavoriteObserveRepository::class, FavoriteWriteRepository::class)
 
   // History
   single {
-    HistoryRepositoryImpl(get<PwsDatabase>().historyDao())
+    HistoryRepositoryImpl(
+      get<PwsDatabase>().historyDao(),
+      get(qualifier = named("onDataChanged")),
+    )
   } binds arrayOf(HistoryReadRepository::class, HistoryObserveRepository::class, HistoryWriteRepository::class)
 
   // Tag
   single {
-    TagRepositoryImpl(get<PwsDatabase>().tagDao(), get<PwsDatabase>().songTagDao())
+    TagRepositoryImpl(
+      get<PwsDatabase>().tagDao(),
+      get<PwsDatabase>().songTagDao(),
+      get(qualifier = named("onDataChanged")),
+    )
   } binds arrayOf(
     TagReadRepository::class,
     TagObserveRepository::class,
@@ -105,7 +127,8 @@ val repoRoomModule = module {
       get<PwsDatabase>().songTagDao(),
       get<PwsDatabase>().tagDao(),
       get<PwsDatabase>().songDao(),
-      get<PwsDatabase>().songNumberDao()
+      get<PwsDatabase>().songNumberDao(),
+      get(qualifier = named("onDataChanged")),
     )
   } binds arrayOf(
     SongTagReadRepository::class,

@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.map
 class TagRepositoryImpl(
   private val tagDao: TagDao,
   private val songTagDao: SongTagDao,
+  private val onDataChanged: () -> Unit = {},
 ) : TagReadRepository<TagId>, TagObserveRepository<TagId>, TagWriteRepository<TagId> {
 
   override suspend fun get(id: TagId): TagDetail<TagId>? {
@@ -58,7 +59,7 @@ class TagRepositoryImpl(
         predefined = command.id is TagId.Predefined
       )
       tagDao.insert(entity)
-      Either.Right(command.id)
+      Either.Right(command.id).also { onDataChanged() }
     }.getOrElse { Either.Left(CreateError.UnknownError(it)) }
 
   override suspend fun update(command: UpdateTagCommand<TagId>): Either<UpdateError, TagId> =
@@ -70,13 +71,13 @@ class TagRepositoryImpl(
         priority = command.priority ?: existing.priority,
       )
       tagDao.update(updated)
-      Either.Right(command.id)
+      Either.Right(command.id).also { onDataChanged() }
     }.getOrElse { Either.Left(UpdateError.UnknownError(it)) }
 
   override suspend fun delete(id: TagId): Either<DeleteError, TagId> =
     runCatching {
       tagDao.deleteById(id)
-      Either.Right(id)
+      Either.Right(id).also { onDataChanged() }
     }.getOrElse { Either.Left(DeleteError.UnknownError(it)) }
 
   private fun TagSort.comparator(): Comparator<Tag<TagId>> = when (this) {

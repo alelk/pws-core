@@ -96,6 +96,7 @@ class BackupTest : StringSpec({
     |favorites: null
     |tags: null
     |bookPreferences: null
+    |history: null
     |settings: null""".trimMargin()
 
   "serialize empty backup to yaml" {
