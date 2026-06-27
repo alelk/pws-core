@@ -58,40 +58,40 @@ Deep dive: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/MODULES.md`](d
 
 ## 4. Module map (canonical: `settings.gradle.kts`)
 
-| Module                               | Purpose                                                                                                  |
-|--------------------------------------|----------------------------------------------------------------------------------------------------------|
-| `:domain`                            | Models, commands/queries, use cases, repository interfaces                                               |
-| `:domain:lyric-format`               | Lyrics parser/formatter                                                                                  |
-| `:domain:domain-test-fixtures`       | Test data generators                                                                                     |
-| `:api:contract`                      | HTTP DTOs + Ktor `@Resource` definitions                                                                 |
-| `:api:mapping`                       | DTO ↔ domain adapters                                                                                    |
-| `:api:client` (+ `:di`)              | Ktor client + remote repository implementations                                                          |
-| `:core:navigation`                   | Shared navigation contracts (`SharedScreens`)                                                            |
-| `:core:ui`                           | Shared UI primitives                                                                                     |
-| `:features`                          | Compose MP screens + screen models                                                                       |
+| Module                               | Purpose                                                                                                                                        |
+|--------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|
+| `:domain`                            | Models, commands/queries, use cases, repository interfaces                                                                                     |
+| `:domain:lyric-format`               | Lyrics parser/formatter                                                                                                                        |
+| `:domain:domain-test-fixtures`       | Test data generators                                                                                                                           |
+| `:api:contract`                      | HTTP DTOs + Ktor `@Resource` definitions                                                                                                       |
+| `:api:mapping`                       | DTO ↔ domain adapters                                                                                                                          |
+| `:api:client` (+ `:di`)              | Ktor client + remote repository implementations                                                                                                |
+| `:core:navigation`                   | Shared navigation contracts (`SharedScreens`)                                                                                                  |
+| `:core:ui`                           | Shared UI primitives                                                                                                                           |
+| `:features`                          | Compose MP screens + screen models                                                                                                             |
 | `:data:db-room` (+ `-test-fixtures`) | Room schema, entities, DAOs — current schema **v15** (`InstalledBookEntity` added in v15, `DbTypeConverters` handles `BookInstallSource` enum) |
-| `:data:repo-room`                    | Room-backed repository implementations (incl. `InstalledBookRepositoryImpl`)                             |
-| `:portable-data`                     | `Backup`, `CollectionBundle`, `BookBundle` (single book), `BookCatalog` / `BookCatalogEntry` (remote catalog) — YAML/JSON + gzip + AES |
+| `:data:repo-room`                    | Room-backed repository implementations (incl. `InstalledBookRepositoryImpl`)                                                                   |
+| `:portable-data`                     | `Backup`, `CollectionBundle`, `BookBundle` (single book), `BookCatalog` / `BookCatalogEntry` (remote catalog) — YAML/JSON + gzip + AES         |
 
 ---
 
 ## 5. Where code belongs
 
-| Code type                      | Module                 | Path                                             |
-|--------------------------------|------------------------|--------------------------------------------------|
-| Domain models                  | `:domain`              | `io.github.alelk.pws.domain.{entity}.model`      |
-| Repository interfaces          | `:domain`              | `io.github.alelk.pws.domain.{entity}.repository` |
-| Use cases                      | `:domain`              | `io.github.alelk.pws.domain.{entity}.usecase`    |
+| Code type                      | Module                 | Path                                                                                                                                                  |
+|--------------------------------|------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Domain models                  | `:domain`              | `io.github.alelk.pws.domain.{entity}.model`                                                                                                           |
+| Repository interfaces          | `:domain`              | `io.github.alelk.pws.domain.{entity}.repository`                                                                                                      |
+| Use cases                      | `:domain`              | `io.github.alelk.pws.domain.{entity}.usecase`                                                                                                         |
 | Book library domain            | `:domain`              | `io.github.alelk.pws.domain.booklibrary.*` — `InstalledBook`, `BookInstallSource`, `BookCatalogEntry`, `DownloadState`, repository/usecase interfaces |
-| Update/patch commands          | `:domain`              | `io.github.alelk.pws.domain.{entity}.command`    |
-| Read filters/queries           | `:domain`              | `io.github.alelk.pws.domain.{entity}.query`      |
-| Lyrics parser                  | `:domain:lyric-format` | `io.github.alelk.pws.domain.lyric.format`        |
-| API DTOs                       | `:api:contract`        | `io.github.alelk.pws.api.contract`               |
-| DTO ↔ domain mapping           | `:api:mapping`         | `io.github.alelk.pws.api.mapping`                |
-| Remote repositories            | `:api:client`          | `api/client/src/commonMain/kotlin/repository/`   |
-| Local repositories (Room)      | `:data:repo-room`      | `io.github.alelk.pws.data.repository.room`       |
-| Feature screens + ScreenModels | `:features`            | `io.github.alelk.pws.features.{feature}`         |
-| Shared UI components           | `:core:ui`             | `io.github.alelk.pws.core.ui`                    |
+| Update/patch commands          | `:domain`              | `io.github.alelk.pws.domain.{entity}.command`                                                                                                         |
+| Read filters/queries           | `:domain`              | `io.github.alelk.pws.domain.{entity}.query`                                                                                                           |
+| Lyrics parser                  | `:domain:lyric-format` | `io.github.alelk.pws.domain.lyric.format`                                                                                                             |
+| API DTOs                       | `:api:contract`        | `io.github.alelk.pws.api.contract`                                                                                                                    |
+| DTO ↔ domain mapping           | `:api:mapping`         | `io.github.alelk.pws.api.mapping`                                                                                                                     |
+| Remote repositories            | `:api:client`          | `api/client/src/commonMain/kotlin/repository/`                                                                                                        |
+| Local repositories (Room)      | `:data:repo-room`      | `io.github.alelk.pws.data.repository.room`                                                                                                            |
+| Feature screens + ScreenModels | `:features`            | `io.github.alelk.pws.features.{feature}`                                                                                                              |
+| Shared UI components           | `:core:ui`             | `io.github.alelk.pws.core.ui`                                                                                                                         |
 
 ### Standard package layout per entity (domain)
 
@@ -212,6 +212,7 @@ class SongDetailScreenModel(
 - ✅ **Use cases own transaction boundaries** via `TransactionRunner`, not UI.
 
 ### ScreenModel / UI state *(enforced by the 2026-06 refactor,
+
 see `docs/ai/plans/2026-06-16_features-ui-refactoring-plan.md`)*
 
 - ✅ **One composite `XxxUiState`** per screen: `Loading | Content | Error`.

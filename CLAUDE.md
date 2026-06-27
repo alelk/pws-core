@@ -39,9 +39,12 @@ Plans live in [`docs/ai/plans/`](docs/ai/plans/). Recent:
 - `2026-05-01_domain_best_practices_alignment_plan.md` — domain refactor
 
 The **current active plan** (most recently implemented, check for remaining tasks):
-- `pws-android/docs/ai/plans/2026-06-18_pluggable-book-library_plan.md` — book catalog, download, import into Room, BookLibraryScreen (T-001/T-002 in pws-v2x-library-manager still TODO)
 
-When the user says "look at the plan" without a name, **ask which one** or default to the book library plan.
+- `pws-android/docs/ai/plans/2026-06-18_pluggable-book-library_plan.md` — book catalog, download,
+  import into Room, BookLibraryScreen (T-001/T-002 in pws-v2x-library-manager still TODO)
+
+When the user says "look at the plan" without a name, **ask which one** or default to the book
+library plan.
 
 ### Don't waste tokens on
 

@@ -7,7 +7,8 @@
 [![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
-Multiplatform library for PWS (Praise & Worship Songs): domain logic, Compose UI screens, API client, and local storage integration.
+Multiplatform library for PWS (Praise & Worship Songs): domain logic, Compose UI screens, API
+client, and local storage integration.
 
 ## What this repository contains
 
@@ -96,10 +97,12 @@ When changing API contracts, keep `:api:contract` and `:api:mapping` compatible 
 
 ## License
 
-This project is licensed under the **PolyForm Noncommercial License 1.0.0**. 
+This project is licensed under the **PolyForm Noncommercial License 1.0.0**.
 
-- **Non-commercial use only**: You are free to use, modify, and distribute this software for personal, educational, or other non-commercial purposes.
-- **Commercial use**: Any commercial use requires a separate license from the author. If you are interested in using PWS Core for commercial purposes, please contact the maintainers.
+- **Non-commercial use only**: You are free to use, modify, and distribute this software for
+  personal, educational, or other non-commercial purposes.
+- **Commercial use**: Any commercial use requires a separate license from the author. If you are
+  interested in using PWS Core for commercial purposes, please contact the maintainers.
 
 See the [LICENSE](LICENSE) file for the full text.
 
@@ -120,6 +123,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
-This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors)
+specification. Contributions of any kind welcome!
 
 Last reviewed: 2026-04-29
