@@ -8,6 +8,7 @@ import io.github.alelk.pws.domain.history.usecase.ClearHistoryUseCase
 import io.github.alelk.pws.domain.history.usecase.ObserveHistoryUseCase
 import io.github.alelk.pws.domain.history.usecase.RemoveHistoryEntryUseCase
 import io.github.alelk.pws.features.app.UiMessage
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -35,7 +36,14 @@ class HistoryScreenModel(
   private val _showClearDialog = MutableStateFlow(false)
   val showClearDialog = _showClearDialog.asStateFlow()
 
+  private var loadJob: Job? = null
+
   init {
+    loadHistory()
+  }
+
+  fun retry() {
+    mutableState.value = HistoryUiState.Loading
     loadHistory()
   }
 
@@ -67,7 +75,8 @@ class HistoryScreenModel(
   }
 
   private fun loadHistory() {
-    screenModelScope.launch {
+    loadJob?.cancel()
+    loadJob = screenModelScope.launch {
       try {
         observeHistoryUseCase().collect { items ->
           val uiItems = items.map { it.toUi() }

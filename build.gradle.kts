@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnLockMismatchReport
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
 
 plugins {
   id("maven-publish")
@@ -9,19 +12,25 @@ plugins {
   id("com.google.devtools.ksp") version libs.versions.ksp.get() apply false
 }
 
-val androidSdkVersion by extra(36)
+// Kotlin/JS: keep the strict FAIL policy (the default) — it catches unintended dependency drift.
+// To stop it from failing on yarn 1.x cosmetic instability, the yarn.lock committed in
+// kotlin-js-store is in the clean-resolution form (after `clean`); regenerate via kotlinUpgradeYarnLock.
+rootProject.plugins.withType<YarnPlugin> {
+  rootProject.the<YarnRootExtension>().yarnLockMismatchReport = YarnLockMismatchReport.FAIL
+  rootProject.the<YarnRootExtension>().reportNewYarnLock = true
+}
 
-val versionName by extra(
-  runCatching {
-    checkNotNull(
-      File("app.version")
-        .readText()
-        .lines()
-        .firstOrNull()?.trim()
-        ?.takeIf { it.isNotBlank() }
-    ) { "app.version empty" }
-  }.getOrElse { "0.0.1-SNAPSHOT" }
-)
+extra["androidSdkVersion"] = 36
+
+val versionName = runCatching {
+  checkNotNull(
+    File("app.version")
+      .readText()
+      .lines()
+      .firstOrNull()?.trim()
+      ?.takeIf { it.isNotBlank() }
+  ) { "app.version empty" }
+}.getOrElse { "0.0.1-SNAPSHOT" }
 
 allprojects {
   version = versionName

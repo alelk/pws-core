@@ -23,8 +23,19 @@
     <string name="search_find_song_placeholder">Find a song...</string>
     <string name="search_loading">Searching...</string>
     <string name="search_error_title">Search error</string>
+    <string name="book_card_a11y">%1$s songbook, %2$d songs</string>
+
+    <string name="settings_dynamic_color">Dynamic colour</string>
+    <string name="settings_dynamic_color_subtitle">Use system Material You palette (Android 12+)</string>
+    <string name="settings_keep_screen_on">Keep screen on</string>
+    <string name="settings_keep_screen_on_subtitle">Don't dim the screen while reading a song</string>
+
     <string name="search_idle_title">Start searching</string>
     <string name="search_idle_subtitle">Enter title, number, or lyrics</string>
+
+    <string name="search_scope_all">All</string>
+    <string name="search_scope_in_books">In songbooks</string>
+    <string name="search_scope_standalone">Standalone</string>
 
     <string name="common_clear">Clear</string>
     <string name="common_close">Close</string>
@@ -194,6 +205,7 @@
     <string name="song_detail_jump_title">Jump to number</string>
     <string name="song_detail_jump_number_label">Number (%1$d-%2$d)</string>
     <string name="song_detail_jump_clear">Clear</string>
+    <string name="song_detail_line_spacing">Line spacing</string>
 
     <string name="tag_chip_edit">Edit</string>
     <string name="tonality_a_major">A major</string>
@@ -241,11 +253,37 @@
     <string name="time_yesterday">Yesterday</string>
     <string name="time_days_ago">%1$d days ago</string>
 
+    <string name="history_group_today">Today</string>
+    <string name="history_group_yesterday">Yesterday</string>
+    <string name="history_group_this_week">This week</string>
+    <string name="history_group_earlier">Earlier</string>
+
     <string name="song_number_label">№ %1$d</string>
     <string name="song_number_a11y">Song number %1$d</string>
     <string name="license_loading">Loading…</string>
     <string name="license_load_failed">Failed to load license text: %1$s</string>
     <string name="jump_number_range">%1$d – %2$d</string>
+
+    <string name="book_library_title">Book Library</string>
+    <string name="book_library_loading">Loading catalog…</string>
+    <string name="book_library_error_title">Failed to load catalog</string>
+    <string name="book_library_error_message">Check your internet connection and try again.</string>
+    <string name="book_library_retry">Retry</string>
+    <string name="book_library_status_built_in">Built-in</string>
+    <string name="book_library_status_installed">Installed</string>
+    <string name="book_library_action_install">Install</string>
+    <string name="book_library_action_uninstall">Uninstall</string>
+    <string name="book_library_songs_count">%1$d songs</string>
+    <string name="book_library_size">%1$s MB</string>
+    <string name="book_library_downloading">Downloading…</string>
+    <string name="book_library_uninstall_confirm_title">Uninstall book?</string>
+    <string name="book_library_uninstall_confirm_message">All songs, favorites and history entries for this book will be removed.</string>
+    <string name="book_library_uninstall_confirm_ok">Uninstall</string>
+    <string name="book_library_uninstall_confirm_cancel">Cancel</string>
+    <string name="book_library_open">Book Library</string>
+    <string name="books_browse_library_title">More songbooks available</string>
+    <string name="books_browse_library_subtitle">Download additional collections from the catalog</string>
+    <string name="books_browse_library_action">Browse Library</string>
 </resources>
 
 

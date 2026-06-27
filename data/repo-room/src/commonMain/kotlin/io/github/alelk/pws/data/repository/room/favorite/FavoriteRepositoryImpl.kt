@@ -23,6 +23,7 @@ import kotlin.time.ExperimentalTime
 @OptIn(ExperimentalTime::class)
 class FavoriteRepositoryImpl(
   private val favoriteDao: FavoriteDao,
+  private val onDataChanged: () -> Unit = {},
 ) : FavoriteReadRepository, FavoriteObserveRepository, FavoriteWriteRepository {
 
   // --- Read ---
@@ -62,7 +63,7 @@ class FavoriteRepositoryImpl(
         runCatching {
           favoriteDao.addToFavorites(subject.songNumberId)
           val now = Clock.System.now()
-          Either.Right(Favorite(subject = subject, addedAt = now))
+          Either.Right(Favorite(subject = subject, addedAt = now)).also { onDataChanged() }
         }.getOrElse { Either.Left(UpsertError.UnknownError(it)) }
       }
       is FavoriteSubject.StandaloneSong ->
@@ -74,7 +75,7 @@ class FavoriteRepositoryImpl(
       is FavoriteSubject.BookedSong -> {
         runCatching {
           favoriteDao.deleteBySongNumberId(subject.songNumberId)
-          Either.Right(subject)
+          Either.Right(subject).also { onDataChanged() }
         }.getOrElse { Either.Left(DeleteError.UnknownError(it)) }
       }
       is FavoriteSubject.StandaloneSong ->
@@ -89,7 +90,7 @@ class FavoriteRepositoryImpl(
           favoriteDao.toggleFavorite(subject.songNumberId)
           val result: ToggleResult<FavoriteSubject> =
             if (wasFav) ToggleResult.Disabled(subject) else ToggleResult.Enabled(subject)
-          Either.Right(result)
+          Either.Right(result).also { onDataChanged() }
         }.getOrElse { Either.Left(ToggleError.UnknownError(it)) }
       }
       is FavoriteSubject.StandaloneSong ->

@@ -69,9 +69,9 @@ Deep dive: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/MODULES.md`](d
 | `:core:navigation`                   | Shared navigation contracts (`SharedScreens`)                                                            |
 | `:core:ui`                           | Shared UI primitives                                                                                     |
 | `:features`                          | Compose MP screens + screen models                                                                       |
-| `:data:db-room` (+ `-test-fixtures`) | Room schema, entities, DAOs                                                                              |
-| `:data:repo-room`                    | Room-backed repository implementations                                                                   |
-| `:portable-data`                     | `Backup` (user data), `CollectionBundle` (deduplicated assets), `BookBundle` (single book) — YAML + gzip |
+| `:data:db-room` (+ `-test-fixtures`) | Room schema, entities, DAOs — current schema **v15** (`InstalledBookEntity` added in v15, `DbTypeConverters` handles `BookInstallSource` enum) |
+| `:data:repo-room`                    | Room-backed repository implementations (incl. `InstalledBookRepositoryImpl`)                             |
+| `:portable-data`                     | `Backup`, `CollectionBundle`, `BookBundle` (single book), `BookCatalog` / `BookCatalogEntry` (remote catalog) — YAML/JSON + gzip + AES |
 
 ---
 
@@ -82,6 +82,7 @@ Deep dive: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/MODULES.md`](d
 | Domain models                  | `:domain`              | `io.github.alelk.pws.domain.{entity}.model`      |
 | Repository interfaces          | `:domain`              | `io.github.alelk.pws.domain.{entity}.repository` |
 | Use cases                      | `:domain`              | `io.github.alelk.pws.domain.{entity}.usecase`    |
+| Book library domain            | `:domain`              | `io.github.alelk.pws.domain.booklibrary.*` — `InstalledBook`, `BookInstallSource`, `BookCatalogEntry`, `DownloadState`, repository/usecase interfaces |
 | Update/patch commands          | `:domain`              | `io.github.alelk.pws.domain.{entity}.command`    |
 | Read filters/queries           | `:domain`              | `io.github.alelk.pws.domain.{entity}.query`      |
 | Lyrics parser                  | `:domain:lyric-format` | `io.github.alelk.pws.domain.lyric.format`        |

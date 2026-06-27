@@ -6,6 +6,7 @@ import io.github.alelk.pws.domain.book.model.BookSummary
 import io.github.alelk.pws.domain.book.query.BookQuery
 import io.github.alelk.pws.domain.book.usecase.ObserveBooksUseCase
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -17,8 +18,20 @@ class BooksScreenModel(
   private val observeBooks: ObserveBooksUseCase
 ) : StateScreenModel<BooksUiState>(BooksUiState.Loading) {
 
-  init {
-    screenModelScope.launch(context = CoroutineExceptionHandler { _, _ -> mutableState.value = BooksUiState.Error }) {
+  private var observeJob: Job? = null
+
+  init { observe() }
+
+  fun retry() {
+    mutableState.value = BooksUiState.Loading
+    observe()
+  }
+
+  private fun observe() {
+    observeJob?.cancel()
+    observeJob = screenModelScope.launch(
+      context = CoroutineExceptionHandler { _, _ -> mutableState.value = BooksUiState.Error }
+    ) {
       observeBooks(query = BookQuery(enabled = true)).collectLatest { list: List<BookSummary> ->
         mutableState.value = BooksUiState.Content(list)
       }

@@ -40,6 +40,9 @@ sealed interface SharedScreens : ScreenProvider {
     val tagId: TagId get() = TagId.parse(tagIdString)
   }
 
+  // Book library
+  data object BookLibrary : SharedScreens
+
   // Search
   data class SearchResults(val query: String) : SharedScreens
 

@@ -2,6 +2,7 @@ package io.github.alelk.pws.database
 
 import androidx.room.TypeConverter
 import io.github.alelk.pws.database.song_reference.SongRefReason
+import io.github.alelk.pws.domain.booklibrary.model.BookInstallSource
 import io.github.alelk.pws.domain.core.BibleRef
 import io.github.alelk.pws.domain.core.ids.BookId
 import io.github.alelk.pws.domain.core.Color
@@ -90,6 +91,12 @@ class DbTypeConverters {
 
   @TypeConverter
   fun stringToSongRefReason(reason: String): SongRefReason = SongRefReason.fromIdentifier(reason)
+
+  @TypeConverter
+  fun bookInstallSourceToString(source: BookInstallSource): String = source.name
+
+  @TypeConverter
+  fun stringToBookInstallSource(source: String): BookInstallSource = BookInstallSource.valueOf(source)
 
   @TypeConverter
   fun tagIdToString(id: TagId): String = id.toString()

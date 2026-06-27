@@ -413,5 +413,59 @@ class BackupCompatibilityTest : StringSpec({
     val reDecoded = Yaml.default.decodeFromString(Backup.serializer(), reEncoded)
     reDecoded shouldBe original
   }
+
+  // ---------------------------------------------------------------------------
+  // Frozen snapshot: Backup v2 — with history field (added after initial release)
+  // Old YAML without `history` must still deserialize with history = null.
+  // New YAML with `history` must deserialize correctly.
+  // ---------------------------------------------------------------------------
+  val frozenV2WithHistoryYaml = """
+    |metadata:
+    |  createdAt: "2026-06-26T10:00:00"
+    |  source: "pws-android-3.4"
+    |  version: 2
+    |songs: null
+    |favorites:
+    |- bookId: "PV3300"
+    |  number: 10
+    |tags: null
+    |bookPreferences: null
+    |history:
+    |- songNumber:
+    |    bookId: "PV3300"
+    |    number: 10
+    |  accessTimestamp: "2026-06-26T09:30:00"
+    |- songNumber:
+    |    bookId: "PV3300"
+    |    number: 5
+    |  accessTimestamp: "2026-06-25T20:00:00"
+    |settings: null""".trimMargin()
+
+  "frozen v2 with history: history entries deserialized correctly" {
+    val backup = Yaml.default.decodeFromString(Backup.serializer(), frozenV2WithHistoryYaml)
+    val history = backup.history!!
+    history shouldHaveSize 2
+    history[0].songNumber shouldBe SongNumber(BookId.Pv3300, 10)
+    history[0].accessTimestamp shouldBe LocalDateTime.parse("2026-06-26T09:30:00")
+    history[1].songNumber shouldBe SongNumber(BookId.Pv3300, 5)
+    history[1].accessTimestamp shouldBe LocalDateTime.parse("2026-06-25T20:00:00")
+  }
+
+  "frozen v2 with history: idempotent roundtrip" {
+    val original = Yaml.default.decodeFromString(Backup.serializer(), frozenV2WithHistoryYaml)
+    val reEncoded = Yaml.default.encodeToString(Backup.serializer(), original)
+    val reDecoded = Yaml.default.decodeFromString(Backup.serializer(), reEncoded)
+    reDecoded shouldBe original
+  }
+
+  "frozen v1 (no history field): history deserializes as null" {
+    val backup = Yaml.default.decodeFromString(Backup.serializer(), frozenV1Yaml)
+    backup.history.shouldBeNull()
+  }
+
+  "frozen v2 minimal (no history field): history deserializes as null" {
+    val backup = Yaml.default.decodeFromString(Backup.serializer(), frozenV2MinimalYaml)
+    backup.history.shouldBeNull()
+  }
 })
 

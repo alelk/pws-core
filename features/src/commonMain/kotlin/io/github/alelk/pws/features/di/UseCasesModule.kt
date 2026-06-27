@@ -49,6 +49,10 @@ import io.github.alelk.pws.domain.donationprompt.usecase.IsLoyalUserUseCase
 import io.github.alelk.pws.domain.donationprompt.usecase.ShouldShowDonationPromptUseCase
 import io.github.alelk.pws.domain.donationprompt.usecase.RecordDonationPromptDismissedUseCase
 import io.github.alelk.pws.domain.donationprompt.usecase.RecordDonationClickedUseCase
+import io.github.alelk.pws.domain.booklibrary.repository.BookCatalogRepository
+import io.github.alelk.pws.domain.booklibrary.repository.InstalledBookObserveRepository
+import io.github.alelk.pws.domain.booklibrary.usecase.GetBookCatalogUseCase
+import io.github.alelk.pws.domain.booklibrary.usecase.ObserveInstalledBooksUseCase
 import io.github.alelk.pws.domain.history.repository.HistoryReadRepository
 import org.koin.dsl.module
 
@@ -95,6 +99,10 @@ val useCasesModule = module {
   factory<ReplaceAllSongTagsUseCase<TagId>> {
     ReplaceAllSongTagsUseCase(get<SongTagReadRepository<TagId>>(), get<SongTagWriteRepository<TagId>>(), get<TransactionRunner>())
   }
+
+  // Book library
+  factory { GetBookCatalogUseCase(get<BookCatalogRepository>()) }
+  factory { ObserveInstalledBooksUseCase(get<InstalledBookObserveRepository>()) }
 
   // Donation prompt
   factory { IsLoyalUserUseCase(get<DonationConfig>(), get<HistoryReadRepository>()) }

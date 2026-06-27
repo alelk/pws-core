@@ -3,6 +3,7 @@ package io.github.alelk.pws.features.di
 import cafe.adriel.voyager.core.registry.screenModule
 import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.features.books.BooksScreen
+import io.github.alelk.pws.features.booklibrary.BookLibraryScreen
 import io.github.alelk.pws.features.book.songs.BookSongsScreen
 import io.github.alelk.pws.features.favorites.FavoritesScreen
 import io.github.alelk.pws.features.history.HistoryScreen
@@ -19,6 +20,9 @@ import io.github.alelk.pws.features.tags.songs.TagSongsScreen
  * Voyager screen module registering all app screens.
  */
 val appScreenModule = screenModule {
+  // Book library
+  register<SharedScreens.BookLibrary> { BookLibraryScreen() }
+
   // Main tabs
   register<SharedScreens.Books> { BooksScreen() }
   register<SharedScreens.Tags> { TagsScreen() }

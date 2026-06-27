@@ -1,3 +1,7 @@
+@file:OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
+
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
+
 plugins {
   alias(libs.plugins.kotlinMultiplatform)
   alias(libs.plugins.composeMultiplatform)
@@ -25,12 +29,28 @@ kotlin {
   }
 
   jvm()
-  iosX64()
   iosArm64()
   iosSimulatorArm64()
   js(IR) {
     outputModuleName = "pws-features"
     browser()
+  }
+
+  // Custom intermediate groups on top of the default hierarchy template:
+  //   mobileMain (android + ios) and skikoMain (jvm + js).
+  // The com.android.kotlin.multiplatform.library target is not a KotlinAndroidTarget, so
+  // withAndroidTarget() never matches it — select it by platform type (androidJvm) instead.
+  applyDefaultHierarchyTemplate {
+    common {
+      group("mobile") {
+        withCompilations { it.target.platformType == KotlinPlatformType.androidJvm }
+        withIos()
+      }
+      group("skiko") {
+        withJvm()
+        withJs()
+      }
+    }
   }
 
   sourceSets {
@@ -39,13 +59,13 @@ kotlin {
       implementation(project(":domain"))
       implementation(project(":domain:lyric-format"))
 
-      implementation(compose.runtime)
-      implementation(compose.foundation)
-      implementation(compose.material3)
-      implementation(compose.materialIconsExtended)
-      implementation(compose.ui)
-      implementation(compose.components.resources)
-      implementation(compose.components.uiToolingPreview)
+      implementation(libs.compose.runtime)
+      implementation(libs.compose.foundation)
+      implementation(libs.compose.material3)
+      implementation(libs.compose.materialIconsExtended)
+      implementation(libs.compose.ui)
+      implementation(libs.compose.components.resources)
+      implementation(libs.compose.components.uiToolingPreview)
 
       implementation(libs.kotlinx.coroutines.core)
 
@@ -72,24 +92,6 @@ kotlin {
     jvmTest.dependencies {
       implementation(libs.kotest.runner.junit5)
     }
-
-    val mobileMain by creating {
-      dependsOn(commonMain.get())
-    }
-    androidMain.get().dependsOn(mobileMain)
-
-    val iosMain by creating {
-      dependsOn(mobileMain)
-    }
-    iosX64Main.get().dependsOn(iosMain)
-    iosArm64Main.get().dependsOn(iosMain)
-    iosSimulatorArm64Main.get().dependsOn(iosMain)
-
-    val skikoMain by creating {
-      dependsOn(commonMain.get())
-    }
-    jvmMain.get().dependsOn(skikoMain)
-    jsMain.get().dependsOn(skikoMain)
 
     androidMain.dependencies {
       implementation(libs.koin.android)

@@ -2,6 +2,7 @@ package io.github.alelk.pws.data.repository.room.di
 
 import io.github.alelk.pws.data.repository.room.book.BookObserveRepositoryImpl
 import io.github.alelk.pws.data.repository.room.book.BookWriteRepositoryImpl
+import io.github.alelk.pws.data.repository.room.installed_book.InstalledBookRepositoryImpl
 import io.github.alelk.pws.data.repository.room.bookstatistic.BookStatisticRepositoryImpl
 import io.github.alelk.pws.data.repository.room.favorite.FavoriteRepositoryImpl
 import io.github.alelk.pws.data.repository.room.history.HistoryRepositoryImpl
@@ -15,6 +16,10 @@ import io.github.alelk.pws.database.PwsDatabase
 import io.github.alelk.pws.domain.book.repository.BookObserveRepository
 import io.github.alelk.pws.domain.book.repository.BookReadRepository
 import io.github.alelk.pws.domain.book.repository.BookWriteRepository
+import io.github.alelk.pws.domain.booklibrary.repository.InstalledBookObserveRepository
+import io.github.alelk.pws.domain.booklibrary.repository.InstalledBookReadRepository
+import io.github.alelk.pws.domain.booklibrary.repository.InstalledBookRepository
+import io.github.alelk.pws.domain.booklibrary.repository.InstalledBookWriteRepository
 import io.github.alelk.pws.domain.bookstatistic.repository.BookStatisticRepository
 import io.github.alelk.pws.data.repository.room.transaction.RoomTransactionRunner
 import io.github.alelk.pws.domain.core.transaction.TransactionRunner
@@ -38,6 +43,8 @@ import io.github.alelk.pws.domain.songtag.repository.SongTagWriteRepository
 import io.github.alelk.pws.domain.tag.repository.TagObserveRepository
 import io.github.alelk.pws.domain.tag.repository.TagReadRepository
 import io.github.alelk.pws.domain.tag.repository.TagWriteRepository
+import android.content.Context
+import org.koin.core.qualifier.named
 import org.koin.dsl.binds
 import org.koin.dsl.module
 
@@ -65,9 +72,19 @@ val repoRoomModule = module {
     BookStatisticRepositoryImpl(get<PwsDatabase>().bookStatisticDao())
   } binds arrayOf(BookStatisticRepository::class)
 
+  // Notifies the Android backup system that user data has changed.
+  // OS schedules the next backup run at its own discretion.
+  factory<() -> Unit>(qualifier = named("onDataChanged")) {
+    { android.app.backup.BackupManager(get<Context>()).dataChanged() }
+  }
+
   // Song
   single {
-    SongRepositoryImpl(get<PwsDatabase>().songDao(), get<PwsDatabase>().songNumberDao())
+    SongRepositoryImpl(
+      get<PwsDatabase>().songDao(),
+      get<PwsDatabase>().songNumberDao(),
+      get(qualifier = named("onDataChanged")),
+    )
   } binds arrayOf(SongReadRepository::class, SongObserveRepository::class, SongWriteRepository::class)
 
   // Song Search
@@ -77,17 +94,27 @@ val repoRoomModule = module {
 
   // Favorite
   single {
-    FavoriteRepositoryImpl(get<PwsDatabase>().favoriteDao())
+    FavoriteRepositoryImpl(
+      get<PwsDatabase>().favoriteDao(),
+      get(qualifier = named("onDataChanged")),
+    )
   } binds arrayOf(FavoriteReadRepository::class, FavoriteObserveRepository::class, FavoriteWriteRepository::class)
 
   // History
   single {
-    HistoryRepositoryImpl(get<PwsDatabase>().historyDao())
+    HistoryRepositoryImpl(
+      get<PwsDatabase>().historyDao(),
+      get(qualifier = named("onDataChanged")),
+    )
   } binds arrayOf(HistoryReadRepository::class, HistoryObserveRepository::class, HistoryWriteRepository::class)
 
   // Tag
   single {
-    TagRepositoryImpl(get<PwsDatabase>().tagDao(), get<PwsDatabase>().songTagDao())
+    TagRepositoryImpl(
+      get<PwsDatabase>().tagDao(),
+      get<PwsDatabase>().songTagDao(),
+      get(qualifier = named("onDataChanged")),
+    )
   } binds arrayOf(
     TagReadRepository::class,
     TagObserveRepository::class,
@@ -100,7 +127,8 @@ val repoRoomModule = module {
       get<PwsDatabase>().songTagDao(),
       get<PwsDatabase>().tagDao(),
       get<PwsDatabase>().songDao(),
-      get<PwsDatabase>().songNumberDao()
+      get<PwsDatabase>().songNumberDao(),
+      get(qualifier = named("onDataChanged")),
     )
   } binds arrayOf(
     SongTagReadRepository::class,
@@ -117,4 +145,14 @@ val repoRoomModule = module {
   single {
     SongNumberRepositoryImpl(get<PwsDatabase>().songNumberDao())
   } binds arrayOf(SongNumberReadRepository::class, SongNumberWriteRepository::class)
+
+  // InstalledBook
+  single {
+    InstalledBookRepositoryImpl(get<PwsDatabase>().installedBookDao())
+  } binds arrayOf(
+    InstalledBookRepository::class,
+    InstalledBookObserveRepository::class,
+    InstalledBookReadRepository::class,
+    InstalledBookWriteRepository::class,
+  )
 }

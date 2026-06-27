@@ -20,6 +20,7 @@ import kotlinx.datetime.toLocalDateTime
 
 class HistoryRepositoryImpl(
   private val historyDao: HistoryDao,
+  private val onDataChanged: () -> Unit = {},
 ) : HistoryReadRepository, HistoryObserveRepository, HistoryWriteRepository {
 
   // --- Read ---
@@ -56,7 +57,7 @@ class HistoryRepositoryImpl(
           val entry = historyDao.getHistoryEntries(null, 0)
             .firstOrNull { it.id == id }
             ?: error("History entry not found after insert")
-          Either.Right(entry.toDomain())
+          Either.Right(entry.toDomain()).also { onDataChanged() }
         }.getOrElse { Either.Left(UpsertError.UnknownError(it)) }
       }
       is HistorySubject.StandaloneSong ->

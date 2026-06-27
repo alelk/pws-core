@@ -28,29 +28,11 @@ class SongSearchRepositoryImpl(
     val results: List<SongSearchResultEntity> = if (raw != null) {
       songDao.findBySongNumber(raw, limit)
     } else {
-      val ftsQuery = trimmed.split("\\s+".toRegex())
-        .filter { it.isNotBlank() }
-        .joinToString(" ") { "$it*" }
-      songDao.findBySongText(ftsQuery, limit)
+      songDao.findBySongText(buildFtsPrefixQuery(trimmed), limit)
     }
 
     // Group by songId to merge multiple book references
-    return results
-      .groupBy { it.songId }
-      .map { (songId, rows) ->
-        SongSearchSuggestion(
-          id = songId,
-          name = NonEmptyString(rows.first().songName),
-          bookReferences = rows.map { r ->
-            SongBookReference(
-              bookId = r.bookId,
-              displayShortName = NonEmptyString(r.bookDisplayName),
-              songNumber = r.songNumber
-            )
-          },
-          snippet = rows.firstOrNull { it.snippet.isNotBlank() }?.snippet
-        )
-      }
+    return groupSuggestions(results)
   }
 
   override suspend fun search(
@@ -63,10 +45,7 @@ class SongSearchRepositoryImpl(
     val results: List<SongSearchResultEntity> = if (raw != null) {
       songDao.findBySongNumber(raw, searchQuery.limit)
     } else {
-      val ftsQuery = trimmed.split("\\s+".toRegex())
-        .filter { it.isNotBlank() }
-        .joinToString(" ") { "$it*" }
-      songDao.findBySongText(ftsQuery, searchQuery.limit)
+      songDao.findBySongText(buildFtsPrefixQuery(trimmed), searchQuery.limit)
     }
 
     // Fetch full song data for SongSummary

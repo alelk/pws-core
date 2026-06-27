@@ -12,6 +12,8 @@ import io.github.alelk.pws.domain.person.Person
 import io.github.alelk.pws.domain.tonality.Tonality
 import io.github.alelk.pws.portable.model.Book
 import io.github.alelk.pws.portable.model.BookBundle
+import io.github.alelk.pws.portable.model.BookCatalog
+import io.github.alelk.pws.portable.model.BookCatalogEntry
 import io.github.alelk.pws.portable.model.CollectionBundle
 import io.github.alelk.pws.portable.model.Song
 import io.github.alelk.pws.portable.model.SongNumber
@@ -143,6 +145,30 @@ internal object BundleFixtures {
       songs = listOf(SONG_SHARED, SONG_RU_ONLY),
       songReferences = listOf(REF_1_TO_2),
       tags = listOf(TAG_WORSHIP),
+    )
+
+  // ── BookCatalog ────────────────────────────────────────────────────────
+  //
+  // Hardcoded metadata — not derived from runtime bundle encoding so the
+  // golden file stays stable regardless of gzip non-determinism.
+
+  val BOOK_CATALOG =
+    BookCatalog(
+      version = "3.2.2",
+      books = listOf(
+        BookCatalogEntry(
+          book = BOOK_RU,
+          songCount = 2,
+          fileSizeBytes = 102400L,
+          checksum = "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
+        ),
+        BookCatalogEntry(
+          book = BOOK_UK,
+          songCount = 350,
+          fileSizeBytes = 51200L,
+          checksum = "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
+        ),
+      ),
     )
 }
 

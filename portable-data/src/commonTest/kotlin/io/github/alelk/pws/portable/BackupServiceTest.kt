@@ -112,6 +112,7 @@ class BackupServiceTest : StringSpec({
     |  preference: 5
     |- bookId: "book-2"
     |  preference: 10
+    |history: null
     |settings:
     |  "setting-1": "value-1"
     |  "setting-2": "value-2"""".trimMargin()
@@ -124,5 +125,44 @@ class BackupServiceTest : StringSpec({
   "read backup from text" {
     val bkp = BackupService().readFromString(backup1Text)
     bkp shouldBe backup1
+  }
+
+  val backupWithHistory = Backup(
+    metadata = Backup.Metadata(createdAt = LocalDateTime.parse("2026-01-01T10:00:00"), source = "test"),
+    favorites = listOf(SongNumber(book1Id, 1)),
+    history = listOf(
+      Backup.HistoryEntry(SongNumber(book1Id, 1), LocalDateTime.parse("2026-01-01T09:00:00")),
+      Backup.HistoryEntry(SongNumber(book1Id, 2), LocalDateTime.parse("2026-01-01T08:00:00")),
+    )
+  )
+  val backupWithHistoryText = """
+    |metadata:
+    |  createdAt: "2026-01-01T10:00"
+    |  defaultLocale: null
+    |  source: "test"
+    |  version: 2
+    |songs: null
+    |favorites:
+    |- bookId: "book-1"
+    |  number: 1
+    |tags: null
+    |bookPreferences: null
+    |history:
+    |- songNumber:
+    |    bookId: "book-1"
+    |    number: 1
+    |  accessTimestamp: "2026-01-01T09:00"
+    |- songNumber:
+    |    bookId: "book-1"
+    |    number: 2
+    |  accessTimestamp: "2026-01-01T08:00"
+    |settings: null""".trimMargin()
+
+  "write backup with history as text" {
+    BackupService().writeAsString(backupWithHistory) shouldBe backupWithHistoryText
+  }
+
+  "read backup with history from text" {
+    BackupService().readFromString(backupWithHistoryText) shouldBe backupWithHistory
   }
 })

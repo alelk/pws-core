@@ -6,7 +6,6 @@ group = "io.github.alelk.pws.domain"
 
 kotlin {
   jvm()
-  iosX64()
   iosArm64()
   iosSimulatorArm64()
   js(IR) {
@@ -15,12 +14,10 @@ kotlin {
   }
 
   sourceSets {
-    val commonMain by getting {
-      dependencies {
-        api(project(":domain"))
-        implementation(libs.kotest.assertions.core)
-        api(libs.kotest.property)
-      }
+    commonMain.dependencies {
+      api(project(":domain"))
+      implementation(libs.kotest.assertions.core)
+      api(libs.kotest.property)
     }
   }
 }

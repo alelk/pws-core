@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import io.github.alelk.pws.database.song_reference.SongReferenceDetailsEntity
 import io.github.alelk.pws.domain.core.SongNumber
@@ -82,5 +83,6 @@ interface SongReferenceDao {
     ORDER BY bs.priority DESC, r.priority
     """
   )
+  @Transaction
   fun getActiveReferredSongsBySongIdFlow(songId: SongId): Flow<List<SongReferenceDetailsEntity>>
 }

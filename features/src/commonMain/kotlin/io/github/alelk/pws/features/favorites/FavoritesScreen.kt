@@ -17,7 +17,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ArrowUpward
-import androidx.compose.material.icons.filled.Sort
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -55,10 +55,18 @@ import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.github.alelk.pws.core.navigation.SharedScreens
+import io.github.alelk.pws.features.components.AppModalBottomSheet
 import io.github.alelk.pws.features.components.EmptyContent
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
+import io.github.alelk.pws.features.components.NavDestination
+import io.github.alelk.pws.features.components.OnTabReselected
+import io.github.alelk.pws.features.components.StateCrossfade
 import io.github.alelk.pws.features.components.SwipeableSongItem
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.common_back
 import io.github.alelk.pws.features.resources.common_error_title
@@ -111,6 +119,13 @@ fun FavoritesContent(
   val navigator = LocalNavigator.currentOrThrow
   val haptic = LocalHapticFeedback.current
   var showSortDialog by remember { mutableStateOf(false) }
+  val listState = rememberLazyListState()
+  val scope = rememberCoroutineScope()
+
+  OnTabReselected(NavDestination.Favorites) {
+    scope.launch { listState.animateScrollToItem(0) }
+    scrollBehavior.state.heightOffset = 0f
+  }
 
   Scaffold(
     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -149,7 +164,7 @@ fun FavoritesContent(
               showSortDialog = true 
             }) {
               Icon(
-                imageVector = Icons.Filled.Sort,
+                imageVector = Icons.AutoMirrored.Filled.Sort,
                 contentDescription = stringResource(Res.string.favorites_sort)
               )
             }
@@ -173,79 +188,82 @@ fun FavoritesContent(
     },
     snackbarHost = { SnackbarHost(snackbarHostState) }
   ) { innerPadding ->
-    when (state) {
-      FavoritesUiState.Loading -> {
-        LoadingContent(
-          modifier = Modifier.padding(innerPadding),
-          message = stringResource(Res.string.favorites_loading)
-        )
-      }
+    StateCrossfade(state, modifier = Modifier.padding(innerPadding)) { current ->
+      when (current) {
+        FavoritesUiState.Loading -> {
+          LoadingContent(message = stringResource(Res.string.favorites_loading))
+        }
 
-      FavoritesUiState.Empty -> {
-        EmptyContent(
-          modifier = Modifier.padding(innerPadding),
-          icon = Icons.Outlined.FavoriteBorder,
-          title = stringResource(Res.string.favorites_empty_title),
-          subtitle = stringResource(Res.string.favorites_empty_subtitle)
-        )
-      }
+        FavoritesUiState.Empty -> {
+          EmptyContent(
+            icon = Icons.Outlined.FavoriteBorder,
+            title = stringResource(Res.string.favorites_empty_title),
+            subtitle = stringResource(Res.string.favorites_empty_subtitle)
+          )
+        }
 
-      is FavoritesUiState.Content -> {
-        FavoritesList(
-          songs = state.songs,
-          modifier = Modifier.padding(innerPadding),
-          onRemove = onRemove
-        )
-      }
+        is FavoritesUiState.Content -> {
+          FavoritesList(
+            songs = current.songs,
+            listState = listState,
+            onRemove = onRemove
+          )
+        }
 
-      is FavoritesUiState.Error -> {
-        ErrorContent(
-          modifier = Modifier.padding(innerPadding),
-          title = stringResource(Res.string.common_error_title),
-          message = io.github.alelk.pws.features.app.rememberResolved(state.message),
-        )
+        is FavoritesUiState.Error -> {
+          ErrorContent(
+            title = stringResource(Res.string.common_error_title),
+            message = io.github.alelk.pws.features.app.rememberResolved(current.message),
+          )
+        }
       }
     }
   }
 
+  // iOS-style: sort через ModalBottomSheet, не AlertDialog.
   if (showSortDialog && state is FavoritesUiState.Content) {
-    AlertDialog(
+    val sortSheetState = rememberModalBottomSheetState()
+    AppModalBottomSheet(
       onDismissRequest = { showSortDialog = false },
-      title = { Text(stringResource(Res.string.favorites_sort)) },
-      text = {
-        androidx.compose.foundation.layout.Column {
-          SortOptionRow(
-            label = stringResource(Res.string.favorites_sort_added_date),
-            selected = state.sortMode == FavoriteSortMode.ADDED_DATE,
-            onClick = {
-              haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-              onSortModeChange(FavoriteSortMode.ADDED_DATE)
-              showSortDialog = false
-            }
-          )
-          SortOptionRow(
-            label = stringResource(Res.string.favorites_sort_song_number),
-            selected = state.sortMode == FavoriteSortMode.SONG_NUMBER,
-            onClick = {
-              haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-              onSortModeChange(FavoriteSortMode.SONG_NUMBER)
-              showSortDialog = false
-            }
-          )
-          SortOptionRow(
-            label = stringResource(Res.string.favorites_sort_song_name),
-            selected = state.sortMode == FavoriteSortMode.SONG_NAME,
-            onClick = {
-              haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-              onSortModeChange(FavoriteSortMode.SONG_NAME)
-              showSortDialog = false
-            }
-          )
-        }
-      },
-      confirmButton = {},
-      dismissButton = {}
-    )
+      sheetState = sortSheetState,
+      containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+    ) {
+      androidx.compose.foundation.layout.Column(modifier = Modifier.padding(bottom = MaterialTheme.spacing.lg)) {
+        Text(
+          text = stringResource(Res.string.favorites_sort),
+          style = MaterialTheme.typography.titleMedium,
+          color = MaterialTheme.colorScheme.onSurface,
+          modifier = Modifier.padding(horizontal = MaterialTheme.spacing.lg, vertical = MaterialTheme.spacing.md)
+        )
+        SortOptionRow(
+          label = stringResource(Res.string.favorites_sort_added_date),
+          selected = state.sortMode == FavoriteSortMode.ADDED_DATE,
+          onClick = {
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            onSortModeChange(FavoriteSortMode.ADDED_DATE)
+            showSortDialog = false
+          }
+        )
+        SortOptionRow(
+          label = stringResource(Res.string.favorites_sort_song_number),
+          selected = state.sortMode == FavoriteSortMode.SONG_NUMBER,
+          onClick = {
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            onSortModeChange(FavoriteSortMode.SONG_NUMBER)
+            showSortDialog = false
+          }
+        )
+        SortOptionRow(
+          label = stringResource(Res.string.favorites_sort_song_name),
+          selected = state.sortMode == FavoriteSortMode.SONG_NAME,
+          onClick = {
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            onSortModeChange(FavoriteSortMode.SONG_NAME)
+            showSortDialog = false
+          }
+        )
+      }
+    }
   }
 }
 
@@ -258,13 +276,15 @@ private fun SortOptionRow(
   Row(
     modifier = Modifier
       .fillMaxWidth()
-      .clickable(onClick = onClick),
+      .clickable(onClick = onClick)
+      .padding(horizontal = MaterialTheme.spacing.lg, vertical = MaterialTheme.spacing.xs),
     horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically,
   ) {
     Text(
       text = label,
       style = MaterialTheme.typography.bodyLarge,
+      color = MaterialTheme.colorScheme.onSurface,
       modifier = Modifier.weight(1f).padding(vertical = 12.dp),
     )
     RadioButton(selected = selected, onClick = onClick)
@@ -275,11 +295,13 @@ private fun SortOptionRow(
 private fun FavoritesList(
   songs: List<FavoriteSongUi>,
   modifier: Modifier = Modifier,
+  listState: androidx.compose.foundation.lazy.LazyListState = rememberLazyListState(),
   onRemove: (FavoriteSongUi) -> Unit
 ) {
   val navigator = LocalNavigator.currentOrThrow
 
   LazyColumn(
+    state = listState,
     modifier = modifier.fillMaxSize(),
     contentPadding = PaddingValues(vertical = MaterialTheme.spacing.sm)
   ) {
@@ -292,6 +314,8 @@ private fun FavoritesList(
         }
       }
     ) { song ->
+      // animateItem — плавное появление/удаление (iOS feel)
+      androidx.compose.foundation.layout.Column(modifier = Modifier.animateItem()) {
       when (song) {
         is FavoriteSongUi.BookedSong -> {
           val songScreen = rememberScreen(SharedScreens.song(song.subject.songNumberId))
@@ -323,6 +347,7 @@ private fun FavoritesList(
           color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
         )
       }
+      } // close animateItem Column
     }
 
     item {

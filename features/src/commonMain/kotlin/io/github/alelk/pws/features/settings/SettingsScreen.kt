@@ -21,7 +21,14 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Brightness7
+import androidx.compose.material.icons.filled.Contrast
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.SettingsBrightness
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -43,6 +50,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -60,6 +68,10 @@ import io.github.alelk.pws.features.resources.settings_donation_subtitle
 import io.github.alelk.pws.features.resources.settings_version
 import io.github.alelk.pws.features.resources.settings_license
 import io.github.alelk.pws.features.resources.settings_developers
+import io.github.alelk.pws.features.resources.settings_dynamic_color
+import io.github.alelk.pws.features.resources.settings_dynamic_color_subtitle
+import io.github.alelk.pws.features.resources.settings_keep_screen_on
+import io.github.alelk.pws.features.resources.settings_keep_screen_on_subtitle
 import io.github.alelk.pws.features.resources.settings_export
 import io.github.alelk.pws.features.resources.settings_import
 import io.github.alelk.pws.features.resources.settings_import_export
@@ -120,6 +132,10 @@ class SettingsScreen : Screen {
 
     SettingsContent(
       state = state,
+      useDynamicColor = themeSettings?.useDynamicColor == true,
+      onDynamicColorChange = { themeSettings?.onUseDynamicColorChange?.invoke(it) },
+      keepScreenOn = themeSettings?.keepScreenOn == true,
+      onKeepScreenOnChange = { themeSettings?.onKeepScreenOnChange?.invoke(it) },
       onBack = { viewModel.onEvent(SettingsEvent.Back) },
       onThemeSelected = { mode -> viewModel.onEvent(SettingsEvent.SetTheme(mode)) },
       onBookToggle = { id, enabled -> viewModel.onEvent(SettingsEvent.ToggleBook(id, enabled)) },
@@ -135,6 +151,10 @@ class SettingsScreen : Screen {
 @Composable
 private fun SettingsContent(
   state: SettingsUiState,
+  useDynamicColor: Boolean,
+  onDynamicColorChange: (Boolean) -> Unit,
+  keepScreenOn: Boolean,
+  onKeepScreenOnChange: (Boolean) -> Unit,
   onBack: () -> Unit,
   onThemeSelected: (ThemeMode) -> Unit,
   onBookToggle: (io.github.alelk.pws.domain.core.ids.BookId, Boolean) -> Unit,
@@ -177,37 +197,54 @@ private fun SettingsContent(
               )
             }
             item {
-              Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
-              ) {
-                Column(
-                  modifier = Modifier.fillMaxWidth()
-                ) {
-                  Text(
-                    text = stringResource(Res.string.settings_theme_subtitle),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-                  )
-                  HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                  current.themes.forEachIndexed { index, item ->
-                    ThemeRow(
-                      title = stringResource(item.titleRes),
-                      isSelected = item.themeMode == current.selectedTheme,
-                      onClick = { 
-                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        onThemeSelected(item.themeMode) 
-                      }
-                    )
-                    if (index < current.themes.lastIndex) {
-                      HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
-                      )
+              SettingsSectionCard(footer = stringResource(Res.string.settings_theme_subtitle)) {
+                current.themes.forEachIndexed { index, item ->
+                  ThemeRow(
+                    title = stringResource(item.titleRes),
+                    icon = themeModeIcon(item.themeMode),
+                    isSelected = item.themeMode == current.selectedTheme,
+                    onClick = {
+                      haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                      onThemeSelected(item.themeMode)
                     }
+                  )
+                  if (index < current.themes.lastIndex) {
+                    HorizontalDivider(
+                      modifier = Modifier.padding(start = 56.dp, end = 16.dp),
+                      color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    )
                   }
                 }
+              }
+            }
+
+            // Dynamic Color (Material You) — Android 12+
+            item {
+              SettingsSectionCard(footer = stringResource(Res.string.settings_dynamic_color_subtitle)) {
+                ToggleRow(
+                  title = stringResource(Res.string.settings_dynamic_color),
+                  icon = Icons.Filled.Palette,
+                  checked = useDynamicColor,
+                  onCheckedChange = { checked ->
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    onDynamicColorChange(checked)
+                  }
+                )
+              }
+            }
+
+            // Keep screen on в Song Detail
+            item {
+              SettingsSectionCard(footer = stringResource(Res.string.settings_keep_screen_on_subtitle)) {
+                ToggleRow(
+                  title = stringResource(Res.string.settings_keep_screen_on),
+                  icon = Icons.Filled.Brightness7,
+                  checked = keepScreenOn,
+                  onCheckedChange = { checked ->
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    onKeepScreenOnChange(checked)
+                  }
+                )
               }
             }
 
@@ -261,46 +298,34 @@ private fun SettingsContent(
             }
 
             item {
-              Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
-              ) {
-                Column {
-                  Text(
-                    text = stringResource(Res.string.settings_books_subtitle),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-                  )
-                  HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                  current.books.forEachIndexed { index, book ->
-                    Row(
-                      modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                      horizontalArrangement = Arrangement.SpaceBetween,
-                      verticalAlignment = Alignment.CenterVertically
-                    ) {
-                      Text(
-                        text = book.title,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.weight(1f)
-                      )
-                      Switch(
-                        checked = book.enabled,
-                        onCheckedChange = { checked -> 
-                          haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                          onBookToggle(book.id, checked) 
-                        }
-                      )
-                    }
-                    if (index < current.books.lastIndex) {
-                      HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
-                      )
-                    }
+              SettingsSectionCard(footer = stringResource(Res.string.settings_books_subtitle)) {
+                current.books.forEachIndexed { index, book ->
+                  Row(
+                    modifier = Modifier
+                      .fillMaxWidth()
+                      .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                  ) {
+                    Text(
+                      text = book.title,
+                      style = MaterialTheme.typography.bodyLarge,
+                      color = MaterialTheme.colorScheme.onSurface,
+                      modifier = Modifier.weight(1f)
+                    )
+                    Switch(
+                      checked = book.enabled,
+                      onCheckedChange = { checked ->
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        onBookToggle(book.id, checked)
+                      }
+                    )
+                  }
+                  if (index < current.books.lastIndex) {
+                    HorizontalDivider(
+                      modifier = Modifier.padding(horizontal = 16.dp),
+                      color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    )
                   }
                 }
               }
@@ -311,21 +336,10 @@ private fun SettingsContent(
             }
 
             item {
-              Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
-              ) {
-                Column(
-                  modifier = Modifier.padding(16.dp)
-                ) {
-                  Text(
-                    text = stringResource(Res.string.settings_import_export_subtitle),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                  )
-                  Spacer(Modifier.height(12.dp))
+              SettingsSectionCard(footer = stringResource(Res.string.settings_import_export_subtitle)) {
+                Column(modifier = Modifier.padding(16.dp)) {
                   OutlinedButton(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().testTag("action:export-backup"),
                     onClick = {
                       haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                       onExportClick()
@@ -335,7 +349,7 @@ private fun SettingsContent(
                   }
                   Spacer(Modifier.height(8.dp))
                   OutlinedButton(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().testTag("action:import-backup"),
                     onClick = {
                       haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                       onImportClick()
@@ -373,7 +387,7 @@ private fun SettingsContent(
               ) {
                 Column {
                   // Version
-                  if (state is SettingsUiState.Content && state.appVersion.isNotBlank()) {
+                  if (current.appVersion.isNotBlank()) {
                     Row(
                       modifier = Modifier
                         .fillMaxWidth()
@@ -381,7 +395,7 @@ private fun SettingsContent(
                       verticalAlignment = Alignment.CenterVertically
                     ) {
                       Text(
-                        text = stringResource(Res.string.settings_version, state.appVersion),
+                        text = stringResource(Res.string.settings_version, current.appVersion),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface
                       )
@@ -503,28 +517,102 @@ private fun DonationCard(onDonationClick: () -> Unit) {
 @Composable
 private fun ThemeRow(
   title: String,
+  icon: ImageVector,
   isSelected: Boolean,
   onClick: () -> Unit,
 ) {
   Row(
     modifier = Modifier
       .fillMaxWidth()
-      .padding(horizontal = 16.dp, vertical = 4.dp)
-      .clickable(onClick = onClick),
+      .clickable(onClick = onClick)
+      .padding(horizontal = 16.dp, vertical = 8.dp),
     horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically
   ) {
+    Icon(
+      imageVector = icon,
+      contentDescription = null,
+      tint = MaterialTheme.colorScheme.onSurfaceVariant,
+      modifier = Modifier.padding(end = 16.dp)
+    )
     Text(
       text = title,
       style = MaterialTheme.typography.bodyLarge,
       color = MaterialTheme.colorScheme.onSurface,
       modifier = Modifier
         .weight(1f)
-        .padding(vertical = 12.dp)
+        .padding(vertical = 8.dp)
     )
     RadioButton(
       selected = isSelected,
       onClick = onClick
     )
+  }
+}
+
+@Composable
+private fun ToggleRow(
+  title: String,
+  icon: ImageVector,
+  checked: Boolean,
+  onCheckedChange: (Boolean) -> Unit,
+) {
+  Row(
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(horizontal = 16.dp, vertical = 8.dp),
+    horizontalArrangement = Arrangement.SpaceBetween,
+    verticalAlignment = Alignment.CenterVertically
+  ) {
+    Icon(
+      imageVector = icon,
+      contentDescription = null,
+      tint = MaterialTheme.colorScheme.onSurfaceVariant,
+      modifier = Modifier.padding(end = 16.dp)
+    )
+    Text(
+      text = title,
+      style = MaterialTheme.typography.bodyLarge,
+      color = MaterialTheme.colorScheme.onSurface,
+      modifier = Modifier.weight(1f)
+    )
+    Switch(checked = checked, onCheckedChange = onCheckedChange)
+  }
+}
+
+/** Иконка для каждого варианта темы — iOS-style leading icon. */
+private fun themeModeIcon(mode: io.github.alelk.pws.features.theme.ThemeMode): ImageVector = when (mode) {
+  io.github.alelk.pws.features.theme.ThemeMode.SYSTEM -> Icons.Filled.SettingsBrightness
+  io.github.alelk.pws.features.theme.ThemeMode.LIGHT -> Icons.Filled.LightMode
+  io.github.alelk.pws.features.theme.ThemeMode.DARK -> Icons.Filled.DarkMode
+  io.github.alelk.pws.features.theme.ThemeMode.BLACK -> Icons.Filled.Contrast
+}
+
+/**
+ * iOS-style секция настроек: карточка + опциональный footer-text под ней.
+ * Пояснительный текст идёт под карточкой серым меньшим шрифтом — как в Settings.app.
+ */
+@Composable
+private fun SettingsSectionCard(
+  footer: String? = null,
+  content: @Composable () -> Unit,
+) {
+  Column(modifier = Modifier.fillMaxWidth()) {
+    Card(
+      modifier = Modifier.fillMaxWidth(),
+      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
+    ) {
+      Column(modifier = Modifier.fillMaxWidth()) {
+        content()
+      }
+    }
+    if (footer != null) {
+      Text(
+        text = footer,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+      )
+    }
   }
 }

@@ -193,6 +193,7 @@
     <string name="song_detail_jump_title">Перейти до номера</string>
     <string name="song_detail_jump_number_label">Номер (%1$d-%2$d)</string>
     <string name="song_detail_jump_clear">Очистити</string>
+    <string name="song_detail_line_spacing">Міжрядковий інтервал</string>
 
     <string name="tag_chip_edit">Редагувати</string>
     <string name="tonality_a_major">Ля мажор (A-dur)</string>
@@ -237,14 +238,51 @@
     <string name="time_just_now">Щойно</string>
     <string name="time_minutes_ago">%1$d хв тому</string>
     <string name="time_hours_ago">%1$d год тому</string>
+    <string name="book_card_a11y">Пісенник %1$s, %2$d пісень</string>
+
+    <string name="settings_dynamic_color">Системні кольори</string>
+    <string name="settings_dynamic_color_subtitle">Палітра Material You з шпалер (Android 12+)</string>
+    <string name="settings_keep_screen_on">Не гасити екран у пісні</string>
+    <string name="settings_keep_screen_on_subtitle">Екран лишається ввімкненим на сторінці пісні</string>
+
+    <string name="search_scope_all">Усі</string>
+    <string name="search_scope_in_books">У книгах</string>
+    <string name="search_scope_standalone">Окремі</string>
+
     <string name="time_yesterday">Учора</string>
     <string name="time_days_ago">%1$d дн тому</string>
+
+    <string name="history_group_today">Сьогодні</string>
+    <string name="history_group_yesterday">Учора</string>
+    <string name="history_group_this_week">Цього тижня</string>
+    <string name="history_group_earlier">Раніше</string>
 
     <string name="song_number_label">№ %1$d</string>
     <string name="song_number_a11y">Номер пісні %1$d</string>
     <string name="license_loading">Завантаження…</string>
     <string name="license_load_failed">Не вдалося завантажити текст ліцензії: %1$s</string>
     <string name="jump_number_range">%1$d – %2$d</string>
+
+    <string name="book_library_title">Бібліотека збірників</string>
+    <string name="book_library_loading">Завантаження каталогу…</string>
+    <string name="book_library_error_title">Не вдалося завантажити каталог</string>
+    <string name="book_library_error_message">Перевірте підключення до інтернету та спробуйте знову.</string>
+    <string name="book_library_retry">Повторити</string>
+    <string name="book_library_status_built_in">Вбудований</string>
+    <string name="book_library_status_installed">Встановлено</string>
+    <string name="book_library_action_install">Встановити</string>
+    <string name="book_library_action_uninstall">Видалити</string>
+    <string name="book_library_songs_count">%1$d пісень</string>
+    <string name="book_library_size">%1$s МБ</string>
+    <string name="book_library_downloading">Завантаження…</string>
+    <string name="book_library_uninstall_confirm_title">Видалити збірник?</string>
+    <string name="book_library_uninstall_confirm_message">Усі пісні, вибране та історія для цього збірника будуть видалені.</string>
+    <string name="book_library_uninstall_confirm_ok">Видалити</string>
+    <string name="book_library_uninstall_confirm_cancel">Скасувати</string>
+    <string name="book_library_open">Бібліотека збірників</string>
+    <string name="books_browse_library_title">Доступні інші збірники</string>
+    <string name="books_browse_library_subtitle">Завантажте додаткові збірники з каталогу</string>
+    <string name="books_browse_library_action">Відкрити каталог</string>
 </resources>
 
 

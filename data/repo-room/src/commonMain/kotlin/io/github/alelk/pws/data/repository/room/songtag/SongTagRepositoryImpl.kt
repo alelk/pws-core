@@ -26,6 +26,7 @@ class SongTagRepositoryImpl(
   private val tagDao: TagDao,
   private val songDao: SongDao,
   private val songNumberDao: SongNumberDao,
+  private val onDataChanged: () -> Unit = {},
 ) : SongTagReadRepository<TagId>, SongTagObserveRepository<TagId>, SongTagWriteRepository<TagId> {
 
   override suspend fun getSongsByTag(tagId: TagId): List<SongWithBookInfo> {
@@ -76,7 +77,7 @@ class SongTagRepositoryImpl(
     runCatching {
       println("SongTagRepositoryImpl: creating association $songId - $tagId")
       songTagDao.insert(SongTagEntity(songId = songId, tagId = tagId))
-      Either.Right(SongTagAssociation(songId, tagId))
+      Either.Right(SongTagAssociation(songId, tagId)).also { onDataChanged() }
     }.getOrElse {
       println("SongTagRepositoryImpl: error creating association: ${it.message}")
       Either.Left(CreateError.UnknownError(it))
@@ -88,7 +89,7 @@ class SongTagRepositoryImpl(
       val entity = songTagDao.getById(songId, tagId)
         ?: return Either.Left(DeleteError.NotFound)
       songTagDao.delete(entity)
-      Either.Right(SongTagAssociation(songId, tagId))
+      Either.Right(SongTagAssociation(songId, tagId)).also { onDataChanged() }
     }.getOrElse {
       println("SongTagRepositoryImpl: error deleting association: ${it.message}")
       Either.Left(DeleteError.UnknownError(it))

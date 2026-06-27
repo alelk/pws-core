@@ -1,5 +1,68 @@
 # PWS Android
 
+# [3.1.0-rc.7](https://github.com/alelk/pws-core/compare/v3.1.0-rc.6...v3.1.0-rc.7) (2026-06-26)
+
+
+### Features
+
+* Implement user data backup ([b2aa2be](https://github.com/alelk/pws-core/commit/b2aa2bef012722ac8b3798622ff31f4df1fc7ffd))
+
+# [3.1.0-rc.6](https://github.com/alelk/pws-core/compare/v3.1.0-rc.5...v3.1.0-rc.6) (2026-06-24)
+
+
+### Bug Fixes
+
+* Fix build warnings ([a3d1733](https://github.com/alelk/pws-core/commit/a3d1733e30382c7c9871baa2c723ee763756c40e))
+
+# [3.1.0-rc.5](https://github.com/alelk/pws-core/compare/v3.1.0-rc.4...v3.1.0-rc.5) (2026-06-21)
+
+
+### Bug Fixes
+
+* Fix build issue ([dfd1a7d](https://github.com/alelk/pws-core/commit/dfd1a7d224791788f70d5ee0cd64ac961bf347d0))
+* Fix build issue ([42e9fe0](https://github.com/alelk/pws-core/commit/42e9fe0f56ca97798ceb4e3ded0b1404ec24e64b))
+* Update library dependencies. Add tests ([218314d](https://github.com/alelk/pws-core/commit/218314df84aa6fe47e8a6300628d61ce8612700a))
+
+# [3.1.0-rc.4](https://github.com/alelk/pws-core/compare/v3.1.0-rc.3...v3.1.0-rc.4) (2026-06-20)
+
+
+### Features
+
+* add Browse Library banner to BooksScreen ([c69df11](https://github.com/alelk/pws-core/commit/c69df1145818991b55002a858d6cb3c4d5e93c58))
+
+# [3.1.0-rc.3](https://github.com/alelk/pws-core/compare/v3.1.0-rc.2...v3.1.0-rc.3) (2026-06-20)
+
+
+### Features
+
+* Update installed book version type ([99b7649](https://github.com/alelk/pws-core/commit/99b7649dc76d8092afb129d8594943b163a7f969))
+
+# [3.1.0-rc.2](https://github.com/alelk/pws-core/compare/v3.1.0-rc.1...v3.1.0-rc.2) (2026-06-19)
+
+
+### Features
+
+* Add 'installed_books' table. ([64a4f6f](https://github.com/alelk/pws-core/commit/64a4f6fbded3a6a6e4b687697ecabfcdb01668a7))
+* Add 'installed_books' table. ([7c66b14](https://github.com/alelk/pws-core/commit/7c66b14aac6f936ab32032935e0c6b080a6a4feb))
+* Refactor installed_books repository. ([29025fb](https://github.com/alelk/pws-core/commit/29025fb5d05f0ef01a0c98a0b9fac17324496c28))
+
+# [3.1.0-rc.1](https://github.com/alelk/pws-core/compare/v3.0.0...v3.1.0-rc.1) (2026-06-19)
+
+
+### Features
+
+* fix build issue ([841f0c3](https://github.com/alelk/pws-core/commit/841f0c39f5ecf7a7f1e7f6c8da12c69992c20aca))
+* Implement book catalog portable model ([037cde3](https://github.com/alelk/pws-core/commit/037cde3b318cb9cd88127519124817ab58973651))
+* improve ui ([c717920](https://github.com/alelk/pws-core/commit/c7179207172ee1fe9e34dc95f237e9106bee6809))
+
+# [2.28.0-rc.7](https://github.com/alelk/pws-core/compare/v2.28.0-rc.6...v2.28.0-rc.7) (2026-06-19)
+
+
+### Features
+
+* fix build issue ([841f0c3](https://github.com/alelk/pws-core/commit/841f0c39f5ecf7a7f1e7f6c8da12c69992c20aca))
+* Implement book catalog portable model ([037cde3](https://github.com/alelk/pws-core/commit/037cde3b318cb9cd88127519124817ab58973651))
+
 # [3.0.0](https://github.com/alelk/pws-core/compare/v2.27.0...v3.0.0) (2026-06-17)
 
 

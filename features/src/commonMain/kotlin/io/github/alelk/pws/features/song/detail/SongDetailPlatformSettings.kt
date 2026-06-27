@@ -13,6 +13,9 @@ data class SongDetailDisplaySettings(
   val expandedText: Boolean,
   val onFontScaleChange: (Float) -> Unit,
   val onExpandedTextChange: (Boolean) -> Unit,
+  /** Множитель межстрочного интервала (0.9 .. 1.4 .. 1.8). 1.0 — стандартный. */
+  val lineHeightMultiplier: Float = 1.0f,
+  val onLineHeightMultiplierChange: (Float) -> Unit = {},
 )
 
 /** Host-provided persisted display settings for favorites screen. */

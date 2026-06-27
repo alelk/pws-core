@@ -8,7 +8,6 @@ group = "io.github.alelk.pws.core"
 
 kotlin {
     jvm()
-    iosX64()
     iosArm64()
     iosSimulatorArm64()
 
@@ -19,7 +18,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api(compose.runtime)
+            api(libs.compose.runtime)
         }
         commonTest.dependencies {
         }

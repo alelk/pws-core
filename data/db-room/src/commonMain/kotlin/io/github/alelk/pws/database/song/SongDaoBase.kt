@@ -4,6 +4,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import io.github.alelk.pws.database.core.Pageable
 import io.github.alelk.pws.domain.core.ids.SongId
@@ -27,6 +28,7 @@ interface SongDaoBase : Pageable<SongEntity> {
   @Query("SELECT * FROM songs ORDER BY id LIMIT :limit OFFSET :offset")
   override suspend fun getAll(limit: Int, offset: Int): List<SongEntity>
 
+  @Transaction
   @Query("""SELECT sn.* FROM song_numbers sn inner join songs s on sn.song_id = s.id WHERE s.edited > 0""")
   suspend fun getAllEdited(): List<SongNumberWithSongWithBookEntity>
 
@@ -63,5 +65,6 @@ interface SongDaoBase : Pageable<SongEntity> {
     INNER JOIN book_statistic bs ON sn.book_id = bs.id
     WHERE st.tag_id = :tagId AND bs.priority > 0
   """)
+  @Transaction
   fun getActiveTagSongsFlow(tagId: TagId): Flow<List<SongNumberWithSongWithBookEntity>>
 }
