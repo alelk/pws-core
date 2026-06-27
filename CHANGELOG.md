@@ -1,5 +1,17 @@
 # PWS Android
 
+# [3.1.0](https://github.com/alelk/pws-core/compare/v3.0.0...v3.1.0) (2026-06-27)
+
+
+### Bug Fixes
+
+* Reformat docs ([1650b93](https://github.com/alelk/pws-core/commit/1650b934c60cca02374ea08ec6a8ab0df5ab83ec))
+
+
+### Features
+
+* Implement books library. Refactoring. ([#13](https://github.com/alelk/pws-core/issues/13)) ([cfe6b56](https://github.com/alelk/pws-core/commit/cfe6b56327f94a70ad772f1ab87eba5282d25d6f))
+
 # [3.1.0-rc.7](https://github.com/alelk/pws-core/compare/v3.1.0-rc.6...v3.1.0-rc.7) (2026-06-26)
 
 
