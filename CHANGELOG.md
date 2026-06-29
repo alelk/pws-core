@@ -1,5 +1,17 @@
 # PWS Android
 
+# [3.2.0-rc.1](https://github.com/alelk/pws-core/compare/v3.1.0...v3.2.0-rc.1) (2026-06-29)
+
+
+### Bug Fixes
+
+* merge from master ([828ad77](https://github.com/alelk/pws-core/commit/828ad772699ebb8bd9269af9238849618dafc715))
+
+
+### Features
+
+* Install book bundles from remote catalog ([164c46b](https://github.com/alelk/pws-core/commit/164c46b7977c142436eed1aec48a3492c487201f))
+
 # [3.1.0](https://github.com/alelk/pws-core/compare/v3.0.0...v3.1.0) (2026-06-27)
 
 
