@@ -8,8 +8,6 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import io.github.alelk.pws.database.book.BookEntity
-import io.github.alelk.pws.database.song_number.SongNumberEntity
-import io.github.alelk.pws.database.song_number.SongNumberWithSongEntity
 import io.github.alelk.pws.domain.core.ids.BookId
 import io.github.alelk.pws.domain.core.ids.SongId
 import io.github.alelk.pws.domain.core.ids.SongNumberId
@@ -70,6 +68,12 @@ interface SongNumberDao {
 
   @Query("""DELETE FROM song_numbers WHERE book_id = :bookId AND number = :songNumber""")
   suspend fun deleteByBookIdAndSongNumber(bookId: BookId, songNumber: Int)
+
+  @Query("SELECT * FROM song_numbers WHERE book_id = :bookId ORDER BY number")
+  suspend fun getByBookId(bookId: BookId): List<SongNumberEntity>
+
+  @Query("DELETE FROM song_numbers WHERE book_id = :bookId AND song_id = :songId")
+  suspend fun deleteByBookIdAndSongId(bookId: BookId, songId: SongId)
 
   @Query("DELETE FROM song_numbers")
   suspend fun deleteAll()

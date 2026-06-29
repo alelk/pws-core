@@ -6,6 +6,7 @@ import io.github.alelk.pws.domain.booklibrary.usecase.GetBookCatalogUseCase
 import io.github.alelk.pws.domain.booklibrary.usecase.InstallBookUseCase
 import io.github.alelk.pws.domain.booklibrary.usecase.ObserveInstalledBooksUseCase
 import io.github.alelk.pws.domain.booklibrary.usecase.UninstallBookUseCase
+import io.github.alelk.pws.domain.booklibrary.usecase.UpdateBookUseCase
 import io.github.alelk.pws.features.book.songs.BookSongsScreenModel
 import io.github.alelk.pws.features.favorites.FavoritesScreenModel
 import io.github.alelk.pws.features.history.HistoryScreenModel
@@ -45,6 +46,7 @@ import io.github.alelk.pws.domain.tag.usecase.DeleteTagUseCase
 import io.github.alelk.pws.domain.tag.usecase.GetTagDetailUseCase
 import io.github.alelk.pws.domain.tag.usecase.ObserveTagsUseCase
 import io.github.alelk.pws.domain.tag.usecase.UpdateTagUseCase
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 /**
@@ -67,6 +69,8 @@ val featuresModule = module {
       observeInstalledBooks = get<ObserveInstalledBooksUseCase>(),
       installBook = get<InstallBookUseCase>(),
       uninstallBook = get<UninstallBookUseCase>(),
+      updateBook = get<UpdateBookUseCase>(),
+      deviceLanguage = getOrNull(named("deviceLanguage")) ?: "",
     )
   }
 

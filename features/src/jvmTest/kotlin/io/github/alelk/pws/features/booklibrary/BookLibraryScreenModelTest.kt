@@ -12,6 +12,7 @@ import io.github.alelk.pws.domain.booklibrary.usecase.GetBookCatalogUseCase
 import io.github.alelk.pws.domain.booklibrary.usecase.InstallBookUseCase
 import io.github.alelk.pws.domain.booklibrary.usecase.ObserveInstalledBooksUseCase
 import io.github.alelk.pws.domain.booklibrary.usecase.UninstallBookUseCase
+import io.github.alelk.pws.domain.booklibrary.usecase.UpdateBookUseCase
 import io.github.alelk.pws.domain.core.Locale
 import io.github.alelk.pws.domain.core.Version
 import io.github.alelk.pws.domain.core.error.DeleteError
@@ -38,23 +39,27 @@ class BookLibraryScreenModelTest : FunSpec({
   beforeTest { dispatcher = StandardTestDispatcher(); Dispatchers.setMain(dispatcher) }
   afterTest { Dispatchers.resetMain() }
 
-  fun entry(id: String) = BookCatalogEntry(
+  fun entry(id: String, version: Version = Version(1, 0), locale: String = "ru") = BookCatalogEntry(
     bookId = BookId.parse(id),
-    locales = listOf(Locale.of("ru")),
+    locales = listOf(Locale.of(locale)),
     name = "Book $id",
     displayName = "Book $id",
-    bundleVersion = Version(1, 0),
+    bundleVersion = version,
     downloadUrl = "https://example.test/$id.enc",
     fileSizeBytes = 100,
     checksum = "sum",
     songCount = 10,
   )
 
-  fun installed(id: String) = InstalledBook(
+  fun installed(
+    id: String,
+    version: Version = Version(1, 0),
+    source: BookInstallSource = BookInstallSource.DOWNLOADED,
+  ) = InstalledBook(
     bookId = BookId.parse(id),
-    source = BookInstallSource.DOWNLOADED,
+    source = source,
     installedAt = 0,
-    bundleVersion = Version(1, 0),
+    bundleVersion = version,
   )
 
   fun model(
@@ -62,6 +67,8 @@ class BookLibraryScreenModelTest : FunSpec({
     installedBooks: Flow<List<InstalledBook>> = flowOf(emptyList()),
     install: (BookCatalogEntry) -> Flow<DownloadState> = { flowOf(DownloadState.Done) },
     uninstall: (BookId) -> Either<DeleteError, Unit> = { Unit.right() },
+    update: (BookCatalogEntry) -> Flow<DownloadState> = { flowOf(DownloadState.Done) },
+    deviceLanguage: String = "",
   ): BookLibraryScreenModel {
     val catalogRepo = object : BookCatalogRepository {
       override suspend fun getAvailableBooks() = catalog()
@@ -75,11 +82,15 @@ class BookLibraryScreenModelTest : FunSpec({
     val uninstallUseCase = object : UninstallBookUseCase {
       override suspend fun invoke(bookId: BookId) = uninstall(bookId)
     }
+    val updateUseCase = object : UpdateBookUseCase {
+      override fun invoke(entry: BookCatalogEntry) = update(entry)
+    }
     return BookLibraryScreenModel(
       GetBookCatalogUseCase(catalogRepo),
       ObserveInstalledBooksUseCase(installedRepo),
       installUseCase,
       uninstallUseCase,
+      updateUseCase,
     )
   }
 
@@ -165,6 +176,56 @@ class BookLibraryScreenModelTest : FunSpec({
 
       sm.state.value.shouldBeInstanceOf<BookLibraryUiState.Content>()
         .items.single().downloadState.shouldBeInstanceOf<DownloadState.Error>()
+    }
+  }
+
+  test("hasUpdate is true when the catalog ships a newer version than the installed downloaded book") {
+    runTest(dispatcher) {
+      val sm = model(
+        catalog = { listOf(entry("Book-1", Version(2, 0))).right() },
+        installedBooks = flowOf(listOf(installed("Book-1", Version(1, 0)))),
+      )
+      advanceUntilIdle()
+      sm.state.value.shouldBeInstanceOf<BookLibraryUiState.Content>().items.single().hasUpdate shouldBe true
+    }
+  }
+
+  test("hasUpdate is false when the installed version is up to date") {
+    runTest(dispatcher) {
+      val sm = model(
+        catalog = { listOf(entry("Book-1", Version(1, 0))).right() },
+        installedBooks = flowOf(listOf(installed("Book-1", Version(1, 0)))),
+      )
+      advanceUntilIdle()
+      sm.state.value.shouldBeInstanceOf<BookLibraryUiState.Content>().items.single().hasUpdate shouldBe false
+    }
+  }
+
+  test("hasUpdate is false for a built-in (ASSET) book even with a newer catalog version") {
+    runTest(dispatcher) {
+      val sm = model(
+        catalog = { listOf(entry("Book-1", Version(2, 0))).right() },
+        installedBooks = flowOf(listOf(installed("Book-1", Version(1, 0), BookInstallSource.ASSET))),
+      )
+      advanceUntilIdle()
+      sm.state.value.shouldBeInstanceOf<BookLibraryUiState.Content>().items.single().hasUpdate shouldBe false
+    }
+  }
+
+  test("update sets the item's download state to Done") {
+    runTest(dispatcher) {
+      val sm = model(
+        catalog = { listOf(entry("Book-1", Version(2, 0))).right() },
+        installedBooks = flowOf(listOf(installed("Book-1", Version(1, 0)))),
+        update = { flowOf(DownloadState.Done) },
+      )
+      advanceUntilIdle()
+
+      sm.update(entry("Book-1", Version(2, 0)))
+      advanceUntilIdle()
+
+      sm.state.value.shouldBeInstanceOf<BookLibraryUiState.Content>()
+        .items.single().downloadState shouldBe DownloadState.Done
     }
   }
 })

@@ -281,6 +281,11 @@
     <string name="book_library_uninstall_confirm_ok">Удалить</string>
     <string name="book_library_uninstall_confirm_cancel">Отмена</string>
     <string name="book_library_open">Библиотека сборников</string>
+    <string name="book_library_action_update">Обновить</string>
+    <string name="book_library_status_update_available">Доступно обновление</string>
+    <string name="book_library_empty_title">Нет установленных сборников</string>
+    <string name="book_library_empty_message">Установите сборник песен, чтобы начать</string>
+    <string name="book_library_recommended">Рекомендуется</string>
     <string name="books_browse_library_title">Доступны другие сборники</string>
     <string name="books_browse_library_subtitle">Скачайте дополнительные сборники из каталога</string>
     <string name="books_browse_library_action">Открыть каталог</string>

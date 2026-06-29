@@ -280,6 +280,11 @@
     <string name="book_library_uninstall_confirm_ok">Видалити</string>
     <string name="book_library_uninstall_confirm_cancel">Скасувати</string>
     <string name="book_library_open">Бібліотека збірників</string>
+    <string name="book_library_action_update">Оновити</string>
+    <string name="book_library_status_update_available">Доступне оновлення</string>
+    <string name="book_library_empty_title">Немає встановлених збірників</string>
+    <string name="book_library_empty_message">Встановіть збірник пісень, щоб почати</string>
+    <string name="book_library_recommended">Рекомендовано</string>
     <string name="books_browse_library_title">Доступні інші збірники</string>
     <string name="books_browse_library_subtitle">Завантажте додаткові збірники з каталогу</string>
     <string name="books_browse_library_action">Відкрити каталог</string>

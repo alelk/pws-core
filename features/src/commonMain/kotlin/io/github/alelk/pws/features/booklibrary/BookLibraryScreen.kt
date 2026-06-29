@@ -1,7 +1,6 @@
 package io.github.alelk.pws.features.booklibrary
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -19,7 +18,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -51,15 +50,19 @@ import io.github.alelk.pws.features.components.LoadingContent
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.book_library_action_install
 import io.github.alelk.pws.features.resources.book_library_action_uninstall
+import io.github.alelk.pws.features.resources.book_library_action_update
 import io.github.alelk.pws.features.resources.book_library_downloading
+import io.github.alelk.pws.features.resources.book_library_empty_message
+import io.github.alelk.pws.features.resources.book_library_empty_title
 import io.github.alelk.pws.features.resources.book_library_error_message
 import io.github.alelk.pws.features.resources.book_library_error_title
 import io.github.alelk.pws.features.resources.book_library_loading
-import io.github.alelk.pws.features.resources.book_library_retry
+import io.github.alelk.pws.features.resources.book_library_recommended
 import io.github.alelk.pws.features.resources.book_library_size
 import io.github.alelk.pws.features.resources.book_library_songs_count
 import io.github.alelk.pws.features.resources.book_library_status_built_in
 import io.github.alelk.pws.features.resources.book_library_status_installed
+import io.github.alelk.pws.features.resources.book_library_status_update_available
 import io.github.alelk.pws.features.resources.book_library_title
 import io.github.alelk.pws.features.resources.book_library_uninstall_confirm_cancel
 import io.github.alelk.pws.features.resources.book_library_uninstall_confirm_message
@@ -77,6 +80,7 @@ class BookLibraryScreen : Screen {
             state = state,
             onRetry = viewModel::retry,
             onInstall = viewModel::install,
+            onUpdate = viewModel::update,
             onUninstall = viewModel::uninstall,
         )
     }
@@ -88,6 +92,7 @@ fun BookLibraryContent(
     state: BookLibraryUiState,
     onRetry: () -> Unit = {},
     onInstall: (BookCatalogEntry) -> Unit = {},
+    onUpdate: (BookCatalogEntry) -> Unit = {},
     onUninstall: (BookId) -> Unit = {},
 ) {
     val navigator = LocalNavigator.currentOrThrow
@@ -117,7 +122,10 @@ fun BookLibraryContent(
             )
             is BookLibraryUiState.Content -> BookLibraryList(
                 items = state.items,
+                showEmptyBanner = state.items.none { it.isInstalled },
+                recommendedBookId = state.recommendedBookId,
                 onInstall = onInstall,
+                onUpdate = onUpdate,
                 onUninstall = onUninstall,
                 modifier = Modifier.padding(innerPadding),
             )
@@ -128,7 +136,10 @@ fun BookLibraryContent(
 @Composable
 private fun BookLibraryList(
     items: List<BookLibraryItem>,
+    showEmptyBanner: Boolean,
+    recommendedBookId: BookId?,
     onInstall: (BookCatalogEntry) -> Unit,
+    onUpdate: (BookCatalogEntry) -> Unit,
     onUninstall: (BookId) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -161,10 +172,34 @@ private fun BookLibraryList(
         ),
         verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sm),
     ) {
+        if (showEmptyBanner) {
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = stringResource(Res.string.book_library_empty_title),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(Res.string.book_library_empty_message),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        )
+                    }
+                }
+            }
+        }
         items(items, key = { it.bookId.toString() }) { item ->
             BookLibraryCard(
                 item = item,
+                isRecommended = item.bookId == recommendedBookId,
                 onInstall = { onInstall(item.entry) },
+                onUpdate = { onUpdate(item.entry) },
                 onUninstall = { uninstallTarget = item.bookId },
             )
         }
@@ -175,12 +210,24 @@ private fun BookLibraryList(
 @Composable
 private fun BookLibraryCard(
     item: BookLibraryItem,
+    isRecommended: Boolean,
     onInstall: () -> Unit,
+    onUpdate: () -> Unit,
     onUninstall: () -> Unit,
 ) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = item.entry.displayName, style = MaterialTheme.typography.titleMedium)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = item.entry.displayName, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                if (isRecommended) {
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(Res.string.book_library_recommended),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
             Spacer(Modifier.height(4.dp))
             Row {
                 Text(
@@ -219,9 +266,9 @@ private fun BookLibraryCard(
                         color = MaterialTheme.colorScheme.error,
                     )
                     Spacer(Modifier.height(4.dp))
-                    BookLibraryActions(item, onInstall, onUninstall)
+                    BookLibraryActions(item, onInstall, onUpdate, onUninstall)
                 }
-                else -> BookLibraryActions(item, onInstall, onUninstall)
+                else -> BookLibraryActions(item, onInstall, onUpdate, onUninstall)
             }
         }
     }
@@ -231,6 +278,7 @@ private fun BookLibraryCard(
 private fun BookLibraryActions(
     item: BookLibraryItem,
     onInstall: () -> Unit,
+    onUpdate: () -> Unit,
     onUninstall: () -> Unit,
 ) {
     Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
@@ -240,6 +288,25 @@ private fun BookLibraryActions(
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary,
             )
+            item.hasUpdate -> {
+                Text(
+                    text = stringResource(Res.string.book_library_status_update_available),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.tertiary,
+                    modifier = Modifier.align(Alignment.CenterVertically),
+                )
+                Spacer(Modifier.width(8.dp))
+                Button(onClick = onUpdate) {
+                    Text(stringResource(Res.string.book_library_action_update))
+                }
+                Spacer(Modifier.width(8.dp))
+                OutlinedButton(
+                    onClick = onUninstall,
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                ) {
+                    Text(stringResource(Res.string.book_library_action_uninstall))
+                }
+            }
             item.isInstalled -> {
                 Text(
                     text = stringResource(Res.string.book_library_status_installed),
