@@ -1,5 +1,12 @@
 # PWS Android
 
+# [3.2.0-rc.2](https://github.com/alelk/pws-core/compare/v3.2.0-rc.1...v3.2.0-rc.2) (2026-07-01)
+
+
+### Bug Fixes
+
+* Fix book bundle ([4adcc18](https://github.com/alelk/pws-core/commit/4adcc18b8ea99051375ffe5f8202278a1ae410a7))
+
 # [3.2.0-rc.1](https://github.com/alelk/pws-core/compare/v3.1.0...v3.2.0-rc.1) (2026-06-29)
 
 
