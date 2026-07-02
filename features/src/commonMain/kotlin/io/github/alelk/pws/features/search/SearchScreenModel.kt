@@ -35,7 +35,6 @@ class SearchScreenModel(
 
   sealed interface Effect {
     data class NavigateToSong(val suggestion: SearchSuggestion) : Effect
-    data class NavigateToResults(val query: String) : Effect
   }
 
   private val _effects = MutableSharedFlow<Effect>()
@@ -75,12 +74,8 @@ class SearchScreenModel(
       }
 
       SearchEvent.SearchSubmitted -> {
-        val currentQuery = _query.value
-        if (currentQuery.isNotBlank()) {
-          screenModelScope.launch {
-            _effects.emit(Effect.NavigateToResults(currentQuery))
-          }
-        }
+        // Живой поиск — одна поверхность: результаты уже на экране,
+        // Enter не навигирует (дизайн-система, кадры 6A/6B).
       }
 
       SearchEvent.ClearQuery -> {

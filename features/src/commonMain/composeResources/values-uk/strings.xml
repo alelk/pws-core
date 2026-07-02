@@ -21,6 +21,9 @@
 
     <string name="search_title">Пошук</string>
     <string name="search_placeholder">Пошук пісень...</string>
+    <string name="search_cancel">Скасувати</string>
+    <string name="search_mode_numbers">Пошук за номером</string>
+    <string name="search_mode_words">Пошук за словами</string>
     <string name="search_find_song_placeholder">Знайти пісню...</string>
     <string name="search_loading">Пошук...</string>
     <string name="search_error_title">Помилка пошуку</string>

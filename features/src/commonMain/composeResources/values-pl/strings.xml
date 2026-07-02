@@ -21,6 +21,9 @@
 
     <string name="search_title">Szukaj</string>
     <string name="search_placeholder">Szukaj pieśni...</string>
+    <string name="search_cancel">Anuluj</string>
+    <string name="search_mode_numbers">Szukaj po numerze</string>
+    <string name="search_mode_words">Szukaj po słowach</string>
     <string name="search_find_song_placeholder">Znajdź pieśń...</string>
     <string name="search_loading">Wyszukiwanie...</string>
     <string name="search_error_title">Błąd wyszukiwania</string>

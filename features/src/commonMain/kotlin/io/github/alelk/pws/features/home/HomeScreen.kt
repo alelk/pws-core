@@ -40,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -120,6 +121,7 @@ fun HomeContent(
 ) {
   val navigator = LocalNavigator.currentOrThrow
   val haptic = LocalHapticFeedback.current
+  val keyboardController = LocalSoftwareKeyboardController.current
   var showNumberInput by remember { mutableStateOf(false) }
   val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
   val gridState = rememberLazyGridState()
@@ -175,13 +177,8 @@ fun HomeContent(
             SearchBarWithSuggestions(
               query = searchQuery,
               onQueryChange = onSearchQueryChange,
-              onSearch = {
-                if (searchQuery.isNotBlank()) {
-                  val screen = ScreenRegistry.get(SharedScreens.SearchResults(searchQuery))
-                  onClearSearch()
-                  navigator.push(screen)
-                }
-              },
+              // Живой поиск: результаты уже под полем, Enter лишь прячет клавиатуру.
+              onSearch = { keyboardController?.hide() },
               suggestions = suggestions,
               onSuggestionClick = { suggestion ->
                 onClearSearch()

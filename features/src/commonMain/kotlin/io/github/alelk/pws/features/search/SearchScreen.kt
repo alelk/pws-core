@@ -1,5 +1,6 @@
 package io.github.alelk.pws.features.search
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -42,6 +44,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -62,6 +65,7 @@ import io.github.alelk.pws.features.components.SearchEmptyContent
 import io.github.alelk.pws.features.components.SearchField
 import io.github.alelk.pws.features.components.StateCrossfade
 import io.github.alelk.pws.features.resources.Res
+import io.github.alelk.pws.features.resources.search_cancel
 import io.github.alelk.pws.features.resources.search_error_title
 import io.github.alelk.pws.features.resources.search_idle_subtitle
 import io.github.alelk.pws.features.resources.search_idle_title
@@ -141,7 +145,9 @@ fun SearchContent(
 ) {
   val navigator = LocalNavigator.currentOrThrow
   val focusRequester = remember { FocusRequester() }
+  val keyboardController = LocalSoftwareKeyboardController.current
   var scope by remember { mutableStateOf(SearchScope.ALL) }
+  var numberMode by remember { mutableStateOf(false) }
 
   // Auto-focus search field when screen opens
   LaunchedEffect(Unit) {
@@ -173,18 +179,39 @@ fun SearchContent(
         .fillMaxSize()
         .padding(innerPadding)
     ) {
-      // Search field - uses query directly for responsive input
-      SearchField(
-        query = query,
-        onQueryChange = onQueryChange,
-        onSearch = onSearch,
+      // One surface: результаты живые, по Enter только прячем клавиатуру.
+      // «Отмена» очищает запрос и возвращает назад, если экран был запушен.
+      Row(
         modifier = Modifier
           .fillMaxWidth()
           .padding(horizontal = MaterialTheme.spacing.screenHorizontal)
-          .padding(bottom = MaterialTheme.spacing.sm)
-          .focusRequester(focusRequester),
-        placeholder = stringResource(Res.string.search_placeholder)
-      )
+          .padding(bottom = MaterialTheme.spacing.sm),
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        SearchField(
+          query = query,
+          onQueryChange = onQueryChange,
+          onSearch = { keyboardController?.hide() },
+          modifier = Modifier
+            .weight(1f)
+            .focusRequester(focusRequester),
+          placeholder = stringResource(Res.string.search_placeholder),
+          numberMode = numberMode,
+          onNumberModeToggle = { numberMode = !numberMode }
+        )
+        AnimatedVisibility(visible = query.isNotEmpty()) {
+          TextButton(
+            onClick = {
+              onQueryChange("")
+              keyboardController?.hide()
+              if (navigator.canPop) navigator.pop()
+            },
+            modifier = Modifier.testTag("action:search-cancel")
+          ) {
+            Text(stringResource(Res.string.search_cancel))
+          }
+        }
+      }
 
       // Scope chips — iOS-style filter row под поиском.
       SearchScopeChips(

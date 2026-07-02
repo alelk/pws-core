@@ -21,6 +21,9 @@
 
     <string name="search_title">Search</string>
     <string name="search_placeholder">Search songs...</string>
+    <string name="search_cancel">Cancel</string>
+    <string name="search_mode_numbers">Search by number</string>
+    <string name="search_mode_words">Search by words</string>
     <string name="search_find_song_placeholder">Find a song...</string>
     <string name="search_loading">Searching...</string>
     <string name="search_error_title">Search error</string>
