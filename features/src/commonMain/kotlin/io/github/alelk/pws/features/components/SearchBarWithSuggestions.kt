@@ -32,8 +32,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.common_clear
+import io.github.alelk.pws.features.resources.home_quick_number
 import io.github.alelk.pws.features.resources.search_find_song_placeholder
 import io.github.alelk.pws.features.search.SearchSuggestion
+import io.github.alelk.pws.features.theme.NumberBadgeTextStyle
 import io.github.alelk.pws.features.theme.spacing
 import org.jetbrains.compose.resources.stringResource
 
@@ -49,6 +51,7 @@ import org.jetbrains.compose.resources.stringResource
  * @param isLoading Whether suggestions are being loaded
  * @param showSuggestions Whether to show the suggestions dropdown
  * @param autoFocus Whether to auto-focus the search field
+ * @param onNumberModeClick When set, an empty field shows a "123" badge switching to number input
  */
 @Composable
 fun SearchBarWithSuggestions(
@@ -61,7 +64,8 @@ fun SearchBarWithSuggestions(
   showSuggestions: Boolean = false,
   autoFocus: Boolean = false,
   modifier: Modifier = Modifier,
-  placeholder: String? = null
+  placeholder: String? = null,
+  onNumberModeClick: (() -> Unit)? = null
 ) {
   val resolvedPlaceholder = placeholder ?: stringResource(Res.string.search_find_song_placeholder)
   val focusRequester = remember { FocusRequester() }
@@ -83,7 +87,8 @@ fun SearchBarWithSuggestions(
       onSearch = onSearch,
       isLoading = isLoading,
       focusRequester = focusRequester,
-      placeholder = resolvedPlaceholder
+      placeholder = resolvedPlaceholder,
+      onNumberModeClick = onNumberModeClick
     )
 
     // DropdownMenu for suggestions - renders as overlay
@@ -135,7 +140,8 @@ private fun SearchInputField(
   onSearch: () -> Unit,
   isLoading: Boolean,
   focusRequester: FocusRequester,
-  placeholder: String
+  placeholder: String,
+  onNumberModeClick: (() -> Unit)? = null
 ) {
   TextField(
     value = query,
@@ -174,6 +180,9 @@ private fun SearchInputField(
             )
           }
         }
+        onNumberModeClick != null -> {
+          NumberModeBadge(onClick = onNumberModeClick)
+        }
       }
     },
     singleLine = true,
@@ -189,6 +198,35 @@ private fun SearchInputField(
       disabledIndicatorColor = Color.Transparent
     )
   )
+}
+
+/**
+ * "123" pill inside the search field — switches to the number-pad input
+ * (дизайн-система: «123 / abc» переключает цифры/слова).
+ */
+@Composable
+private fun NumberModeBadge(onClick: () -> Unit) {
+  val haptic = LocalHapticFeedback.current
+  val label = stringResource(Res.string.home_quick_number)
+  Surface(
+    onClick = {
+      haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+      onClick()
+    },
+    shape = RoundedCornerShape(10.dp),
+    color = MaterialTheme.colorScheme.surfaceContainerHighest,
+    modifier = Modifier
+      .padding(end = MaterialTheme.spacing.xs)
+      .testTag("action:number-search")
+      .semantics { contentDescription = label }
+  ) {
+    Text(
+      text = "123",
+      style = NumberBadgeTextStyle,
+      color = MaterialTheme.colorScheme.onSurfaceVariant,
+      modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+    )
+  }
 }
 
 @Composable
