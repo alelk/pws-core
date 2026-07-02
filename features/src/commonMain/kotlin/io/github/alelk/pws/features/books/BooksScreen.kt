@@ -210,6 +210,7 @@ private fun BooksGrid(
       BookCard(
         displayName = book.displayName.value,
         songCount = book.countSongs,
+        colorKey = book.id.toString(),
         onClick = {
           haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
           navigator.push(bookSongsScreen)

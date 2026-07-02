@@ -315,8 +315,8 @@ fun HomeContent(
             BookCard(
               displayName = book.displayName.value,
               songCount = book.countSongs,
+              colorKey = book.id.toString(),
               aspectRatio = 1.4f,
-              initialsStyle = MaterialTheme.typography.headlineMedium,
               onClick = {
                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 navigator.push(bookSongsScreen)
