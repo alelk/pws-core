@@ -18,6 +18,15 @@ val NumberBadgeTextStyle = TextStyle(
   letterSpacing = 0.sp
 )
 
+/**
+ * Font family for song lyrics when the reader enables the "serif" option
+ * (дизайн-система: литературная антиква; по умолчанию — гротеск).
+ */
+val SongSerifFontFamily = FontFamily.Serif
+
+/** Minimum song text size per the design system. */
+val SongTextMinSize = 17.sp
+
 val AppTypography = Typography(
     displayLarge = TextStyle(
         fontWeight = FontWeight.W400,
@@ -38,19 +47,19 @@ val AppTypography = Typography(
         letterSpacing = 0.sp,
     ),
     headlineLarge = TextStyle(
-        fontWeight = FontWeight.W400,
+        fontWeight = FontWeight.W600,
         fontSize = 32.sp,
         lineHeight = 40.sp,
         letterSpacing = 0.sp,
     ),
     headlineMedium = TextStyle(
-        fontWeight = FontWeight.W400,
+        fontWeight = FontWeight.W600,
         fontSize = 28.sp,
         lineHeight = 36.sp,
         letterSpacing = 0.sp,
     ),
     headlineSmall = TextStyle(
-        fontWeight = FontWeight.W400,
+        fontWeight = FontWeight.W600,
         fontSize = 24.sp,
         lineHeight = 32.sp,
         letterSpacing = 0.sp,
