@@ -27,9 +27,8 @@ import io.github.alelk.pws.features.components.LocalTabReselectEvents
 import io.github.alelk.pws.features.components.NavDestination
 import io.github.alelk.pws.features.components.TabReselectEvents
 import kotlinx.coroutines.launch
-import io.github.alelk.pws.features.favorites.FavoritesScreen
-import io.github.alelk.pws.features.history.HistoryScreen
 import io.github.alelk.pws.features.home.HomeScreen
+import io.github.alelk.pws.features.library.LibraryScreen
 import io.github.alelk.pws.features.search.SearchScreen
 import io.github.alelk.pws.features.settings.LocalSettingsExternalActions
 import io.github.alelk.pws.features.settings.SettingsExternalActions
@@ -39,7 +38,6 @@ import io.github.alelk.pws.features.song.detail.LocalSongDetailDisplaySettings
 import io.github.alelk.pws.features.song.detail.LocalSongDetailExternalActions
 import io.github.alelk.pws.features.song.detail.SongDetailDisplaySettings
 import io.github.alelk.pws.features.song.detail.SongDetailExternalActions
-import io.github.alelk.pws.features.tags.TagsScreen
 import io.github.alelk.pws.features.theme.AppTheme
 import io.github.alelk.pws.features.theme.LocalThemeSettings
 import io.github.alelk.pws.features.theme.ThemeMode
@@ -119,9 +117,7 @@ private class DestinationTab(
     NavDestination.Home -> HomeScreen()
     NavDestination.Books -> BooksScreen()
     NavDestination.Search -> SearchScreen()
-    NavDestination.Tags -> TagsScreen()
-    NavDestination.Favorites -> FavoritesScreen()
-    NavDestination.History -> HistoryScreen()
+    NavDestination.Library -> LibraryScreen()
   }
 }
 
@@ -129,9 +125,7 @@ private val mainTabs: List<Tab> = listOf(
   DestinationTab(NavDestination.Home, 0u),
   DestinationTab(NavDestination.Books, 1u),
   DestinationTab(NavDestination.Search, 2u),
-  DestinationTab(NavDestination.Tags, 3u),
-  DestinationTab(NavDestination.Favorites, 4u),
-  DestinationTab(NavDestination.History, 5u),
+  DestinationTab(NavDestination.Library, 3u),
 )
 
 private class TabNavigatorsHolder(

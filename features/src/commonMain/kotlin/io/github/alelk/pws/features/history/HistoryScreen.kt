@@ -45,14 +45,10 @@ import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.features.components.EmptyContent
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
-import io.github.alelk.pws.features.components.NavDestination
-import io.github.alelk.pws.features.components.OnTabReselected
 import io.github.alelk.pws.features.components.StateCrossfade
 import io.github.alelk.pws.features.components.SwipeableSongItem
 import io.github.alelk.pws.features.components.confirm
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.common_back
 import io.github.alelk.pws.features.resources.common_error_title
@@ -117,13 +113,6 @@ fun HistoryContent(
   val navigator = LocalNavigator.currentOrThrow
   val haptic = LocalHapticFeedback.current
   val listState = rememberLazyListState()
-  val scope = rememberCoroutineScope()
-
-  // Reselect tab — scroll to top + expand large top bar (iOS-like).
-  OnTabReselected(NavDestination.History) {
-    scope.launch { listState.animateScrollToItem(0) }
-    scrollBehavior.state.heightOffset = 0f
-  }
 
   Scaffold(
     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -180,37 +169,13 @@ fun HistoryContent(
       )
     }
   ) { innerPadding ->
-    StateCrossfade(state, modifier = Modifier.padding(innerPadding)) { current ->
-      when (current) {
-        HistoryUiState.Loading -> {
-          LoadingContent(message = stringResource(Res.string.history_loading))
-        }
-
-        HistoryUiState.Empty -> {
-          EmptyContent(
-            icon = Icons.Outlined.History,
-            title = stringResource(Res.string.history_empty_title),
-            subtitle = stringResource(Res.string.history_empty_subtitle)
-          )
-        }
-
-        is HistoryUiState.Content -> {
-          HistoryList(
-            items = current.items,
-            listState = listState,
-            onRemove = onRemoveItem
-          )
-        }
-
-        is HistoryUiState.Error -> {
-          ErrorContent(
-            title = stringResource(Res.string.common_error_title),
-            message = io.github.alelk.pws.features.app.rememberResolved(current.message),
-            onRetry = onRetry,
-          )
-        }
-      }
-    }
+    HistoryBody(
+      state = state,
+      listState = listState,
+      onRemoveItem = onRemoveItem,
+      onRetry = onRetry,
+      modifier = Modifier.padding(innerPadding)
+    )
   }
 
   // Clear confirmation dialog — destructive haptic on confirm.
@@ -222,6 +187,51 @@ fun HistoryContent(
       },
       onDismiss = onDismissClear
     )
+  }
+}
+
+/**
+ * Scaffold-free history body: Loading / Empty / Content / Error.
+ * Reused by the standalone [HistoryScreen] and by the Library tab.
+ */
+@Composable
+fun HistoryBody(
+  state: HistoryUiState,
+  listState: androidx.compose.foundation.lazy.LazyListState,
+  onRemoveItem: (HistoryItemUi) -> Unit,
+  onRetry: () -> Unit = {},
+  modifier: Modifier = Modifier,
+) {
+  StateCrossfade(state, modifier = modifier) { current ->
+    when (current) {
+      HistoryUiState.Loading -> {
+        LoadingContent(message = stringResource(Res.string.history_loading))
+      }
+
+      HistoryUiState.Empty -> {
+        EmptyContent(
+          icon = Icons.Outlined.History,
+          title = stringResource(Res.string.history_empty_title),
+          subtitle = stringResource(Res.string.history_empty_subtitle)
+        )
+      }
+
+      is HistoryUiState.Content -> {
+        HistoryList(
+          items = current.items,
+          listState = listState,
+          onRemove = onRemoveItem
+        )
+      }
+
+      is HistoryUiState.Error -> {
+        ErrorContent(
+          title = stringResource(Res.string.common_error_title),
+          message = io.github.alelk.pws.features.app.rememberResolved(current.message),
+          onRetry = onRetry,
+        )
+      }
+    }
   }
 }
 
@@ -338,7 +348,7 @@ private fun groupByDate(items: List<HistoryItemUi>, now: Instant): List<HistoryG
 }
 
 @Composable
-private fun ClearHistoryDialog(
+internal fun ClearHistoryDialog(
   onConfirm: () -> Unit,
   onDismiss: () -> Unit
 ) {

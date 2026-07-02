@@ -5,16 +5,12 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material.icons.automirrored.outlined.LibraryBooks
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Tag
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.Tag
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -39,11 +35,9 @@ import androidx.compose.ui.platform.testTag
 import cafe.adriel.voyager.navigator.tab.Tab
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.nav_books
-import io.github.alelk.pws.features.resources.nav_favorites
-import io.github.alelk.pws.features.resources.nav_history
 import io.github.alelk.pws.features.resources.nav_home
+import io.github.alelk.pws.features.resources.nav_library
 import io.github.alelk.pws.features.resources.nav_search
-import io.github.alelk.pws.features.resources.nav_tags
 import io.github.alelk.pws.features.theme.Motion
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -69,29 +63,17 @@ enum class NavDestination(
     selectedIcon = Icons.AutoMirrored.Filled.LibraryBooks,
     unselectedIcon = Icons.AutoMirrored.Outlined.LibraryBooks
   ),
-  Tags(
-    route = "tags",
-    labelRes = Res.string.nav_tags,
-    selectedIcon = Icons.Filled.Tag,
-    unselectedIcon = Icons.Outlined.Tag
-  ),
   Search(
     route = "search",
     labelRes = Res.string.nav_search,
     selectedIcon = Icons.Filled.Search,
     unselectedIcon = Icons.Outlined.Search
   ),
-  Favorites(
-    route = "favorites",
-    labelRes = Res.string.nav_favorites,
-    selectedIcon = Icons.Filled.Favorite,
-    unselectedIcon = Icons.Outlined.FavoriteBorder
-  ),
-  History(
-    route = "history",
-    labelRes = Res.string.nav_history,
-    selectedIcon = Icons.Filled.History,
-    unselectedIcon = Icons.Outlined.History
+  Library(
+    route = "library",
+    labelRes = Res.string.nav_library,
+    selectedIcon = Icons.Filled.Bookmark,
+    unselectedIcon = Icons.Outlined.BookmarkBorder
   )
 }
 

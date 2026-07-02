@@ -59,14 +59,10 @@ import io.github.alelk.pws.features.components.AppModalBottomSheet
 import io.github.alelk.pws.features.components.EmptyContent
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
-import io.github.alelk.pws.features.components.NavDestination
-import io.github.alelk.pws.features.components.OnTabReselected
 import io.github.alelk.pws.features.components.StateCrossfade
 import io.github.alelk.pws.features.components.SwipeableSongItem
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.common_back
 import io.github.alelk.pws.features.resources.common_error_title
@@ -120,12 +116,6 @@ fun FavoritesContent(
   val haptic = LocalHapticFeedback.current
   var showSortDialog by remember { mutableStateOf(false) }
   val listState = rememberLazyListState()
-  val scope = rememberCoroutineScope()
-
-  OnTabReselected(NavDestination.Favorites) {
-    scope.launch { listState.animateScrollToItem(0) }
-    scrollBehavior.state.heightOffset = 0f
-  }
 
   Scaffold(
     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -188,81 +178,118 @@ fun FavoritesContent(
     },
     snackbarHost = { SnackbarHost(snackbarHostState) }
   ) { innerPadding ->
-    StateCrossfade(state, modifier = Modifier.padding(innerPadding)) { current ->
-      when (current) {
-        FavoritesUiState.Loading -> {
-          LoadingContent(message = stringResource(Res.string.favorites_loading))
-        }
+    FavoritesBody(
+      state = state,
+      listState = listState,
+      onRemove = onRemove,
+      modifier = Modifier.padding(innerPadding)
+    )
+  }
 
-        FavoritesUiState.Empty -> {
-          EmptyContent(
-            icon = Icons.Outlined.FavoriteBorder,
-            title = stringResource(Res.string.favorites_empty_title),
-            subtitle = stringResource(Res.string.favorites_empty_subtitle)
-          )
-        }
+  if (showSortDialog && state is FavoritesUiState.Content) {
+    FavoritesSortSheet(
+      sortMode = state.sortMode,
+      onSortModeChange = onSortModeChange,
+      onDismiss = { showSortDialog = false }
+    )
+  }
+}
 
-        is FavoritesUiState.Content -> {
-          FavoritesList(
-            songs = current.songs,
-            listState = listState,
-            onRemove = onRemove
-          )
-        }
+/**
+ * Scaffold-free favorites body: Loading / Empty / Content / Error.
+ * Reused by the standalone [FavoritesScreen] and by the Library tab.
+ */
+@Composable
+fun FavoritesBody(
+  state: FavoritesUiState,
+  listState: androidx.compose.foundation.lazy.LazyListState,
+  onRemove: (FavoriteSongUi) -> Unit,
+  modifier: Modifier = Modifier,
+) {
+  StateCrossfade(state, modifier = modifier) { current ->
+    when (current) {
+      FavoritesUiState.Loading -> {
+        LoadingContent(message = stringResource(Res.string.favorites_loading))
+      }
 
-        is FavoritesUiState.Error -> {
-          ErrorContent(
-            title = stringResource(Res.string.common_error_title),
-            message = io.github.alelk.pws.features.app.rememberResolved(current.message),
-          )
-        }
+      FavoritesUiState.Empty -> {
+        EmptyContent(
+          icon = Icons.Outlined.FavoriteBorder,
+          title = stringResource(Res.string.favorites_empty_title),
+          subtitle = stringResource(Res.string.favorites_empty_subtitle)
+        )
+      }
+
+      is FavoritesUiState.Content -> {
+        FavoritesList(
+          songs = current.songs,
+          listState = listState,
+          onRemove = onRemove
+        )
+      }
+
+      is FavoritesUiState.Error -> {
+        ErrorContent(
+          title = stringResource(Res.string.common_error_title),
+          message = io.github.alelk.pws.features.app.rememberResolved(current.message),
+        )
       }
     }
   }
+}
 
-  // iOS-style: sort через ModalBottomSheet, не AlertDialog.
-  if (showSortDialog && state is FavoritesUiState.Content) {
-    val sortSheetState = rememberModalBottomSheetState()
-    AppModalBottomSheet(
-      onDismissRequest = { showSortDialog = false },
-      sheetState = sortSheetState,
-      containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-    ) {
-      androidx.compose.foundation.layout.Column(modifier = Modifier.padding(bottom = MaterialTheme.spacing.lg)) {
-        Text(
-          text = stringResource(Res.string.favorites_sort),
-          style = MaterialTheme.typography.titleMedium,
-          color = MaterialTheme.colorScheme.onSurface,
-          modifier = Modifier.padding(horizontal = MaterialTheme.spacing.lg, vertical = MaterialTheme.spacing.md)
-        )
-        SortOptionRow(
-          label = stringResource(Res.string.favorites_sort_added_date),
-          selected = state.sortMode == FavoriteSortMode.ADDED_DATE,
-          onClick = {
-            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-            onSortModeChange(FavoriteSortMode.ADDED_DATE)
-            showSortDialog = false
-          }
-        )
-        SortOptionRow(
-          label = stringResource(Res.string.favorites_sort_song_number),
-          selected = state.sortMode == FavoriteSortMode.SONG_NUMBER,
-          onClick = {
-            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-            onSortModeChange(FavoriteSortMode.SONG_NUMBER)
-            showSortDialog = false
-          }
-        )
-        SortOptionRow(
-          label = stringResource(Res.string.favorites_sort_song_name),
-          selected = state.sortMode == FavoriteSortMode.SONG_NAME,
-          onClick = {
-            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-            onSortModeChange(FavoriteSortMode.SONG_NAME)
-            showSortDialog = false
-          }
-        )
-      }
+/**
+ * iOS-style sort picker in a ModalBottomSheet.
+ * Reused by the standalone [FavoritesScreen] and by the Library tab.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FavoritesSortSheet(
+  sortMode: FavoriteSortMode,
+  onSortModeChange: (FavoriteSortMode) -> Unit,
+  onDismiss: () -> Unit,
+) {
+  val haptic = LocalHapticFeedback.current
+  val sortSheetState = rememberModalBottomSheetState()
+  AppModalBottomSheet(
+    onDismissRequest = onDismiss,
+    sheetState = sortSheetState,
+    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+  ) {
+    androidx.compose.foundation.layout.Column(modifier = Modifier.padding(bottom = MaterialTheme.spacing.lg)) {
+      Text(
+        text = stringResource(Res.string.favorites_sort),
+        style = MaterialTheme.typography.titleMedium,
+        color = MaterialTheme.colorScheme.onSurface,
+        modifier = Modifier.padding(horizontal = MaterialTheme.spacing.lg, vertical = MaterialTheme.spacing.md)
+      )
+      SortOptionRow(
+        label = stringResource(Res.string.favorites_sort_added_date),
+        selected = sortMode == FavoriteSortMode.ADDED_DATE,
+        onClick = {
+          haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+          onSortModeChange(FavoriteSortMode.ADDED_DATE)
+          onDismiss()
+        }
+      )
+      SortOptionRow(
+        label = stringResource(Res.string.favorites_sort_song_number),
+        selected = sortMode == FavoriteSortMode.SONG_NUMBER,
+        onClick = {
+          haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+          onSortModeChange(FavoriteSortMode.SONG_NUMBER)
+          onDismiss()
+        }
+      )
+      SortOptionRow(
+        label = stringResource(Res.string.favorites_sort_song_name),
+        selected = sortMode == FavoriteSortMode.SONG_NAME,
+        onClick = {
+          haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+          onSortModeChange(FavoriteSortMode.SONG_NAME)
+          onDismiss()
+        }
+      )
     }
   }
 }

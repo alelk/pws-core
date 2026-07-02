@@ -7,6 +7,7 @@
     <string name="nav_search">Szukaj</string>
     <string name="nav_favorites">Ulubione</string>
     <string name="nav_history">Historia</string>
+    <string name="nav_library">Biblioteka</string>
 
     <string name="home_recently_opened">Niedawno otwarte</string>
     <string name="home_songbooks">Śpiewniki</string>
