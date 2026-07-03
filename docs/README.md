@@ -13,6 +13,7 @@ Documentation index. Agents should start with the root [`../AGENTS.md`](../AGENT
 | [`DATA_FLOW.md`](DATA_FLOW.md)                | Local vs. remote routing, search/book-visibility rules, asset content delivery (`CollectionBundle`, `BookBundle`) |
 | [`SYNC.md`](SYNC.md)                          | Sync design notes — **NOT IMPLEMENTED** today                             |
 | [`GLOSSARY.md`](GLOSSARY.md)                  | Business + technical terms, key distinctions (`SongNumber` vs `SongNumberId`, repository suffixes…) |
+| [`DESIGN.md`](DESIGN.md)                      | Design system: color tokens (all themes), typography, component and screen decisions of the 2026-07 redesign |
 | [`ai/plans/`](ai/plans/)                      | **In-flight execution plans** — read first when a task references current work |
 | [`ai/TASK_PLAN_TEMPLATE.md`](ai/TASK_PLAN_TEMPLATE.md) | Template for new initiative plans                                 |
 | [`ai/skills/`](ai/skills/)                    | Source catalog of agent skills (synced to `.claude/skills/` for Claude Code) |

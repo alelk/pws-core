@@ -43,8 +43,8 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * Modern search field with clear button.
  *
- * When [onNumberModeToggle] is set, the field shows a mono «123 / abc» pill that
- * switches the keyboard between words and digits (дизайн-система, кадр 7).
+ * When [onNumberModeToggle] is set, the field shows a mono "123 / abc" pill that
+ * switches the keyboard between words and digits (design system, frame 7).
  */
 @Composable
 fun SearchField(
@@ -115,7 +115,7 @@ fun SearchField(
   )
 }
 
-/** «123 / abc» keyboard-mode switch: the label shows the mode it switches TO. */
+/** "123 / abc" keyboard-mode switch: the label shows the mode it switches TO. */
 @Composable
 private fun SearchModeBadge(
   numberMode: Boolean,

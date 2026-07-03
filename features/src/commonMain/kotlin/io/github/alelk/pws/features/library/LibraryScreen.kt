@@ -98,7 +98,7 @@ internal enum class LibrarySection(val labelRes: StringResource) {
 
 /**
  * Library tab: Favorites + History + Tags under one segmented switcher
- * (дизайн-система, кадр 8 — «три раздела под одной вкладкой»).
+ * (design system, frame 8 — "three sections under one tab").
  */
 class LibraryScreen : Screen {
 

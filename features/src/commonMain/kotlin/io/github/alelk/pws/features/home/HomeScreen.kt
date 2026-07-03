@@ -177,7 +177,7 @@ fun HomeContent(
             SearchBarWithSuggestions(
               query = searchQuery,
               onQueryChange = onSearchQueryChange,
-              // Живой поиск: результаты уже под полем, Enter лишь прячет клавиатуру.
+              // Live search: results are already under the field, Enter only hides the keyboard.
               onSearch = { keyboardController?.hide() },
               suggestions = suggestions,
               onSuggestionClick = { suggestion ->

@@ -344,7 +344,7 @@ fun SongDetailContent(
               Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = stringResource(Res.string.song_detail_next))
             }
           }
-          // Favorite heart lives in the header (дизайн-система, кадр 1A)
+          // Favorite heart lives in the header (design system, frame 1A)
           if (state is SongDetailUiState.Content) {
             IconButton(
               onClick = {
@@ -574,7 +574,7 @@ private fun TextSettingsSheet(
     }
     Spacer(Modifier.height(spacing.md))
 
-    // «Засечки» — литературная антиква для текста песни
+    // "Serif font" — literary serif for the song text
     Row(
       modifier = Modifier.fillMaxWidth(),
       verticalAlignment = Alignment.CenterVertically,
@@ -608,7 +608,7 @@ private fun TextSettingsSheet(
       )
     }
 
-    // ← → в шапке: скрываемые; на touch-платформах остаётся свайп
+    // Header prev/next arrows: hideable; swipe stays on touch platforms
     if (showNavigationToggle) {
       Row(
         modifier = Modifier.fillMaxWidth(),
@@ -906,7 +906,7 @@ private fun LyricPartView(
         }
       }
 
-      // Припев/бридж — линия-акцент слева + метка (капс, моно), без заливки-плитки
+      // Chorus/bridge — left accent line + label (caps, mono) instead of a filled tile
       is Chorus -> {
         val chorusLabel = if (chorusIndex != null) {
           "${stringResource(Res.string.song_detail_label_chorus)} $chorusIndex"
@@ -957,7 +957,7 @@ private fun IntrinsicChorusView(
       .fillMaxWidth()
       .height(IntrinsicSize.Min)
   ) {
-    // Тонкая линия-акцент 2px — вместо заливки-плитки (дизайн-система)
+    // Thin 2dp accent line — instead of a filled tile (design system)
     Box(
       modifier = Modifier
         .width(2.dp)

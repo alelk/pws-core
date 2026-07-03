@@ -74,8 +74,8 @@ class SearchScreenModel(
       }
 
       SearchEvent.SearchSubmitted -> {
-        // Живой поиск — одна поверхность: результаты уже на экране,
-        // Enter не навигирует (дизайн-система, кадры 6A/6B).
+        // Live search is a single surface: results are already on screen,
+        // Enter does not navigate anywhere (design system, frames 6A/6B).
       }
 
       SearchEvent.ClearQuery -> {

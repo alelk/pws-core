@@ -4,38 +4,38 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 
-// Дизайн-система «Песнь Возрождения» (docs/design/Дизайн-система.md).
-// Один акцент — хвоя; тёплые нейтрали вместо чисто-белого/серого.
+// Design system tokens (docs/DESIGN.md).
+// Single conifer accent; warm neutrals instead of pure white/grey.
 
-// --- Акцент ---
-val AccentConifer = Color(0xFF2E5A4D)      // хвоя — единственный акцент светлой темы
-val AccentConiferDeep = Color(0xFF254E43)  // текст на подсветке совпадения
-val AccentSoft = Color(0xFFE7EFEA)         // accent-soft фон (контейнеры, номер-бейдж)
-val AccentSage = Color(0xFF8FBFA4)         // шалфей — акцент тёмных тем
+// --- Accent ---
+val AccentConifer = Color(0xFF2E5A4D)      // conifer — the only accent of the light theme
+val AccentConiferDeep = Color(0xFF254E43)  // text on the search-match highlight
+val AccentSoft = Color(0xFFE7EFEA)         // accent-soft background (containers, number badge)
+val AccentSage = Color(0xFF8FBFA4)         // sage — accent of the dark themes
 
-// --- Светлая тема: тёплые нейтрали ---
-val WarmBackground = Color(0xFFF1EBDF)     // фон приложения
-val WarmPaper = Color(0xFFF5EFE3)          // бумага чтения
-val WarmCard = Color(0xFFFBF7EE)           // карточка
-val WarmField = Color(0xFFFFFDF8)          // поле ввода
-val WarmInk = Color(0xFF22201A)            // основной текст
-val WarmInk2 = Color(0xFF6B6353)           // вторичный текст
-val WarmInk3 = Color(0xFF8A8172)           // тихий текст
-val WarmLine = Color(0xFFE3DACA)           // разделители
+// --- Light theme: warm neutrals ---
+val WarmBackground = Color(0xFFF1EBDF)     // app background
+val WarmPaper = Color(0xFFF5EFE3)          // reading paper
+val WarmCard = Color(0xFFFBF7EE)           // card
+val WarmField = Color(0xFFFFFDF8)          // input field
+val WarmInk = Color(0xFF22201A)            // primary text
+val WarmInk2 = Color(0xFF6B6353)           // secondary text
+val WarmInk3 = Color(0xFF8A8172)           // quiet text
+val WarmLine = Color(0xFFE3DACA)           // dividers
 
-// --- «Тёплая ночь» ---
+// --- "Warm Night" dark theme ---
 val NightBackground = Color(0xFF17150F)
 val NightInk = Color(0xFFECE6D6)
 val NightInk2 = Color(0xFF928B79)
 val NightLine = Color(0xFF2C2A20)
 
-// --- OLED-чёрный ---
+// --- OLED black theme ---
 val OledBackground = Color(0xFF000000)
 val OledSurface = Color(0xFF0B0B0B)
 val OledInk = Color(0xFFE9E4D7)
 val OledLine = Color(0xFF1C1C18)
 
-// --- Тинты категорий/меток (приглушённые, ~равная насыщенность) ---
+// --- Category/tag tints (muted, roughly equal saturation) ---
 val TintConifer = Color(0xFF2E5A4D)
 val TintClay = Color(0xFF9E5A3C)
 val TintSlate = Color(0xFF435E77)
@@ -44,7 +44,7 @@ val TintGold = Color(0xFFA98526)
 
 val CategoryTints = listOf(TintConifer, TintClay, TintSlate, TintPlum, TintGold)
 
-// --- Деструктив (убрать/удалить) ---
+// --- Destructive (remove/delete) ---
 val Destructive = Color(0xFFB5502E)
 val DestructiveDark = Color(0xFFE08963)
 
@@ -85,7 +85,7 @@ val LightColors = lightColorScheme(
   surfaceContainerHighest = Color(0xFFE9DFCC),
 )
 
-// «Тёплая ночь» — заменяет холодный Dark #121212
+// "Warm Night" — replaces the cold Dark #121212
 val DarkColors = darkColorScheme(
   primary = AccentSage,
   onPrimary = Color(0xFF12291F),
@@ -123,7 +123,7 @@ val DarkColors = darkColorScheme(
   surfaceContainerHighest = NightLine,
 )
 
-// OLED-чёрный: истинный чёрный фон, тёплый ink, шалфейный акцент
+// OLED black: true black background, warm ink, sage accent
 val BlackColors = darkColorScheme(
   primary = AccentSage,
   onPrimary = Color(0xFF12291F),

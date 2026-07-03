@@ -16,10 +16,10 @@ data class SongDetailDisplaySettings(
   /** Множитель межстрочного интервала (0.9 .. 1.4 .. 1.8). 1.0 — стандартный. */
   val lineHeightMultiplier: Float = 1.0f,
   val onLineHeightMultiplierChange: (Float) -> Unit = {},
-  /** Антиква («Засечки») для текста песни; по умолчанию — гротеск. */
+  /** Literary serif ("Serif font" option) for song text; the default is the grotesque. */
   val serifFont: Boolean = false,
   val onSerifFontChange: (Boolean) -> Unit = {},
-  /** Кнопки ← → в шапке (можно скрыть; на touch остаётся свайп). */
+  /** Prev/next buttons in the header (can be hidden; swipe stays on touch platforms). */
   val showNavigationButtons: Boolean = true,
   val onShowNavigationButtonsChange: (Boolean) -> Unit = {},
 )

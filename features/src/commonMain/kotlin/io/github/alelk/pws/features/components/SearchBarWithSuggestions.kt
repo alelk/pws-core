@@ -202,7 +202,7 @@ private fun SearchInputField(
 
 /**
  * "123" pill inside the search field — switches to the number-pad input
- * (дизайн-система: «123 / abc» переключает цифры/слова).
+ * (design system: the "123 / abc" pill toggles digits/words).
  */
 @Composable
 private fun NumberModeBadge(onClick: () -> Unit) {

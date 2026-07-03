@@ -20,7 +20,7 @@ val NumberBadgeTextStyle = TextStyle(
 
 /**
  * Font family for song lyrics when the reader enables the "serif" option
- * (дизайн-система: литературная антиква; по умолчанию — гротеск).
+ * (design system: literary serif; the default is the system grotesque).
  */
 val SongSerifFontFamily = FontFamily.Serif
 

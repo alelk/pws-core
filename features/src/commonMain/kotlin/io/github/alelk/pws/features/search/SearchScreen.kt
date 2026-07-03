@@ -179,8 +179,8 @@ fun SearchContent(
         .fillMaxSize()
         .padding(innerPadding)
     ) {
-      // One surface: результаты живые, по Enter только прячем клавиатуру.
-      // «Отмена» очищает запрос и возвращает назад, если экран был запушен.
+      // One surface: results are live, Enter only hides the keyboard.
+      // "Cancel" clears the query and pops back when the screen was pushed.
       Row(
         modifier = Modifier
           .fillMaxWidth()
