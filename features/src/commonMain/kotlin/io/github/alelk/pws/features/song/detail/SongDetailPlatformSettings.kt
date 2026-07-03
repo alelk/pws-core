@@ -16,6 +16,12 @@ data class SongDetailDisplaySettings(
   /** Множитель межстрочного интервала (0.9 .. 1.4 .. 1.8). 1.0 — стандартный. */
   val lineHeightMultiplier: Float = 1.0f,
   val onLineHeightMultiplierChange: (Float) -> Unit = {},
+  /** Антиква («Засечки») для текста песни; по умолчанию — гротеск. */
+  val serifFont: Boolean = false,
+  val onSerifFontChange: (Boolean) -> Unit = {},
+  /** Кнопки ← → в шапке (можно скрыть; на touch остаётся свайп). */
+  val showNavigationButtons: Boolean = true,
+  val onShowNavigationButtonsChange: (Boolean) -> Unit = {},
 )
 
 /** Host-provided persisted display settings for favorites screen. */

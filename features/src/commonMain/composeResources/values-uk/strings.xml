@@ -198,6 +198,8 @@
     <string name="song_detail_jump_number_label">Номер (%1$d-%2$d)</string>
     <string name="song_detail_jump_clear">Очистити</string>
     <string name="song_detail_line_spacing">Міжрядковий інтервал</string>
+    <string name="song_detail_serif_font">Засічки</string>
+    <string name="song_detail_nav_buttons">Стрілки навігації</string>
 
     <string name="tag_chip_edit">Редагувати</string>
     <string name="tonality_a_major">Ля мажор (A-dur)</string>

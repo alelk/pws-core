@@ -210,6 +210,8 @@
     <string name="song_detail_jump_number_label">Number (%1$d-%2$d)</string>
     <string name="song_detail_jump_clear">Clear</string>
     <string name="song_detail_line_spacing">Line spacing</string>
+    <string name="song_detail_serif_font">Serif font</string>
+    <string name="song_detail_nav_buttons">Navigation arrows</string>
 
     <string name="tag_chip_edit">Edit</string>
     <string name="tonality_a_major">A major</string>

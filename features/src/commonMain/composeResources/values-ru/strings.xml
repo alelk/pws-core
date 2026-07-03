@@ -199,6 +199,8 @@
     <string name="song_detail_jump_number_label">Номер (%1$d-%2$d)</string>
     <string name="song_detail_jump_clear">Очистить</string>
     <string name="song_detail_line_spacing">Межстрочный интервал</string>
+    <string name="song_detail_serif_font">Засечки</string>
+    <string name="song_detail_nav_buttons">Стрелки навигации</string>
 
     <string name="tag_chip_edit">Редактировать</string>
     <string name="tonality_a_major">Ля мажор (A-dur)</string>

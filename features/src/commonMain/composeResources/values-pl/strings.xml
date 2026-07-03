@@ -193,6 +193,8 @@
     <string name="song_detail_jump_number_label">Numer (%1$d-%2$d)</string>
     <string name="song_detail_jump_clear">Wyczyść</string>
     <string name="song_detail_line_spacing">Odstęp między wierszami</string>
+    <string name="song_detail_serif_font">Czcionka szeryfowa</string>
+    <string name="song_detail_nav_buttons">Strzałki nawigacji</string>
 
     <string name="tag_chip_edit">Edytuj</string>
 
