@@ -10,14 +10,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.ui.Alignment
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
@@ -27,8 +28,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -36,45 +41,40 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.dp
-import androidx.compose.material.icons.automirrored.filled.LibraryBooks
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.registry.ScreenRegistry
 import cafe.adriel.voyager.core.registry.rememberScreen
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import androidx.compose.runtime.remember
-import io.github.alelk.pws.features.booklibrary.BookLibraryFirstLaunchState
-import org.koin.compose.getKoin
+import com.composables.icons.lucide.LibraryBig
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Settings
 import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.domain.book.model.BookSummary
+import io.github.alelk.pws.features.booklibrary.BookLibraryFirstLaunchState
 import io.github.alelk.pws.features.components.BookCard
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
 import io.github.alelk.pws.features.components.NavDestination
 import io.github.alelk.pws.features.components.OnTabReselected
 import io.github.alelk.pws.features.components.StateCrossfade
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
 import io.github.alelk.pws.features.resources.Res
-import io.github.alelk.pws.features.resources.books_error_title
-import io.github.alelk.pws.features.resources.books_loading
-import io.github.alelk.pws.features.resources.home_load_error_message
-import io.github.alelk.pws.features.resources.home_songbooks
 import io.github.alelk.pws.features.resources.book_library_open
 import io.github.alelk.pws.features.resources.books_browse_library_action
 import io.github.alelk.pws.features.resources.books_browse_library_subtitle
 import io.github.alelk.pws.features.resources.books_browse_library_title
+import io.github.alelk.pws.features.resources.books_error_title
+import io.github.alelk.pws.features.resources.books_loading
+import io.github.alelk.pws.features.resources.home_load_error_message
+import io.github.alelk.pws.features.resources.home_songbooks
 import io.github.alelk.pws.features.resources.settings_open
 import io.github.alelk.pws.features.theme.spacing
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.getKoin
 
 class BooksScreen : Screen {
   @Composable
@@ -162,13 +162,13 @@ private fun BooksTopBar(
     actions = {
       IconButton(onClick = onOpenBookLibrary) {
         Icon(
-          imageVector = Icons.AutoMirrored.Filled.LibraryBooks,
+          imageVector = Lucide.LibraryBig,
           contentDescription = stringResource(Res.string.book_library_open)
         )
       }
       IconButton(onClick = onOpenSettings) {
         Icon(
-          imageVector = Icons.Filled.Settings,
+          imageVector = Lucide.Settings,
           contentDescription = stringResource(Res.string.settings_open)
         )
       }
@@ -244,7 +244,7 @@ private fun BrowseLibraryBanner(onClick: () -> Unit) {
       horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md),
     ) {
       Icon(
-        imageVector = Icons.AutoMirrored.Filled.LibraryBooks,
+        imageVector = Lucide.LibraryBig,
         contentDescription = null,
         tint = MaterialTheme.colorScheme.onSecondaryContainer,
       )

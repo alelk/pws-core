@@ -12,13 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Sort
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowDownward
-import androidx.compose.material.icons.filled.ArrowUpward
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.DeleteSweep
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -55,9 +48,17 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.composables.icons.lucide.ArrowDown
+import com.composables.icons.lucide.ArrowUp
+import com.composables.icons.lucide.ArrowUpDown
+import com.composables.icons.lucide.ListX
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Plus
+import com.composables.icons.lucide.Settings
 import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.features.components.NavDestination
 import io.github.alelk.pws.features.components.OnTabReselected
+import io.github.alelk.pws.features.components.confirm
 import io.github.alelk.pws.features.favorites.FavoritesBody
 import io.github.alelk.pws.features.favorites.FavoritesEvent
 import io.github.alelk.pws.features.favorites.FavoritesScreenModel
@@ -68,7 +69,6 @@ import io.github.alelk.pws.features.history.HistoryBody
 import io.github.alelk.pws.features.history.HistoryEvent
 import io.github.alelk.pws.features.history.HistoryScreenModel
 import io.github.alelk.pws.features.history.HistoryUiState
-import io.github.alelk.pws.features.components.confirm
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.favorites_sort
 import io.github.alelk.pws.features.resources.favorites_sort_direction
@@ -162,7 +162,7 @@ class LibraryScreen : Screen {
               modifier = Modifier.testTag("action:open-settings")
             ) {
               Icon(
-                imageVector = Icons.Filled.Settings,
+                imageVector = Lucide.Settings,
                 contentDescription = stringResource(Res.string.settings_open)
               )
             }
@@ -175,7 +175,7 @@ class LibraryScreen : Screen {
                     showSortSheet = true
                   }) {
                     Icon(
-                      imageVector = Icons.AutoMirrored.Filled.Sort,
+                      imageVector = Lucide.ArrowUpDown,
                       contentDescription = stringResource(Res.string.favorites_sort)
                     )
                   }
@@ -184,7 +184,7 @@ class LibraryScreen : Screen {
                     favoritesModel.onEvent(FavoritesEvent.ToggleSortDirection)
                   }) {
                     Icon(
-                      imageVector = if (state.ascending) Icons.Filled.ArrowUpward else Icons.Filled.ArrowDownward,
+                      imageVector = if (state.ascending) Lucide.ArrowUp else Lucide.ArrowDown,
                       contentDescription = stringResource(Res.string.favorites_sort_direction)
                     )
                   }
@@ -202,7 +202,7 @@ class LibraryScreen : Screen {
                     modifier = Modifier.testTag("action:clear-history")
                   ) {
                     Icon(
-                      imageVector = Icons.Outlined.DeleteSweep,
+                      imageVector = Lucide.ListX,
                       contentDescription = stringResource(Res.string.history_clear)
                     )
                   }
@@ -228,7 +228,7 @@ class LibraryScreen : Screen {
             },
             modifier = Modifier.testTag("action:add-tag")
           ) {
-            Icon(imageVector = Icons.Default.Add, contentDescription = null)
+            Icon(imageVector = Lucide.Plus, contentDescription = null)
           }
         }
       },

@@ -19,9 +19,8 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,6 +34,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -51,21 +51,22 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Settings
 import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.domain.book.model.BookSummary
 import io.github.alelk.pws.domain.history.model.HistorySubject
 import io.github.alelk.pws.features.components.AppLargeTopBar
 import io.github.alelk.pws.features.components.BookCard
 import io.github.alelk.pws.features.components.ErrorContent
+import io.github.alelk.pws.features.components.HomeSearchField
 import io.github.alelk.pws.features.components.NavDestination
 import io.github.alelk.pws.features.components.NumberInputModal
 import io.github.alelk.pws.features.components.OnTabReselected
-import io.github.alelk.pws.features.components.SearchBarWithSuggestions
+import io.github.alelk.pws.features.components.SearchSuggestionRow
+import io.github.alelk.pws.features.components.SearchSuggestionsLoadingRow
 import io.github.alelk.pws.features.components.StateCrossfade
 import io.github.alelk.pws.features.components.SwipeableSongItem
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
 import io.github.alelk.pws.features.components.shimmerEffect
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.app_name
@@ -76,6 +77,7 @@ import io.github.alelk.pws.features.resources.home_songbooks
 import io.github.alelk.pws.features.resources.settings_open
 import io.github.alelk.pws.features.search.SearchSuggestion
 import io.github.alelk.pws.features.theme.spacing
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -145,7 +147,7 @@ fun HomeContent(
               modifier = Modifier.testTag("action:open-settings")
             ) {
             Icon(
-              imageVector = Icons.Filled.Settings,
+              imageVector = Lucide.Settings,
               contentDescription = stringResource(Res.string.settings_open)
             )
           }
@@ -160,6 +162,7 @@ fun HomeContent(
       }
 
       is HomeUiState.Content -> {
+        val isSearchMode = searchQuery.isNotBlank()
         // Main scrollable content with search bar inside
         LazyVerticalGrid(
           columns = GridCells.Adaptive(minSize = 140.dp),
@@ -174,26 +177,12 @@ fun HomeContent(
         ) {
           // Search hero — the primary action on Home
           item(span = { GridItemSpan(maxLineSpan) }) {
-            SearchBarWithSuggestions(
+            HomeSearchField(
               query = searchQuery,
               onQueryChange = onSearchQueryChange,
               // Live search: results are already under the field, Enter only hides the keyboard.
               onSearch = { keyboardController?.hide() },
-              suggestions = suggestions,
-              onSuggestionClick = { suggestion ->
-                onClearSearch()
-                // Navigate to song in book context if available
-                val screen = suggestion.bookReferences.firstOrNull()?.let { ref ->
-                  ScreenRegistry.get(
-                    SharedScreens.song(io.github.alelk.pws.domain.core.ids.SongNumberId(ref.bookId, suggestion.songId))
-                  )
-                } ?: ScreenRegistry.get(
-                  SharedScreens.songById(suggestion.songId)
-                )
-                navigator.push(screen)
-              },
               isLoading = isSearching,
-              showSuggestions = searchQuery.isNotBlank(),
               onNumberModeClick = {
                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 showNumberInput = true
@@ -201,8 +190,41 @@ fun HomeContent(
             )
           }
 
+          // Live results take over the surface while a query is active
+          // (single-surface search, same as the Search tab — no popup).
+          if (isSearchMode) {
+            if (isSearching && suggestions.isEmpty()) {
+              item(span = { GridItemSpan(maxLineSpan) }) {
+                SearchSuggestionsLoadingRow()
+              }
+            }
+            itemsIndexed(
+              items = suggestions,
+              key = { _, s -> s.songId.value },
+              span = { _, _ -> GridItemSpan(maxLineSpan) }
+            ) { index, suggestion ->
+              SearchSuggestionRow(
+                suggestion = suggestion,
+                onClick = {
+                  onClearSearch()
+                  keyboardController?.hide()
+                  // Navigate to song in book context if available
+                  val screen = suggestion.bookReferences.firstOrNull()?.let { ref ->
+                    ScreenRegistry.get(
+                      SharedScreens.song(io.github.alelk.pws.domain.core.ids.SongNumberId(ref.bookId, suggestion.songId))
+                    )
+                  } ?: ScreenRegistry.get(
+                    SharedScreens.songById(suggestion.songId)
+                  )
+                  navigator.push(screen)
+                },
+                modifier = Modifier.testTag("home-suggestion-$index")
+              )
+            }
+          }
+
           // Section header for books — the shelf comes right after the search
-          item(span = { GridItemSpan(maxLineSpan) }) {
+          if (!isSearchMode) item(span = { GridItemSpan(maxLineSpan) }) {
             Spacer(Modifier.height(MaterialTheme.spacing.sm))
             Text(
               text = stringResource(Res.string.home_songbooks),
@@ -213,7 +235,7 @@ fun HomeContent(
           }
 
           // Books grid - limit to max 6 featured books
-          items(
+          if (!isSearchMode) items(
             items = current.books.take(6),
             key = { it.id.toString() }
           ) { book ->
@@ -231,7 +253,7 @@ fun HomeContent(
           }
 
           // Recently opened — compact rows below the shelf (quick "continue" path)
-          if (current.recentSongs.isNotEmpty()) {
+          if (!isSearchMode && current.recentSongs.isNotEmpty()) {
             item(span = { GridItemSpan(maxLineSpan) }) {
               Spacer(Modifier.height(MaterialTheme.spacing.md))
               Text(
@@ -339,12 +361,12 @@ private fun HomeContentSkeleton(modifier: Modifier = Modifier) {
       )
     }
 
-    // Books placeholders
+    // Books placeholders — same aspect ratio as the real cards (no jump after load)
     items(6) {
       Box(
         modifier = Modifier
           .fillMaxWidth()
-          .aspectRatio(1f)
+          .aspectRatio(1.4f)
           .shimmerEffect(MaterialTheme.shapes.medium)
       )
     }

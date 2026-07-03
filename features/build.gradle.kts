@@ -62,6 +62,9 @@ kotlin {
       implementation(libs.compose.runtime)
       implementation(libs.compose.foundation)
       implementation(libs.compose.material3)
+      // Primary icon set: Lucide (single stroke style). Material icons stay only
+      // for the filled favorite heart, which has no stroke-set equivalent.
+      implementation(libs.compose.iconsLucide)
       implementation(libs.compose.materialIconsExtended)
       implementation(libs.compose.ui)
       implementation(libs.compose.components.resources)

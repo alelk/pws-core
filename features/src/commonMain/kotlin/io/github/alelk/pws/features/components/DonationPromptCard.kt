@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -22,6 +21,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.X
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.donation_prompt_action_donate
 import io.github.alelk.pws.features.resources.donation_prompt_action_later
@@ -62,7 +63,7 @@ fun DonationPromptCard(
           horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
           Icon(
-            imageVector = Icons.Default.Favorite,
+            imageVector = Icons.Filled.Favorite,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
           )
@@ -74,7 +75,7 @@ fun DonationPromptCard(
         }
         IconButton(onClick = onDismiss) {
           Icon(
-            imageVector = Icons.Default.Close,
+            imageVector = Lucide.X,
             contentDescription = stringResource(Res.string.donation_prompt_action_later),
             tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.6f),
           )

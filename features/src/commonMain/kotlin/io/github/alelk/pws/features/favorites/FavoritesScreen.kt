@@ -11,19 +11,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.ui.Alignment
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowDownward
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.ArrowUpward
-import androidx.compose.material.icons.automirrored.filled.Sort
-import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -33,13 +26,15 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -48,12 +43,19 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.core.registry.rememberScreen
 import cafe.adriel.voyager.core.registry.ScreenRegistry
+import cafe.adriel.voyager.core.registry.rememberScreen
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.composables.icons.lucide.ArrowDown
+import com.composables.icons.lucide.ArrowLeft
+import com.composables.icons.lucide.ArrowUp
+import com.composables.icons.lucide.ArrowUpDown
+import com.composables.icons.lucide.Heart
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Settings
 import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.features.components.AppModalBottomSheet
 import io.github.alelk.pws.features.components.EmptyContent
@@ -61,8 +63,6 @@ import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
 import io.github.alelk.pws.features.components.StateCrossfade
 import io.github.alelk.pws.features.components.SwipeableSongItem
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.foundation.lazy.rememberLazyListState
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.common_back
 import io.github.alelk.pws.features.resources.common_error_title
@@ -125,7 +125,7 @@ fun FavoritesContent(
           if (navigator.canPop) {
             IconButton(onClick = { navigator.pop() }) {
               Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                imageVector = Lucide.ArrowLeft,
                 contentDescription = stringResource(Res.string.common_back)
               )
             }
@@ -144,7 +144,7 @@ fun FavoritesContent(
               modifier = Modifier.testTag("action:open-settings")
             ) {
               Icon(
-                imageVector = Icons.Filled.Settings,
+                imageVector = Lucide.Settings,
                 contentDescription = stringResource(Res.string.settings_open)
               )
             }
@@ -154,7 +154,7 @@ fun FavoritesContent(
               showSortDialog = true 
             }) {
               Icon(
-                imageVector = Icons.AutoMirrored.Filled.Sort,
+                imageVector = Lucide.ArrowUpDown,
                 contentDescription = stringResource(Res.string.favorites_sort)
               )
             }
@@ -163,7 +163,7 @@ fun FavoritesContent(
               onSortDirectionToggle()
             }) {
               Icon(
-                imageVector = if (state.ascending) Icons.Filled.ArrowUpward else Icons.Filled.ArrowDownward,
+                imageVector = if (state.ascending) Lucide.ArrowUp else Lucide.ArrowDown,
                 contentDescription = stringResource(Res.string.favorites_sort_direction)
               )
             }
@@ -214,7 +214,7 @@ fun FavoritesBody(
 
       FavoritesUiState.Empty -> {
         EmptyContent(
-          icon = Icons.Outlined.FavoriteBorder,
+          icon = Lucide.Heart,
           title = stringResource(Res.string.favorites_empty_title),
           subtitle = stringResource(Res.string.favorites_empty_subtitle)
         )
@@ -341,7 +341,7 @@ private fun FavoritesList(
         }
       }
     ) { song ->
-      // animateItem — плавное появление/удаление (iOS feel)
+      // animateItem — smooth appear/remove (iOS feel)
       androidx.compose.foundation.layout.Column(modifier = Modifier.animateItem()) {
       when (song) {
         is FavoriteSongUi.BookedSong -> {

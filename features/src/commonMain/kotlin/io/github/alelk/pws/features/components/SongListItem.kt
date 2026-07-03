@@ -16,12 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.outlined.ChevronRight
-import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -45,6 +40,12 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.composables.icons.lucide.ChevronRight
+import com.composables.icons.lucide.Heart
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Pencil
+import com.composables.icons.lucide.Share2
+import com.composables.icons.lucide.Trash2
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.common_delete
 import io.github.alelk.pws.features.resources.song_detail_action_share
@@ -69,7 +70,9 @@ fun SongListItem(
   modifier: Modifier = Modifier,
   isEdited: Boolean = false,
   isFavorite: Boolean = false,
-  showChevron: Boolean = true,
+  // Content lists don't show chevrons (the whole row is obviously tappable);
+  // opt in only for settings-style rows.
+  showChevron: Boolean = false,
   onFavoriteToggle: (() -> Unit)? = null,
 ) {
   val haptic = LocalHapticFeedback.current
@@ -148,7 +151,7 @@ fun SongListItem(
               horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.xs)
             ) {
               Icon(
-                imageVector = Icons.Default.Edit,
+                imageVector = Lucide.Pencil,
                 contentDescription = null,
                 modifier = Modifier.size(12.dp),
                 tint = MaterialTheme.colorScheme.primary
@@ -165,7 +168,7 @@ fun SongListItem(
         // Favorite indicator
         if (isFavorite) {
           Icon(
-            imageVector = Icons.Default.Favorite,
+            imageVector = Icons.Filled.Favorite,
             contentDescription = stringResource(Res.string.song_item_in_favorites),
             modifier = Modifier.size(MaterialTheme.spacing.iconSm),
             tint = MaterialTheme.colorScheme.tertiary
@@ -175,7 +178,7 @@ fun SongListItem(
         // Chevron
         if (showChevron) {
           Icon(
-            imageVector = Icons.Outlined.ChevronRight,
+            imageVector = Lucide.ChevronRight,
             contentDescription = null,
             modifier = Modifier.size(MaterialTheme.spacing.iconMd),
             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
@@ -184,7 +187,8 @@ fun SongListItem(
       }
 
       HorizontalDivider(
-        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+        modifier = Modifier.padding(start = MaterialTheme.spacing.listItemHorizontal + 40.dp + MaterialTheme.spacing.md),
+        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
       )
     }
   }
@@ -228,7 +232,7 @@ private fun SongListContextMenu(
           horizontalArrangement = Arrangement.spacedBy(spacing.md)
         ) {
           Icon(
-            imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+            imageVector = if (isFavorite) Icons.Filled.Favorite else Lucide.Heart,
             contentDescription = null,
             tint = if (isFavorite) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant
           )
@@ -253,7 +257,7 @@ private fun SongListContextMenu(
           horizontalArrangement = Arrangement.spacedBy(spacing.md)
         ) {
           Icon(
-            imageVector = Icons.Default.Share,
+            imageVector = Lucide.Share2,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onSurfaceVariant
           )
@@ -283,7 +287,8 @@ fun NumberBadge(
     modifier = modifier
       .size(40.dp)
       .clip(RoundedCornerShape(8.dp))
-      .background(MaterialTheme.colorScheme.primaryContainer)
+      // Softened fill so a column of badges doesn't dominate the list.
+      .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f))
       .semantics { contentDescription = songNumberA11y },
     contentAlignment = Alignment.Center
   ) {
@@ -364,7 +369,7 @@ fun SwipeableSongItem(
             onFavoriteToggle()
           }) {
             Icon(
-              imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+              imageVector = if (isFavorite) Icons.Filled.Favorite else Lucide.Heart,
               contentDescription = if (isFavorite) {
                 stringResource(Res.string.song_item_remove_from_favorites)
               } else {
@@ -375,14 +380,14 @@ fun SwipeableSongItem(
           }
         }
 
-        // Delete button — destructive haptic, не lightTap.
+        // Delete button — destructive haptic, not a light tap.
         if (onDelete != null) {
           IconButton(onClick = {
             haptic.confirm()
             onDelete()
           }) {
             Icon(
-              imageVector = Icons.Outlined.Delete,
+              imageVector = Lucide.Trash2,
               contentDescription = stringResource(Res.string.common_delete),
               tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -391,7 +396,11 @@ fun SwipeableSongItem(
       }
 
       HorizontalDivider(
-        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+        modifier = Modifier.padding(
+          start = MaterialTheme.spacing.listItemHorizontal +
+            (if (number != null) 40.dp + MaterialTheme.spacing.md else 0.dp)
+        ),
+        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
       )
     }
   }

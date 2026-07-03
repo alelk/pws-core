@@ -11,9 +11,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Dialpad
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -52,6 +49,9 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.composables.icons.lucide.ArrowLeft
+import com.composables.icons.lucide.Hash
+import com.composables.icons.lucide.Lucide
 import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.domain.core.ids.BookId
 import io.github.alelk.pws.domain.core.ids.SongNumberId
@@ -196,7 +196,7 @@ fun BookSongsContent(
         navigationIcon = {
           IconButton(onClick = { navigator.pop() }) {
             Icon(
-              Icons.AutoMirrored.Filled.ArrowBack,
+              Lucide.ArrowLeft,
               contentDescription = stringResource(Res.string.common_back)
             )
           }
@@ -216,7 +216,7 @@ fun BookSongsContent(
           contentColor = MaterialTheme.colorScheme.onPrimaryContainer
         ) {
           Icon(
-            imageVector = Icons.Default.Dialpad,
+            imageVector = Lucide.Hash,
             contentDescription = stringResource(Res.string.book_songs_go_to_number)
           )
         }

@@ -1,42 +1,29 @@
 package io.github.alelk.pws.features.song.detail
 
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.automirrored.filled.LibraryBooks
-import androidx.compose.material.icons.automirrored.filled.Label
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FormatSize
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -58,6 +45,19 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.composables.icons.lucide.ALargeSmall
+import com.composables.icons.lucide.ArrowLeft
+import com.composables.icons.lucide.ArrowRight
+import com.composables.icons.lucide.Copy
+import com.composables.icons.lucide.Ellipsis
+import com.composables.icons.lucide.Heart
+import com.composables.icons.lucide.Info
+import com.composables.icons.lucide.LibraryBig
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Pencil
+import com.composables.icons.lucide.Search
+import com.composables.icons.lucide.Share2
+import com.composables.icons.lucide.Tag
 import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.domain.core.SongRefReason
 import io.github.alelk.pws.domain.core.ids.SongNumberId
@@ -307,7 +307,7 @@ fun SongDetailContent(
   val expandedText = displaySettings?.expandedText ?: true
   val lineHeightMultiplier = displaySettings?.lineHeightMultiplier ?: 1.0f
   val serifFont = displaySettings?.serifFont ?: false
-  val showNavigationButtons = displaySettings?.showNavigationButtons ?: true
+  val showNavigationButtons = displaySettings?.showNavigationButtons ?: PlatformDefaultShowSongNavButtons
 
   // Only one sheet may be open at a time — typed as a single sealed bucket so
   // it's impossible to leave a "two sheets open" state by accident.
@@ -336,12 +336,12 @@ fun SongDetailContent(
         actions = {
           if (showNavigationButtons && onNavigatePrev != null) {
             IconButton(onClick = onNavigatePrev) {
-              Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.song_detail_prev))
+              Icon(Lucide.ArrowLeft, contentDescription = stringResource(Res.string.song_detail_prev))
             }
           }
           if (showNavigationButtons && onNavigateNext != null) {
             IconButton(onClick = onNavigateNext) {
-              Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = stringResource(Res.string.song_detail_next))
+              Icon(Lucide.ArrowRight, contentDescription = stringResource(Res.string.song_detail_next))
             }
           }
           // Favorite heart lives in the header (design system, frame 1A)
@@ -354,7 +354,7 @@ fun SongDetailContent(
               modifier = Modifier.testTag("action:toggle-favorite")
             ) {
               Icon(
-                imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                imageVector = if (isFavorite) Icons.Filled.Favorite else Lucide.Heart,
                 contentDescription = stringResource(
                   if (isFavorite) Res.string.song_item_remove_from_favorites else Res.string.song_item_add_to_favorites
                 ),
@@ -363,12 +363,12 @@ fun SongDetailContent(
             }
           }
           IconButton(onClick = { activeSheet = SongDetailSheet.TextSettings }) {
-            Icon(Icons.Filled.FormatSize, contentDescription = stringResource(Res.string.song_detail_text_size))
+            Icon(Lucide.ALargeSmall, contentDescription = stringResource(Res.string.song_detail_text_size))
           }
           // "More actions" button — visible only when content loaded
           if (state is SongDetailUiState.Content) {
             IconButton(onClick = { activeSheet = SongDetailSheet.Actions }, modifier = Modifier.testTag("action:more-actions")) {
-              Icon(Icons.Filled.MoreVert, contentDescription = null)
+              Icon(Lucide.Ellipsis, contentDescription = null)
             }
           }
         }
@@ -510,7 +510,7 @@ private fun TextSettingsSheet(
       horizontalArrangement = Arrangement.spacedBy(spacing.md)
     ) {
       Icon(
-        Icons.Filled.FormatSize,
+        Lucide.ALargeSmall,
         contentDescription = null,
         modifier = Modifier.size(20.dp),
         tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -528,7 +528,7 @@ private fun TextSettingsSheet(
         )
       )
       Icon(
-        Icons.Filled.FormatSize,
+        Lucide.ALargeSmall,
         contentDescription = null,
         modifier = Modifier.size(28.dp),
         tint = MaterialTheme.colorScheme.onSurface
@@ -779,7 +779,7 @@ private fun BookContextBanner(
       horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
       Icon(
-        imageVector = Icons.AutoMirrored.Filled.LibraryBooks,
+        imageVector = Lucide.LibraryBig,
         contentDescription = null,
         modifier = Modifier.size(16.dp),
         tint = MaterialTheme.colorScheme.onSecondaryContainer
@@ -1019,7 +1019,7 @@ private fun SongMetadata(song: SongDetail) {
       // Info Header
       Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
-          Icons.Outlined.Info,
+          Lucide.Info,
           contentDescription = null,
           modifier = Modifier.size(16.dp),
           tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1098,7 +1098,7 @@ private fun SongReferencesSection(
 
     Row(verticalAlignment = Alignment.CenterVertically) {
       Icon(
-        Icons.AutoMirrored.Filled.ArrowForward,
+        Lucide.ArrowRight,
         contentDescription = null,
         modifier = Modifier.size(16.dp),
         tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1226,7 +1226,7 @@ private fun SongReferenceItem(
         }
       }
       Icon(
-        Icons.AutoMirrored.Filled.ArrowForward,
+        Lucide.ArrowRight,
         contentDescription = stringResource(Res.string.song_detail_open),
         modifier = Modifier.size(16.dp),
         tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1253,7 +1253,7 @@ private fun SongTagsSection(tags: List<Tag<TagId>>) {
     )
     Row(verticalAlignment = Alignment.CenterVertically) {
       Icon(
-        Icons.AutoMirrored.Filled.Label,
+        Lucide.Tag,
         contentDescription = null,
         modifier = Modifier.size(16.dp),
         tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1339,29 +1339,29 @@ private fun SongActionsSheet(
     )
 
     ActionItem(
-      icon = { Icon(Icons.Filled.Edit, contentDescription = null, modifier = Modifier.testTag("action:edit-song")) },
+      icon = { Icon(Lucide.Pencil, contentDescription = null, modifier = Modifier.testTag("action:edit-song")) },
       label = stringResource(Res.string.song_detail_action_edit),
       onClick = onEditSong
     )
     ActionItem(
-      icon = { Icon(Icons.AutoMirrored.Filled.Label, contentDescription = null, modifier = Modifier.testTag("action:edit-tags")) },
+      icon = { Icon(Lucide.Tag, contentDescription = null, modifier = Modifier.testTag("action:edit-tags")) },
       label = stringResource(Res.string.song_detail_action_edit_tags),
       onClick = onEditTags
     )
     if (showJump) {
       ActionItem(
-        icon = { Icon(Icons.Filled.Search, contentDescription = null) },
+        icon = { Icon(Lucide.Search, contentDescription = null) },
         label = stringResource(Res.string.song_detail_action_jump),
         onClick = onJumpToNumber
       )
     }
     ActionItem(
-      icon = { Icon(Icons.Filled.Share, contentDescription = null) },
+      icon = { Icon(Lucide.Share2, contentDescription = null) },
       label = stringResource(Res.string.song_detail_action_share),
       onClick = onShare
     )
     ActionItem(
-      icon = { Icon(Icons.Filled.ContentCopy, contentDescription = null) },
+      icon = { Icon(Lucide.Copy, contentDescription = null) },
       label = stringResource(Res.string.song_detail_action_copy),
       onClick = onCopy
     )
@@ -1590,7 +1590,7 @@ private fun JumpToNumberSheet(
             invalidInput = false
             missingSongNumber = null
           }) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.song_detail_jump_clear),
+            Icon(Lucide.ArrowLeft, contentDescription = stringResource(Res.string.song_detail_jump_clear),
               modifier = Modifier.size(18.dp))
           }
         }

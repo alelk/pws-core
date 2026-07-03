@@ -13,10 +13,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ErrorOutline
-import androidx.compose.material.icons.outlined.FolderOff
-import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -31,6 +27,10 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.composables.icons.lucide.CircleAlert
+import com.composables.icons.lucide.FolderX
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.SearchX
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.state_error_title
 import io.github.alelk.pws.features.resources.state_nothing_found_subtitle
@@ -78,7 +78,7 @@ fun LoadingContent(
 @Composable
 fun EmptyContent(
   modifier: Modifier = Modifier,
-  icon: ImageVector = Icons.Outlined.FolderOff,
+  icon: ImageVector = Lucide.FolderX,
   title: String,
   subtitle: String? = null,
   action: (@Composable () -> Unit)? = null
@@ -132,7 +132,7 @@ fun SearchEmptyContent(
 ) {
   EmptyContent(
     modifier = modifier,
-    icon = Icons.Outlined.SearchOff,
+    icon = Lucide.SearchX,
     title = stringResource(Res.string.state_nothing_found_title),
     subtitle = stringResource(Res.string.state_nothing_found_subtitle, query)
   )
@@ -159,7 +159,7 @@ fun ErrorContent(
       verticalArrangement = Arrangement.Center
     ) {
       Icon(
-        imageVector = Icons.Outlined.ErrorOutline,
+        imageVector = Lucide.CircleAlert,
         contentDescription = null,
         modifier = Modifier.size(64.dp),
         tint = MaterialTheme.colorScheme.error

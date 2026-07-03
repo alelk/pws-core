@@ -19,14 +19,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.Tag
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -60,24 +54,30 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import io.github.alelk.pws.features.components.testTagsAsResourceId
-
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.registry.ScreenRegistry
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.composables.icons.lucide.Check
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Pencil
+import com.composables.icons.lucide.Plus
+import com.composables.icons.lucide.Settings
+import com.composables.icons.lucide.Tag
+import com.composables.icons.lucide.Trash2
 import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.features.components.EmptyContent
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
 import io.github.alelk.pws.features.components.StateCrossfade
 import io.github.alelk.pws.features.components.confirm
-import androidx.compose.foundation.lazy.rememberLazyListState
+import io.github.alelk.pws.features.components.testTagsAsResourceId
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.common_delete
 import io.github.alelk.pws.features.resources.common_error_title
+import io.github.alelk.pws.features.resources.settings_open
 import io.github.alelk.pws.features.resources.tags_add
 import io.github.alelk.pws.features.resources.tags_cancel
 import io.github.alelk.pws.features.resources.tags_color_selected
@@ -102,7 +102,6 @@ import io.github.alelk.pws.features.resources.tags_snackbar_error_prefix
 import io.github.alelk.pws.features.resources.tags_snackbar_hidden
 import io.github.alelk.pws.features.resources.tags_snackbar_updated
 import io.github.alelk.pws.features.resources.tags_title
-import io.github.alelk.pws.features.resources.settings_open
 import io.github.alelk.pws.features.theme.spacing
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
@@ -193,7 +192,7 @@ fun TagsContent(
               modifier = Modifier.testTag("action:open-settings")
             ) {
               Icon(
-                imageVector = Icons.Filled.Settings,
+                imageVector = Lucide.Settings,
                 contentDescription = stringResource(Res.string.settings_open)
               )
             }
@@ -215,7 +214,7 @@ fun TagsContent(
           modifier = Modifier.testTag("action:add-tag")
         ) {
           Icon(
-            imageVector = Icons.Default.Add,
+            imageVector = Lucide.Plus,
             contentDescription = null
           )
         }
@@ -253,7 +252,7 @@ fun TagsBody(
 
       TagsUiState.Empty -> {
         EmptyContent(
-          icon = Icons.Outlined.Tag,
+          icon = Lucide.Tag,
           title = stringResource(Res.string.tags_empty_title),
           subtitle = stringResource(Res.string.tags_empty_subtitle)
         )
@@ -398,7 +397,7 @@ private fun TagListItem(
         onEditClick()
       }) {
         Icon(
-          imageVector = Icons.Outlined.Edit,
+          imageVector = Lucide.Pencil,
           contentDescription = stringResource(Res.string.tags_edit),
           tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -408,7 +407,7 @@ private fun TagListItem(
         onDeleteClick()
       }) {
         Icon(
-          imageVector = Icons.Outlined.Delete,
+          imageVector = Lucide.Trash2,
           contentDescription = stringResource(Res.string.tags_delete),
           tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -521,7 +520,7 @@ private fun ColorOption(
   ) {
     if (isSelected) {
       Icon(
-        imageVector = Icons.Default.Check,
+        imageVector = Lucide.Check,
         contentDescription = stringResource(Res.string.tags_color_selected),
         tint = Color.White,
         modifier = Modifier.size(20.dp)
@@ -546,7 +545,7 @@ private fun DeleteTagDialog(
     title = title,
     message = message,
     confirmLabel = confirmText,
-    icon = Icons.Outlined.Delete,
+    icon = Lucide.Trash2,
     onConfirm = {
       haptic.confirm()
       onConfirm()

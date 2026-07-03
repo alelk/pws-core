@@ -32,7 +32,7 @@ fun DonationPromptDialog(
     onDismissRequest = onDismiss,
     icon = {
       Icon(
-        imageVector = Icons.Default.Favorite,
+        imageVector = Icons.Filled.Favorite,
         contentDescription = null,
         tint = MaterialTheme.colorScheme.primary,
       )

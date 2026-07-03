@@ -14,10 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -35,6 +31,10 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.composables.icons.lucide.Check
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Star
+import com.composables.icons.lucide.X
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.book_songs_count
 import io.github.alelk.pws.features.resources.common_delete
@@ -53,7 +53,7 @@ fun TagColorIndicator(color: Color, size: Dp = 8.dp, modifier: Modifier = Modifi
   when (pattern) {
     0 -> Box(modifier = modifier.size(size).clip(CircleShape).background(color))
     1 -> Icon(
-      imageVector = Icons.Default.Star,
+      imageVector = Lucide.Star,
       contentDescription = null,
       tint = color,
       modifier = modifier.size(size + 2.dp)
@@ -135,7 +135,7 @@ fun SelectableTagChip(
     leadingIcon = if (selected) {
       {
         Icon(
-          imageVector = Icons.Default.Check,
+          imageVector = Lucide.Check,
           contentDescription = null,
           modifier = Modifier.size(FilterChipDefaults.IconSize)
         )
@@ -184,7 +184,7 @@ fun RemovableTagChip(
         modifier = Modifier.size(24.dp)
       ) {
         Icon(
-          imageVector = Icons.Default.Close,
+          imageVector = Lucide.X,
           contentDescription = stringResource(Res.string.common_delete),
           modifier = Modifier.size(16.dp),
           tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -265,7 +265,7 @@ fun TagListItem(
           onEditClick()
         }) {
           Icon(
-            imageVector = Icons.Default.Close,
+            imageVector = Lucide.X,
             contentDescription = stringResource(Res.string.tag_chip_edit),
             tint = MaterialTheme.colorScheme.onSurfaceVariant
           )

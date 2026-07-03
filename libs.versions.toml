@@ -12,7 +12,8 @@ ktor = "3.5.0" # https://github.com/ktorio/ktor/releases
 
 composeMultiplatform = "1.11.1" # https://github.com/JetBrains/compose-multiplatform/releases
 composeMaterial3 = "1.9.0" # material3 tracks a separate version line from CMP (pinned by plugin 1.11.1)
-composeMaterialIcons = "1.7.3" # pinned by Compose Multiplatform; will not receive updates (migrate to Material Symbols eventually)
+composeMaterialIcons = "1.7.3" # pinned by Compose Multiplatform; will not receive updates (kept only for the filled favorite heart)
+composeIconsLucide = "1.1.0" # https://github.com/composablehorizons/compose-icons — Lucide stroke icon set (KMP), the app's primary icon set
 androidx-lifecycle = "2.10.0" # https://developer.android.com/jetpack/androidx/releases/lifecycle
 
 koin = "4.2.2" # https://github.com/InsertKoinIO/koin/releases
@@ -85,6 +86,7 @@ compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.re
 compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "composeMultiplatform" }
 compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "composeMaterial3" }
 compose-materialIconsExtended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "composeMaterialIcons" }
+compose-iconsLucide = { module = "com.composables:icons-lucide", version.ref = "composeIconsLucide" }
 compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
 compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "composeMultiplatform" }
 compose-components-uiToolingPreview = { module = "org.jetbrains.compose.components:components-ui-tooling-preview", version.ref = "composeMultiplatform" }

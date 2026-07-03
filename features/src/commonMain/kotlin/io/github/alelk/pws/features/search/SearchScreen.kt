@@ -16,10 +16,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.MusicNote
-import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -48,12 +44,16 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.core.registry.rememberScreen
 import cafe.adriel.voyager.core.registry.ScreenRegistry
+import cafe.adriel.voyager.core.registry.rememberScreen
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Music
+import com.composables.icons.lucide.Search
+import com.composables.icons.lucide.Settings
 import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.domain.core.ids.SongNumberId
 import io.github.alelk.pws.features.components.AppTopBar
@@ -126,7 +126,7 @@ class SearchResultsScreen(private val initialQuery: String) : Screen {
   }
 }
 
-/** Локальный UI-фильтр результатов поиска. Не лезет в use case — пост-фильтрация. */
+/** Local UI filter over search results. Post-filtering only — does not touch the use case. */
 enum class SearchScope { ALL, IN_BOOKS, STANDALONE }
 
 private fun SearchScope.matches(s: SearchSuggestion): Boolean = when (this) {
@@ -166,7 +166,7 @@ fun SearchContent(
               modifier = Modifier.testTag("action:open-settings")
             ) {
               Icon(
-                imageVector = Icons.Filled.Settings,
+                imageVector = Lucide.Settings,
                 contentDescription = stringResource(Res.string.settings_open)
               )
             }
@@ -213,7 +213,7 @@ fun SearchContent(
         }
       }
 
-      // Scope chips — iOS-style filter row под поиском.
+      // Scope chips — iOS-style filter row under the search field.
       SearchScopeChips(
         scope = scope,
         onScopeChange = { scope = it },
@@ -302,7 +302,7 @@ private fun SearchScopeChips(
 @Composable
 private fun SearchIdleContent() {
   EmptyContent(
-    icon = Icons.Outlined.Search,
+    icon = Lucide.Search,
     title = stringResource(Res.string.search_idle_title),
     subtitle = stringResource(Res.string.search_idle_subtitle)
   )
@@ -377,7 +377,7 @@ private fun SearchSuggestionItem(
       } ?: run {
         // Fallback icon when no book reference
         Icon(
-          imageVector = Icons.Outlined.MusicNote,
+          imageVector = Lucide.Music,
           contentDescription = null,
           modifier = Modifier.size(24.dp),
           tint = MaterialTheme.colorScheme.primary

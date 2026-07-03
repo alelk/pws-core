@@ -8,11 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -26,11 +22,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Search
+import com.composables.icons.lucide.X
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.common_clear
 import io.github.alelk.pws.features.resources.search_mode_numbers
@@ -72,7 +72,7 @@ fun SearchField(
     },
     leadingIcon = {
       Icon(
-        imageVector = Icons.Default.Search,
+        imageVector = Lucide.Search,
         contentDescription = null,
         tint = MaterialTheme.colorScheme.onSurfaceVariant
       )
@@ -89,7 +89,7 @@ fun SearchField(
         ) {
           IconButton(onClick = { onQueryChange("") }) {
             Icon(
-              imageVector = Icons.Default.Clear,
+              imageVector = Lucide.X,
               contentDescription = stringResource(Res.string.common_clear),
               tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -169,7 +169,7 @@ fun OutlinedSearchField(
     },
     leadingIcon = {
       Icon(
-        imageVector = Icons.Default.Search,
+        imageVector = Lucide.Search,
         contentDescription = null,
         tint = MaterialTheme.colorScheme.onSurfaceVariant
       )
@@ -182,7 +182,7 @@ fun OutlinedSearchField(
       ) {
         IconButton(onClick = { onQueryChange("") }) {
           Icon(
-            imageVector = Icons.Default.Clear,
+            imageVector = Lucide.X,
             contentDescription = stringResource(Res.string.common_clear),
             tint = MaterialTheme.colorScheme.onSurfaceVariant
           )

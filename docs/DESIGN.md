@@ -53,15 +53,45 @@ radius 4.
 
 ## Typography
 
-- **UI:** system grotesque (SF on iOS). Headings weight 600–700.
+- **UI:** system grotesque (SF on iOS). Headings weight 600 (semibold, not bold).
+- **Tracking:** tightened against Material defaults — negative for display/headline
+  (−0.3…−0.5 sp), zero for titles and body. Material's positive body tracking reads
+  generic; system grotesques are designed for tighter setting.
 - **Song text:** grotesque by default; the "Serif font" reading option switches the
   song title and lyrics to a literary serif (`SongSerifFontFamily`). Minimum song
   text size 17sp (`SongTextMinSize`); the "Aa" sheet controls size and line height.
 - **Numbers / small technical labels:** monospace (`NumberBadgeTextStyle`).
 
+## Iconography
+
+- **Primary set: Lucide** (`com.composables:icons-lucide`) — one stroke weight
+  everywhere, no filled/outlined mixing. Overflow is a horizontal "…"
+  (`Lucide.Ellipsis`), never the vertical Material `MoreVert`.
+- The only Material icon kept is the **filled favorite heart**
+  (`Icons.Filled.Favorite`) for the *active* favorite state — a stroke set has no
+  filled state; inactive uses `Lucide.Heart`.
+- Nav/tab icons don't switch shape on selection; the accent tint and label weight
+  carry the state.
+
+## Bars (layering rule)
+
+*At rest a bar is the page; on scroll it separates by one tonal step.*
+
+- Top bars: `containerColor = background`, `scrolledContainerColor =
+  surfaceContainerHigh` (`AppTopBar`, `AppLargeTopBar`). No seam at the top of a
+  screen.
+- Bottom nav: `background` + a 1dp hairline (`outlineVariant` @ 50%) on top; **no
+  Material You pill indicator** — selection is the conifer/sage tint + W600 label +
+  the spring scale animation.
+- No blur/translucency effects: they are expensive on low-end Android and
+  unreliable in the Telegram webview and Compose/JS. Flat colors and alpha only.
+
 ## Components
 
-- **Number badge:** mono 600, conifer on accent-soft, radius 8 (`NumberBadge`).
+- **Number badge:** mono 600, conifer on accent-soft @ 70% alpha, radius 8
+  (`NumberBadge`).
+- **Song rows:** no chevrons in content lists (whole row is tappable); dividers are
+  inset to the text start and lightened (`outlineVariant` @ 40%).
 - **Chorus/bridge:** thin 2dp accent line on the left + uppercase mono label —
   **no filled tile** (`SongDetailScreen.IntrinsicChorusView`).
 - **Book cover:** warm paper + flat category-tinted header with a translucent spine
@@ -80,12 +110,15 @@ radius 4.
 ## Screen decisions
 
 - **Song (frames 1A/2A/3A):** favorite heart in the top bar; prev/next arrows are
-  adaptive (swipe on touch, buttons on web/desktop) and can be hidden in the "Aa"
-  sheet; the "Aa" sheet controls size, line height, serif option.
+  adaptive — hidden by default on native mobile (swipe pages instead), shown on
+  desktop/web/TG miniapp (`PlatformDefaultShowSongNavButtons`); the "Aa" sheet
+  toggle overrides, and also controls size, line height, serif option.
 - **Dark (3A/3B):** "Warm Night" replaces the cold Dark; OLED = existing Black;
   accent lightens to sage.
 - **Home (5A):** search hero first; songbook shelf second (popularity sorting —
   see the deferred plan below); recently opened at the bottom as compact rows.
+  Live search results render inline in the same list (single surface takeover) —
+  no dropdown popup.
 - **Search (6A/6B/7):** live results as you type, no Enter jump (one surface,
   Cancel returns); filter All / In books / Standalone; number path = numeric
   keyboard + book context.
@@ -100,7 +133,7 @@ radius 4.
   `ai/plans/2026-07-03_book-popularity-sorting_plan.md`](ai/plans/2026-07-03_book-popularity-sorting_plan.md).
 - **Stored tag shape** (manual user choice) would need a migration — the derived
   `hash % 4` shape stays as is.
-- Persisting the new `SongDetailDisplaySettings.serifFont` /
-  `showNavigationButtons` fields is host-side work (`pws-android`).
+- Persisting the new `SongDetailDisplaySettings.serifFont` field is host-side work
+  (`pws-android`); `showNavigationButtons` is persisted on Android.
 
 Last reviewed: 2026-07-03

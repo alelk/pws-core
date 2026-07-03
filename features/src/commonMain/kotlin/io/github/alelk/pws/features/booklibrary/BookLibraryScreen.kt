@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -42,6 +40,8 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.composables.icons.lucide.ArrowLeft
+import com.composables.icons.lucide.Lucide
 import io.github.alelk.pws.domain.booklibrary.model.BookCatalogEntry
 import io.github.alelk.pws.domain.booklibrary.model.DownloadState
 import io.github.alelk.pws.domain.core.ids.BookId
@@ -103,7 +103,7 @@ fun BookLibraryContent(
                 title = { Text(stringResource(Res.string.book_library_title)) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.pop() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        Icon(Lucide.ArrowLeft, contentDescription = null)
                     }
                 }
             )
