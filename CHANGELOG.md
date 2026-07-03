@@ -1,5 +1,18 @@
 # PWS Android
 
+# [3.2.0-rc.3](https://github.com/alelk/pws-core/compare/v3.2.0-rc.2...v3.2.0-rc.3) (2026-07-03)
+
+
+### Features
+
+* **components:** category-tinted book covers instead of random gradients ([20601c2](https://github.com/alelk/pws-core/commit/20601c2bb7bb837a2271804f12a9affb93a69e52))
+* **home:** search-first layout — hero search with 123 badge, shelf, recents as rows ([35965c6](https://github.com/alelk/pws-core/commit/35965c692ff3d90716c5c22a64b6959509409450))
+* **navigation:** 4-tab bottom nav with unified Library screen ([754dc71](https://github.com/alelk/pws-core/commit/754dc7102747a1606ab37d0d6a59bebee8e10841))
+* **search:** live single-surface search — no Enter jump, cancel, 123/abc toggle ([6560fd3](https://github.com/alelk/pws-core/commit/6560fd348014d435dd1e09cd70f54c69ceb6a534))
+* **song:** heart in header, chorus as accent line, serif option, toggleable arrows ([a674e25](https://github.com/alelk/pws-core/commit/a674e25e07aa174ad9a277ffc28dcd447deaeb2c))
+* **theme:** warm palette with single conifer accent, Warm Night + OLED dark themes ([eadb4c5](https://github.com/alelk/pws-core/commit/eadb4c5da9427f13c660e0b8a21eb5985e46a2e1)), closes [#F1EBDF](https://github.com/alelk/pws-core/issues/F1EBDF) [#FBF7EE](https://github.com/alelk/pws-core/issues/FBF7EE) [#2E5A4D](https://github.com/alelk/pws-core/issues/2E5A4D) [#17150F](https://github.com/alelk/pws-core/issues/17150F) [#8FBFA4](https://github.com/alelk/pws-core/issues/8FBFA4) [#121212](https://github.com/alelk/pws-core/issues/121212)
+* Update app design ([b328ba6](https://github.com/alelk/pws-core/commit/b328ba62fe79a6bd08bcc534a9972a0467d4260f))
+
 # [3.2.0-rc.2](https://github.com/alelk/pws-core/compare/v3.2.0-rc.1...v3.2.0-rc.2) (2026-07-01)
 
 
