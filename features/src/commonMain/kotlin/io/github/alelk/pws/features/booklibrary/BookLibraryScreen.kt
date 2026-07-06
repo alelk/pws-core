@@ -35,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
@@ -102,7 +103,10 @@ fun BookLibraryContent(
             TopAppBar(
                 title = { Text(stringResource(Res.string.book_library_title)) },
                 navigationIcon = {
-                    IconButton(onClick = { navigator.pop() }) {
+                    IconButton(
+                        onClick = { navigator.pop() },
+                        modifier = Modifier.testTag("action:navigate-back")
+                    ) {
                         Icon(Lucide.ArrowLeft, contentDescription = null)
                     }
                 }

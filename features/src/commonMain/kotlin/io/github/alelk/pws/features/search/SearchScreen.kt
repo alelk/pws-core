@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -317,10 +318,10 @@ private fun SearchSuggestionsList(
   LazyColumn(
     contentPadding = PaddingValues(bottom = 80.dp)
   ) {
-    items(
+    itemsIndexed(
       items = suggestions,
-      key = { it.songId.value }
-    ) { suggestion ->
+      key = { _, it -> it.songId.value }
+    ) { index, suggestion ->
       // Navigate to song in book context if available, otherwise by id
       val songScreen = suggestion.bookReferences.firstOrNull()?.let { ref ->
         rememberScreen(SharedScreens.song(SongNumberId(ref.bookId, suggestion.songId)))
@@ -328,6 +329,7 @@ private fun SearchSuggestionsList(
 
       SearchSuggestionItem(
         suggestion = suggestion,
+        index = index,
         onClick = { navigator.push(songScreen) }
       )
       HorizontalDivider(
@@ -341,16 +343,16 @@ private fun SearchSuggestionsList(
 @Composable
 private fun SearchSuggestionItem(
   suggestion: SearchSuggestion,
+  index: Int,
   onClick: () -> Unit
 ) {
   val booksByNumber = suggestion.booksByNumber
   val haptic = LocalHapticFeedback.current
-  val itemCd = suggestion.primarySongNumber?.let { "song-row-$it" } ?: "song-row-unknown"
 
   Surface(
     modifier = Modifier
       .fillMaxWidth()
-      .testTag(itemCd)
+      .testTag("song-suggestion-$index")
       .clickable(onClick = {
         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
         onClick()
@@ -440,10 +442,10 @@ private fun SearchResultsList(
   LazyColumn(
     contentPadding = PaddingValues(bottom = 80.dp)
   ) {
-    items(
+    itemsIndexed(
       items = results,
-      key = { it.songId.value }
-    ) { result ->
+      key = { _, it -> it.songId.value }
+    ) { index, result ->
       // Navigate to song in book context if available, otherwise by id
       val songScreen = result.bookReferences.firstOrNull()?.let { ref ->
         rememberScreen(SharedScreens.song(SongNumberId(ref.bookId, result.songId)))
@@ -451,6 +453,7 @@ private fun SearchResultsList(
 
       SearchSuggestionItem(
         suggestion = result,
+        index = index,
         onClick = { navigator.push(songScreen) }
       )
       HorizontalDivider(
