@@ -292,9 +292,23 @@
     <string name="book_library_empty_title">Нет установленных сборников</string>
     <string name="book_library_empty_message">Установите сборник песен, чтобы начать</string>
     <string name="book_library_recommended">Рекомендуется</string>
+    <string name="book_library_import_from_file">Импорт из файла</string>
+    <string name="book_library_import_success">Сборник успешно импортирован</string>
+    <string name="book_library_import_error">Ошибка импорта: %1$s</string>
     <string name="books_browse_library_title">Доступны другие сборники</string>
     <string name="books_browse_library_subtitle">Скачайте дополнительные сборники из каталога</string>
     <string name="books_browse_library_action">Открыть каталог</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">Псалмы и Хвала</string>
+    <string name="onboarding_subtitle">Выберите сборник для начала работы</string>
+    <string name="onboarding_skip">Пропустить</string>
+    <string name="onboarding_install_selected">Установить (%1$d)</string>
+    <string name="onboarding_continue">Продолжить</string>
+
+    <!-- Home screen empty state -->
+    <string name="home_empty_message">Сборники не установлены</string>
+    <string name="home_empty_action">Установить сборник</string>
 </resources>
 
 

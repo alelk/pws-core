@@ -28,10 +28,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,7 +52,6 @@ import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Settings
 import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.domain.book.model.BookSummary
-import io.github.alelk.pws.features.booklibrary.BookLibraryFirstLaunchState
 import io.github.alelk.pws.features.components.BookCard
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
@@ -74,7 +71,6 @@ import io.github.alelk.pws.features.resources.settings_open
 import io.github.alelk.pws.features.theme.spacing
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.getKoin
 
 class BooksScreen : Screen {
   @Composable
@@ -83,15 +79,6 @@ class BooksScreen : Screen {
     val state by viewModel.state.collectAsState()
     val navigator = LocalNavigator.currentOrThrow
     val bookLibraryScreen = rememberScreen(SharedScreens.BookLibrary)
-    val koin = getKoin()
-    val firstLaunchState = remember { runCatching { koin.get<BookLibraryFirstLaunchState>() }.getOrNull() }
-
-    LaunchedEffect(Unit) {
-      if (firstLaunchState?.shouldShow() == true) {
-        firstLaunchState.markShown()
-        navigator.push(bookLibraryScreen)
-      }
-    }
 
     BooksContent(
       state = state,

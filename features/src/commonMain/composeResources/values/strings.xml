@@ -292,9 +292,23 @@
     <string name="book_library_empty_title">No books installed</string>
     <string name="book_library_empty_message">Install a song book to get started</string>
     <string name="book_library_recommended">Recommended</string>
+    <string name="book_library_import_from_file">Import from file</string>
+    <string name="book_library_import_success">Bundle imported successfully</string>
+    <string name="book_library_import_error">Import failed: %1$s</string>
     <string name="books_browse_library_title">More songbooks available</string>
     <string name="books_browse_library_subtitle">Download additional collections from the catalog</string>
     <string name="books_browse_library_action">Browse Library</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">Praise &amp; Worship Songbook</string>
+    <string name="onboarding_subtitle">Choose a collection to get started</string>
+    <string name="onboarding_skip">Skip for now</string>
+    <string name="onboarding_install_selected">Install (%1$d)</string>
+    <string name="onboarding_continue">Continue</string>
+
+    <!-- Home screen empty state -->
+    <string name="home_empty_message">No collections installed yet</string>
+    <string name="home_empty_action">Install a collection</string>
 </resources>
 
 

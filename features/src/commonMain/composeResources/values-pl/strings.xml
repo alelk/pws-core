@@ -225,8 +225,22 @@
     <string name="license_loading">Ładowanie…</string>
     <string name="license_load_failed">Nie udało się załadować tekstu licencji: %1$s</string>
     <string name="jump_number_range">%1$d – %2$d</string>
+    <string name="book_library_import_from_file">Importuj z pliku</string>
+    <string name="book_library_import_success">Zbiór zaimportowany pomyślnie</string>
+    <string name="book_library_import_error">Błąd importu: %1$s</string>
     <string name="books_browse_library_title">Dostępne inne śpiewniki</string>
     <string name="books_browse_library_subtitle">Pobierz dodatkowe zbiory z katalogu</string>
     <string name="books_browse_library_action">Przeglądaj katalog</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">Psalmy i Uwielbienie</string>
+    <string name="onboarding_subtitle">Wybierz zbiór, aby rozpocząć</string>
+    <string name="onboarding_skip">Pomiń na razie</string>
+    <string name="onboarding_install_selected">Zainstaluj (%1$d)</string>
+    <string name="onboarding_continue">Kontynuuj</string>
+
+    <!-- Home screen empty state -->
+    <string name="home_empty_message">Brak zainstalowanych zbiorów</string>
+    <string name="home_empty_action">Zainstaluj zbiór</string>
 </resources>
 

@@ -291,9 +291,23 @@
     <string name="book_library_empty_title">Немає встановлених збірників</string>
     <string name="book_library_empty_message">Встановіть збірник пісень, щоб почати</string>
     <string name="book_library_recommended">Рекомендовано</string>
+    <string name="book_library_import_from_file">Імпорт з файлу</string>
+    <string name="book_library_import_success">Збірник успішно імпортовано</string>
+    <string name="book_library_import_error">Помилка імпорту: %1$s</string>
     <string name="books_browse_library_title">Доступні інші збірники</string>
     <string name="books_browse_library_subtitle">Завантажте додаткові збірники з каталогу</string>
     <string name="books_browse_library_action">Відкрити каталог</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">Псалми та Хвала</string>
+    <string name="onboarding_subtitle">Оберіть збірник для початку роботи</string>
+    <string name="onboarding_skip">Пропустити</string>
+    <string name="onboarding_install_selected">Встановити (%1$d)</string>
+    <string name="onboarding_continue">Продовжити</string>
+
+    <!-- Home screen empty state -->
+    <string name="home_empty_message">Збірники не встановлені</string>
+    <string name="home_empty_action">Встановити збірник</string>
 </resources>
 
 

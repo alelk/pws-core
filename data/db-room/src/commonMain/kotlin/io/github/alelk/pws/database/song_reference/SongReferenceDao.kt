@@ -3,6 +3,7 @@ package io.github.alelk.pws.database.song_reference
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
@@ -13,10 +14,10 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SongReferenceDao {
-  @Insert
+  @Insert(onConflict = OnConflictStrategy.IGNORE)
   suspend fun insert(songSongReference: SongReferenceEntity)
 
-  @Insert
+  @Insert(onConflict = OnConflictStrategy.IGNORE)
   suspend fun insertAll(references: List<SongReferenceEntity>)
 
   @Update

@@ -42,6 +42,7 @@ import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.composables.icons.lucide.ArrowLeft
+import com.composables.icons.lucide.FolderOpen
 import com.composables.icons.lucide.Lucide
 import io.github.alelk.pws.domain.booklibrary.model.BookCatalogEntry
 import io.github.alelk.pws.domain.booklibrary.model.DownloadState
@@ -64,6 +65,7 @@ import io.github.alelk.pws.features.resources.book_library_songs_count
 import io.github.alelk.pws.features.resources.book_library_status_built_in
 import io.github.alelk.pws.features.resources.book_library_status_installed
 import io.github.alelk.pws.features.resources.book_library_status_update_available
+import io.github.alelk.pws.features.resources.book_library_import_from_file
 import io.github.alelk.pws.features.resources.book_library_title
 import io.github.alelk.pws.features.resources.book_library_uninstall_confirm_cancel
 import io.github.alelk.pws.features.resources.book_library_uninstall_confirm_message
@@ -97,6 +99,7 @@ fun BookLibraryContent(
     onUninstall: (BookId) -> Unit = {},
 ) {
     val navigator = LocalNavigator.currentOrThrow
+    val externalActions = LocalBookLibraryExternalActions.current
 
     Scaffold(
         topBar = {
@@ -109,7 +112,20 @@ fun BookLibraryContent(
                     ) {
                         Icon(Lucide.ArrowLeft, contentDescription = null)
                     }
-                }
+                },
+                actions = {
+                    if (externalActions != null) {
+                        IconButton(
+                            onClick = externalActions.onImportFromFile,
+                            modifier = Modifier.testTag("action:import-from-file"),
+                        ) {
+                            Icon(
+                                imageVector = Lucide.FolderOpen,
+                                contentDescription = stringResource(Res.string.book_library_import_from_file),
+                            )
+                        }
+                    }
+                },
             )
         }
     ) { innerPadding ->
@@ -212,7 +228,7 @@ private fun BookLibraryList(
 }
 
 @Composable
-private fun BookLibraryCard(
+internal fun BookLibraryCard(
     item: BookLibraryItem,
     isRecommended: Boolean,
     onInstall: () -> Unit,

@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,6 +22,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -70,6 +72,8 @@ import io.github.alelk.pws.features.components.SwipeableSongItem
 import io.github.alelk.pws.features.components.shimmerEffect
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.app_name
+import io.github.alelk.pws.features.resources.home_empty_action
+import io.github.alelk.pws.features.resources.home_empty_message
 import io.github.alelk.pws.features.resources.home_load_error_message
 import io.github.alelk.pws.features.resources.home_load_error_title
 import io.github.alelk.pws.features.resources.home_recently_opened
@@ -232,6 +236,25 @@ fun HomeContent(
               color = MaterialTheme.colorScheme.onBackground,
               modifier = Modifier.semantics { heading() }
             )
+          }
+
+          // Empty state: no books installed yet
+          if (!isSearchMode && current.books.isEmpty()) item(span = { GridItemSpan(maxLineSpan) }) {
+            val bookLibraryScreen = rememberScreen(SharedScreens.BookLibrary)
+            Column(
+              modifier = Modifier.fillMaxWidth().padding(vertical = MaterialTheme.spacing.lg),
+              horizontalAlignment = Alignment.CenterHorizontally,
+              verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sm),
+            ) {
+              Text(
+                text = stringResource(Res.string.home_empty_message),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+              )
+              Button(onClick = { navigator.push(bookLibraryScreen) }) {
+                Text(stringResource(Res.string.home_empty_action))
+              }
+            }
           }
 
           // Books grid - limit to max 6 featured books
