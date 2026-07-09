@@ -67,6 +67,7 @@ import io.github.alelk.pws.features.resources.onboarding_skip
 import io.github.alelk.pws.features.resources.onboarding_subtitle
 import io.github.alelk.pws.features.resources.onboarding_title
 import io.github.alelk.pws.features.theme.spacing
+import kotlin.math.roundToLong
 import org.jetbrains.compose.resources.stringResource
 
 class OnboardingScreen(private val onSkip: () -> Unit) : Screen {
@@ -294,7 +295,8 @@ private fun OnboardingBookCard(
                         )
                     }
                 }
-                val sizeMb = "%.1f".format(item.entry.fileSizeBytes / 1_000_000.0)
+                val tenths = (item.entry.fileSizeBytes / 100_000.0).roundToLong()
+                val sizeMb = "${tenths / 10}.${tenths % 10}"
                 Text(
                     text = "${stringResource(Res.string.book_library_songs_count, item.entry.songCount)}  ·  ${stringResource(Res.string.book_library_size, sizeMb)}",
                     style = MaterialTheme.typography.bodySmall,
