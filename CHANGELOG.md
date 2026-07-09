@@ -1,5 +1,18 @@
 # PWS Android
 
+# [3.2.0-rc.4](https://github.com/alelk/pws-core/compare/v3.2.0-rc.3...v3.2.0-rc.4) (2026-07-09)
+
+
+### Bug Fixes
+
+* Fix onboarding screen issue ([6217de2](https://github.com/alelk/pws-core/commit/6217de2eacda52c315f986e77f2cc465d2655c0f))
+
+
+### Features
+
+* Db Migration ([cbb628b](https://github.com/alelk/pws-core/commit/cbb628b03c0ab979f93e917d5cba8f4b8820498f))
+* Onboarding screen ([5ad5c9f](https://github.com/alelk/pws-core/commit/5ad5c9f0464cb732fa0a2326a2540339adf86b01))
+
 # [3.2.0-rc.3](https://github.com/alelk/pws-core/compare/v3.2.0-rc.2...v3.2.0-rc.3) (2026-07-03)
 
 
