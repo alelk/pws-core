@@ -40,6 +40,7 @@ import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.snapshots.SnapshotStateSet
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -136,12 +137,12 @@ private fun OnboardingContent(
                         Button(
                             onClick = onInstallSelected,
                             enabled = installableCount > 0 && !anyDownloading,
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().testTag("action:install-selected-books"),
                         ) {
                             Text(stringResource(Res.string.onboarding_install_selected, installableCount))
                         }
                     }
-                    TextButton(onClick = onSkip) {
+                    TextButton(onClick = onSkip, modifier = Modifier.testTag("action:skip-onboarding")) {
                         Text(
                             if (anyInstalled && !anyDownloading) stringResource(Res.string.onboarding_continue)
                             else stringResource(Res.string.onboarding_skip)
