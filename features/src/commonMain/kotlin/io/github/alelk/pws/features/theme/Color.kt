@@ -4,188 +4,158 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 
-// Modern, clean color palette inspired by iOS and hymnal themes
-// Light Theme Colors - Fresh, clean, professional
-val md_theme_light_primary = Color(0xFF5C6BC0) // Indigo 400
-val md_theme_light_onPrimary = Color(0xFFFFFFFF)
-val md_theme_light_primaryContainer = Color(0xFFE8EAF6) // Indigo 50
-val md_theme_light_onPrimaryContainer = Color(0xFF1A237E) // Indigo 900
-val md_theme_light_secondary = Color(0xFF26A69A) // Teal 400
-val md_theme_light_onSecondary = Color(0xFFFFFFFF)
-val md_theme_light_secondaryContainer = Color(0xFFE0F2F1) // Teal 50
-val md_theme_light_onSecondaryContainer = Color(0xFF004D40) // Teal 900
-val md_theme_light_tertiary = Color(0xFFFF7043) // Deep Orange 400
-val md_theme_light_onTertiary = Color(0xFFFFFFFF)
-val md_theme_light_tertiaryContainer = Color(0xFFFBE9E7) // Deep Orange 50
-val md_theme_light_onTertiaryContainer = Color(0xFFBF360C) // Deep Orange 900
-val md_theme_light_error = Color(0xFFE53935) // Red 600
-val md_theme_light_onError = Color(0xFFFFFFFF)
-val md_theme_light_errorContainer = Color(0xFFFFEBEE) // Red 50
-val md_theme_light_onErrorContainer = Color(0xFFB71C1C) // Red 900
-val md_theme_light_outline = Color(0xFF79747E)
-val md_theme_light_background = Color(0xFFFAFAFA) // Grey 50
-val md_theme_light_onBackground = Color(0xFF1C1B1F)
-val md_theme_light_surface = Color(0xFFFFFFFF)
-val md_theme_light_onSurface = Color(0xFF1C1B1F)
-val md_theme_light_surfaceVariant = Color(0xFFF5F5F5) // Grey 100
-val md_theme_light_onSurfaceVariant = Color(0xFF49454F)
-val md_theme_light_inverseSurface = Color(0xFF313033)
-val md_theme_light_inverseOnSurface = Color(0xFFF4EFF4)
-val md_theme_light_inversePrimary = Color(0xFF9FA8DA) // Indigo 200
-val md_theme_light_surfaceTint = Color(0xFF5C6BC0)
-val md_theme_light_outlineVariant = Color(0xFFCAC4D0)
-val md_theme_light_scrim = Color(0xFF000000)
-val md_theme_light_surfaceContainerLowest = Color(0xFFFFFFFF)
-val md_theme_light_surfaceContainerLow = Color(0xFFFAFAFA)
-val md_theme_light_surfaceContainer = Color(0xFFF5F5F5)
-val md_theme_light_surfaceContainerHigh = Color(0xFFEEEEEE)
-val md_theme_light_surfaceContainerHighest = Color(0xFFE0E0E0)
+// Design system tokens (docs/DESIGN.md).
+// Single conifer accent; warm neutrals instead of pure white/grey.
 
-// Dark Theme Colors - Rich and comfortable for night reading
-val md_theme_dark_primary = Color(0xFF9FA8DA) // Indigo 200
-val md_theme_dark_onPrimary = Color(0xFF1A237E) // Indigo 900
-val md_theme_dark_primaryContainer = Color(0xFF3949AB) // Indigo 600
-val md_theme_dark_onPrimaryContainer = Color(0xFFE8EAF6) // Indigo 50
-val md_theme_dark_secondary = Color(0xFF80CBC4) // Teal 200
-val md_theme_dark_onSecondary = Color(0xFF004D40) // Teal 900
-val md_theme_dark_secondaryContainer = Color(0xFF00796B) // Teal 700
-val md_theme_dark_onSecondaryContainer = Color(0xFFE0F2F1) // Teal 50
-val md_theme_dark_tertiary = Color(0xFFFFAB91) // Deep Orange 200
-val md_theme_dark_onTertiary = Color(0xFFBF360C) // Deep Orange 900
-val md_theme_dark_tertiaryContainer = Color(0xFFE64A19) // Deep Orange 600
-val md_theme_dark_onTertiaryContainer = Color(0xFFFBE9E7) // Deep Orange 50
-val md_theme_dark_error = Color(0xFFEF9A9A) // Red 200
-val md_theme_dark_onError = Color(0xFFB71C1C) // Red 900
-val md_theme_dark_errorContainer = Color(0xFFD32F2F) // Red 700
-val md_theme_dark_onErrorContainer = Color(0xFFFFEBEE) // Red 50
-val md_theme_dark_outline = Color(0xFF938F99)
-val md_theme_dark_background = Color(0xFF121212)
-val md_theme_dark_onBackground = Color(0xFFE6E1E5)
-val md_theme_dark_surface = Color(0xFF1E1E1E)
-val md_theme_dark_onSurface = Color(0xFFE6E1E5)
-val md_theme_dark_surfaceVariant = Color(0xFF2C2C2C)
-val md_theme_dark_onSurfaceVariant = Color(0xFFCAC4D0)
-val md_theme_dark_inverseSurface = Color(0xFFE6E1E5)
-val md_theme_dark_inverseOnSurface = Color(0xFF313033)
-val md_theme_dark_inversePrimary = Color(0xFF5C6BC0) // Indigo 400
-val md_theme_dark_surfaceTint = Color(0xFF9FA8DA)
-val md_theme_dark_outlineVariant = Color(0xFF49454F)
-val md_theme_dark_scrim = Color(0xFF000000)
-val md_theme_dark_surfaceContainerLowest = Color(0xFF0D0D0D)
-val md_theme_dark_surfaceContainerLow = Color(0xFF1A1A1A)
-val md_theme_dark_surfaceContainer = Color(0xFF212121)
-val md_theme_dark_surfaceContainerHigh = Color(0xFF2C2C2C)
-val md_theme_dark_surfaceContainerHighest = Color(0xFF383838)
+// --- Accent ---
+val AccentConifer = Color(0xFF2E5A4D)      // conifer — the only accent of the light theme
+val AccentConiferDeep = Color(0xFF254E43)  // text on the search-match highlight
+val AccentSoft = Color(0xFFE7EFEA)         // accent-soft background (containers, number badge)
+val AccentSage = Color(0xFF8FBFA4)         // sage — accent of the dark themes
 
+// --- Light theme: warm neutrals ---
+val WarmBackground = Color(0xFFF1EBDF)     // app background
+val WarmPaper = Color(0xFFF5EFE3)          // reading paper
+val WarmCard = Color(0xFFFBF7EE)           // card
+val WarmField = Color(0xFFFFFDF8)          // input field
+val WarmInk = Color(0xFF22201A)            // primary text
+val WarmInk2 = Color(0xFF6B6353)           // secondary text
+val WarmInk3 = Color(0xFF8A8172)           // quiet text
+val WarmLine = Color(0xFFE3DACA)           // dividers
+
+// --- "Warm Night" dark theme ---
+val NightBackground = Color(0xFF17150F)
+val NightInk = Color(0xFFECE6D6)
+val NightInk2 = Color(0xFF928B79)
+val NightLine = Color(0xFF2C2A20)
+
+// --- OLED black theme ---
+val OledBackground = Color(0xFF000000)
+val OledSurface = Color(0xFF0B0B0B)
+val OledInk = Color(0xFFE9E4D7)
+val OledLine = Color(0xFF1C1C18)
+
+// --- Category/tag tints (muted, roughly equal saturation) ---
+val TintConifer = Color(0xFF2E5A4D)
+val TintClay = Color(0xFF9E5A3C)
+val TintSlate = Color(0xFF435E77)
+val TintPlum = Color(0xFF6B4860)
+val TintGold = Color(0xFFA98526)
+
+val CategoryTints = listOf(TintConifer, TintClay, TintSlate, TintPlum, TintGold)
+
+// --- Destructive (remove/delete) ---
+val Destructive = Color(0xFFB5502E)
+val DestructiveDark = Color(0xFFE08963)
 
 val LightColors = lightColorScheme(
-  primary = md_theme_light_primary,
-  onPrimary = md_theme_light_onPrimary,
-  primaryContainer = md_theme_light_primaryContainer,
-  onPrimaryContainer = md_theme_light_onPrimaryContainer,
-  secondary = md_theme_light_secondary,
-  onSecondary = md_theme_light_onSecondary,
-  secondaryContainer = md_theme_light_secondaryContainer,
-  onSecondaryContainer = md_theme_light_onSecondaryContainer,
-  tertiary = md_theme_light_tertiary,
-  onTertiary = md_theme_light_onTertiary,
-  tertiaryContainer = md_theme_light_tertiaryContainer,
-  onTertiaryContainer = md_theme_light_onTertiaryContainer,
-  error = md_theme_light_error,
-  onError = md_theme_light_onError,
-  errorContainer = md_theme_light_errorContainer,
-  onErrorContainer = md_theme_light_onErrorContainer,
-  outline = md_theme_light_outline,
-  background = md_theme_light_background,
-  onBackground = md_theme_light_onBackground,
-  surface = md_theme_light_surface,
-  onSurface = md_theme_light_onSurface,
-  surfaceVariant = md_theme_light_surfaceVariant,
-  onSurfaceVariant = md_theme_light_onSurfaceVariant,
-  inverseSurface = md_theme_light_inverseSurface,
-  inverseOnSurface = md_theme_light_inverseOnSurface,
-  inversePrimary = md_theme_light_inversePrimary,
-  surfaceTint = md_theme_light_surfaceTint,
-  outlineVariant = md_theme_light_outlineVariant,
-  scrim = md_theme_light_scrim,
-  surfaceContainerLowest = md_theme_light_surfaceContainerLowest,
-  surfaceContainerLow = md_theme_light_surfaceContainerLow,
-  surfaceContainer = md_theme_light_surfaceContainer,
-  surfaceContainerHigh = md_theme_light_surfaceContainerHigh,
-  surfaceContainerHighest = md_theme_light_surfaceContainerHighest,
-)
-
-val DarkColors = darkColorScheme(
-  primary = md_theme_dark_primary,
-  onPrimary = md_theme_dark_onPrimary,
-  primaryContainer = md_theme_dark_primaryContainer,
-  onPrimaryContainer = md_theme_dark_onPrimaryContainer,
-  secondary = md_theme_dark_secondary,
-  onSecondary = md_theme_dark_onSecondary,
-  secondaryContainer = md_theme_dark_secondaryContainer,
-  onSecondaryContainer = md_theme_dark_onSecondaryContainer,
-  tertiary = md_theme_dark_tertiary,
-  onTertiary = md_theme_dark_onTertiary,
-  tertiaryContainer = md_theme_dark_tertiaryContainer,
-  onTertiaryContainer = md_theme_dark_onTertiaryContainer,
-  error = md_theme_dark_error,
-  onError = md_theme_dark_onError,
-  errorContainer = md_theme_dark_errorContainer,
-  onErrorContainer = md_theme_dark_onErrorContainer,
-  outline = md_theme_dark_outline,
-  background = md_theme_dark_background,
-  onBackground = md_theme_dark_onBackground,
-  surface = md_theme_dark_surface,
-  onSurface = md_theme_dark_onSurface,
-  surfaceVariant = md_theme_dark_surfaceVariant,
-  onSurfaceVariant = md_theme_dark_onSurfaceVariant,
-  inverseSurface = md_theme_dark_inverseSurface,
-  inverseOnSurface = md_theme_dark_inverseOnSurface,
-  inversePrimary = md_theme_dark_inversePrimary,
-  surfaceTint = md_theme_dark_surfaceTint,
-  outlineVariant = md_theme_dark_outlineVariant,
-  scrim = md_theme_dark_scrim,
-  surfaceContainerLowest = md_theme_dark_surfaceContainerLowest,
-  surfaceContainerLow = md_theme_dark_surfaceContainerLow,
-  surfaceContainer = md_theme_dark_surfaceContainer,
-  surfaceContainerHigh = md_theme_dark_surfaceContainerHigh,
-  surfaceContainerHighest = md_theme_dark_surfaceContainerHighest,
-)
-
-val BlackColors = darkColorScheme(
-  primary = Color(0xFFBAC3FF),
-  onPrimary = Color(0xFF1B2674),
-  primaryContainer = Color(0xFF2E3F9E),
-  onPrimaryContainer = Color(0xFFE1E5FF),
-  secondary = Color(0xFF8AD5CB),
-  onSecondary = Color(0xFF003732),
-  secondaryContainer = Color(0xFF005048),
-  onSecondaryContainer = Color(0xFFA6F2E6),
-  tertiary = Color(0xFFFFB79F),
-  onTertiary = Color(0xFF5F1500),
-  tertiaryContainer = Color(0xFF7F2B0E),
-  onTertiaryContainer = Color(0xFFFFDBCF),
-  error = Color(0xFFFFB4AB),
-  onError = Color(0xFF690005),
-  errorContainer = Color(0xFF93000A),
-  onErrorContainer = Color(0xFFFFDAD6),
-  background = Color(0xFF000000),
-  onBackground = Color(0xFFE6E1E5),
-  surface = Color(0xFF000000),
-  onSurface = Color(0xFFE6E1E5),
-  surfaceVariant = Color(0xFF111113),
-  onSurfaceVariant = Color(0xFFCAC4D0),
-  outline = Color(0xFF8E9099),
-  outlineVariant = Color(0xFF43464E),
-  inverseSurface = Color(0xFFE6E1E5),
-  inverseOnSurface = Color(0xFF1A1B1F),
-  inversePrimary = Color(0xFF4E5FC4),
-  surfaceTint = Color(0xFFBAC3FF),
+  primary = AccentConifer,
+  onPrimary = Color(0xFFFFFDF8),
+  primaryContainer = AccentSoft,
+  onPrimaryContainer = Color(0xFF1D3B32),
+  secondary = WarmInk2,
+  onSecondary = Color(0xFFFFFDF8),
+  secondaryContainer = Color(0xFFEFE7D7),
+  onSecondaryContainer = Color(0xFF3E3729),
+  tertiary = AccentConiferDeep,
+  onTertiary = Color(0xFFFFFDF8),
+  tertiaryContainer = AccentSoft,
+  onTertiaryContainer = Color(0xFF1D3B32),
+  error = Destructive,
+  onError = Color(0xFFFFFDF8),
+  errorContainer = Color(0xFFF7E0D6),
+  onErrorContainer = Color(0xFF6E2E17),
+  outline = WarmInk3,
+  background = WarmBackground,
+  onBackground = WarmInk,
+  surface = WarmCard,
+  onSurface = WarmInk,
+  surfaceVariant = Color(0xFFEFE7D7),
+  onSurfaceVariant = WarmInk2,
+  inverseSurface = Color(0xFF333026),
+  inverseOnSurface = WarmPaper,
+  inversePrimary = AccentSage,
+  surfaceTint = AccentConifer,
+  outlineVariant = WarmLine,
   scrim = Color(0xFF000000),
-  surfaceContainerLowest = Color(0xFF000000),
-  surfaceContainerLow = Color(0xFF050507),
-  surfaceContainer = Color(0xFF0B0B0E),
-  surfaceContainerHigh = Color(0xFF121216),
-  surfaceContainerHighest = Color(0xFF1A1A1F),
+  surfaceContainerLowest = WarmField,
+  surfaceContainerLow = WarmCard,
+  surfaceContainer = WarmPaper,
+  surfaceContainerHigh = Color(0xFFEFE7D7),
+  surfaceContainerHighest = Color(0xFFE9DFCC),
 )
 
+// "Warm Night" — replaces the cold Dark #121212
+val DarkColors = darkColorScheme(
+  primary = AccentSage,
+  onPrimary = Color(0xFF12291F),
+  primaryContainer = Color(0xFF24463A),
+  onPrimaryContainer = Color(0xFFD6E9DC),
+  secondary = Color(0xFFADA48F),
+  onSecondary = Color(0xFF262217),
+  secondaryContainer = Color(0xFF383325),
+  onSecondaryContainer = Color(0xFFE5DFCE),
+  tertiary = Color(0xFF79AC92),
+  onTertiary = Color(0xFF0F241B),
+  tertiaryContainer = Color(0xFF1F3A2F),
+  onTertiaryContainer = Color(0xFFD6E9DC),
+  error = DestructiveDark,
+  onError = Color(0xFF3A1505),
+  errorContainer = Color(0xFF6E2E17),
+  onErrorContainer = Color(0xFFF7DED2),
+  outline = NightInk2,
+  background = NightBackground,
+  onBackground = NightInk,
+  surface = Color(0xFF1C1914),
+  onSurface = NightInk,
+  surfaceVariant = NightLine,
+  onSurfaceVariant = Color(0xFFB0A890),
+  inverseSurface = NightInk,
+  inverseOnSurface = Color(0xFF2A261D),
+  inversePrimary = AccentConifer,
+  surfaceTint = AccentSage,
+  outlineVariant = NightLine,
+  scrim = Color(0xFF000000),
+  surfaceContainerLowest = Color(0xFF12100B),
+  surfaceContainerLow = Color(0xFF1C1914),
+  surfaceContainer = Color(0xFF211E16),
+  surfaceContainerHigh = Color(0xFF272319),
+  surfaceContainerHighest = NightLine,
+)
+
+// OLED black: true black background, warm ink, sage accent
+val BlackColors = darkColorScheme(
+  primary = AccentSage,
+  onPrimary = Color(0xFF12291F),
+  primaryContainer = Color(0xFF1E3B30),
+  onPrimaryContainer = Color(0xFFD6E9DC),
+  secondary = Color(0xFFA59D89),
+  onSecondary = Color(0xFF23201A),
+  secondaryContainer = Color(0xFF2A281F),
+  onSecondaryContainer = Color(0xFFDFD9C9),
+  tertiary = Color(0xFF79AC92),
+  onTertiary = Color(0xFF0F241B),
+  tertiaryContainer = Color(0xFF1A322A),
+  onTertiaryContainer = Color(0xFFD6E9DC),
+  error = DestructiveDark,
+  onError = Color(0xFF3A1505),
+  errorContainer = Color(0xFF6E2E17),
+  onErrorContainer = Color(0xFFF7DED2),
+  outline = Color(0xFF8A8272),
+  background = OledBackground,
+  onBackground = OledInk,
+  surface = OledBackground,
+  onSurface = OledInk,
+  surfaceVariant = Color(0xFF14130E),
+  onSurfaceVariant = Color(0xFFA59D89),
+  inverseSurface = OledInk,
+  inverseOnSurface = Color(0xFF1C1C18),
+  inversePrimary = AccentConifer,
+  surfaceTint = AccentSage,
+  scrim = Color(0xFF000000),
+  surfaceContainerLowest = OledBackground,
+  surfaceContainerLow = OledSurface,
+  surfaceContainer = Color(0xFF11110D),
+  surfaceContainerHigh = Color(0xFF171712),
+  surfaceContainerHighest = OledLine,
+)

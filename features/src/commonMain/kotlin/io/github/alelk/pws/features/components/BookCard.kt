@@ -1,19 +1,18 @@
 package io.github.alelk.pws.features.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -24,11 +23,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -36,32 +35,22 @@ import androidx.compose.ui.unit.sp
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.book_card_a11y
 import io.github.alelk.pws.features.resources.book_songs_count
+import io.github.alelk.pws.features.theme.CategoryTints
 import io.github.alelk.pws.features.theme.spacing
 import org.jetbrains.compose.resources.stringResource
 
+/** Warm white readable on every category tint (cover title, avatar initials). */
+private val OnTintColor = Color(0xFFF6F1E7)
+
+/** Translucent "spine" strip on the left edge of a cover. */
+private val SpineColor = Color(0x2BFFFFFF)
+
 /**
- * Generates a stable color from a string (e.g., book name) using a predefined palette.
- * Colors are chosen to be content-friendly (not too bright, not too dark).
+ * Stable muted category tint from a key (book id).
+ * Replaces the old random bright-gradient palette: same key → same warm tint.
  */
-fun generateBookColor(str: String): Color {
-  val palette = listOf(
-    Color(0xFFE57373), // Red 300
-    Color(0xFFF06292), // Pink 300
-    Color(0xFFBA68C8), // Purple 300
-    Color(0xFF9575CD), // Deep Purple 300
-    Color(0xFF7986CB), // Indigo 300
-    Color(0xFF64B5F6), // Blue 300
-    Color(0xFF4FC3F7), // Light Blue 300
-    Color(0xFF4DB6AC), // Teal 300
-    Color(0xFF81C784), // Green 300
-    Color(0xFFAED581), // Light Green 300
-    Color(0xFFFF8A65), // Deep Orange 300
-    Color(0xFFA1887F), // Brown 300
-    Color(0xFF90A4AE)  // Blue Grey 300
-  )
-  val index = kotlin.math.abs(str.hashCode()) % palette.size
-  return palette[index]
-}
+fun bookTint(key: String): Color =
+  CategoryTints[kotlin.math.abs(key.hashCode()) % CategoryTints.size]
 
 /**
  * Extracts initials from a display name.
@@ -76,8 +65,9 @@ fun getInitials(name: String): String {
 }
 
 /**
- * Modern book card with gradient background and initials.
- * Used in a grid or list layout on the Books screen.
+ * Book cover card: warm paper base + flat category-tinted header with a spine strip,
+ * serif title on the tint, song count on the paper footer.
+ * Used in a grid or list layout on the Books and Home screens.
  */
 @Composable
 fun BookCard(
@@ -85,15 +75,11 @@ fun BookCard(
   songCount: Int,
   onClick: () -> Unit,
   modifier: Modifier = Modifier,
+  colorKey: String = displayName,
   aspectRatio: Float = 1.6f,
-  initialsStyle: androidx.compose.ui.text.TextStyle = MaterialTheme.typography.displayMedium,
   testTag: String = "book-card-$displayName",
 ) {
-  val baseColor = remember(displayName) { generateBookColor(displayName) }
-  val initials = remember(displayName) { getInitials(displayName) }
-  val gradient = remember(baseColor) {
-    Brush.linearGradient(colors = listOf(baseColor, baseColor.copy(alpha = 0.7f)))
-  }
+  val tint = remember(colorKey) { bookTint(colorKey) }
   val a11yDescription = stringResource(Res.string.book_card_a11y, displayName, songCount)
 
   Card(
@@ -109,44 +95,48 @@ fun BookCard(
     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
   ) {
     Column {
-      // Gradient header with initials
+      // Tinted cover header with a spine strip and serif title
       Box(
         modifier = Modifier
           .fillMaxWidth()
           .aspectRatio(aspectRatio)
-          .background(gradient),
-        contentAlignment = Alignment.Center
+          .background(tint)
       ) {
+        Box(
+          modifier = Modifier
+            .fillMaxHeight()
+            .width(5.dp)
+            .background(SpineColor)
+        )
         Text(
-          text = initials,
-          style = initialsStyle.copy(
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 2.sp
+          text = displayName,
+          style = MaterialTheme.typography.titleMedium.copy(
+            fontFamily = FontFamily.Serif,
+            fontWeight = FontWeight.W500,
+            fontSize = 19.sp,
+            lineHeight = 22.sp,
+            letterSpacing = 0.sp
           ),
-          color = Color.White.copy(alpha = 0.9f)
+          maxLines = 3,
+          overflow = TextOverflow.Ellipsis,
+          color = OnTintColor,
+          modifier = Modifier
+            .align(Alignment.TopStart)
+            .padding(start = MaterialTheme.spacing.md, top = MaterialTheme.spacing.md, end = MaterialTheme.spacing.md)
         )
       }
 
-      // Text content
-      Column(
+      // Paper footer with the song count
+      Text(
+        text = stringResource(Res.string.book_songs_count, songCount),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
         modifier = Modifier
           .fillMaxWidth()
-          .padding(MaterialTheme.spacing.md)
-      ) {
-        Text(
-          text = displayName,
-          style = MaterialTheme.typography.titleSmall,
-          maxLines = 2,
-          overflow = TextOverflow.Ellipsis,
-          color = MaterialTheme.colorScheme.onSurface
-        )
-        Spacer(Modifier.height(MaterialTheme.spacing.xs))
-        Text(
-          text = stringResource(Res.string.book_songs_count, songCount),
-          style = MaterialTheme.typography.bodySmall,
-          color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-      }
+          .padding(horizontal = MaterialTheme.spacing.md, vertical = MaterialTheme.spacing.sm)
+      )
     }
   }
 }
@@ -159,9 +149,10 @@ fun BookListItem(
   displayName: String,
   songCount: Int,
   onClick: () -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
+  colorKey: String = displayName,
 ) {
-  val baseColor = remember(displayName) { generateBookColor(displayName) }
+  val tint = remember(colorKey) { bookTint(colorKey) }
   val initials = remember(displayName) { getInitials(displayName) }
 
   Surface(
@@ -178,24 +169,21 @@ fun BookListItem(
         .padding(MaterialTheme.spacing.md),
       verticalAlignment = Alignment.CenterVertically
     ) {
-      // Avatar with initials
+      // Mini-cover with initials
       Box(
         modifier = Modifier
           .size(48.dp)
-          .clip(CircleShape)
-          .background(
-            Brush.linearGradient(
-              colors = listOf(baseColor, baseColor.copy(alpha = 0.7f))
-            )
-          ),
+          .clip(RoundedCornerShape(12.dp))
+          .background(tint),
         contentAlignment = Alignment.Center
       ) {
         Text(
           text = initials,
           style = MaterialTheme.typography.titleMedium.copy(
-            fontWeight = FontWeight.Bold
+            fontFamily = FontFamily.Serif,
+            fontWeight = FontWeight.W600
           ),
-          color = Color.White
+          color = OnTintColor
         )
       }
 
@@ -221,4 +209,3 @@ fun BookListItem(
     }
   }
 }
-

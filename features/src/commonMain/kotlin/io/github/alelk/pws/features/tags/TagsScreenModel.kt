@@ -93,9 +93,11 @@ class TagsScreenModel(
 
       TagsEvent.AddTagClicked -> {
         updateState { state ->
-          if (state is TagsUiState.Content) {
-            state.copy(showAddDialog = true, editingTag = null)
-          } else state
+          when (state) {
+            is TagsUiState.Content -> state.copy(showAddDialog = true, editingTag = null)
+            TagsUiState.Empty -> TagsUiState.Content(tags = emptyList(), showAddDialog = true)
+            else -> state
+          }
         }
       }
 
@@ -106,7 +108,8 @@ class TagsScreenModel(
       TagsEvent.DismissDialog -> {
         updateState { state ->
           if (state is TagsUiState.Content) {
-            state.copy(showAddDialog = false, editingTag = null)
+            val updated = state.copy(showAddDialog = false, editingTag = null)
+            if (updated.tags.isEmpty()) TagsUiState.Empty else updated
           } else state
         }
       }

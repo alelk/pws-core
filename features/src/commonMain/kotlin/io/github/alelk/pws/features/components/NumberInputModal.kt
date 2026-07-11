@@ -18,9 +18,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Dialpad
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -49,8 +48,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
+import com.composables.icons.lucide.Hash
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.X
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.common_clear
 import io.github.alelk.pws.features.resources.number_dropdown_idle
@@ -167,7 +167,7 @@ private fun NumberInputField(
     placeholder = { Text(stringResource(Res.string.number_input_placeholder)) },
     leadingIcon = {
       Icon(
-        imageVector = Icons.Default.Dialpad,
+        imageVector = Lucide.Hash,
         contentDescription = null,
         tint = MaterialTheme.colorScheme.onSurfaceVariant,
       )
@@ -177,7 +177,7 @@ private fun NumberInputField(
         isSearching -> CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
         value.isNotEmpty() -> IconButton(onClick = onClear) {
           Icon(
-            imageVector = Icons.Default.Clear,
+            imageVector = Lucide.X,
             contentDescription = stringResource(Res.string.common_clear),
           )
         }

@@ -18,8 +18,8 @@ fun AppTheme(
     ThemeMode.SYSTEM -> isSystemInDarkTheme()
   }
 
-  // BLACK mode keeps its custom OLED-friendly palette даже если Dynamic включён —
-  // приоритет phys-feature (OLED). Иначе берём dynamic если доступен и включён.
+  // BLACK mode keeps its custom OLED-friendly palette even when Dynamic is enabled —
+  // the physical feature (OLED battery savings) wins. Otherwise use dynamic when available.
   val dynamicScheme = if (useDynamicColor && themeMode != ThemeMode.BLACK) {
     platformDynamicColorSchemeOrNull(isDark)
   } else null

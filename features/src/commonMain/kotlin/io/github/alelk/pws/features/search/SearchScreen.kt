@@ -1,5 +1,6 @@
 package io.github.alelk.pws.features.search
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,10 +16,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.MusicNote
-import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -29,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -42,15 +41,20 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.core.registry.rememberScreen
 import cafe.adriel.voyager.core.registry.ScreenRegistry
+import cafe.adriel.voyager.core.registry.rememberScreen
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Music
+import com.composables.icons.lucide.Search
+import com.composables.icons.lucide.Settings
 import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.domain.core.ids.SongNumberId
 import io.github.alelk.pws.features.components.AppTopBar
@@ -62,6 +66,7 @@ import io.github.alelk.pws.features.components.SearchEmptyContent
 import io.github.alelk.pws.features.components.SearchField
 import io.github.alelk.pws.features.components.StateCrossfade
 import io.github.alelk.pws.features.resources.Res
+import io.github.alelk.pws.features.resources.search_cancel
 import io.github.alelk.pws.features.resources.search_error_title
 import io.github.alelk.pws.features.resources.search_idle_subtitle
 import io.github.alelk.pws.features.resources.search_idle_title
@@ -122,7 +127,7 @@ class SearchResultsScreen(private val initialQuery: String) : Screen {
   }
 }
 
-/** Локальный UI-фильтр результатов поиска. Не лезет в use case — пост-фильтрация. */
+/** Local UI filter over search results. Post-filtering only — does not touch the use case. */
 enum class SearchScope { ALL, IN_BOOKS, STANDALONE }
 
 private fun SearchScope.matches(s: SearchSuggestion): Boolean = when (this) {
@@ -141,7 +146,9 @@ fun SearchContent(
 ) {
   val navigator = LocalNavigator.currentOrThrow
   val focusRequester = remember { FocusRequester() }
+  val keyboardController = LocalSoftwareKeyboardController.current
   var scope by remember { mutableStateOf(SearchScope.ALL) }
+  var numberMode by remember { mutableStateOf(false) }
 
   // Auto-focus search field when screen opens
   LaunchedEffect(Unit) {
@@ -160,7 +167,7 @@ fun SearchContent(
               modifier = Modifier.testTag("action:open-settings")
             ) {
               Icon(
-                imageVector = Icons.Filled.Settings,
+                imageVector = Lucide.Settings,
                 contentDescription = stringResource(Res.string.settings_open)
               )
             }
@@ -173,20 +180,41 @@ fun SearchContent(
         .fillMaxSize()
         .padding(innerPadding)
     ) {
-      // Search field - uses query directly for responsive input
-      SearchField(
-        query = query,
-        onQueryChange = onQueryChange,
-        onSearch = onSearch,
+      // One surface: results are live, Enter only hides the keyboard.
+      // "Cancel" clears the query and pops back when the screen was pushed.
+      Row(
         modifier = Modifier
           .fillMaxWidth()
           .padding(horizontal = MaterialTheme.spacing.screenHorizontal)
-          .padding(bottom = MaterialTheme.spacing.sm)
-          .focusRequester(focusRequester),
-        placeholder = stringResource(Res.string.search_placeholder)
-      )
+          .padding(bottom = MaterialTheme.spacing.sm),
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        SearchField(
+          query = query,
+          onQueryChange = onQueryChange,
+          onSearch = { keyboardController?.hide() },
+          modifier = Modifier
+            .weight(1f)
+            .focusRequester(focusRequester),
+          placeholder = stringResource(Res.string.search_placeholder),
+          numberMode = numberMode,
+          onNumberModeToggle = { numberMode = !numberMode }
+        )
+        AnimatedVisibility(visible = query.isNotEmpty()) {
+          TextButton(
+            onClick = {
+              onQueryChange("")
+              keyboardController?.hide()
+              if (navigator.canPop) navigator.pop()
+            },
+            modifier = Modifier.testTag("action:search-cancel")
+          ) {
+            Text(stringResource(Res.string.search_cancel))
+          }
+        }
+      }
 
-      // Scope chips — iOS-style filter row под поиском.
+      // Scope chips — iOS-style filter row under the search field.
       SearchScopeChips(
         scope = scope,
         onScopeChange = { scope = it },
@@ -275,7 +303,7 @@ private fun SearchScopeChips(
 @Composable
 private fun SearchIdleContent() {
   EmptyContent(
-    icon = Icons.Outlined.Search,
+    icon = Lucide.Search,
     title = stringResource(Res.string.search_idle_title),
     subtitle = stringResource(Res.string.search_idle_subtitle)
   )
@@ -290,10 +318,10 @@ private fun SearchSuggestionsList(
   LazyColumn(
     contentPadding = PaddingValues(bottom = 80.dp)
   ) {
-    items(
+    itemsIndexed(
       items = suggestions,
-      key = { it.songId.value }
-    ) { suggestion ->
+      key = { _, it -> it.songId.value }
+    ) { index, suggestion ->
       // Navigate to song in book context if available, otherwise by id
       val songScreen = suggestion.bookReferences.firstOrNull()?.let { ref ->
         rememberScreen(SharedScreens.song(SongNumberId(ref.bookId, suggestion.songId)))
@@ -301,6 +329,7 @@ private fun SearchSuggestionsList(
 
       SearchSuggestionItem(
         suggestion = suggestion,
+        index = index,
         onClick = { navigator.push(songScreen) }
       )
       HorizontalDivider(
@@ -314,16 +343,16 @@ private fun SearchSuggestionsList(
 @Composable
 private fun SearchSuggestionItem(
   suggestion: SearchSuggestion,
+  index: Int,
   onClick: () -> Unit
 ) {
   val booksByNumber = suggestion.booksByNumber
   val haptic = LocalHapticFeedback.current
-  val itemCd = suggestion.primarySongNumber?.let { "song-row-$it" } ?: "song-row-unknown"
 
   Surface(
     modifier = Modifier
       .fillMaxWidth()
-      .testTag(itemCd)
+      .testTag("song-suggestion-$index")
       .clickable(onClick = {
         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
         onClick()
@@ -350,7 +379,7 @@ private fun SearchSuggestionItem(
       } ?: run {
         // Fallback icon when no book reference
         Icon(
-          imageVector = Icons.Outlined.MusicNote,
+          imageVector = Lucide.Music,
           contentDescription = null,
           modifier = Modifier.size(24.dp),
           tint = MaterialTheme.colorScheme.primary
@@ -413,10 +442,10 @@ private fun SearchResultsList(
   LazyColumn(
     contentPadding = PaddingValues(bottom = 80.dp)
   ) {
-    items(
+    itemsIndexed(
       items = results,
-      key = { it.songId.value }
-    ) { result ->
+      key = { _, it -> it.songId.value }
+    ) { index, result ->
       // Navigate to song in book context if available, otherwise by id
       val songScreen = result.bookReferences.firstOrNull()?.let { ref ->
         rememberScreen(SharedScreens.song(SongNumberId(ref.bookId, result.songId)))
@@ -424,6 +453,7 @@ private fun SearchResultsList(
 
       SearchSuggestionItem(
         suggestion = result,
+        index = index,
         onClick = { navigator.push(songScreen) }
       )
       HorizontalDivider(

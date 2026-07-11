@@ -7,6 +7,7 @@
     <string name="nav_search">Search</string>
     <string name="nav_favorites">Favorites</string>
     <string name="nav_history">History</string>
+    <string name="nav_library">Library</string>
 
     <string name="home_recently_opened">Recently opened</string>
     <string name="home_songbooks">Songbooks</string>
@@ -20,6 +21,9 @@
 
     <string name="search_title">Search</string>
     <string name="search_placeholder">Search songs...</string>
+    <string name="search_cancel">Cancel</string>
+    <string name="search_mode_numbers">Search by number</string>
+    <string name="search_mode_words">Search by words</string>
     <string name="search_find_song_placeholder">Find a song...</string>
     <string name="search_loading">Searching...</string>
     <string name="search_error_title">Search error</string>
@@ -206,6 +210,8 @@
     <string name="song_detail_jump_number_label">Number (%1$d-%2$d)</string>
     <string name="song_detail_jump_clear">Clear</string>
     <string name="song_detail_line_spacing">Line spacing</string>
+    <string name="song_detail_serif_font">Serif font</string>
+    <string name="song_detail_nav_buttons">Navigation arrows</string>
 
     <string name="tag_chip_edit">Edit</string>
     <string name="tonality_a_major">A major</string>
@@ -281,9 +287,28 @@
     <string name="book_library_uninstall_confirm_ok">Uninstall</string>
     <string name="book_library_uninstall_confirm_cancel">Cancel</string>
     <string name="book_library_open">Book Library</string>
+    <string name="book_library_action_update">Update</string>
+    <string name="book_library_status_update_available">Update available</string>
+    <string name="book_library_empty_title">No books installed</string>
+    <string name="book_library_empty_message">Install a song book to get started</string>
+    <string name="book_library_recommended">Recommended</string>
+    <string name="book_library_import_from_file">Import from file</string>
+    <string name="book_library_import_success">Bundle imported successfully</string>
+    <string name="book_library_import_error">Import failed: %1$s</string>
     <string name="books_browse_library_title">More songbooks available</string>
     <string name="books_browse_library_subtitle">Download additional collections from the catalog</string>
     <string name="books_browse_library_action">Browse Library</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">Praise &amp; Worship Songbook</string>
+    <string name="onboarding_subtitle">Choose a collection to get started</string>
+    <string name="onboarding_skip">Skip for now</string>
+    <string name="onboarding_install_selected">Install (%1$d)</string>
+    <string name="onboarding_continue">Continue</string>
+
+    <!-- Home screen empty state -->
+    <string name="home_empty_message">No collections installed yet</string>
+    <string name="home_empty_action">Install a collection</string>
 </resources>
 
 

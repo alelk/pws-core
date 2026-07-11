@@ -17,13 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
-import kotlinx.coroutines.launch
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -34,6 +27,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -59,19 +55,22 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.composables.icons.lucide.Check
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.X
 import io.github.alelk.pws.domain.core.ids.SongId
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.common_close
 import io.github.alelk.pws.features.resources.common_error_title
+import io.github.alelk.pws.features.resources.label
 import io.github.alelk.pws.features.resources.song_detail_info_author
 import io.github.alelk.pws.features.resources.song_detail_info_bible
 import io.github.alelk.pws.features.resources.song_detail_info_composer
 import io.github.alelk.pws.features.resources.song_detail_info_translator
 import io.github.alelk.pws.features.resources.song_detail_info_year
 import io.github.alelk.pws.features.resources.song_detail_tags
-import io.github.alelk.pws.features.resources.label
 import io.github.alelk.pws.features.resources.song_edit_discard_cancel
 import io.github.alelk.pws.features.resources.song_edit_discard_confirm
 import io.github.alelk.pws.features.resources.song_edit_discard_message
@@ -79,18 +78,19 @@ import io.github.alelk.pws.features.resources.song_edit_discard_title
 import io.github.alelk.pws.features.resources.song_edit_error_not_found
 import io.github.alelk.pws.features.resources.song_edit_label_number
 import io.github.alelk.pws.features.resources.song_edit_label_tags
-import io.github.alelk.pws.features.resources.song_edit_label_tonalities
 import io.github.alelk.pws.features.resources.song_edit_label_text
 import io.github.alelk.pws.features.resources.song_edit_label_title
+import io.github.alelk.pws.features.resources.song_edit_label_tonalities
 import io.github.alelk.pws.features.resources.song_edit_loading
 import io.github.alelk.pws.features.resources.song_edit_save_error_prefix
 import io.github.alelk.pws.features.resources.song_edit_save_success
 import io.github.alelk.pws.features.resources.song_edit_title
+import io.github.alelk.pws.features.resources.song_edit_validation_text_format_invalid
 import io.github.alelk.pws.features.resources.song_edit_validation_text_required
 import io.github.alelk.pws.features.resources.song_edit_validation_title_required
-import io.github.alelk.pws.features.resources.song_edit_validation_text_format_invalid
 import io.github.alelk.pws.features.resources.tags_save
 import io.github.alelk.pws.features.theme.spacing
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.parameter.parametersOf
@@ -150,7 +150,7 @@ fun SongEditContent(
         title = { Text(stringResource(Res.string.song_edit_title), modifier = Modifier.semantics { heading() }) },
         navigationIcon = {
           IconButton(onClick = { onEvent(SongEditEvent.CancelClicked) }) {
-            Icon(Icons.Default.Close, contentDescription = stringResource(Res.string.common_close))
+            Icon(Lucide.X, contentDescription = stringResource(Res.string.common_close))
           }
         },
         actions = {
@@ -169,7 +169,7 @@ fun SongEditContent(
                 enabled = state.hasUnsavedChanges,
                 modifier = Modifier.testTag("action:save")
               ) {
-                Icon(Icons.Default.Check, contentDescription = null)
+                Icon(Lucide.Check, contentDescription = null)
               }
             }
           }
@@ -383,7 +383,7 @@ private fun EditForm(
             trailingIcon = if (tag.isSelected) {
               {
                 Icon(
-                  imageVector = Icons.Default.Check,
+                  imageVector = Lucide.Check,
                   contentDescription = null,
                   modifier = Modifier.size(FilterChipDefaults.IconSize)
                 )
@@ -423,7 +423,7 @@ private fun EditForm(
           trailingIcon = if (isSelected) {
             {
               Icon(
-                imageVector = Icons.Default.Check,
+                imageVector = Lucide.Check,
                 contentDescription = null,
                 modifier = Modifier.size(FilterChipDefaults.IconSize)
               )

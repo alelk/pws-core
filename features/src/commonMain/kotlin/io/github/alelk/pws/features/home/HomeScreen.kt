@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,23 +15,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Dialpad
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.TextFields
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Tag
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -44,59 +36,52 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.registry.ScreenRegistry
 import cafe.adriel.voyager.core.registry.rememberScreen
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Settings
 import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.domain.book.model.BookSummary
 import io.github.alelk.pws.domain.history.model.HistorySubject
 import io.github.alelk.pws.features.components.AppLargeTopBar
 import io.github.alelk.pws.features.components.BookCard
 import io.github.alelk.pws.features.components.ErrorContent
+import io.github.alelk.pws.features.components.HomeSearchField
 import io.github.alelk.pws.features.components.NavDestination
 import io.github.alelk.pws.features.components.NumberInputModal
 import io.github.alelk.pws.features.components.OnTabReselected
-import io.github.alelk.pws.features.components.SearchBarWithSuggestions
+import io.github.alelk.pws.features.components.SearchSuggestionRow
+import io.github.alelk.pws.features.components.SearchSuggestionsLoadingRow
 import io.github.alelk.pws.features.components.StateCrossfade
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
-import io.github.alelk.pws.features.components.clickableWithScaleAndClip
+import io.github.alelk.pws.features.components.SwipeableSongItem
 import io.github.alelk.pws.features.components.shimmerEffect
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.app_name
-import io.github.alelk.pws.features.resources.book_songs_count
+import io.github.alelk.pws.features.resources.home_empty_action
+import io.github.alelk.pws.features.resources.home_empty_message
 import io.github.alelk.pws.features.resources.home_load_error_message
 import io.github.alelk.pws.features.resources.home_load_error_title
-import io.github.alelk.pws.features.resources.home_quick_favorites
-import io.github.alelk.pws.features.resources.home_quick_history
-import io.github.alelk.pws.features.resources.home_quick_number
-import io.github.alelk.pws.features.resources.home_quick_tags
-import io.github.alelk.pws.features.resources.home_quick_text
 import io.github.alelk.pws.features.resources.home_recently_opened
 import io.github.alelk.pws.features.resources.home_songbooks
 import io.github.alelk.pws.features.resources.settings_open
 import io.github.alelk.pws.features.search.SearchSuggestion
 import io.github.alelk.pws.features.theme.spacing
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -142,6 +127,7 @@ fun HomeContent(
 ) {
   val navigator = LocalNavigator.currentOrThrow
   val haptic = LocalHapticFeedback.current
+  val keyboardController = LocalSoftwareKeyboardController.current
   var showNumberInput by remember { mutableStateOf(false) }
   val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
   val gridState = rememberLazyGridState()
@@ -165,7 +151,7 @@ fun HomeContent(
               modifier = Modifier.testTag("action:open-settings")
             ) {
             Icon(
-              imageVector = Icons.Filled.Settings,
+              imageVector = Lucide.Settings,
               contentDescription = stringResource(Res.string.settings_open)
             )
           }
@@ -180,6 +166,7 @@ fun HomeContent(
       }
 
       is HomeUiState.Content -> {
+        val isSearchMode = searchQuery.isNotBlank()
         // Main scrollable content with search bar inside
         LazyVerticalGrid(
           columns = GridCells.Adaptive(minSize = 140.dp),
@@ -192,111 +179,56 @@ fun HomeContent(
           horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md),
           verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)
         ) {
-          // Search bar - scrolls with content
+          // Search hero — the primary action on Home
           item(span = { GridItemSpan(maxLineSpan) }) {
-            SearchBarWithSuggestions(
+            HomeSearchField(
               query = searchQuery,
               onQueryChange = onSearchQueryChange,
-              onSearch = {
-                if (searchQuery.isNotBlank()) {
-                  val screen = ScreenRegistry.get(SharedScreens.SearchResults(searchQuery))
-                  onClearSearch()
-                  navigator.push(screen)
-                }
-              },
-              suggestions = suggestions,
-              onSuggestionClick = { suggestion ->
-                onClearSearch()
-                // Navigate to song in book context if available
-                val screen = suggestion.bookReferences.firstOrNull()?.let { ref ->
-                  ScreenRegistry.get(
-                    SharedScreens.song(io.github.alelk.pws.domain.core.ids.SongNumberId(ref.bookId, suggestion.songId))
-                  )
-                } ?: ScreenRegistry.get(
-                  SharedScreens.songById(suggestion.songId)
-                )
-                navigator.push(screen)
-              },
+              // Live search: results are already under the field, Enter only hides the keyboard.
+              onSearch = { keyboardController?.hide() },
               isLoading = isSearching,
-              showSuggestions = searchQuery.isNotBlank()
-            )
-          }
-
-          // Quick action chips - scrollable row
-          item(span = { GridItemSpan(maxLineSpan) }) {
-            QuickActionsRow(
-              onNumberSearchClick = { 
+              onNumberModeClick = {
                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                showNumberInput = true 
-              },
-              onTextSearchClick = {
-                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                navigator.push(ScreenRegistry.get(SharedScreens.Search))
-              },
-              onHistoryClick = {
-                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                navigator.push(ScreenRegistry.get(SharedScreens.History))
+                showNumberInput = true
               }
             )
           }
 
-          // Second row of quick actions - Favorites and Tags
-          item(span = { GridItemSpan(maxLineSpan) }) {
-            QuickActionsRowSecondary(
-              onFavoritesClick = {
-                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                navigator.push(ScreenRegistry.get(SharedScreens.Favorites))
-              },
-              onTagsClick = {
-                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                navigator.push(ScreenRegistry.get(SharedScreens.Tags))
-              }
-            )
-          }
-
-          // Recently viewed songs section
-          if (current.recentSongs.isNotEmpty()) {
-          item(span = { GridItemSpan(maxLineSpan) }) {
-            Spacer(Modifier.height(MaterialTheme.spacing.md))
-            Text(
-              text = stringResource(Res.string.home_recently_opened),
-              style = MaterialTheme.typography.titleMedium,
-              color = MaterialTheme.colorScheme.onBackground,
-              modifier = Modifier
-                .testTag("home-section-recently-viewed")
-                .semantics { heading() }
-            )
-          }
-
-          item(span = { GridItemSpan(maxLineSpan) }) {
-            LazyRow(
-              modifier = Modifier.fillMaxWidth(),
-              contentPadding = PaddingValues(horizontal = 0.dp),
-              horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)
-            ) {
-              itemsIndexed(
-                items = current.recentSongs,
-                key = { _, song -> song.id }
-              ) { index, song ->
-                val songScreen = when (val subject = song.subject) {
-                  is HistorySubject.BookedSong -> rememberScreen(SharedScreens.song(subject.songNumberId))
-                  is HistorySubject.StandaloneSong -> rememberScreen(SharedScreens.songById(subject.songId))
-                }
-                RecentSongCard(
-                  song = song,
-                  onClick = {
-                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                    navigator.push(songScreen)
-                  },
-                  modifier = Modifier.testTag("recent-song-card-$index")
-                )
+          // Live results take over the surface while a query is active
+          // (single-surface search, same as the Search tab — no popup).
+          if (isSearchMode) {
+            if (isSearching && suggestions.isEmpty()) {
+              item(span = { GridItemSpan(maxLineSpan) }) {
+                SearchSuggestionsLoadingRow()
               }
             }
-          }
+            itemsIndexed(
+              items = suggestions,
+              key = { _, s -> s.songId.value },
+              span = { _, _ -> GridItemSpan(maxLineSpan) }
+            ) { index, suggestion ->
+              SearchSuggestionRow(
+                suggestion = suggestion,
+                onClick = {
+                  onClearSearch()
+                  keyboardController?.hide()
+                  // Navigate to song in book context if available
+                  val screen = suggestion.bookReferences.firstOrNull()?.let { ref ->
+                    ScreenRegistry.get(
+                      SharedScreens.song(io.github.alelk.pws.domain.core.ids.SongNumberId(ref.bookId, suggestion.songId))
+                    )
+                  } ?: ScreenRegistry.get(
+                    SharedScreens.songById(suggestion.songId)
+                  )
+                  navigator.push(screen)
+                },
+                modifier = Modifier.testTag("home-suggestion-$index")
+              )
+            }
           }
 
-          // Section header for books
-          item(span = { GridItemSpan(maxLineSpan) }) {
+          // Section header for books — the shelf comes right after the search
+          if (!isSearchMode) item(span = { GridItemSpan(maxLineSpan) }) {
             Spacer(Modifier.height(MaterialTheme.spacing.sm))
             Text(
               text = stringResource(Res.string.home_songbooks),
@@ -306,8 +238,27 @@ fun HomeContent(
             )
           }
 
+          // Empty state: no books installed yet
+          if (!isSearchMode && current.books.isEmpty()) item(span = { GridItemSpan(maxLineSpan) }) {
+            val bookLibraryScreen = rememberScreen(SharedScreens.BookLibrary)
+            Column(
+              modifier = Modifier.fillMaxWidth().padding(vertical = MaterialTheme.spacing.lg),
+              horizontalAlignment = Alignment.CenterHorizontally,
+              verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.sm),
+            ) {
+              Text(
+                text = stringResource(Res.string.home_empty_message),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+              )
+              Button(onClick = { navigator.push(bookLibraryScreen) }) {
+                Text(stringResource(Res.string.home_empty_action))
+              }
+            }
+          }
+
           // Books grid - limit to max 6 featured books
-          items(
+          if (!isSearchMode) items(
             items = current.books.take(6),
             key = { it.id.toString() }
           ) { book ->
@@ -315,13 +266,46 @@ fun HomeContent(
             BookCard(
               displayName = book.displayName.value,
               songCount = book.countSongs,
+              colorKey = book.id.toString(),
               aspectRatio = 1.4f,
-              initialsStyle = MaterialTheme.typography.headlineMedium,
               onClick = {
                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 navigator.push(bookSongsScreen)
               }
             )
+          }
+
+          // Recently opened — compact rows below the shelf (quick "continue" path)
+          if (!isSearchMode && current.recentSongs.isNotEmpty()) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
+              Spacer(Modifier.height(MaterialTheme.spacing.md))
+              Text(
+                text = stringResource(Res.string.home_recently_opened),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier
+                  .testTag("home-section-recently-viewed")
+                  .semantics { heading() }
+              )
+            }
+
+            itemsIndexed(
+              items = current.recentSongs.take(5),
+              key = { _, song -> song.id },
+              span = { _, _ -> GridItemSpan(maxLineSpan) }
+            ) { index, song ->
+              val songScreen = when (val subject = song.subject) {
+                is HistorySubject.BookedSong -> rememberScreen(SharedScreens.song(subject.songNumberId))
+                is HistorySubject.StandaloneSong -> rememberScreen(SharedScreens.songById(subject.songId))
+              }
+              SwipeableSongItem(
+                number = song.songNumber,
+                title = song.songName,
+                subtitle = song.bookDisplayName,
+                onClick = { navigator.push(songScreen) },
+                modifier = Modifier.testTag("recent-song-card-$index")
+              )
+            }
           }
 
           // Bottom spacer
@@ -367,102 +351,6 @@ fun HomeContent(
 }
 
 @Composable
-private fun QuickActionsRow(
-  onNumberSearchClick: () -> Unit,
-  onTextSearchClick: () -> Unit,
-  onHistoryClick: () -> Unit
-) {
-  Row(
-    modifier = Modifier
-      .fillMaxWidth()
-      .padding(top = MaterialTheme.spacing.md),
-    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)
-  ) {
-    QuickActionChip(
-      icon = Icons.Default.Dialpad,
-      label = stringResource(Res.string.home_quick_number),
-      onClick = onNumberSearchClick,
-      modifier = Modifier.weight(1f).testTag("action:number-search")
-    )
-    QuickActionChip(
-      icon = Icons.Default.TextFields,
-      label = stringResource(Res.string.home_quick_text),
-      onClick = onTextSearchClick,
-      modifier = Modifier.weight(1f).testTag("action:text-search")
-    )
-    QuickActionChip(
-      icon = Icons.Default.History,
-      label = stringResource(Res.string.home_quick_history),
-      onClick = onHistoryClick,
-      modifier = Modifier.weight(1f)
-    )
-  }
-}
-
-@Composable
-private fun QuickActionsRowSecondary(
-  onFavoritesClick: () -> Unit,
-  onTagsClick: () -> Unit,
-  modifier: Modifier = Modifier
-) {
-  Row(
-    modifier = modifier
-      .fillMaxWidth()
-      .padding(top = MaterialTheme.spacing.sm),
-    horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)
-  ) {
-    QuickActionChip(
-      icon = Icons.Outlined.FavoriteBorder,
-      label = stringResource(Res.string.home_quick_favorites),
-      onClick = onFavoritesClick,
-      modifier = Modifier.weight(1f)
-    )
-    QuickActionChip(
-      icon = Icons.Outlined.Tag,
-      label = stringResource(Res.string.home_quick_tags),
-      onClick = onTagsClick,
-      modifier = Modifier.weight(1f)
-    )
-  }
-}
-
-@Composable
-private fun QuickActionChip(
-  icon: ImageVector,
-  label: String,
-  onClick: () -> Unit,
-  modifier: Modifier = Modifier
-) {
-  Surface(
-    modifier = modifier.clickableWithScaleAndClip(shape = MaterialTheme.shapes.medium, onClick = onClick),
-    shape = MaterialTheme.shapes.medium,
-    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
-    tonalElevation = 2.dp
-  ) {
-    Column(
-      modifier = Modifier.padding(vertical = 12.dp, horizontal = 4.dp),
-      horizontalAlignment = Alignment.CenterHorizontally,
-      verticalArrangement = Arrangement.Center
-    ) {
-      Icon(
-        imageVector = icon,
-        contentDescription = null,
-        modifier = Modifier.size(24.dp),
-        tint = MaterialTheme.colorScheme.onSecondaryContainer
-      )
-      Spacer(Modifier.height(4.dp))
-      Text(
-        text = label,
-        style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.onSecondaryContainer,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis
-      )
-    }
-  }
-}
-
-@Composable
 private fun HomeContentSkeleton(modifier: Modifier = Modifier) {
   LazyVerticalGrid(
     columns = GridCells.Adaptive(minSize = 140.dp),
@@ -485,42 +373,6 @@ private fun HomeContentSkeleton(modifier: Modifier = Modifier) {
       )
     }
 
-    // Quick actions placeholder
-    item(span = { GridItemSpan(maxLineSpan) }) {
-      Row(horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)) {
-        Box(
-          modifier = Modifier
-            .weight(1f)
-            .height(80.dp)
-            .shimmerEffect(MaterialTheme.shapes.medium)
-        )
-        Box(
-          modifier = Modifier
-            .weight(1f)
-            .height(80.dp)
-            .shimmerEffect(MaterialTheme.shapes.medium)
-        )
-      }
-    }
-
-    // Second row quick actions placeholder
-    item(span = { GridItemSpan(maxLineSpan) }) {
-      Row(horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.md)) {
-        Box(
-          modifier = Modifier
-            .weight(1f)
-            .height(80.dp)
-            .shimmerEffect(MaterialTheme.shapes.medium)
-        )
-        Box(
-          modifier = Modifier
-            .weight(1f)
-            .height(80.dp)
-            .shimmerEffect(MaterialTheme.shapes.medium)
-        )
-      }
-    }
-
     // Section title
     item(span = { GridItemSpan(maxLineSpan) }) {
       Spacer(Modifier.height(MaterialTheme.spacing.sm))
@@ -532,12 +384,12 @@ private fun HomeContentSkeleton(modifier: Modifier = Modifier) {
       )
     }
 
-    // Books placeholders
+    // Books placeholders — same aspect ratio as the real cards (no jump after load)
     items(6) {
       Box(
         modifier = Modifier
           .fillMaxWidth()
-          .aspectRatio(1f)
+          .aspectRatio(1.4f)
           .shimmerEffect(MaterialTheme.shapes.medium)
       )
     }

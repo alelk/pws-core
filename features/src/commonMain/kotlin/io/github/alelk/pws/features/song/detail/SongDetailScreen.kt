@@ -1,42 +1,29 @@
 package io.github.alelk.pws.features.song.detail
 
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.automirrored.filled.LibraryBooks
-import androidx.compose.material.icons.automirrored.filled.Label
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FormatSize
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -58,6 +45,19 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.composables.icons.lucide.ALargeSmall
+import com.composables.icons.lucide.ArrowLeft
+import com.composables.icons.lucide.ArrowRight
+import com.composables.icons.lucide.Copy
+import com.composables.icons.lucide.Ellipsis
+import com.composables.icons.lucide.Heart
+import com.composables.icons.lucide.Info
+import com.composables.icons.lucide.LibraryBig
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Pencil
+import com.composables.icons.lucide.Search
+import com.composables.icons.lucide.Share2
+import com.composables.icons.lucide.Tag
 import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.domain.core.SongRefReason
 import io.github.alelk.pws.domain.core.ids.SongNumberId
@@ -77,6 +77,7 @@ import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
 import io.github.alelk.pws.features.resources.*
 import io.github.alelk.pws.features.song.edit.SongEditScreen
+import io.github.alelk.pws.features.theme.SongSerifFontFamily
 import io.github.alelk.pws.features.theme.spacing
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.parameter.parametersOf
@@ -305,6 +306,8 @@ fun SongDetailContent(
   val fontScale = displaySettings?.fontScale ?: 1f
   val expandedText = displaySettings?.expandedText ?: true
   val lineHeightMultiplier = displaySettings?.lineHeightMultiplier ?: 1.0f
+  val serifFont = displaySettings?.serifFont ?: false
+  val showNavigationButtons = displaySettings?.showNavigationButtons ?: PlatformDefaultShowSongNavButtons
 
   // Only one sheet may be open at a time — typed as a single sealed bucket so
   // it's impossible to leave a "two sheets open" state by accident.
@@ -331,47 +334,45 @@ fun SongDetailContent(
         canNavigateBack = navigator.canPop,
         onNavigateBack = { navigator.pop() },
         actions = {
-          if (onNavigatePrev != null) {
+          if (showNavigationButtons && onNavigatePrev != null) {
             IconButton(onClick = onNavigatePrev) {
-              Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.song_detail_prev))
+              Icon(Lucide.ArrowLeft, contentDescription = stringResource(Res.string.song_detail_prev))
             }
           }
-          if (onNavigateNext != null) {
+          if (showNavigationButtons && onNavigateNext != null) {
             IconButton(onClick = onNavigateNext) {
-              Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = stringResource(Res.string.song_detail_next))
+              Icon(Lucide.ArrowRight, contentDescription = stringResource(Res.string.song_detail_next))
+            }
+          }
+          // Favorite heart lives in the header (design system, frame 1A)
+          if (state is SongDetailUiState.Content) {
+            IconButton(
+              onClick = {
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                onFavoriteClick()
+              },
+              modifier = Modifier.testTag("action:toggle-favorite")
+            ) {
+              Icon(
+                imageVector = if (isFavorite) Icons.Filled.Favorite else Lucide.Heart,
+                contentDescription = stringResource(
+                  if (isFavorite) Res.string.song_item_remove_from_favorites else Res.string.song_item_add_to_favorites
+                ),
+                tint = if (isFavorite) MaterialTheme.colorScheme.primary else LocalContentColor.current
+              )
             }
           }
           IconButton(onClick = { activeSheet = SongDetailSheet.TextSettings }) {
-            Icon(Icons.Filled.FormatSize, contentDescription = stringResource(Res.string.song_detail_text_size))
+            Icon(Lucide.ALargeSmall, contentDescription = stringResource(Res.string.song_detail_text_size))
           }
           // "More actions" button — visible only when content loaded
           if (state is SongDetailUiState.Content) {
             IconButton(onClick = { activeSheet = SongDetailSheet.Actions }, modifier = Modifier.testTag("action:more-actions")) {
-              Icon(Icons.Filled.MoreVert, contentDescription = null)
+              Icon(Lucide.Ellipsis, contentDescription = null)
             }
           }
         }
       )
-    },
-    floatingActionButton = {
-      if (state is SongDetailUiState.Content) {
-        val bottomInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-        FloatingActionButton(
-          onClick = {
-            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-            onFavoriteClick()
-          },
-          containerColor = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
-          contentColor = if (isFavorite) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-          elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation(),
-          modifier = Modifier.padding(bottom = bottomInset + 12.dp).testTag("action:toggle-favorite")
-        ) {
-          Icon(
-            imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-            contentDescription = null
-          )
-        }
-      }
     }
   ) { innerPadding ->
     Box(
@@ -389,6 +390,7 @@ fun SongDetailContent(
             fontScale = fontScale,
             expandedText = expandedText,
             lineHeightMultiplier = lineHeightMultiplier,
+            serifFont = serifFont,
             references = references,
             referenceBookContexts = referenceBookContexts,
             currentBookId = currentBookId,
@@ -418,9 +420,14 @@ fun SongDetailContent(
             fontScale = fontScale,
             expandedText = expandedText,
             lineHeightMultiplier = lineHeightMultiplier,
+            serifFont = serifFont,
+            showNavigationButtons = showNavigationButtons,
+            showNavigationToggle = onNavigatePrev != null || onNavigateNext != null,
             onFontScaleChange = { displaySettings?.onFontScaleChange?.invoke(it) },
             onExpandedTextChange = { displaySettings?.onExpandedTextChange?.invoke(it) },
             onLineHeightMultiplierChange = { displaySettings?.onLineHeightMultiplierChange?.invoke(it) },
+            onSerifFontChange = { displaySettings?.onSerifFontChange?.invoke(it) },
+            onShowNavigationButtonsChange = { displaySettings?.onShowNavigationButtonsChange?.invoke(it) },
           )
 
           SongDetailSheet.Actions -> if (songId != null) {
@@ -475,9 +482,14 @@ private fun TextSettingsSheet(
   fontScale: Float,
   expandedText: Boolean,
   lineHeightMultiplier: Float,
+  serifFont: Boolean,
+  showNavigationButtons: Boolean,
+  showNavigationToggle: Boolean,
   onFontScaleChange: (Float) -> Unit,
   onExpandedTextChange: (Boolean) -> Unit,
   onLineHeightMultiplierChange: (Float) -> Unit,
+  onSerifFontChange: (Boolean) -> Unit,
+  onShowNavigationButtonsChange: (Boolean) -> Unit,
 ) {
   val spacing = MaterialTheme.spacing
   Column(
@@ -498,7 +510,7 @@ private fun TextSettingsSheet(
       horizontalArrangement = Arrangement.spacedBy(spacing.md)
     ) {
       Icon(
-        Icons.Filled.FormatSize,
+        Lucide.ALargeSmall,
         contentDescription = null,
         modifier = Modifier.size(20.dp),
         tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -516,7 +528,7 @@ private fun TextSettingsSheet(
         )
       )
       Icon(
-        Icons.Filled.FormatSize,
+        Lucide.ALargeSmall,
         contentDescription = null,
         modifier = Modifier.size(28.dp),
         tint = MaterialTheme.colorScheme.onSurface
@@ -561,6 +573,25 @@ private fun TextSettingsSheet(
       )
     }
     Spacer(Modifier.height(spacing.md))
+
+    // "Serif font" — literary serif for the song text
+    Row(
+      modifier = Modifier.fillMaxWidth(),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+      Text(
+        text = stringResource(Res.string.song_detail_serif_font),
+        style = MaterialTheme.typography.bodyLarge.copy(fontFamily = SongSerifFontFamily),
+        color = MaterialTheme.colorScheme.onSurface
+      )
+      Switch(
+        checked = serifFont,
+        onCheckedChange = onSerifFontChange,
+        modifier = Modifier.testTag("switch:serif-font")
+      )
+    }
+
     Row(
       modifier = Modifier.fillMaxWidth(),
       verticalAlignment = Alignment.CenterVertically,
@@ -575,6 +606,26 @@ private fun TextSettingsSheet(
         checked = expandedText,
         onCheckedChange = onExpandedTextChange
       )
+    }
+
+    // Header prev/next arrows: hideable; swipe stays on touch platforms
+    if (showNavigationToggle) {
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+      ) {
+        Text(
+          text = stringResource(Res.string.song_detail_nav_buttons),
+          style = MaterialTheme.typography.bodyLarge,
+          color = MaterialTheme.colorScheme.onSurface
+        )
+        Switch(
+          checked = showNavigationButtons,
+          onCheckedChange = onShowNavigationButtonsChange,
+          modifier = Modifier.testTag("switch:nav-buttons")
+        )
+      }
     }
     Spacer(Modifier.height(spacing.lg))
   }
@@ -622,6 +673,7 @@ private fun SongContent(
   fontScale: Float,
   expandedText: Boolean,
   lineHeightMultiplier: Float = 1.0f,
+  serifFont: Boolean = false,
   references: List<SongReferenceDetail> = emptyList(),
   referenceBookContexts: Map<io.github.alelk.pws.domain.core.ids.SongId, List<SongDetailScreenModel.ReferenceBookContextUi>> = emptyMap(),
   currentBookId: io.github.alelk.pws.domain.core.ids.BookId? = null,
@@ -652,7 +704,7 @@ private fun SongContent(
 
     // Header
     item {
-      SongHeader(song)
+      SongHeader(song, serifFont = serifFont)
       Spacer(Modifier.height(spacing.xl))
     }
 
@@ -666,7 +718,8 @@ private fun SongContent(
         isRepeat = item.isRepeat,
         fontScale = fontScale,
         expandedText = expandedText,
-        lineHeightMultiplier = lineHeightMultiplier
+        lineHeightMultiplier = lineHeightMultiplier,
+        serifFont = serifFont
       )
       Spacer(Modifier.height(spacing.lg))
     }
@@ -726,7 +779,7 @@ private fun BookContextBanner(
       horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
       Icon(
-        imageVector = Icons.AutoMirrored.Filled.LibraryBooks,
+        imageVector = Lucide.LibraryBig,
         contentDescription = null,
         modifier = Modifier.size(16.dp),
         tint = MaterialTheme.colorScheme.onSecondaryContainer
@@ -742,7 +795,7 @@ private fun BookContextBanner(
 }
 
 @Composable
-private fun SongHeader(song: SongDetail) {
+private fun SongHeader(song: SongDetail, serifFont: Boolean = false) {
   val spacing = MaterialTheme.spacing
   Column(
     horizontalAlignment = Alignment.CenterHorizontally,
@@ -752,7 +805,8 @@ private fun SongHeader(song: SongDetail) {
       text = song.name.value,
       style = MaterialTheme.typography.headlineMedium.copy(
         fontWeight = FontWeight.Bold,
-        letterSpacing = (-0.5).sp
+        letterSpacing = (-0.5).sp,
+        fontFamily = if (serifFont) SongSerifFontFamily else null
       ),
       color = MaterialTheme.colorScheme.onBackground,
       textAlign = TextAlign.Center,
@@ -791,9 +845,11 @@ private fun LyricPartView(
   fontScale: Float,
   expandedText: Boolean,
   lineHeightMultiplier: Float = 1.0f,
+  serifFont: Boolean = false,
 ) {
   val baseFontSize = 18.sp * fontScale
   val lineHeight = baseFontSize * 1.7f * lineHeightMultiplier
+  val songFontFamily = if (serifFont) SongSerifFontFamily else null
 
   // When repeat chorus/bridge and option is OFF — show only a reference label
   if (isRepeat && !expandedText && part !is Verse) {
@@ -842,32 +898,29 @@ private fun LyricPartView(
             style = MaterialTheme.typography.bodyLarge.copy(
               fontSize = baseFontSize,
               lineHeight = lineHeight,
-              color = MaterialTheme.colorScheme.onBackground
+              color = MaterialTheme.colorScheme.onBackground,
+              fontFamily = songFontFamily
             ),
             modifier = Modifier.weight(1f),
           )
         }
       }
 
+      // Chorus/bridge — left accent line + label (caps, mono) instead of a filled tile
       is Chorus -> {
         val chorusLabel = if (chorusIndex != null) {
           "${stringResource(Res.string.song_detail_label_chorus)} $chorusIndex"
         } else {
           stringResource(Res.string.song_detail_label_chorus)
         }
-        Surface(
-          color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.45f),
-          shape = MaterialTheme.shapes.large,
-          tonalElevation = 0.dp
-        ) {
-          IntrinsicChorusView(
-            text = part.text,
-            label = chorusLabel,
-            fontSize = baseFontSize,
-            lineHeight = lineHeight,
-            accentColor = MaterialTheme.colorScheme.primary
-          )
-        }
+        IntrinsicChorusView(
+          text = part.text,
+          label = chorusLabel,
+          fontSize = baseFontSize,
+          lineHeight = lineHeight,
+          accentColor = MaterialTheme.colorScheme.primary,
+          fontFamily = songFontFamily
+        )
       }
 
       is Bridge -> {
@@ -876,19 +929,14 @@ private fun LyricPartView(
         } else {
           stringResource(Res.string.song_detail_label_bridge)
         }
-        Surface(
-          color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.35f),
-          shape = MaterialTheme.shapes.large,
-          tonalElevation = 0.dp
-        ) {
-          IntrinsicChorusView(
-            text = part.text,
-            label = bridgeLabel,
-            fontSize = baseFontSize,
-            lineHeight = lineHeight,
-            accentColor = MaterialTheme.colorScheme.tertiary
-          )
-        }
+        IntrinsicChorusView(
+          text = part.text,
+          label = bridgeLabel,
+          fontSize = baseFontSize,
+          lineHeight = lineHeight,
+          accentColor = MaterialTheme.colorScheme.primary,
+          fontFamily = songFontFamily
+        )
       }
     }
   }
@@ -900,20 +948,21 @@ private fun IntrinsicChorusView(
   label: String,
   fontSize: androidx.compose.ui.unit.TextUnit,
   lineHeight: androidx.compose.ui.unit.TextUnit,
-  accentColor: Color
+  accentColor: Color,
+  fontFamily: androidx.compose.ui.text.font.FontFamily? = null
 ) {
   val spacing = MaterialTheme.spacing
   Row(
     modifier = Modifier
       .fillMaxWidth()
-      .padding(vertical = 10.dp, horizontal = 12.dp)
       .height(IntrinsicSize.Min)
   ) {
+    // Thin 2dp accent line — instead of a filled tile (design system)
     Box(
       modifier = Modifier
-        .width(4.dp)
+        .width(2.dp)
         .fillMaxHeight()
-        .clip(RoundedCornerShape(2.dp))
+        .clip(RoundedCornerShape(1.dp))
         .background(accentColor)
     )
     Spacer(Modifier.width(spacing.md))
@@ -922,6 +971,7 @@ private fun IntrinsicChorusView(
       Text(
         text = label.uppercase(),
         style = MaterialTheme.typography.labelSmall.copy(
+          fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
           fontWeight = FontWeight.Bold,
           letterSpacing = 1.sp
         ),
@@ -933,7 +983,8 @@ private fun IntrinsicChorusView(
         style = MaterialTheme.typography.bodyLarge.copy(
           fontSize = fontSize,
           lineHeight = lineHeight,
-          fontStyle = FontStyle.Italic
+          fontStyle = FontStyle.Italic,
+          fontFamily = fontFamily
         ),
         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.9f)
       )
@@ -968,7 +1019,7 @@ private fun SongMetadata(song: SongDetail) {
       // Info Header
       Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
-          Icons.Outlined.Info,
+          Lucide.Info,
           contentDescription = null,
           modifier = Modifier.size(16.dp),
           tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1047,7 +1098,7 @@ private fun SongReferencesSection(
 
     Row(verticalAlignment = Alignment.CenterVertically) {
       Icon(
-        Icons.AutoMirrored.Filled.ArrowForward,
+        Lucide.ArrowRight,
         contentDescription = null,
         modifier = Modifier.size(16.dp),
         tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1175,7 +1226,7 @@ private fun SongReferenceItem(
         }
       }
       Icon(
-        Icons.AutoMirrored.Filled.ArrowForward,
+        Lucide.ArrowRight,
         contentDescription = stringResource(Res.string.song_detail_open),
         modifier = Modifier.size(16.dp),
         tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1202,7 +1253,7 @@ private fun SongTagsSection(tags: List<Tag<TagId>>) {
     )
     Row(verticalAlignment = Alignment.CenterVertically) {
       Icon(
-        Icons.AutoMirrored.Filled.Label,
+        Lucide.Tag,
         contentDescription = null,
         modifier = Modifier.size(16.dp),
         tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1288,29 +1339,29 @@ private fun SongActionsSheet(
     )
 
     ActionItem(
-      icon = { Icon(Icons.Filled.Edit, contentDescription = null, modifier = Modifier.testTag("action:edit-song")) },
+      icon = { Icon(Lucide.Pencil, contentDescription = null, modifier = Modifier.testTag("action:edit-song")) },
       label = stringResource(Res.string.song_detail_action_edit),
       onClick = onEditSong
     )
     ActionItem(
-      icon = { Icon(Icons.AutoMirrored.Filled.Label, contentDescription = null, modifier = Modifier.testTag("action:edit-tags")) },
+      icon = { Icon(Lucide.Tag, contentDescription = null, modifier = Modifier.testTag("action:edit-tags")) },
       label = stringResource(Res.string.song_detail_action_edit_tags),
       onClick = onEditTags
     )
     if (showJump) {
       ActionItem(
-        icon = { Icon(Icons.Filled.Search, contentDescription = null) },
+        icon = { Icon(Lucide.Search, contentDescription = null) },
         label = stringResource(Res.string.song_detail_action_jump),
         onClick = onJumpToNumber
       )
     }
     ActionItem(
-      icon = { Icon(Icons.Filled.Share, contentDescription = null) },
+      icon = { Icon(Lucide.Share2, contentDescription = null) },
       label = stringResource(Res.string.song_detail_action_share),
       onClick = onShare
     )
     ActionItem(
-      icon = { Icon(Icons.Filled.ContentCopy, contentDescription = null) },
+      icon = { Icon(Lucide.Copy, contentDescription = null) },
       label = stringResource(Res.string.song_detail_action_copy),
       onClick = onCopy
     )
@@ -1539,7 +1590,7 @@ private fun JumpToNumberSheet(
             invalidInput = false
             missingSongNumber = null
           }) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.song_detail_jump_clear),
+            Icon(Lucide.ArrowLeft, contentDescription = stringResource(Res.string.song_detail_jump_clear),
               modifier = Modifier.size(18.dp))
           }
         }

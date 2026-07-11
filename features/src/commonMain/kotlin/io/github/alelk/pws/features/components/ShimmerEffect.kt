@@ -6,12 +6,13 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -25,11 +26,12 @@ import io.github.alelk.pws.features.theme.Motion
  * Modifier to add a shimmer effect to any component.
  * Useful for loading skeletons.
  */
+@Composable
 fun Modifier.shimmerEffect(
   shape: Shape = RoundedCornerShape(12.dp),
-  color: Color = Color(0xFFE0E0E0), // Grey 300
-  shimmerColor: Color = Color(0xFFF5F5F5) // Grey 100
-): Modifier = composed {
+  color: Color = MaterialTheme.colorScheme.surfaceContainerHighest,
+  shimmerColor: Color = MaterialTheme.colorScheme.surfaceContainerLow
+): Modifier {
   var size by remember { mutableStateOf(IntSize.Zero) }
   val transition = rememberInfiniteTransition()
   val startOffsetX by transition.animateFloat(
@@ -40,7 +42,7 @@ fun Modifier.shimmerEffect(
     )
   )
 
-  background(
+  return background(
     brush = Brush.linearGradient(
       colors = listOf(
         color,

@@ -13,9 +13,15 @@ data class SongDetailDisplaySettings(
   val expandedText: Boolean,
   val onFontScaleChange: (Float) -> Unit,
   val onExpandedTextChange: (Boolean) -> Unit,
-  /** Множитель межстрочного интервала (0.9 .. 1.4 .. 1.8). 1.0 — стандартный. */
+  /** Line height multiplier (0.9 .. 1.4 .. 1.8). 1.0 is the standard. */
   val lineHeightMultiplier: Float = 1.0f,
   val onLineHeightMultiplierChange: (Float) -> Unit = {},
+  /** Literary serif ("Serif font" option) for song text; the default is the grotesque. */
+  val serifFont: Boolean = false,
+  val onSerifFontChange: (Boolean) -> Unit = {},
+  /** Prev/next buttons in the header (can be toggled; swipe stays on touch platforms). */
+  val showNavigationButtons: Boolean = PlatformDefaultShowSongNavButtons,
+  val onShowNavigationButtonsChange: (Boolean) -> Unit = {},
 )
 
 /** Host-provided persisted display settings for favorites screen. */

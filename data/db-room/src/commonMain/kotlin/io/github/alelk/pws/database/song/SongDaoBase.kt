@@ -47,6 +47,9 @@ interface SongDaoBase : Pageable<SongEntity> {
   @Query("DELETE FROM songs WHERE id = :id")
   suspend fun deleteById(id: SongId): Int
 
+  @Query("DELETE FROM songs WHERE id NOT IN (SELECT DISTINCT song_id FROM song_numbers) AND edited = 0")
+  suspend fun deleteOrphans(): Int
+
   @Query("DELETE FROM songs")
   suspend fun deleteAll()
 

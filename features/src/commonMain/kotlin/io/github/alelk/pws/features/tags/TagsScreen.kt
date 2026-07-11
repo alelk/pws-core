@@ -19,14 +19,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.Tag
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -60,28 +54,30 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import io.github.alelk.pws.features.components.testTagsAsResourceId
-
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.registry.ScreenRegistry
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.composables.icons.lucide.Check
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Pencil
+import com.composables.icons.lucide.Plus
+import com.composables.icons.lucide.Settings
+import com.composables.icons.lucide.Tag
+import com.composables.icons.lucide.Trash2
 import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.features.components.EmptyContent
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
-import io.github.alelk.pws.features.components.NavDestination
-import io.github.alelk.pws.features.components.OnTabReselected
 import io.github.alelk.pws.features.components.StateCrossfade
 import io.github.alelk.pws.features.components.confirm
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
+import io.github.alelk.pws.features.components.testTagsAsResourceId
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.common_delete
 import io.github.alelk.pws.features.resources.common_error_title
+import io.github.alelk.pws.features.resources.settings_open
 import io.github.alelk.pws.features.resources.tags_add
 import io.github.alelk.pws.features.resources.tags_cancel
 import io.github.alelk.pws.features.resources.tags_color_selected
@@ -106,24 +102,47 @@ import io.github.alelk.pws.features.resources.tags_snackbar_error_prefix
 import io.github.alelk.pws.features.resources.tags_snackbar_hidden
 import io.github.alelk.pws.features.resources.tags_snackbar_updated
 import io.github.alelk.pws.features.resources.tags_title
-import io.github.alelk.pws.features.resources.settings_open
 import io.github.alelk.pws.features.theme.spacing
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 
-// Predefined color palette for tags
-private val tagColors = listOf(
-  Color(0xFFE57373), // Red
-  Color(0xFFBA68C8), // Purple
-  Color(0xFF7986CB), // Indigo
-  Color(0xFF4FC3F7), // Light Blue
-  Color(0xFF4DB6AC), // Teal
-  Color(0xFF81C784), // Green
-  Color(0xFFFFD54F), // Amber
-  Color(0xFFFF8A65), // Deep Orange
-  Color(0xFFA1887F), // Brown
-  Color(0xFF90A4AE), // Blue Grey
-)
+// Predefined color palette for tags — muted category tints from the design system
+private val tagColors = io.github.alelk.pws.features.theme.CategoryTints
+
+/**
+ * Collects [TagsScreenModel] one-shot effects: navigation to tag songs + snackbars.
+ * Reused by the standalone [TagsScreen] and by the Library tab.
+ */
+@Composable
+fun HandleTagsEffects(
+  viewModel: TagsScreenModel,
+  snackbarHostState: SnackbarHostState,
+) {
+  val navigator = LocalNavigator.currentOrThrow
+  LaunchedEffect(viewModel) {
+    viewModel.effects.collect { effect ->
+      when (effect) {
+        is TagsScreenModel.Effect.NavigateToTagSongs -> {
+          val screen = ScreenRegistry.get(SharedScreens.tagSongs(effect.tag.id))
+          navigator.push(screen)
+        }
+        is TagsScreenModel.Effect.ShowSnackbar -> {
+          val message = when (val m = effect.message) {
+            TagsScreenModel.SnackbarMessage.Updated -> getString(Res.string.tags_snackbar_updated)
+            TagsScreenModel.SnackbarMessage.Created -> getString(Res.string.tags_snackbar_created)
+            TagsScreenModel.SnackbarMessage.Hidden -> getString(Res.string.tags_snackbar_hidden)
+            TagsScreenModel.SnackbarMessage.Deleted -> getString(Res.string.tags_snackbar_deleted)
+            is TagsScreenModel.SnackbarMessage.Error -> {
+              val details = m.details ?: ""
+              getString(Res.string.tags_snackbar_error_prefix, details)
+            }
+          }
+          snackbarHostState.showSnackbar(message)
+        }
+      }
+    }
+  }
+}
 
 class TagsScreen : Screen {
   @Composable
@@ -131,32 +150,8 @@ class TagsScreen : Screen {
     val viewModel = koinScreenModel<TagsScreenModel>()
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    val navigator = LocalNavigator.currentOrThrow
 
-    // Handle navigation effects
-    LaunchedEffect(Unit) {
-      viewModel.effects.collect { effect ->
-        when (effect) {
-          is TagsScreenModel.Effect.NavigateToTagSongs -> {
-            val screen = ScreenRegistry.get(SharedScreens.tagSongs(effect.tag.id))
-            navigator.push(screen)
-          }
-          is TagsScreenModel.Effect.ShowSnackbar -> {
-            val message = when (val m = effect.message) {
-              TagsScreenModel.SnackbarMessage.Updated -> getString(Res.string.tags_snackbar_updated)
-              TagsScreenModel.SnackbarMessage.Created -> getString(Res.string.tags_snackbar_created)
-              TagsScreenModel.SnackbarMessage.Hidden -> getString(Res.string.tags_snackbar_hidden)
-              TagsScreenModel.SnackbarMessage.Deleted -> getString(Res.string.tags_snackbar_deleted)
-              is TagsScreenModel.SnackbarMessage.Error -> {
-                val details = m.details ?: ""
-                getString(Res.string.tags_snackbar_error_prefix, details)
-              }
-            }
-            snackbarHostState.showSnackbar(message)
-          }
-        }
-      }
-    }
+    HandleTagsEffects(viewModel, snackbarHostState)
 
     TagsContent(
       state = state,
@@ -179,12 +174,6 @@ fun TagsContent(
   val navigator = LocalNavigator.currentOrThrow
   val haptic = LocalHapticFeedback.current
   val listState = rememberLazyListState()
-  val scope = rememberCoroutineScope()
-
-  OnTabReselected(NavDestination.Tags) {
-    scope.launch { listState.animateScrollToItem(0) }
-    scrollBehavior.state.heightOffset = 0f
-  }
 
   Scaffold(
     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -203,7 +192,7 @@ fun TagsContent(
               modifier = Modifier.testTag("action:open-settings")
             ) {
               Icon(
-                imageVector = Icons.Filled.Settings,
+                imageVector = Lucide.Settings,
                 contentDescription = stringResource(Res.string.settings_open)
               )
             }
@@ -225,7 +214,7 @@ fun TagsContent(
           modifier = Modifier.testTag("action:add-tag")
         ) {
           Icon(
-            imageVector = Icons.Default.Add,
+            imageVector = Lucide.Plus,
             contentDescription = null
           )
         }
@@ -233,55 +222,76 @@ fun TagsContent(
     },
     snackbarHost = { SnackbarHost(snackbarHostState) }
   ) { innerPadding ->
-    StateCrossfade(state, modifier = Modifier.padding(innerPadding)) { current ->
-      when (current) {
-        TagsUiState.Loading -> {
-          LoadingContent(message = stringResource(Res.string.tags_loading))
-        }
+    TagsBody(
+      state = state,
+      listState = listState,
+      onEvent = onEvent,
+      onRetry = onRetry,
+      modifier = Modifier.padding(innerPadding)
+    )
+  }
+}
 
-        TagsUiState.Empty -> {
-          EmptyContent(
-            icon = Icons.Outlined.Tag,
-            title = stringResource(Res.string.tags_empty_title),
-            subtitle = stringResource(Res.string.tags_empty_subtitle)
+/**
+ * Scaffold-free tags body: Loading / Empty / Content / Error + add/edit/delete dialogs.
+ * Reused by the standalone [TagsScreen] and by the Library tab.
+ */
+@Composable
+fun TagsBody(
+  state: TagsUiState,
+  listState: androidx.compose.foundation.lazy.LazyListState,
+  onEvent: (TagsEvent) -> Unit,
+  onRetry: () -> Unit = {},
+  modifier: Modifier = Modifier,
+) {
+  StateCrossfade(state, modifier = modifier) { current ->
+    when (current) {
+      TagsUiState.Loading -> {
+        LoadingContent(message = stringResource(Res.string.tags_loading))
+      }
+
+      TagsUiState.Empty -> {
+        EmptyContent(
+          icon = Lucide.Tag,
+          title = stringResource(Res.string.tags_empty_title),
+          subtitle = stringResource(Res.string.tags_empty_subtitle)
+        )
+      }
+
+      is TagsUiState.Content -> {
+        TagsList(
+          tags = current.tags,
+          listState = listState,
+          onTagClick = { onEvent(TagsEvent.TagClicked(it)) },
+          onEditClick = { onEvent(TagsEvent.EditTag(it)) },
+          onDeleteClick = { onEvent(TagsEvent.DeleteTag(it)) }
+        )
+
+        // Add/Edit dialog
+        if (current.showAddDialog) {
+          TagDialog(
+            editingTag = current.editingTag,
+            onSave = { name, color -> onEvent(TagsEvent.SaveTag(name, color)) },
+            onDismiss = { onEvent(TagsEvent.DismissDialog) }
           )
         }
 
-        is TagsUiState.Content -> {
-          TagsList(
-            tags = current.tags,
-            listState = listState,
-            onTagClick = { onEvent(TagsEvent.TagClicked(it)) },
-            onEditClick = { onEvent(TagsEvent.EditTag(it)) },
-            onDeleteClick = { onEvent(TagsEvent.DeleteTag(it)) }
-          )
-
-          // Add/Edit dialog
-          if (current.showAddDialog) {
-            TagDialog(
-              editingTag = current.editingTag,
-              onSave = { name, color -> onEvent(TagsEvent.SaveTag(name, color)) },
-              onDismiss = { onEvent(TagsEvent.DismissDialog) }
-            )
-          }
-
-          // Delete confirmation
-          current.showDeleteConfirmation?.let { tag ->
-            DeleteTagDialog(
-              tag = tag,
-              onConfirm = { onEvent(TagsEvent.ConfirmDeleteTag(tag)) },
-              onDismiss = { onEvent(TagsEvent.DismissDeleteConfirmation) }
-            )
-          }
-        }
-
-        is TagsUiState.Error -> {
-          ErrorContent(
-            title = stringResource(Res.string.common_error_title),
-            message = current.message,
-            onRetry = onRetry,
+        // Delete confirmation
+        current.showDeleteConfirmation?.let { tag ->
+          DeleteTagDialog(
+            tag = tag,
+            onConfirm = { onEvent(TagsEvent.ConfirmDeleteTag(tag)) },
+            onDismiss = { onEvent(TagsEvent.DismissDeleteConfirmation) }
           )
         }
+      }
+
+      is TagsUiState.Error -> {
+        ErrorContent(
+          title = stringResource(Res.string.common_error_title),
+          message = current.message,
+          onRetry = onRetry,
+        )
       }
     }
   }
@@ -387,7 +397,7 @@ private fun TagListItem(
         onEditClick()
       }) {
         Icon(
-          imageVector = Icons.Outlined.Edit,
+          imageVector = Lucide.Pencil,
           contentDescription = stringResource(Res.string.tags_edit),
           tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -397,7 +407,7 @@ private fun TagListItem(
         onDeleteClick()
       }) {
         Icon(
-          imageVector = Icons.Outlined.Delete,
+          imageVector = Lucide.Trash2,
           contentDescription = stringResource(Res.string.tags_delete),
           tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -510,7 +520,7 @@ private fun ColorOption(
   ) {
     if (isSelected) {
       Icon(
-        imageVector = Icons.Default.Check,
+        imageVector = Lucide.Check,
         contentDescription = stringResource(Res.string.tags_color_selected),
         tint = Color.White,
         modifier = Modifier.size(20.dp)
@@ -535,7 +545,7 @@ private fun DeleteTagDialog(
     title = title,
     message = message,
     confirmLabel = confirmText,
-    icon = Icons.Outlined.Delete,
+    icon = Lucide.Trash2,
     onConfirm = {
       haptic.confirm()
       onConfirm()

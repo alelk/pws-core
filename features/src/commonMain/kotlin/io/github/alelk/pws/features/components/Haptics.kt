@@ -25,7 +25,7 @@ fun rememberLightTapHaptic(): () -> Unit {
 fun HapticFeedback.lightTap() = performHapticFeedback(HapticFeedbackType.TextHandleMove)
 
 /**
- * Сильнее, чем lightTap — для destructive/irreversible операций (удаление, очистка).
- * iOS-аналог: UIImpactFeedbackGenerator.Style.medium / .heavy.
+ * Stronger than lightTap — for destructive/irreversible operations (delete, clear).
+ * iOS analog: UIImpactFeedbackGenerator.Style.medium / .heavy.
  */
 fun HapticFeedback.confirm() = performHapticFeedback(HapticFeedbackType.LongPress)

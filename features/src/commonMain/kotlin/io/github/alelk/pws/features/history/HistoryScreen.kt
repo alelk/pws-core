@@ -9,11 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.outlined.DeleteSweep
-import androidx.compose.material.icons.outlined.History
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -35,24 +31,25 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.core.registry.rememberScreen
 import cafe.adriel.voyager.core.registry.ScreenRegistry
+import cafe.adriel.voyager.core.registry.rememberScreen
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.composables.icons.lucide.ArrowLeft
+import com.composables.icons.lucide.History
+import com.composables.icons.lucide.ListX
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Settings
 import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.features.components.EmptyContent
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
-import io.github.alelk.pws.features.components.NavDestination
-import io.github.alelk.pws.features.components.OnTabReselected
 import io.github.alelk.pws.features.components.StateCrossfade
 import io.github.alelk.pws.features.components.SwipeableSongItem
 import io.github.alelk.pws.features.components.confirm
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
+import io.github.alelk.pws.features.components.testTagsAsResourceId
 import io.github.alelk.pws.features.resources.Res
 import io.github.alelk.pws.features.resources.common_back
 import io.github.alelk.pws.features.resources.common_error_title
@@ -76,7 +73,6 @@ import io.github.alelk.pws.features.resources.time_hours_ago
 import io.github.alelk.pws.features.resources.time_just_now
 import io.github.alelk.pws.features.resources.time_minutes_ago
 import io.github.alelk.pws.features.resources.time_yesterday
-import io.github.alelk.pws.features.components.testTagsAsResourceId
 import io.github.alelk.pws.features.theme.spacing
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -117,13 +113,6 @@ fun HistoryContent(
   val navigator = LocalNavigator.currentOrThrow
   val haptic = LocalHapticFeedback.current
   val listState = rememberLazyListState()
-  val scope = rememberCoroutineScope()
-
-  // Reselect tab — scroll to top + expand large top bar (iOS-like).
-  OnTabReselected(NavDestination.History) {
-    scope.launch { listState.animateScrollToItem(0) }
-    scrollBehavior.state.heightOffset = 0f
-  }
 
   Scaffold(
     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -135,7 +124,7 @@ fun HistoryContent(
           if (navigator.canPop) {
             IconButton(onClick = { navigator.pop() }) {
               Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                imageVector = Lucide.ArrowLeft,
                 contentDescription = stringResource(Res.string.common_back)
               )
             }
@@ -153,7 +142,7 @@ fun HistoryContent(
               modifier = Modifier.testTag("action:open-settings")
             ) {
               Icon(
-                imageVector = Icons.Filled.Settings,
+                imageVector = Lucide.Settings,
                 contentDescription = stringResource(Res.string.settings_open)
               )
             }
@@ -166,7 +155,7 @@ fun HistoryContent(
                 modifier = Modifier.testTag("action:clear-history")
               ) {
               Icon(
-                imageVector = Icons.Outlined.DeleteSweep,
+                imageVector = Lucide.ListX,
                 contentDescription = stringResource(Res.string.history_clear)
               )
             }
@@ -180,37 +169,13 @@ fun HistoryContent(
       )
     }
   ) { innerPadding ->
-    StateCrossfade(state, modifier = Modifier.padding(innerPadding)) { current ->
-      when (current) {
-        HistoryUiState.Loading -> {
-          LoadingContent(message = stringResource(Res.string.history_loading))
-        }
-
-        HistoryUiState.Empty -> {
-          EmptyContent(
-            icon = Icons.Outlined.History,
-            title = stringResource(Res.string.history_empty_title),
-            subtitle = stringResource(Res.string.history_empty_subtitle)
-          )
-        }
-
-        is HistoryUiState.Content -> {
-          HistoryList(
-            items = current.items,
-            listState = listState,
-            onRemove = onRemoveItem
-          )
-        }
-
-        is HistoryUiState.Error -> {
-          ErrorContent(
-            title = stringResource(Res.string.common_error_title),
-            message = io.github.alelk.pws.features.app.rememberResolved(current.message),
-            onRetry = onRetry,
-          )
-        }
-      }
-    }
+    HistoryBody(
+      state = state,
+      listState = listState,
+      onRemoveItem = onRemoveItem,
+      onRetry = onRetry,
+      modifier = Modifier.padding(innerPadding)
+    )
   }
 
   // Clear confirmation dialog — destructive haptic on confirm.
@@ -222,6 +187,51 @@ fun HistoryContent(
       },
       onDismiss = onDismissClear
     )
+  }
+}
+
+/**
+ * Scaffold-free history body: Loading / Empty / Content / Error.
+ * Reused by the standalone [HistoryScreen] and by the Library tab.
+ */
+@Composable
+fun HistoryBody(
+  state: HistoryUiState,
+  listState: androidx.compose.foundation.lazy.LazyListState,
+  onRemoveItem: (HistoryItemUi) -> Unit,
+  onRetry: () -> Unit = {},
+  modifier: Modifier = Modifier,
+) {
+  StateCrossfade(state, modifier = modifier) { current ->
+    when (current) {
+      HistoryUiState.Loading -> {
+        LoadingContent(message = stringResource(Res.string.history_loading))
+      }
+
+      HistoryUiState.Empty -> {
+        EmptyContent(
+          icon = Lucide.History,
+          title = stringResource(Res.string.history_empty_title),
+          subtitle = stringResource(Res.string.history_empty_subtitle)
+        )
+      }
+
+      is HistoryUiState.Content -> {
+        HistoryList(
+          items = current.items,
+          listState = listState,
+          onRemove = onRemoveItem
+        )
+      }
+
+      is HistoryUiState.Error -> {
+        ErrorContent(
+          title = stringResource(Res.string.common_error_title),
+          message = io.github.alelk.pws.features.app.rememberResolved(current.message),
+          onRetry = onRetry,
+        )
+      }
+    }
   }
 }
 
@@ -250,7 +260,7 @@ private fun HistoryList(
         items = group.items,
         key = { it.id }
       ) { item ->
-        // iOS-style плавное появление/удаление элементов
+        // iOS-style smooth item appear/remove
         androidx.compose.foundation.layout.Column(modifier = Modifier.animateItem()) {
           when (item) {
             is HistoryItemUi.BookedSong -> {
@@ -310,8 +320,8 @@ private data class HistoryGroup(
 )
 
 /**
- * Группируем по «Сегодня / Вчера / На этой неделе / Ранее».
- * iOS-style — границы по календарным дням, не по 24-часовому окну.
+ * Grouped into "Today / Yesterday / This week / Earlier".
+ * iOS-style — boundaries follow calendar days, not a 24-hour window.
  */
 @OptIn(ExperimentalTime::class)
 private fun groupByDate(items: List<HistoryItemUi>, now: Instant): List<HistoryGroup> {
@@ -338,7 +348,7 @@ private fun groupByDate(items: List<HistoryItemUi>, now: Instant): List<HistoryG
 }
 
 @Composable
-private fun ClearHistoryDialog(
+internal fun ClearHistoryDialog(
   onConfirm: () -> Unit,
   onDismiss: () -> Unit
 ) {
@@ -347,7 +357,7 @@ private fun ClearHistoryDialog(
     message = stringResource(Res.string.history_clear_dialog_message),
     confirmLabel = stringResource(Res.string.history_clear_dialog_confirm),
     dismissLabel = stringResource(Res.string.history_clear_dialog_cancel),
-    icon = Icons.Outlined.DeleteSweep,
+    icon = Lucide.ListX,
     confirmButtonTestTag = "action:confirm-clear-history",
     onConfirm = onConfirm,
     onDismiss = onDismiss,

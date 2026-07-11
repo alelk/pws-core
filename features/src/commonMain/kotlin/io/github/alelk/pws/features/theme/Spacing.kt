@@ -40,7 +40,7 @@ data class Spacing(
   /** List item horizontal padding */
   val listItemHorizontal: Dp = 16.dp,
   /** List item vertical padding */
-  val listItemVertical: Dp = 12.dp,
+  val listItemVertical: Dp = 14.dp,
 
   /** Icon size - small */
   val iconSm: Dp = 20.dp,

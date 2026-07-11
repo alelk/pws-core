@@ -13,9 +13,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.outlined.MusicOff
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -42,6 +39,9 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.composables.icons.lucide.ArrowLeft
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Music
 import io.github.alelk.pws.core.navigation.SharedScreens
 import io.github.alelk.pws.domain.core.ids.TagId
 import io.github.alelk.pws.features.components.EmptyContent
@@ -111,7 +111,7 @@ fun TagSongsContent(state: TagSongsUiState) {
         navigationIcon = {
           IconButton(onClick = { navigator.pop() }) {
             Icon(
-              Icons.AutoMirrored.Filled.ArrowBack,
+              Lucide.ArrowLeft,
               contentDescription = stringResource(Res.string.common_back)
             )
           }
@@ -135,7 +135,7 @@ fun TagSongsContent(state: TagSongsUiState) {
       TagSongsUiState.Empty -> {
         EmptyContent(
           modifier = Modifier.padding(innerPadding),
-          icon = Icons.Outlined.MusicOff,
+          icon = Lucide.Music,
           title = stringResource(Res.string.tag_songs_empty_title),
           subtitle = stringResource(Res.string.tag_songs_empty_subtitle)
         )

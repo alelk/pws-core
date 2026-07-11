@@ -1,8 +1,6 @@
 package io.github.alelk.pws.features.settings
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,21 +12,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Brightness7
-import androidx.compose.material.icons.filled.Contrast
-import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.LightMode
-import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.SettingsBrightness
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -48,6 +41,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
@@ -58,30 +52,37 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.composables.icons.lucide.Contrast
+import com.composables.icons.lucide.Lightbulb
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Moon
+import com.composables.icons.lucide.Palette
+import com.composables.icons.lucide.Sun
+import com.composables.icons.lucide.SunMoon
 import io.github.alelk.pws.features.components.AppTopBar
 import io.github.alelk.pws.features.resources.Res
+import io.github.alelk.pws.features.resources.common_close
+import io.github.alelk.pws.features.resources.license_load_failed
+import io.github.alelk.pws.features.resources.license_loading
+import io.github.alelk.pws.features.resources.settings_about
 import io.github.alelk.pws.features.resources.settings_books
 import io.github.alelk.pws.features.resources.settings_books_subtitle
-import io.github.alelk.pws.features.resources.settings_about
-import io.github.alelk.pws.features.resources.settings_donation_title
-import io.github.alelk.pws.features.resources.settings_donation_subtitle
-import io.github.alelk.pws.features.resources.settings_version
-import io.github.alelk.pws.features.resources.settings_license
 import io.github.alelk.pws.features.resources.settings_developers
+import io.github.alelk.pws.features.resources.settings_donation_subtitle
+import io.github.alelk.pws.features.resources.settings_donation_title
 import io.github.alelk.pws.features.resources.settings_dynamic_color
 import io.github.alelk.pws.features.resources.settings_dynamic_color_subtitle
-import io.github.alelk.pws.features.resources.settings_keep_screen_on
-import io.github.alelk.pws.features.resources.settings_keep_screen_on_subtitle
 import io.github.alelk.pws.features.resources.settings_export
 import io.github.alelk.pws.features.resources.settings_import
 import io.github.alelk.pws.features.resources.settings_import_export
 import io.github.alelk.pws.features.resources.settings_import_export_subtitle
 import io.github.alelk.pws.features.resources.settings_interface
+import io.github.alelk.pws.features.resources.settings_keep_screen_on
+import io.github.alelk.pws.features.resources.settings_keep_screen_on_subtitle
+import io.github.alelk.pws.features.resources.settings_license
 import io.github.alelk.pws.features.resources.settings_theme_subtitle
 import io.github.alelk.pws.features.resources.settings_title
-import io.github.alelk.pws.features.resources.common_close
-import io.github.alelk.pws.features.resources.license_load_failed
-import io.github.alelk.pws.features.resources.license_loading
+import io.github.alelk.pws.features.resources.settings_version
 import io.github.alelk.pws.features.theme.LocalThemeSettings
 import io.github.alelk.pws.features.theme.ThemeMode
 import io.github.alelk.pws.features.theme.spacing
@@ -223,7 +224,7 @@ private fun SettingsContent(
               SettingsSectionCard(footer = stringResource(Res.string.settings_dynamic_color_subtitle)) {
                 ToggleRow(
                   title = stringResource(Res.string.settings_dynamic_color),
-                  icon = Icons.Filled.Palette,
+                  icon = Lucide.Palette,
                   checked = useDynamicColor,
                   onCheckedChange = { checked ->
                     haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
@@ -233,12 +234,12 @@ private fun SettingsContent(
               }
             }
 
-            // Keep screen on в Song Detail
+            // Keep screen on while reading a song
             item {
               SettingsSectionCard(footer = stringResource(Res.string.settings_keep_screen_on_subtitle)) {
                 ToggleRow(
                   title = stringResource(Res.string.settings_keep_screen_on),
-                  icon = Icons.Filled.Brightness7,
+                  icon = Lucide.Lightbulb,
                   checked = keepScreenOn,
                   onCheckedChange = { checked ->
                     haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
@@ -580,17 +581,17 @@ private fun ToggleRow(
   }
 }
 
-/** Иконка для каждого варианта темы — iOS-style leading icon. */
+/** Icon per theme variant — iOS-style leading icon. */
 private fun themeModeIcon(mode: io.github.alelk.pws.features.theme.ThemeMode): ImageVector = when (mode) {
-  io.github.alelk.pws.features.theme.ThemeMode.SYSTEM -> Icons.Filled.SettingsBrightness
-  io.github.alelk.pws.features.theme.ThemeMode.LIGHT -> Icons.Filled.LightMode
-  io.github.alelk.pws.features.theme.ThemeMode.DARK -> Icons.Filled.DarkMode
-  io.github.alelk.pws.features.theme.ThemeMode.BLACK -> Icons.Filled.Contrast
+  io.github.alelk.pws.features.theme.ThemeMode.SYSTEM -> Lucide.SunMoon
+  io.github.alelk.pws.features.theme.ThemeMode.LIGHT -> Lucide.Sun
+  io.github.alelk.pws.features.theme.ThemeMode.DARK -> Lucide.Moon
+  io.github.alelk.pws.features.theme.ThemeMode.BLACK -> Lucide.Contrast
 }
 
 /**
- * iOS-style секция настроек: карточка + опциональный footer-text под ней.
- * Пояснительный текст идёт под карточкой серым меньшим шрифтом — как в Settings.app.
+ * iOS-style settings section: a card plus an optional footer text below it.
+ * The explanatory text goes under the card in a smaller grey font — like Settings.app.
  */
 @Composable
 private fun SettingsSectionCard(

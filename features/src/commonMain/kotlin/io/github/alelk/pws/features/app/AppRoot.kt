@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.animation.Crossfade
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
@@ -22,14 +23,16 @@ import cafe.adriel.voyager.navigator.tab.TabNavigator
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import cafe.adriel.voyager.transitions.SlideTransition
 import io.github.alelk.pws.features.books.BooksScreen
+import io.github.alelk.pws.features.booklibrary.BookLibraryExternalActions
+import io.github.alelk.pws.features.booklibrary.LocalBookLibraryExternalActions
 import io.github.alelk.pws.features.components.AppNavigationBar
+import io.github.alelk.pws.features.onboarding.OnboardingScreen
 import io.github.alelk.pws.features.components.LocalTabReselectEvents
 import io.github.alelk.pws.features.components.NavDestination
 import io.github.alelk.pws.features.components.TabReselectEvents
 import kotlinx.coroutines.launch
-import io.github.alelk.pws.features.favorites.FavoritesScreen
-import io.github.alelk.pws.features.history.HistoryScreen
 import io.github.alelk.pws.features.home.HomeScreen
+import io.github.alelk.pws.features.library.LibraryScreen
 import io.github.alelk.pws.features.search.SearchScreen
 import io.github.alelk.pws.features.settings.LocalSettingsExternalActions
 import io.github.alelk.pws.features.settings.SettingsExternalActions
@@ -39,7 +42,6 @@ import io.github.alelk.pws.features.song.detail.LocalSongDetailDisplaySettings
 import io.github.alelk.pws.features.song.detail.LocalSongDetailExternalActions
 import io.github.alelk.pws.features.song.detail.SongDetailDisplaySettings
 import io.github.alelk.pws.features.song.detail.SongDetailExternalActions
-import io.github.alelk.pws.features.tags.TagsScreen
 import io.github.alelk.pws.features.theme.AppTheme
 import io.github.alelk.pws.features.theme.LocalThemeSettings
 import io.github.alelk.pws.features.theme.ThemeMode
@@ -47,6 +49,13 @@ import io.github.alelk.pws.features.theme.ThemeSettings
 
 /**
  * Root composable for the app with theme and main navigation.
+ *
+ * [hasInstalledBooks] drives the first-launch gate:
+ *   null  = still resolving from DB (show nothing to avoid flicker)
+ *   false = no books installed → show onboarding
+ *   true  = books exist → show main app
+ *
+ * [onSkipOnboarding] is called when the user taps "Skip" in onboarding.
  */
 @Composable
 fun AppRoot(
@@ -61,6 +70,9 @@ fun AppRoot(
   songDetailExternalActions: SongDetailExternalActions? = null,
   songDetailDisplaySettings: SongDetailDisplaySettings? = null,
   favoritesDisplaySettings: FavoritesDisplaySettings? = null,
+  hasInstalledBooks: Boolean? = null,
+  onSkipOnboarding: () -> Unit = {},
+  bookLibraryExternalActions: BookLibraryExternalActions? = null,
 ) {
   CompositionLocalProvider(
     LocalThemeSettings provides ThemeSettings(
@@ -74,6 +86,7 @@ fun AppRoot(
     LocalPwsAppInfo provides appVersion?.let { PwsAppInfo(it) },
     LocalSettingsExternalActions provides settingsExternalActions,
     LocalSongDetailExternalActions provides songDetailExternalActions,
+    LocalBookLibraryExternalActions provides bookLibraryExternalActions,
     LocalSongDetailDisplaySettings provides songDetailDisplaySettings,
     LocalFavoritesDisplaySettings provides favoritesDisplaySettings,
   ) {
@@ -82,7 +95,13 @@ fun AppRoot(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
       ) {
-        MainScreen()
+        Crossfade(targetState = hasInstalledBooks) { installed ->
+          when (installed) {
+            null -> Unit // loading — Surface background is already showing
+            false -> Navigator(OnboardingScreen(onSkip = onSkipOnboarding)) { SlideTransition(it) }
+            true -> MainScreen()
+          }
+        }
       }
     }
   }
@@ -119,9 +138,7 @@ private class DestinationTab(
     NavDestination.Home -> HomeScreen()
     NavDestination.Books -> BooksScreen()
     NavDestination.Search -> SearchScreen()
-    NavDestination.Tags -> TagsScreen()
-    NavDestination.Favorites -> FavoritesScreen()
-    NavDestination.History -> HistoryScreen()
+    NavDestination.Library -> LibraryScreen()
   }
 }
 
@@ -129,9 +146,7 @@ private val mainTabs: List<Tab> = listOf(
   DestinationTab(NavDestination.Home, 0u),
   DestinationTab(NavDestination.Books, 1u),
   DestinationTab(NavDestination.Search, 2u),
-  DestinationTab(NavDestination.Tags, 3u),
-  DestinationTab(NavDestination.Favorites, 4u),
-  DestinationTab(NavDestination.History, 5u),
+  DestinationTab(NavDestination.Library, 3u),
 )
 
 private class TabNavigatorsHolder(

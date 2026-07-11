@@ -3,10 +3,10 @@ package io.github.alelk.pws.database.song_reference
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import io.github.alelk.pws.database.song_reference.SongReferenceDetailsEntity
 import io.github.alelk.pws.domain.core.SongNumber
 import io.github.alelk.pws.domain.core.ids.BookId
 import io.github.alelk.pws.domain.core.ids.SongId
@@ -14,10 +14,10 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SongReferenceDao {
-  @Insert
+  @Insert(onConflict = OnConflictStrategy.IGNORE)
   suspend fun insert(songSongReference: SongReferenceEntity)
 
-  @Insert
+  @Insert(onConflict = OnConflictStrategy.IGNORE)
   suspend fun insertAll(references: List<SongReferenceEntity>)
 
   @Update
@@ -63,6 +63,9 @@ interface SongReferenceDao {
 
   suspend fun deleteBySongIdAndRefSongNumber(songId: SongId, refSongNumber: SongNumber) =
     deleteBySongIdAndRefSongNumber(songId, refSongNumber.number, refSongNumber.bookId)
+
+  @Query("DELETE FROM song_references WHERE song_id IN (:songIds)")
+  suspend fun deleteBySongIds(songIds: Collection<SongId>)
 
   @Query("DELETE FROM song_references")
   suspend fun deleteAll()
