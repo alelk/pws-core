@@ -1,5 +1,12 @@
 # PWS Android
 
+# [3.2.0-rc.6](https://github.com/alelk/pws-core/compare/v3.2.0-rc.5...v3.2.0-rc.6) (2026-07-11)
+
+
+### Bug Fixes
+
+* Fix tags screen ([601ea07](https://github.com/alelk/pws-core/commit/601ea07bc9e771d19095adde9d86b410ba126650))
+
 # [3.2.0-rc.5](https://github.com/alelk/pws-core/compare/v3.2.0-rc.4...v3.2.0-rc.5) (2026-07-10)
 
 
