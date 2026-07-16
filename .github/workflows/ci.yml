@@ -40,7 +40,9 @@ jobs:
           ./gradlew check assemble
 
       - name: Validate Room schema is committed
-        run: git diff --exit-code data/db-room/schemas/
+        run: |
+          git diff --exit-code data/db-room/schemas/
+          test -z "$(git ls-files --others --exclude-standard data/db-room/schemas/)"
 
       - name: Publish Test Results
         uses: mikepenz/action-junit-report@v4

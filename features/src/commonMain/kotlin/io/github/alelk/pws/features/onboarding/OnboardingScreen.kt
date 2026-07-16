@@ -34,10 +34,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.snapshots.SnapshotStateSet
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -71,9 +72,12 @@ import io.github.alelk.pws.features.theme.spacing
 import kotlin.math.roundToLong
 import org.jetbrains.compose.resources.stringResource
 
-class OnboardingScreen(private val onSkip: () -> Unit) : Screen {
+val LocalOnSkipOnboarding = staticCompositionLocalOf { {} }
+
+class OnboardingScreen : Screen {
     @Composable
     override fun Content() {
+        val onSkip = LocalOnSkipOnboarding.current
         val viewModel = koinScreenModel<BookLibraryScreenModel>()
         val state by viewModel.state.collectAsState()
 

@@ -6,7 +6,7 @@ import androidx.room.Fts4
 import androidx.room.FtsOptions
 import androidx.room.PrimaryKey
 
-@Fts4(contentEntity = SongEntity::class, tokenizer = FtsOptions.TOKENIZER_UNICODE61, tokenizerArgs = ["remove_diacritics=1"])
+@Fts4(contentEntity = SongEntity::class, tokenizer = FtsOptions.TOKENIZER_UNICODE61)
 @Entity(tableName = "songs_fts")
 data class SongFtsEntity(
     @PrimaryKey @ColumnInfo(name = "rowid") val id: Long,
