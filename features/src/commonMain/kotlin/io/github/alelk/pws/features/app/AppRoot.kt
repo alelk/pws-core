@@ -26,6 +26,7 @@ import io.github.alelk.pws.features.books.BooksScreen
 import io.github.alelk.pws.features.booklibrary.BookLibraryExternalActions
 import io.github.alelk.pws.features.booklibrary.LocalBookLibraryExternalActions
 import io.github.alelk.pws.features.components.AppNavigationBar
+import io.github.alelk.pws.features.onboarding.LocalOnSkipOnboarding
 import io.github.alelk.pws.features.onboarding.OnboardingScreen
 import io.github.alelk.pws.features.components.LocalTabReselectEvents
 import io.github.alelk.pws.features.components.NavDestination
@@ -89,6 +90,7 @@ fun AppRoot(
     LocalBookLibraryExternalActions provides bookLibraryExternalActions,
     LocalSongDetailDisplaySettings provides songDetailDisplaySettings,
     LocalFavoritesDisplaySettings provides favoritesDisplaySettings,
+    LocalOnSkipOnboarding provides onSkipOnboarding,
   ) {
     AppTheme(themeMode = themeMode, useDynamicColor = useDynamicColor) {
       Surface(
@@ -98,7 +100,7 @@ fun AppRoot(
         Crossfade(targetState = hasInstalledBooks) { installed ->
           when (installed) {
             null -> Unit // loading — Surface background is already showing
-            false -> Navigator(OnboardingScreen(onSkip = onSkipOnboarding)) { SlideTransition(it) }
+            false -> Navigator(OnboardingScreen()) { SlideTransition(it) }
             true -> MainScreen()
           }
         }

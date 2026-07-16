@@ -1,5 +1,12 @@
 # PWS Android
 
+## [3.2.1-rc.1](https://github.com/alelk/pws-core/compare/v3.2.0...v3.2.1-rc.1) (2026-07-16)
+
+
+### Bug Fixes
+
+* Fix database issue: skip default fts parameter 'remove_diacritics=1' ([52ef649](https://github.com/alelk/pws-core/commit/52ef649bfe012c32293eb1ef16967a49120911c0))
+
 # [3.2.0](https://github.com/alelk/pws-core/compare/v3.1.0...v3.2.0) (2026-07-11)
 
 
