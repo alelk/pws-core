@@ -187,7 +187,12 @@ private fun OnboardingContent(
 
             when (state) {
                 is BookLibraryUiState.Loading -> item {
-                    LoadingContent(message = stringResource(Res.string.book_library_loading))
+                    // Stable tag lets the offline-skip E2E assert Skip *while loading* directly,
+                    // instead of racing the cold-start DB gate against the short loading window.
+                    LoadingContent(
+                        modifier = Modifier.testTag("onboarding-loading"),
+                        message = stringResource(Res.string.book_library_loading),
+                    )
                 }
                 is BookLibraryUiState.Error -> item {
                     ErrorContent(
