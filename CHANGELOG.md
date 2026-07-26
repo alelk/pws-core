@@ -1,5 +1,12 @@
 # PWS Android
 
+## [3.2.1-rc.3](https://github.com/alelk/pws-core/compare/v3.2.1-rc.2...v3.2.1-rc.3) (2026-07-26)
+
+
+### Bug Fixes
+
+* Update onboarding screen ([77629c5](https://github.com/alelk/pws-core/commit/77629c5e3cea9ee017426e388b2cab49003aa88b))
+
 ## [3.2.1-rc.2](https://github.com/alelk/pws-core/compare/v3.2.1-rc.1...v3.2.1-rc.2) (2026-07-23)
 
 
