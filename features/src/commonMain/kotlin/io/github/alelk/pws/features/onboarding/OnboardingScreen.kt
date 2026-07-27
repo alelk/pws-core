@@ -129,29 +129,30 @@ private fun OnboardingContent(
 
     Scaffold(
         bottomBar = {
-            AnimatedVisibility(visible = state !is BookLibraryUiState.Loading, enter = fadeIn()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 12.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    if (installableCount > 0 || anyDownloading) {
-                        Button(
-                            onClick = onInstallSelected,
-                            enabled = installableCount > 0 && !anyDownloading,
-                            modifier = Modifier.fillMaxWidth().testTag("action:install-selected-books"),
-                        ) {
-                            Text(stringResource(Res.string.onboarding_install_selected, installableCount))
-                        }
+            // The Skip button stays visible in every state — including Loading — so a hanging
+            // catalog fetch on a bad network never traps the user (they can always bail out).
+            // Only the install button is content-dependent.
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                AnimatedVisibility(visible = installableCount > 0 || anyDownloading, enter = fadeIn()) {
+                    Button(
+                        onClick = onInstallSelected,
+                        enabled = installableCount > 0 && !anyDownloading,
+                        modifier = Modifier.fillMaxWidth().testTag("action:install-selected-books"),
+                    ) {
+                        Text(stringResource(Res.string.onboarding_install_selected, installableCount))
                     }
-                    TextButton(onClick = onSkip, modifier = Modifier.testTag("action:skip-onboarding")) {
-                        Text(
-                            if (anyInstalled && !anyDownloading) stringResource(Res.string.onboarding_continue)
-                            else stringResource(Res.string.onboarding_skip)
-                        )
-                    }
+                }
+                TextButton(onClick = onSkip, modifier = Modifier.testTag("action:skip-onboarding")) {
+                    Text(
+                        if (anyInstalled && !anyDownloading) stringResource(Res.string.onboarding_continue)
+                        else stringResource(Res.string.onboarding_skip)
+                    )
                 }
             }
         }
@@ -186,7 +187,12 @@ private fun OnboardingContent(
 
             when (state) {
                 is BookLibraryUiState.Loading -> item {
-                    LoadingContent(message = stringResource(Res.string.book_library_loading))
+                    // Stable tag lets the offline-skip E2E assert Skip *while loading* directly,
+                    // instead of racing the cold-start DB gate against the short loading window.
+                    LoadingContent(
+                        modifier = Modifier.testTag("onboarding-loading"),
+                        message = stringResource(Res.string.book_library_loading),
+                    )
                 }
                 is BookLibraryUiState.Error -> item {
                     ErrorContent(
