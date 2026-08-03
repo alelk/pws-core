@@ -1,5 +1,12 @@
 # PWS Android
 
+# [3.3.0-rc.1](https://github.com/alelk/pws-core/compare/v3.2.1-rc.3...v3.3.0-rc.1) (2026-08-03)
+
+
+### Features
+
+* premium gate ([01a2873](https://github.com/alelk/pws-core/commit/01a2873629ea5c6ec3f5918db1b36ef08df09cc5))
+
 ## [3.2.1](https://github.com/alelk/pws-core/compare/v3.2.0...v3.2.1) (2026-07-16)
 
 
