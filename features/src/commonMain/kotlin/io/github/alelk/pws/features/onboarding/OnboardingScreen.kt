@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -135,6 +136,10 @@ private fun OnboardingContent(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    // bottomBar sits below Scaffold's inset handling, so the nav-bar padding
+                    // must be applied here — otherwise the buttons slide under the system
+                    // navigation bar (gesture pill / 3-button bar) and can't be tapped.
+                    .navigationBarsPadding()
                     .padding(horizontal = 24.dp, vertical = 12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(4.dp),

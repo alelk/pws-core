@@ -15,6 +15,10 @@ import io.github.alelk.pws.features.search.SearchScreenModel
 import io.github.alelk.pws.features.settings.SettingsScreenModel
 import io.github.alelk.pws.features.song.detail.SongDetailScreenModel
 import io.github.alelk.pws.features.song.detail.SongDetailBySongIdScreenModel
+import io.github.alelk.pws.features.premium.AlwaysActiveEntitlementRepository
+import io.github.alelk.pws.features.premium.DefaultPremiumGate
+import io.github.alelk.pws.features.premium.EntitlementRepository
+import io.github.alelk.pws.features.premium.PremiumGate
 import io.github.alelk.pws.features.song.edit.SongEditScreenModel
 import io.github.alelk.pws.features.tags.TagsScreenModel
 import io.github.alelk.pws.features.tags.songs.TagSongsScreenModel
@@ -55,6 +59,12 @@ import org.koin.dsl.module
 val featuresModule = module {
   // DonationSessionGuard — process-lifetime singleton for per-session dedup
   single { DonationSessionGuard() }
+
+  // Premium entitlement (payment-agnostic). Default: everything unlocked — the free builds have no
+  // paywall. A store flavor overrides EntitlementRepository with its own purchase-backed source
+  // (its Koin module is loaded after this one, so the override wins).
+  single<EntitlementRepository> { AlwaysActiveEntitlementRepository() }
+  single<PremiumGate> { DefaultPremiumGate(get()) }
 
   // Home
   factory { HomeScreenModel(get(), get(), get()) }

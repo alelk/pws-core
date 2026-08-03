@@ -55,6 +55,7 @@
     <string name="settings_license">Ліцензія</string>
     <string name="settings_import_export">Імпорт/експорт</string>
     <string name="settings_import_export_subtitle">Імпортуйте або експортуйте відредаговані пісні та категорії</string>
+    <string name="settings_purchases">Покупки та підписка</string>
     <string name="settings_export">Експорт даних</string>
     <string name="settings_import">Імпорт даних</string>
 

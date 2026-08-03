@@ -76,6 +76,7 @@ import io.github.alelk.pws.features.components.AppTopBar
 import io.github.alelk.pws.features.components.ErrorContent
 import io.github.alelk.pws.features.components.LoadingContent
 import io.github.alelk.pws.features.resources.*
+import io.github.alelk.pws.features.premium.rememberPremiumGate
 import io.github.alelk.pws.features.song.edit.SongEditScreen
 import io.github.alelk.pws.features.theme.SongSerifFontFamily
 import io.github.alelk.pws.features.theme.spacing
@@ -117,6 +118,9 @@ class SongDetailScreen(val songNumberIdString: String) : Screen {
 
     val donationBoostyUrl = (state as? SongDetailUiState.Content)?.donationBoostyUrl ?: ""
 
+    // Premium gate for the favorite toggle — transparent in the free builds.
+    val premium = rememberPremiumGate()
+
     if (bookSongNumberIds.size > 1) {
       val initialPage = bookSongNumberIds.indexOf(currentSongNumberId).coerceAtLeast(0)
       SongDetailPager(
@@ -132,7 +136,7 @@ class SongDetailScreen(val songNumberIdString: String) : Screen {
         songTags = songTags,
         allTags = allTags,
         bookNumberMap = bookNumberMap,
-        onFavoriteClick = { viewModel.onToggleFavorite() },
+        onFavoriteClick = premium.gated { viewModel.onToggleFavorite() },
         onSaveTags = { viewModel.onSaveTags(it) },
         onJumpToNumber = { viewModel.resolveNumber(it) },
         onPageChanged = { viewModel.onPageChanged(it) },
@@ -153,7 +157,7 @@ class SongDetailScreen(val songNumberIdString: String) : Screen {
         songTags = songTags,
         allTags = allTags,
         bookNumberMap = bookNumberMap,
-        onFavoriteClick = { viewModel.onToggleFavorite() },
+        onFavoriteClick = premium.gated { viewModel.onToggleFavorite() },
         onSaveTags = { viewModel.onSaveTags(it) },
         onJumpToNumber = { viewModel.resolveNumber(it) },
         onDonationDonate = {
@@ -301,6 +305,9 @@ fun SongDetailContent(
   val haptic = LocalHapticFeedback.current
   val externalActions = LocalSongDetailExternalActions.current
   val displaySettings = LocalSongDetailDisplaySettings.current
+  // Premium gate — transparent in the free builds (always-active entitlement); in a store flavor it
+  // blocks edit/tags/share and requests the paywall.
+  val premium = rememberPremiumGate()
   // Host is the single source of truth for these settings; fall back to sensible defaults
   // when no host has provided them (e.g. previews, tests).
   val fontScale = displaySettings?.fontScale ?: 1f
@@ -433,13 +440,13 @@ fun SongDetailContent(
           SongDetailSheet.Actions -> if (songId != null) {
             SongActionsSheet(
               showJump = bookNumberMap.isNotEmpty(),
-              onEditSong = {
+              onEditSong = premium.gated {
                 dismiss()
                 navigator.push(SongEditScreen(songId.value))
               },
-              onEditTags = { activeSheet = SongDetailSheet.TagEditor },
+              onEditTags = premium.gated { activeSheet = SongDetailSheet.TagEditor },
               onJumpToNumber = { activeSheet = SongDetailSheet.Jump },
-              onShare = {
+              onShare = premium.gated {
                 externalActions?.shareText?.invoke(buildShareText(state.song))
               },
               onCopy = {

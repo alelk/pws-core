@@ -74,6 +74,7 @@ import io.github.alelk.pws.features.resources.settings_dynamic_color
 import io.github.alelk.pws.features.resources.settings_dynamic_color_subtitle
 import io.github.alelk.pws.features.resources.settings_export
 import io.github.alelk.pws.features.resources.settings_import
+import io.github.alelk.pws.features.resources.settings_purchases
 import io.github.alelk.pws.features.resources.settings_import_export
 import io.github.alelk.pws.features.resources.settings_import_export_subtitle
 import io.github.alelk.pws.features.resources.settings_interface
@@ -83,6 +84,7 @@ import io.github.alelk.pws.features.resources.settings_license
 import io.github.alelk.pws.features.resources.settings_theme_subtitle
 import io.github.alelk.pws.features.resources.settings_title
 import io.github.alelk.pws.features.resources.settings_version
+import io.github.alelk.pws.features.premium.rememberPremiumGate
 import io.github.alelk.pws.features.theme.LocalThemeSettings
 import io.github.alelk.pws.features.theme.ThemeMode
 import io.github.alelk.pws.features.theme.spacing
@@ -96,6 +98,8 @@ class SettingsScreen : Screen {
     val navigator = LocalNavigator.currentOrThrow
     val themeSettings = LocalThemeSettings.current
     val externalActions = LocalSettingsExternalActions.current
+    // Premium gate for theme changes — transparent in the free builds.
+    val premium = rememberPremiumGate()
 
     LaunchedEffect(themeSettings?.themeMode) {
       themeSettings?.let { viewModel.onEvent(SettingsEvent.SyncTheme(it.themeMode)) }
@@ -138,12 +142,13 @@ class SettingsScreen : Screen {
       keepScreenOn = themeSettings?.keepScreenOn == true,
       onKeepScreenOnChange = { themeSettings?.onKeepScreenOnChange?.invoke(it) },
       onBack = { viewModel.onEvent(SettingsEvent.Back) },
-      onThemeSelected = { mode -> viewModel.onEvent(SettingsEvent.SetTheme(mode)) },
+      onThemeSelected = { mode -> premium.run { viewModel.onEvent(SettingsEvent.SetTheme(mode)) } },
       onBookToggle = { id, enabled -> viewModel.onEvent(SettingsEvent.ToggleBook(id, enabled)) },
       onDeveloperClick = { contact -> viewModel.onEvent(SettingsEvent.OpenDeveloperContact(contact)) },
       onExportClick = { viewModel.onEvent(SettingsEvent.ExportData) },
       onImportClick = { viewModel.onEvent(SettingsEvent.ImportData) },
       onDonationClick = { viewModel.onEvent(SettingsEvent.OpenDonation) },
+      onOpenPaywall = externalActions?.openPaywall,
     )
   }
 }
@@ -163,6 +168,7 @@ private fun SettingsContent(
   onExportClick: () -> Unit,
   onImportClick: () -> Unit,
   onDonationClick: () -> Unit,
+  onOpenPaywall: (() -> Unit)? = null,
 ) {
   val haptic = LocalHapticFeedback.current
   var showLicenseDialog by remember { mutableStateOf(false) }
@@ -327,6 +333,23 @@ private fun SettingsContent(
                       modifier = Modifier.padding(horizontal = 16.dp),
                       color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                     )
+                  }
+                }
+              }
+            }
+
+            // Purchases entry — only in builds that sell premium features (store flavor).
+            onOpenPaywall?.let { openPaywall ->
+              item {
+                SettingsSectionCard {
+                  OutlinedButton(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp).testTag("action:open-paywall"),
+                    onClick = {
+                      haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                      openPaywall()
+                    }
+                  ) {
+                    Text(stringResource(Res.string.settings_purchases))
                   }
                 }
               }

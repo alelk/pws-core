@@ -51,6 +51,7 @@
     <string name="settings_books_subtitle">Włączaj i wyłączaj śpiewniki</string>
     <string name="settings_import_export">Import/eksport</string>
     <string name="settings_import_export_subtitle">Importuj lub eksportuj edytowane pieśni i kategorie</string>
+    <string name="settings_purchases">Zakupy i subskrypcja</string>
     <string name="settings_export">Eksport danych</string>
     <string name="settings_import">Import danych</string>
 

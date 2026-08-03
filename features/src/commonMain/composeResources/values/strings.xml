@@ -66,6 +66,7 @@
     <string name="settings_license">License</string>
     <string name="settings_import_export">Import/Export</string>
     <string name="settings_import_export_subtitle">Import or export your edited songs and categories</string>
+    <string name="settings_purchases">Purchases &amp; subscription</string>
     <string name="settings_export">Export data</string>
     <string name="settings_import">Import data</string>
 
