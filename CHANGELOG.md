@@ -1,5 +1,12 @@
 # PWS Android
 
+# [3.3.0-rc.2](https://github.com/alelk/pws-core/compare/v3.3.0-rc.1...v3.3.0-rc.2) (2026-08-06)
+
+
+### Features
+
+* monetization mode ([b4ac0c6](https://github.com/alelk/pws-core/commit/b4ac0c66d3efb26faaeda4aeea8fd2f4c1694058))
+
 # [3.3.0-rc.1](https://github.com/alelk/pws-core/compare/v3.2.1-rc.3...v3.3.0-rc.1) (2026-08-03)
 
 
