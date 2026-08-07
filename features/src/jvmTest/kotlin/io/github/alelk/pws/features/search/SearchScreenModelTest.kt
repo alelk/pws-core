@@ -11,6 +11,12 @@ import io.github.alelk.pws.domain.song.model.SongSearchSuggestion
 import io.github.alelk.pws.domain.song.query.SearchQuery
 import io.github.alelk.pws.domain.song.repository.SongSearchRepository
 import io.github.alelk.pws.domain.song.usecase.SearchSongSuggestionsUseCase
+import io.github.alelk.pws.domain.telemetry.NoOpTelemetry
+import io.github.alelk.pws.domain.telemetry.Telemetry
+import io.github.alelk.pws.domain.telemetry.TelemetryAttr
+import io.github.alelk.pws.domain.telemetry.TelemetryEvent
+import io.github.alelk.pws.domain.telemetry.TelemetryResult
+import io.github.alelk.pws.features.telemetry.RecordingTelemetry
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -51,8 +57,8 @@ class SearchScreenModelTest : FunSpec({
       SongSearchResponse(results = emptyList(), totalCount = 0, hasMore = false)
   }
 
-  fun model(repo: SongSearchRepository) =
-    SearchScreenModel(SearchSongSuggestionsUseCase(repo, NoopTransactionRunner()))
+  fun model(repo: SongSearchRepository, telemetry: Telemetry = NoOpTelemetry) =
+    SearchScreenModel(SearchSongSuggestionsUseCase(repo, NoopTransactionRunner()), telemetry)
 
   test("blank query yields Idle without searching") {
     runTest(dispatcher) {
@@ -113,6 +119,39 @@ class SearchScreenModelTest : FunSpec({
       advanceUntilIdle()
       sm.state.value shouldBe SearchUiState.Idle
       sm.query.value shouldBe ""
+    }
+  }
+
+  test("reports a search event with the query length and result count — never the query text") {
+    runTest(dispatcher) {
+      val telemetry = RecordingTelemetry()
+      val sm = model(FakeSearchRepository(result = listOf(suggestion("Amazing Grace"))), telemetry)
+
+      sm.onEvent(SearchEvent.QueryChanged("grace"))
+      advanceUntilIdle()
+
+      val event = telemetry.events.single()
+      event.name shouldBe TelemetryEvent.SEARCH
+      event.params[TelemetryAttr.QUERY_LENGTH] shouldBe 5
+      event.params[TelemetryAttr.RESULT_COUNT] shouldBe 1
+      event.params[TelemetryAttr.RESULT] shouldBe TelemetryResult.OK
+      // The privacy contract: no recorded value may contain what the user typed.
+      telemetry.allValues().none { it.contains("grace") } shouldBe true
+    }
+  }
+
+  test("a failing search is reported as a non-fatal, still without the query text") {
+    runTest(dispatcher) {
+      val telemetry = RecordingTelemetry()
+      val sm = model(FakeSearchRepository(throwError = true), telemetry)
+
+      sm.onEvent(SearchEvent.QueryChanged("grace"))
+      advanceUntilIdle()
+
+      val error = telemetry.errors.single()
+      error.message shouldBe "search_failed"
+      error.attributes[TelemetryAttr.QUERY_LENGTH] shouldBe "5"
+      telemetry.allValues().none { it.contains("grace") } shouldBe true
     }
   }
 })

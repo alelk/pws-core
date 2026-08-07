@@ -50,6 +50,8 @@ import io.github.alelk.pws.domain.tag.usecase.DeleteTagUseCase
 import io.github.alelk.pws.domain.tag.usecase.GetTagDetailUseCase
 import io.github.alelk.pws.domain.tag.usecase.ObserveTagsUseCase
 import io.github.alelk.pws.domain.tag.usecase.UpdateTagUseCase
+import io.github.alelk.pws.domain.telemetry.NoOpTelemetry
+import io.github.alelk.pws.domain.telemetry.Telemetry
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
@@ -57,6 +59,11 @@ import org.koin.dsl.module
  * Koin module for all features screen models.
  */
 val featuresModule = module {
+  // Telemetry: no-op by default so every call site is safe in tests and on targets without a
+  // provider. A shell that ships one (Android/AppMetrica) loads its module after this one, so its
+  // definition wins.
+  single<Telemetry> { NoOpTelemetry }
+
   // DonationSessionGuard — process-lifetime singleton for per-session dedup
   single { DonationSessionGuard() }
 
@@ -81,6 +88,7 @@ val featuresModule = module {
       uninstallBook = get<UninstallBookUseCase>(),
       updateBook = get<UpdateBookUseCase>(),
       deviceLanguage = getOrNull(named("deviceLanguage")) ?: "",
+      telemetry = get<Telemetry>(),
     )
   }
 
@@ -110,6 +118,7 @@ val featuresModule = module {
       recordDonationClicked = get<RecordDonationClickedUseCase>(),
       donationConfig = get<DonationConfig>(),
       donationSessionGuard = get<DonationSessionGuard>(),
+      telemetry = get<Telemetry>(),
     )
   }
 
@@ -133,6 +142,7 @@ val featuresModule = module {
       recordDonationClicked = get<RecordDonationClickedUseCase>(),
       donationConfig = get<DonationConfig>(),
       donationSessionGuard = get<DonationSessionGuard>(),
+      telemetry = get<Telemetry>(),
     )
   }
 
@@ -149,7 +159,7 @@ val featuresModule = module {
   }
 
   // Search
-  factory { SearchScreenModel(get()) }
+  factory { SearchScreenModel(get(), get<Telemetry>()) }
 
   // Favorites
   factory { FavoritesScreenModel(get(), get()) }

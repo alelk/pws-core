@@ -57,6 +57,7 @@ import com.composables.icons.lucide.Lightbulb
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Moon
 import com.composables.icons.lucide.Palette
+import com.composables.icons.lucide.ShieldCheck
 import com.composables.icons.lucide.Sun
 import com.composables.icons.lucide.SunMoon
 import io.github.alelk.pws.features.components.AppTopBar
@@ -81,10 +82,16 @@ import io.github.alelk.pws.features.resources.settings_interface
 import io.github.alelk.pws.features.resources.settings_keep_screen_on
 import io.github.alelk.pws.features.resources.settings_keep_screen_on_subtitle
 import io.github.alelk.pws.features.resources.settings_license
+import io.github.alelk.pws.features.resources.settings_privacy
+import io.github.alelk.pws.features.resources.settings_privacy_policy
+import io.github.alelk.pws.features.resources.settings_telemetry
+import io.github.alelk.pws.features.resources.settings_telemetry_subtitle
 import io.github.alelk.pws.features.resources.settings_theme_subtitle
 import io.github.alelk.pws.features.resources.settings_title
 import io.github.alelk.pws.features.resources.settings_version
 import io.github.alelk.pws.features.premium.rememberPremiumGate
+import io.github.alelk.pws.features.telemetry.LocalTelemetrySettings
+import io.github.alelk.pws.features.telemetry.TelemetrySettings
 import io.github.alelk.pws.features.theme.LocalThemeSettings
 import io.github.alelk.pws.features.theme.ThemeMode
 import io.github.alelk.pws.features.theme.spacing
@@ -98,6 +105,7 @@ class SettingsScreen : Screen {
     val navigator = LocalNavigator.currentOrThrow
     val themeSettings = LocalThemeSettings.current
     val externalActions = LocalSettingsExternalActions.current
+    val telemetrySettings = LocalTelemetrySettings.current
     // Premium gate for theme changes — transparent in the free builds.
     val premium = rememberPremiumGate()
 
@@ -149,6 +157,8 @@ class SettingsScreen : Screen {
       onImportClick = { viewModel.onEvent(SettingsEvent.ImportData) },
       onDonationClick = { viewModel.onEvent(SettingsEvent.OpenDonation) },
       onOpenPaywall = externalActions?.openPaywall,
+      telemetrySettings = telemetrySettings,
+      onOpenPrivacyPolicy = { url -> externalActions?.openUrl?.invoke(url) },
     )
   }
 }
@@ -169,6 +179,9 @@ private fun SettingsContent(
   onImportClick: () -> Unit,
   onDonationClick: () -> Unit,
   onOpenPaywall: (() -> Unit)? = null,
+  /** `null` in builds without a telemetry provider — the privacy section is then hidden entirely. */
+  telemetrySettings: TelemetrySettings? = null,
+  onOpenPrivacyPolicy: (String) -> Unit = {},
 ) {
   val haptic = LocalHapticFeedback.current
   var showLicenseDialog by remember { mutableStateOf(false) }
@@ -397,6 +410,40 @@ private fun SettingsContent(
                     onDonationClick()
                   }
                 )
+              }
+            }
+
+            // Privacy — consent for crash reports and product analytics (see docs/privacy-policy.md).
+            telemetrySettings?.let { telemetry ->
+              item {
+                SectionTitle(stringResource(Res.string.settings_privacy))
+              }
+              item {
+                SettingsSectionCard(footer = stringResource(Res.string.settings_telemetry_subtitle)) {
+                  ToggleRow(
+                    title = stringResource(Res.string.settings_telemetry),
+                    icon = Lucide.ShieldCheck,
+                    checked = telemetry.dataSendingEnabled,
+                    onCheckedChange = { checked ->
+                      haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                      telemetry.onDataSendingEnabledChange(checked)
+                    }
+                  )
+                  HorizontalDivider()
+                  Text(
+                    text = stringResource(Res.string.settings_privacy_policy),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                      .fillMaxWidth()
+                      .clickable {
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        onOpenPrivacyPolicy(telemetry.privacyPolicyUrl)
+                      }
+                      .padding(horizontal = 16.dp, vertical = 16.dp)
+                      .testTag("action:open-privacy-policy")
+                  )
+                }
               }
             }
 

@@ -69,6 +69,10 @@ import io.github.alelk.pws.features.resources.onboarding_install_selected
 import io.github.alelk.pws.features.resources.onboarding_skip
 import io.github.alelk.pws.features.resources.onboarding_subtitle
 import io.github.alelk.pws.features.resources.onboarding_title
+import io.github.alelk.pws.domain.telemetry.TelemetryAttr
+import io.github.alelk.pws.domain.telemetry.TelemetryEvent
+import io.github.alelk.pws.domain.telemetry.TelemetryResult
+import io.github.alelk.pws.features.telemetry.rememberTelemetry
 import io.github.alelk.pws.features.theme.spacing
 import kotlin.math.roundToLong
 import org.jetbrains.compose.resources.stringResource
@@ -81,6 +85,7 @@ class OnboardingScreen : Screen {
         val onSkip = LocalOnSkipOnboarding.current
         val viewModel = koinScreenModel<BookLibraryScreenModel>()
         val state by viewModel.state.collectAsState()
+        val telemetry = rememberTelemetry()
 
         val selectedIds: SnapshotStateSet<BookId> = remember { mutableStateSetOf() }
         var preselected by remember { mutableStateOf(false) }
@@ -105,7 +110,19 @@ class OnboardingScreen : Screen {
                 }
             },
             onRetry = viewModel::retry,
-            onSkip = onSkip,
+            onSkip = {
+                // Leaving onboarding is the funnel's exit point: did the user leave with content or
+                // empty-handed? Only the outcome and the count are reported.
+                val installed = (state as? BookLibraryUiState.Content)?.items?.count { it.isInstalled } ?: 0
+                telemetry.event(
+                    TelemetryEvent.ONBOARDING_COMPLETE,
+                    mapOf(
+                        TelemetryAttr.RESULT to if (installed > 0) TelemetryResult.INSTALLED else TelemetryResult.SKIPPED,
+                        TelemetryAttr.INSTALLED_BOOKS to installed,
+                    ),
+                )
+                onSkip()
+            },
         )
     }
 }

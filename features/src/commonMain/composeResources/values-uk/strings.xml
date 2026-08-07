@@ -251,6 +251,10 @@
     <string name="settings_dynamic_color_subtitle">Палітра Material You з шпалер (Android 12+)</string>
     <string name="settings_keep_screen_on">Не гасити екран у пісні</string>
     <string name="settings_keep_screen_on_subtitle">Екран лишається ввімкненим на сторінці пісні</string>
+    <string name="settings_privacy">Приватність</string>
+    <string name="settings_telemetry">Надсилати звіти про збої та анонімну статистику</string>
+    <string name="settings_telemetry_subtitle">Допомагає швидше знаходити й виправляти помилки. Тексти пісень, ваші правки та пошукові запити не надсилаються.</string>
+    <string name="settings_privacy_policy">Політика конфіденційності</string>
 
     <string name="search_scope_all">Усі</string>
     <string name="search_scope_in_books">У книгах</string>
