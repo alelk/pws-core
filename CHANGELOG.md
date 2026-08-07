@@ -1,5 +1,12 @@
 # PWS Android
 
+# [3.3.0-rc.3](https://github.com/alelk/pws-core/compare/v3.3.0-rc.2...v3.3.0-rc.3) (2026-08-07)
+
+
+### Features
+
+* implement observability ([33ac775](https://github.com/alelk/pws-core/commit/33ac7757cd59f822a77789edf405b29327abf5e1))
+
 # [3.3.0-rc.2](https://github.com/alelk/pws-core/compare/v3.3.0-rc.1...v3.3.0-rc.2) (2026-08-06)
 
 
