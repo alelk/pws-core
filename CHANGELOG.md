@@ -1,5 +1,12 @@
 # PWS Android
 
+# [3.3.0-rc.4](https://github.com/alelk/pws-core/compare/v3.3.0-rc.3...v3.3.0-rc.4) (2026-08-14)
+
+
+### Bug Fixes
+
+* fix app name ([91e9f70](https://github.com/alelk/pws-core/commit/91e9f70ceab5b6c10da63bd7b05c82e591af12cd))
+
 # [3.3.0-rc.3](https://github.com/alelk/pws-core/compare/v3.3.0-rc.2...v3.3.0-rc.3) (2026-08-07)
 
 
