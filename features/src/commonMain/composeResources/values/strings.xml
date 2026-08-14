@@ -305,7 +305,7 @@
     <string name="books_browse_library_action">Browse Library</string>
 
     <!-- Onboarding -->
-    <string name="onboarding_title">Praise &amp; Worship Songbook</string>
+    <string name="onboarding_title">P&amp;W Songs</string>
     <string name="onboarding_subtitle">Choose a collection to get started</string>
     <string name="onboarding_skip">Skip for now</string>
     <string name="onboarding_install_selected">Install (%1$d)</string>

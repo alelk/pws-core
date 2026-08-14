@@ -305,7 +305,7 @@
     <string name="books_browse_library_action">Открыть каталог</string>
 
     <!-- Onboarding -->
-    <string name="onboarding_title">Псалмы и Хвала</string>
+    <string name="onboarding_title">Христианский песенник</string>
     <string name="onboarding_subtitle">Выберите сборник для начала работы</string>
     <string name="onboarding_skip">Пропустить</string>
     <string name="onboarding_install_selected">Установить (%1$d)</string>

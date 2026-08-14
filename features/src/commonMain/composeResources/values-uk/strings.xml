@@ -304,7 +304,7 @@
     <string name="books_browse_library_action">Відкрити каталог</string>
 
     <!-- Onboarding -->
-    <string name="onboarding_title">Псалми та Хвала</string>
+    <string name="onboarding_title">P&amp;W Songs</string>
     <string name="onboarding_subtitle">Оберіть збірник для початку роботи</string>
     <string name="onboarding_skip">Пропустити</string>
     <string name="onboarding_install_selected">Встановити (%1$d)</string>

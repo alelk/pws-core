@@ -238,7 +238,7 @@
     <string name="books_browse_library_action">Przeglądaj katalog</string>
 
     <!-- Onboarding -->
-    <string name="onboarding_title">Psalmy i Uwielbienie</string>
+    <string name="onboarding_title">P&amp;W Songs</string>
     <string name="onboarding_subtitle">Wybierz zbiór, aby rozpocząć</string>
     <string name="onboarding_skip">Pomiń na razie</string>
     <string name="onboarding_install_selected">Zainstaluj (%1$d)</string>
