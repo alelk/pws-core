@@ -1,32 +1,12 @@
 # PWS Android
 
-# [3.3.0-rc.4](https://github.com/alelk/pws-core/compare/v3.3.0-rc.3...v3.3.0-rc.4) (2026-08-14)
+## [3.2.2](https://github.com/alelk/pws-core/compare/v3.2.1...v3.2.2) (2026-07-27)
 
 
 ### Bug Fixes
 
-* fix app name ([91e9f70](https://github.com/alelk/pws-core/commit/91e9f70ceab5b6c10da63bd7b05c82e591af12cd))
-
-# [3.3.0-rc.3](https://github.com/alelk/pws-core/compare/v3.3.0-rc.2...v3.3.0-rc.3) (2026-08-07)
-
-
-### Features
-
-* implement observability ([33ac775](https://github.com/alelk/pws-core/commit/33ac7757cd59f822a77789edf405b29327abf5e1))
-
-# [3.3.0-rc.2](https://github.com/alelk/pws-core/compare/v3.3.0-rc.1...v3.3.0-rc.2) (2026-08-06)
-
-
-### Features
-
-* monetization mode ([b4ac0c6](https://github.com/alelk/pws-core/commit/b4ac0c66d3efb26faaeda4aeea8fd2f4c1694058))
-
-# [3.3.0-rc.1](https://github.com/alelk/pws-core/compare/v3.2.1-rc.3...v3.3.0-rc.1) (2026-08-03)
-
-
-### Features
-
-* premium gate ([01a2873](https://github.com/alelk/pws-core/commit/01a2873629ea5c6ec3f5918db1b36ef08df09cc5))
+* Fix onboarding screen. ([4b48919](https://github.com/alelk/pws-core/commit/4b489197e9e931c8c8b2babc86aec3c3153abcee))
+* Update onboarding screen ([77629c5](https://github.com/alelk/pws-core/commit/77629c5e3cea9ee017426e388b2cab49003aa88b))
 
 ## [3.2.1](https://github.com/alelk/pws-core/compare/v3.2.0...v3.2.1) (2026-07-16)
 
