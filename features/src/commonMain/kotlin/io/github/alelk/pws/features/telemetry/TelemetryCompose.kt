@@ -39,12 +39,19 @@ fun TrackScreenViews(navigator: Navigator, telemetry: Telemetry = rememberTeleme
  * privacy section instead of showing a dead toggle.
  */
 data class TelemetrySettings(
-  /** Whether crash reports and anonymous statistics may be sent. */
+  /** Whether crash reports and statistics may be sent. */
   val dataSendingEnabled: Boolean,
   /** Persists the new consent value and applies it to the provider immediately. */
   val onDataSendingEnabledChange: (Boolean) -> Unit,
   /** Public URL of the privacy policy, shown next to the toggle. */
   val privacyPolicyUrl: String,
+  /**
+   * Non-null while the user has not yet answered the first-launch disclosure; the value is the
+   * state the disclosure's checkbox starts from. Nothing is transmitted until
+   * [onDataSendingEnabledChange] commits an answer, so a screen that shows the disclosure must
+   * commit one before it is left.
+   */
+  val pendingConsentDefault: Boolean? = null,
 )
 
 val LocalTelemetrySettings = staticCompositionLocalOf<TelemetrySettings?> { null }

@@ -253,7 +253,7 @@
     <string name="settings_keep_screen_on">Не гасить экран в песне</string>
     <string name="settings_keep_screen_on_subtitle">Экран остаётся включённым на странице песни</string>
     <string name="settings_privacy">Приватность</string>
-    <string name="settings_telemetry">Отправлять отчёты о сбоях и анонимную статистику</string>
+    <string name="settings_telemetry">Отправлять отчёты о сбоях и статистику использования</string>
     <string name="settings_telemetry_subtitle">Помогает быстрее находить и исправлять ошибки. Тексты песен, ваши правки и поисковые запросы не отправляются.</string>
     <string name="settings_privacy_policy">Политика конфиденциальности</string>
 

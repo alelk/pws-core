@@ -209,7 +209,7 @@
     <string name="settings_keep_screen_on">Nie wyłączaj ekranu w pieśni</string>
     <string name="settings_keep_screen_on_subtitle">Ekran pozostaje włączony na stronie pieśni</string>
     <string name="settings_privacy">Prywatność</string>
-    <string name="settings_telemetry">Wysyłaj raporty o awariach i anonimowe statystyki</string>
+    <string name="settings_telemetry">Wysyłaj raporty o awariach i statystyki użycia</string>
     <string name="settings_telemetry_subtitle">Pomaga szybciej znajdować i naprawiać błędy. Teksty pieśni, Twoje zmiany i wyszukiwane frazy nie są wysyłane.</string>
     <string name="settings_privacy_policy">Polityka prywatności</string>
 
