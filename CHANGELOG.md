@@ -1,5 +1,20 @@
 # PWS Android
 
+# [3.3.0](https://github.com/alelk/pws-core/compare/v3.2.2...v3.3.0) (2026-08-16)
+
+
+### Bug Fixes
+
+* fix app name ([91e9f70](https://github.com/alelk/pws-core/commit/91e9f70ceab5b6c10da63bd7b05c82e591af12cd))
+
+
+### Features
+
+* implement observability ([33ac775](https://github.com/alelk/pws-core/commit/33ac7757cd59f822a77789edf405b29327abf5e1))
+* monetization mode ([b4ac0c6](https://github.com/alelk/pws-core/commit/b4ac0c66d3efb26faaeda4aeea8fd2f4c1694058))
+* premium gate ([01a2873](https://github.com/alelk/pws-core/commit/01a2873629ea5c6ec3f5918db1b36ef08df09cc5))
+* update onboarding screen ([5387499](https://github.com/alelk/pws-core/commit/53874992275ac678e7aaf28351217d7d17aeb80d))
+
 ## [3.2.2](https://github.com/alelk/pws-core/compare/v3.2.1...v3.2.2) (2026-07-27)
 
 
