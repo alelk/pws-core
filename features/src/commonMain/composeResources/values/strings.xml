@@ -33,6 +33,10 @@
     <string name="settings_dynamic_color_subtitle">Use system Material You palette (Android 12+)</string>
     <string name="settings_keep_screen_on">Keep screen on</string>
     <string name="settings_keep_screen_on_subtitle">Don't dim the screen while reading a song</string>
+    <string name="settings_privacy">Privacy</string>
+    <string name="settings_telemetry">Send crash reports and usage statistics</string>
+    <string name="settings_telemetry_subtitle">Helps find and fix bugs faster. Song texts, your edits and search queries are never sent.</string>
+    <string name="settings_privacy_policy">Privacy policy</string>
 
     <string name="search_idle_title">Start searching</string>
     <string name="search_idle_subtitle">Enter title, number, or lyrics</string>
@@ -66,6 +70,7 @@
     <string name="settings_license">License</string>
     <string name="settings_import_export">Import/Export</string>
     <string name="settings_import_export_subtitle">Import or export your edited songs and categories</string>
+    <string name="settings_purchases">Purchases &amp; subscription</string>
     <string name="settings_export">Export data</string>
     <string name="settings_import">Import data</string>
 
@@ -300,7 +305,7 @@
     <string name="books_browse_library_action">Browse Library</string>
 
     <!-- Onboarding -->
-    <string name="onboarding_title">Praise &amp; Worship Songbook</string>
+    <string name="onboarding_title">P&amp;W Songs</string>
     <string name="onboarding_subtitle">Choose a collection to get started</string>
     <string name="onboarding_skip">Skip for now</string>
     <string name="onboarding_install_selected">Install (%1$d)</string>

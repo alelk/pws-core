@@ -15,6 +15,10 @@ import io.github.alelk.pws.features.search.SearchScreenModel
 import io.github.alelk.pws.features.settings.SettingsScreenModel
 import io.github.alelk.pws.features.song.detail.SongDetailScreenModel
 import io.github.alelk.pws.features.song.detail.SongDetailBySongIdScreenModel
+import io.github.alelk.pws.features.premium.AlwaysActiveEntitlementRepository
+import io.github.alelk.pws.features.premium.DefaultPremiumGate
+import io.github.alelk.pws.features.premium.EntitlementRepository
+import io.github.alelk.pws.features.premium.PremiumGate
 import io.github.alelk.pws.features.song.edit.SongEditScreenModel
 import io.github.alelk.pws.features.tags.TagsScreenModel
 import io.github.alelk.pws.features.tags.songs.TagSongsScreenModel
@@ -46,6 +50,8 @@ import io.github.alelk.pws.domain.tag.usecase.DeleteTagUseCase
 import io.github.alelk.pws.domain.tag.usecase.GetTagDetailUseCase
 import io.github.alelk.pws.domain.tag.usecase.ObserveTagsUseCase
 import io.github.alelk.pws.domain.tag.usecase.UpdateTagUseCase
+import io.github.alelk.pws.domain.telemetry.NoOpTelemetry
+import io.github.alelk.pws.domain.telemetry.Telemetry
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
@@ -53,8 +59,19 @@ import org.koin.dsl.module
  * Koin module for all features screen models.
  */
 val featuresModule = module {
+  // Telemetry: no-op by default so every call site is safe in tests and on targets without a
+  // provider. A shell that ships one (Android/AppMetrica) loads its module after this one, so its
+  // definition wins.
+  single<Telemetry> { NoOpTelemetry }
+
   // DonationSessionGuard — process-lifetime singleton for per-session dedup
   single { DonationSessionGuard() }
+
+  // Premium entitlement (payment-agnostic). Default: everything unlocked — the free builds have no
+  // paywall. A store flavor overrides EntitlementRepository with its own purchase-backed source
+  // (its Koin module is loaded after this one, so the override wins).
+  single<EntitlementRepository> { AlwaysActiveEntitlementRepository() }
+  single<PremiumGate> { DefaultPremiumGate(get()) }
 
   // Home
   factory { HomeScreenModel(get(), get(), get()) }
@@ -71,6 +88,7 @@ val featuresModule = module {
       uninstallBook = get<UninstallBookUseCase>(),
       updateBook = get<UpdateBookUseCase>(),
       deviceLanguage = getOrNull(named("deviceLanguage")) ?: "",
+      telemetry = get<Telemetry>(),
     )
   }
 
@@ -100,6 +118,7 @@ val featuresModule = module {
       recordDonationClicked = get<RecordDonationClickedUseCase>(),
       donationConfig = get<DonationConfig>(),
       donationSessionGuard = get<DonationSessionGuard>(),
+      telemetry = get<Telemetry>(),
     )
   }
 
@@ -123,6 +142,7 @@ val featuresModule = module {
       recordDonationClicked = get<RecordDonationClickedUseCase>(),
       donationConfig = get<DonationConfig>(),
       donationSessionGuard = get<DonationSessionGuard>(),
+      telemetry = get<Telemetry>(),
     )
   }
 
@@ -139,7 +159,7 @@ val featuresModule = module {
   }
 
   // Search
-  factory { SearchScreenModel(get()) }
+  factory { SearchScreenModel(get(), get<Telemetry>()) }
 
   // Favorites
   factory { FavoritesScreenModel(get(), get()) }

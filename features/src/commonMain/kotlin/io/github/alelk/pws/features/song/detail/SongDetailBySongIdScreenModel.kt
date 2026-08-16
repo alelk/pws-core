@@ -26,6 +26,11 @@ import io.github.alelk.pws.domain.songtag.usecase.ObserveTagsForSongUseCase
 import io.github.alelk.pws.domain.songtag.usecase.ReplaceAllSongTagsUseCase
 import io.github.alelk.pws.domain.tag.model.Tag
 import io.github.alelk.pws.domain.tag.usecase.ObserveTagsUseCase
+import io.github.alelk.pws.domain.telemetry.NoOpTelemetry
+import io.github.alelk.pws.domain.telemetry.Telemetry
+import io.github.alelk.pws.domain.telemetry.TelemetryAttr
+import io.github.alelk.pws.domain.telemetry.TelemetryEvent
+import io.github.alelk.pws.domain.telemetry.TelemetryResult
 import io.github.alelk.pws.features.app.UiMessage
 import io.github.alelk.pws.features.di.DonationSessionGuard
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -71,6 +76,7 @@ class SongDetailBySongIdScreenModel(
   private val recordDonationClicked: RecordDonationClickedUseCase,
   private val donationConfig: DonationConfig,
   private val donationSessionGuard: DonationSessionGuard,
+  private val telemetry: Telemetry = NoOpTelemetry,
   private val coroutineScope: CoroutineScope? = null,
   internal val viewDelay: Duration = 5.seconds,
 ) : StateScreenModel<SongDetailUiState>(SongDetailUiState.Loading) {
@@ -167,8 +173,11 @@ class SongDetailBySongIdScreenModel(
       kotlinx.coroutines.delay(viewDelay)
       try {
         recordSongView(HistorySubject.StandaloneSong(songId))
+        telemetry.event(TelemetryEvent.SONG_OPEN, mapOf(TelemetryAttr.SONG_ID to songId.toString()))
         checkAndShowDonationPrompt()
-      } catch (_: Exception) {}
+      } catch (e: Exception) {
+        telemetry.recordError(e, "song_view_record_failed")
+      }
     }
   }
 
@@ -196,6 +205,7 @@ class SongDetailBySongIdScreenModel(
     scope.launch {
       try {
         recordDonationDismissed()
+        telemetry.event(TelemetryEvent.DONATION_PROMPT, mapOf(TelemetryAttr.RESULT to TelemetryResult.DISMISSED))
         donationSessionGuard.shownThisSession = true
         updateContent { it.copy(showDonationCard = false) }
       } catch (_: Exception) {}
@@ -206,6 +216,7 @@ class SongDetailBySongIdScreenModel(
     scope.launch {
       try {
         recordDonationClicked()
+        telemetry.event(TelemetryEvent.DONATION_PROMPT, mapOf(TelemetryAttr.RESULT to TelemetryResult.CLICKED))
         updateContent { it.copy(showDonationCard = false) }
       } catch (_: Exception) {}
     }
@@ -219,6 +230,7 @@ class SongDetailBySongIdScreenModel(
           donationSessionGuard.shownThisSession = true
         }
         updateContent { it.copy(showDonationCard = true, donationBoostyUrl = donationConfig.boostyUrl) }
+        telemetry.event(TelemetryEvent.DONATION_PROMPT, mapOf(TelemetryAttr.RESULT to TelemetryResult.SHOWN))
       }
     } catch (_: Exception) {}
   }

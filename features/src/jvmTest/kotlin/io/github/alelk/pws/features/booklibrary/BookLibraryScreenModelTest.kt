@@ -18,6 +18,12 @@ import io.github.alelk.pws.domain.core.Version
 import io.github.alelk.pws.domain.core.error.DeleteError
 import io.github.alelk.pws.domain.core.error.ReadError
 import io.github.alelk.pws.domain.core.ids.BookId
+import io.github.alelk.pws.domain.telemetry.NoOpTelemetry
+import io.github.alelk.pws.domain.telemetry.Telemetry
+import io.github.alelk.pws.domain.telemetry.TelemetryAttr
+import io.github.alelk.pws.domain.telemetry.TelemetryEvent
+import io.github.alelk.pws.domain.telemetry.TelemetryResult
+import io.github.alelk.pws.features.telemetry.RecordingTelemetry
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -69,6 +75,7 @@ class BookLibraryScreenModelTest : FunSpec({
     uninstall: (BookId) -> Either<DeleteError, Unit> = { Unit.right() },
     update: (BookCatalogEntry) -> Flow<DownloadState> = { flowOf(DownloadState.Done) },
     deviceLanguage: String = "",
+    telemetry: Telemetry = NoOpTelemetry,
   ): BookLibraryScreenModel {
     val catalogRepo = object : BookCatalogRepository {
       override suspend fun getAvailableBooks() = catalog()
@@ -91,6 +98,8 @@ class BookLibraryScreenModelTest : FunSpec({
       installUseCase,
       uninstallUseCase,
       updateUseCase,
+      deviceLanguage,
+      telemetry,
     )
   }
 
@@ -226,6 +235,53 @@ class BookLibraryScreenModelTest : FunSpec({
 
       sm.state.value.shouldBeInstanceOf<BookLibraryUiState.Content>()
         .items.single().downloadState shouldBe DownloadState.Done
+    }
+  }
+
+  test("a successful install reports book_install=ok and no error") {
+    runTest(dispatcher) {
+      val telemetry = RecordingTelemetry()
+      val sm = model(catalog = { listOf(entry("Book-1")).right() }, telemetry = telemetry)
+      advanceUntilIdle()
+
+      sm.install(entry("Book-1"))
+      advanceUntilIdle()
+
+      val event = telemetry.events.single { it.name == TelemetryEvent.BOOK_INSTALL }
+      event.params[TelemetryAttr.RESULT] shouldBe TelemetryResult.OK
+      event.params[TelemetryAttr.BOOK_ID] shouldBe "Book-1"
+      telemetry.errors shouldBe emptyList()
+    }
+  }
+
+  test("a failing install reports book_install=error and a non-fatal") {
+    runTest(dispatcher) {
+      val telemetry = RecordingTelemetry()
+      val sm = model(
+        catalog = { listOf(entry("Book-1")).right() },
+        install = { flowOf(DownloadState.Error("network down")) },
+        telemetry = telemetry,
+      )
+      advanceUntilIdle()
+
+      sm.install(entry("Book-1"))
+      advanceUntilIdle()
+
+      telemetry.events.single { it.name == TelemetryEvent.BOOK_INSTALL }
+        .params[TelemetryAttr.RESULT] shouldBe TelemetryResult.ERROR
+      val error = telemetry.errors.single()
+      error.message shouldBe "book_install_failed"
+      error.attributes[TelemetryAttr.BOOK_ID] shouldBe "Book-1"
+    }
+  }
+
+  test("an unreachable catalog is reported as a non-fatal") {
+    runTest(dispatcher) {
+      val telemetry = RecordingTelemetry()
+      model(catalog = { Either.Left(ReadError.UnknownError()) }, telemetry = telemetry)
+      advanceUntilIdle()
+
+      telemetry.errors.single().message shouldBe "book_catalog_load_failed"
     }
   }
 })

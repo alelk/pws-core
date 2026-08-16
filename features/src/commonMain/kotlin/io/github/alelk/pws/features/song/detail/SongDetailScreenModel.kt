@@ -27,6 +27,11 @@ import io.github.alelk.pws.domain.songtag.usecase.ObserveTagsForSongUseCase
 import io.github.alelk.pws.domain.songtag.usecase.ReplaceAllSongTagsUseCase
 import io.github.alelk.pws.domain.tag.model.Tag
 import io.github.alelk.pws.domain.tag.usecase.ObserveTagsUseCase
+import io.github.alelk.pws.domain.telemetry.NoOpTelemetry
+import io.github.alelk.pws.domain.telemetry.Telemetry
+import io.github.alelk.pws.domain.telemetry.TelemetryAttr
+import io.github.alelk.pws.domain.telemetry.TelemetryEvent
+import io.github.alelk.pws.domain.telemetry.TelemetryResult
 import io.github.alelk.pws.features.app.UiMessage
 import io.github.alelk.pws.features.di.DonationSessionGuard
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -65,6 +70,7 @@ class SongDetailScreenModel(
   private val recordDonationClicked: RecordDonationClickedUseCase,
   private val donationConfig: DonationConfig,
   private val donationSessionGuard: DonationSessionGuard,
+  private val telemetry: Telemetry = NoOpTelemetry,
   /** Injected scope for testing with virtual time; null = use [screenModelScope]. */
   private val coroutineScope: CoroutineScope? = null,
   /** Delay before recording a song view. Override in tests to speed up. */
@@ -200,8 +206,17 @@ class SongDetailScreenModel(
         kotlinx.coroutines.delay(viewDelay)
         try {
           recordSongView(HistorySubject.BookedSong(id))
+          telemetry.event(
+            TelemetryEvent.SONG_OPEN,
+            mapOf(
+              TelemetryAttr.SONG_ID to id.songId.toString(),
+              TelemetryAttr.BOOK_ID to id.bookId.toString(),
+            ),
+          )
           checkAndShowDonationPrompt()
-        } catch (_: Exception) {}
+        } catch (e: Exception) {
+          telemetry.recordError(e, "song_view_record_failed")
+        }
       }
     }
   }
@@ -238,6 +253,7 @@ class SongDetailScreenModel(
     scope.launch {
       try {
         recordDonationDismissed()
+        telemetry.event(TelemetryEvent.DONATION_PROMPT, mapOf(TelemetryAttr.RESULT to TelemetryResult.DISMISSED))
         donationSessionGuard.shownThisSession = true
         val current = mutableState.value as? SongDetailUiState.Content ?: return@launch
         mutableState.value = current.copy(showDonationCard = false)
@@ -249,6 +265,7 @@ class SongDetailScreenModel(
     scope.launch {
       try {
         recordDonationClicked()
+        telemetry.event(TelemetryEvent.DONATION_PROMPT, mapOf(TelemetryAttr.RESULT to TelemetryResult.CLICKED))
         val current = mutableState.value as? SongDetailUiState.Content ?: return@launch
         mutableState.value = current.copy(showDonationCard = false)
       } catch (_: Exception) {}
@@ -267,6 +284,7 @@ class SongDetailScreenModel(
           showDonationCard = true,
           donationBoostyUrl = donationConfig.boostyUrl,
         )
+        telemetry.event(TelemetryEvent.DONATION_PROMPT, mapOf(TelemetryAttr.RESULT to TelemetryResult.SHOWN))
       }
     } catch (_: Exception) {}
   }

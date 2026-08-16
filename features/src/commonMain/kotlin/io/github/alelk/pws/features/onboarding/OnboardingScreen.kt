@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -68,11 +69,30 @@ import io.github.alelk.pws.features.resources.onboarding_install_selected
 import io.github.alelk.pws.features.resources.onboarding_skip
 import io.github.alelk.pws.features.resources.onboarding_subtitle
 import io.github.alelk.pws.features.resources.onboarding_title
+import io.github.alelk.pws.features.resources.settings_privacy_policy
+import io.github.alelk.pws.features.resources.settings_telemetry
+import io.github.alelk.pws.features.resources.settings_telemetry_subtitle
+import io.github.alelk.pws.domain.telemetry.TelemetryAttr
+import io.github.alelk.pws.domain.telemetry.TelemetryEvent
+import io.github.alelk.pws.domain.telemetry.TelemetryResult
+import io.github.alelk.pws.features.settings.LocalSettingsExternalActions
+import io.github.alelk.pws.features.telemetry.LocalTelemetrySettings
+import io.github.alelk.pws.features.telemetry.rememberTelemetry
 import io.github.alelk.pws.features.theme.spacing
 import kotlin.math.roundToLong
 import org.jetbrains.compose.resources.stringResource
 
 val LocalOnSkipOnboarding = staticCompositionLocalOf { {} }
+
+/**
+ * The first-launch telemetry disclosure shown above the onboarding buttons. `null` in builds without
+ * a telemetry provider — the block is then omitted entirely.
+ */
+private data class OnboardingTelemetryConsent(
+    val checked: Boolean,
+    val onCheckedChange: (Boolean) -> Unit,
+    val onOpenPrivacyPolicy: () -> Unit,
+)
 
 class OnboardingScreen : Screen {
     @Composable
@@ -80,9 +100,19 @@ class OnboardingScreen : Screen {
         val onSkip = LocalOnSkipOnboarding.current
         val viewModel = koinScreenModel<BookLibraryScreenModel>()
         val state by viewModel.state.collectAsState()
+        val telemetry = rememberTelemetry()
+        val telemetrySettings = LocalTelemetrySettings.current
+        val openUrl = LocalSettingsExternalActions.current?.openUrl
 
         val selectedIds: SnapshotStateSet<BookId> = remember { mutableStateSetOf() }
         var preselected by remember { mutableStateOf(false) }
+
+        // Telemetry is held back until the user has seen this screen's disclosure, so the checkbox
+        // starts from the value the shell proposes; on a re-entry (the user removed every book) the
+        // consent is already stored and the checkbox simply reflects it.
+        val consentDefault =
+            telemetrySettings?.pendingConsentDefault ?: telemetrySettings?.dataSendingEnabled ?: false
+        var sendTelemetry by remember(consentDefault) { mutableStateOf(consentDefault) }
 
         // Pre-select locale-recommended book on first successful load
         LaunchedEffect(state) {
@@ -104,7 +134,30 @@ class OnboardingScreen : Screen {
                 }
             },
             onRetry = viewModel::retry,
-            onSkip = onSkip,
+            telemetryConsent = telemetrySettings?.let { settings ->
+                OnboardingTelemetryConsent(
+                    checked = sendTelemetry,
+                    onCheckedChange = { sendTelemetry = it },
+                    onOpenPrivacyPolicy = { openUrl?.invoke(settings.privacyPolicyUrl) },
+                )
+            },
+            onSkip = {
+                // Leaving this screen is where the disclosure is answered — commit the consent
+                // before reporting anything, so a user who cleared the checkbox has nothing sent on
+                // their behalf, not even the event below.
+                telemetrySettings?.onDataSendingEnabledChange(sendTelemetry)
+                // Leaving onboarding is the funnel's exit point: did the user leave with content or
+                // empty-handed? Only the outcome and the count are reported.
+                val installed = (state as? BookLibraryUiState.Content)?.items?.count { it.isInstalled } ?: 0
+                telemetry.event(
+                    TelemetryEvent.ONBOARDING_COMPLETE,
+                    mapOf(
+                        TelemetryAttr.RESULT to if (installed > 0) TelemetryResult.INSTALLED else TelemetryResult.SKIPPED,
+                        TelemetryAttr.INSTALLED_BOOKS to installed,
+                    ),
+                )
+                onSkip()
+            },
         )
     }
 }
@@ -117,6 +170,7 @@ private fun OnboardingContent(
     onInstallSelected: () -> Unit,
     onRetry: () -> Unit,
     onSkip: () -> Unit,
+    telemetryConsent: OnboardingTelemetryConsent? = null,
 ) {
     val installableCount = if (state is BookLibraryUiState.Content) {
         state.items.count {
@@ -135,10 +189,52 @@ private fun OnboardingContent(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    // bottomBar sits below Scaffold's inset handling, so the nav-bar padding
+                    // must be applied here — otherwise the buttons slide under the system
+                    // navigation bar (gesture pill / 3-button bar) and can't be tapped.
+                    .navigationBarsPadding()
                     .padding(horizontal = 24.dp, vertical = 12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
+                // Telemetry disclosure. It lives in the bottom bar rather than at the end of the
+                // list on purpose: it must be visible without scrolling, because leaving this screen
+                // is what starts collection.
+                telemetryConsent?.let { consent ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Checkbox(
+                            checked = consent.checked,
+                            onCheckedChange = consent.onCheckedChange,
+                            modifier = Modifier.testTag("checkbox:telemetry-consent"),
+                        )
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(2.dp),
+                        ) {
+                            Text(
+                                text = stringResource(Res.string.settings_telemetry),
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                            Text(
+                                text = stringResource(Res.string.settings_telemetry_subtitle),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Text(
+                                text = stringResource(Res.string.settings_privacy_policy),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier
+                                    .clickable { consent.onOpenPrivacyPolicy() }
+                                    .padding(vertical = 4.dp)
+                                    .testTag("action:open-privacy-policy"),
+                            )
+                        }
+                    }
+                }
                 AnimatedVisibility(visible = installableCount > 0 || anyDownloading, enter = fadeIn()) {
                     Button(
                         onClick = onInstallSelected,

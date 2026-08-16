@@ -4,6 +4,11 @@ import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import io.github.alelk.pws.domain.song.model.SongSearchSuggestion
 import io.github.alelk.pws.domain.song.usecase.SearchSongSuggestionsUseCase
+import io.github.alelk.pws.domain.telemetry.NoOpTelemetry
+import io.github.alelk.pws.domain.telemetry.Telemetry
+import io.github.alelk.pws.domain.telemetry.TelemetryAttr
+import io.github.alelk.pws.domain.telemetry.TelemetryEvent
+import io.github.alelk.pws.domain.telemetry.TelemetryResult
 import io.github.alelk.pws.features.app.UiMessage
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -24,7 +29,8 @@ import kotlinx.coroutines.launch
  */
 @OptIn(FlowPreview::class)
 class SearchScreenModel(
-  private val searchSuggestionsUseCase: SearchSongSuggestionsUseCase
+  private val searchSuggestionsUseCase: SearchSongSuggestionsUseCase,
+  private val telemetry: Telemetry = NoOpTelemetry,
 ) : StateScreenModel<SearchUiState>(SearchUiState.Idle) {
 
   /** Current query text - updated immediately for responsive UI */
@@ -94,8 +100,21 @@ class SearchScreenModel(
           ifLeft = { error -> SearchUiState.Error(UiMessage.Failure(error.message)) },
           ifRight = { list -> SearchUiState.Suggestions(query, list.map { it.toUi() }) }
         )
+        // Query text is never reported — only its length and how many results it produced.
+        telemetry.event(
+          TelemetryEvent.SEARCH,
+          mapOf(
+            TelemetryAttr.QUERY_LENGTH to query.length,
+            TelemetryAttr.RESULT_COUNT to results.fold(ifLeft = { -1 }, ifRight = { it.size }),
+            TelemetryAttr.RESULT to results.fold(
+              ifLeft = { TelemetryResult.ERROR },
+              ifRight = { TelemetryResult.OK },
+            ),
+          ),
+        )
       } catch (e: Exception) {
         mutableState.value = SearchUiState.Error(UiMessage.Failure(e.message))
+        telemetry.recordError(e, "search_failed", mapOf(TelemetryAttr.QUERY_LENGTH to query.length.toString()))
       }
     }
   }

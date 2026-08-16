@@ -37,6 +37,9 @@ import io.github.alelk.pws.features.library.LibraryScreen
 import io.github.alelk.pws.features.search.SearchScreen
 import io.github.alelk.pws.features.settings.LocalSettingsExternalActions
 import io.github.alelk.pws.features.settings.SettingsExternalActions
+import io.github.alelk.pws.features.telemetry.LocalTelemetrySettings
+import io.github.alelk.pws.features.telemetry.TelemetrySettings
+import io.github.alelk.pws.features.telemetry.TrackScreenViews
 import io.github.alelk.pws.features.song.detail.FavoritesDisplaySettings
 import io.github.alelk.pws.features.song.detail.LocalFavoritesDisplaySettings
 import io.github.alelk.pws.features.song.detail.LocalSongDetailDisplaySettings
@@ -74,6 +77,7 @@ fun AppRoot(
   hasInstalledBooks: Boolean? = null,
   onSkipOnboarding: () -> Unit = {},
   bookLibraryExternalActions: BookLibraryExternalActions? = null,
+  telemetrySettings: TelemetrySettings? = null,
 ) {
   CompositionLocalProvider(
     LocalThemeSettings provides ThemeSettings(
@@ -91,6 +95,7 @@ fun AppRoot(
     LocalSongDetailDisplaySettings provides songDetailDisplaySettings,
     LocalFavoritesDisplaySettings provides favoritesDisplaySettings,
     LocalOnSkipOnboarding provides onSkipOnboarding,
+    LocalTelemetrySettings provides telemetrySettings,
   ) {
     AppTheme(themeMode = themeMode, useDynamicColor = useDynamicColor) {
       Surface(
@@ -100,7 +105,10 @@ fun AppRoot(
         Crossfade(targetState = hasInstalledBooks) { installed ->
           when (installed) {
             null -> Unit // loading — Surface background is already showing
-            false -> Navigator(OnboardingScreen()) { SlideTransition(it) }
+            false -> Navigator(OnboardingScreen()) { navigator ->
+              TrackScreenViews(navigator)
+              SlideTransition(navigator)
+            }
             true -> MainScreen()
           }
         }
@@ -132,6 +140,8 @@ private class DestinationTab(
     val holder = LocalTabNavigatorsHolder.currentOrThrow
     Navigator(initialScreen()) { navigator ->
       holder.navigators[this] = navigator
+      // One screen_view tracker per tab back-stack — covers every pushed screen in this tab.
+      TrackScreenViews(navigator)
       SlideTransition(navigator)
     }
   }

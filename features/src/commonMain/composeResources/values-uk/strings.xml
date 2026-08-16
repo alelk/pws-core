@@ -55,6 +55,7 @@
     <string name="settings_license">Ліцензія</string>
     <string name="settings_import_export">Імпорт/експорт</string>
     <string name="settings_import_export_subtitle">Імпортуйте або експортуйте відредаговані пісні та категорії</string>
+    <string name="settings_purchases">Покупки та підписка</string>
     <string name="settings_export">Експорт даних</string>
     <string name="settings_import">Імпорт даних</string>
 
@@ -250,6 +251,10 @@
     <string name="settings_dynamic_color_subtitle">Палітра Material You з шпалер (Android 12+)</string>
     <string name="settings_keep_screen_on">Не гасити екран у пісні</string>
     <string name="settings_keep_screen_on_subtitle">Екран лишається ввімкненим на сторінці пісні</string>
+    <string name="settings_privacy">Приватність</string>
+    <string name="settings_telemetry">Надсилати звіти про збої та статистику використання</string>
+    <string name="settings_telemetry_subtitle">Допомагає швидше знаходити й виправляти помилки. Тексти пісень, ваші правки та пошукові запити не надсилаються.</string>
+    <string name="settings_privacy_policy">Політика конфіденційності</string>
 
     <string name="search_scope_all">Усі</string>
     <string name="search_scope_in_books">У книгах</string>
@@ -299,7 +304,7 @@
     <string name="books_browse_library_action">Відкрити каталог</string>
 
     <!-- Onboarding -->
-    <string name="onboarding_title">Псалми та Хвала</string>
+    <string name="onboarding_title">P&amp;W Songs</string>
     <string name="onboarding_subtitle">Оберіть збірник для початку роботи</string>
     <string name="onboarding_skip">Пропустити</string>
     <string name="onboarding_install_selected">Встановити (%1$d)</string>
